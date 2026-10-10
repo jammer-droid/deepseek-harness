@@ -1,0 +1,29 @@
+{
+  "name": "@local/dsh-studio",
+  "version": "0.1.1",
+  "private": true,
+  "description": "Local Harness Studio with independently disposable demo feature",
+  "files": [
+    "cordis.patch.yml"
+  ],
+  "dependencies": {
+    "@local/dsh-studio-shell": "workspace:*",
+    "@local/dsh-studio-demo": "workspace:*"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/dsh": "0.2.1-alpha.2"
+  },
+  "peerDependenciesMeta": {
+    "@deepseek-ai/dsh": {
+      "optional": true
+    }
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "devDependencies": {
+    "@deepseek-ai/dsh": "workspace:*"
+  }
+}

@@ -1,4 +1,7 @@
 packages:
+  # Fork-local Studio development and independently loadable plugins.
+  - studio
+  - studio/packages/*
   - vendor/*
   - packages/*/*
   # The Landlock launcher is developed with its harness consumers but keeps

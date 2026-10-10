@@ -1,0 +1,36 @@
+{
+  "extends": "../tsconfig.base.client.json",
+  "compilerOptions": {
+    "composite": false,
+    "incremental": false,
+    "noEmit": true,
+    "rewriteRelativeImportExtensions": false
+  },
+  "include": [
+    "src/*.ts",
+    "src/*.tsx"
+  ],
+  "references": [
+    {
+      "path": "../vendor/cordis"
+    },
+    {
+      "path": "../packages/api/remotes/tsconfig.client.json"
+    },
+    {
+      "path": "../packages/boot/plugin-manager"
+    },
+    {
+      "path": "../packages/client/ui-renderer"
+    },
+    {
+      "path": "../packages/client/ui-workspace"
+    },
+    {
+      "path": "../packages/client/ui-sidebar"
+    },
+    {
+      "path": "../packages/client/ui-slots"
+    }
+  ]
+}

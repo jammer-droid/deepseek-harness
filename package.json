@@ -9,6 +9,8 @@
     "node": "^22.19.0 || >=24.0.0"
   },
   "workspaces": [
+    "studio",
+    "studio/packages/*",
     "vendor/*",
     "packages/*/*",
     "native/system",

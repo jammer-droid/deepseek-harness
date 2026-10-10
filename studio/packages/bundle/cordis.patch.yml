@@ -1,0 +1,6 @@
+- insert:
+    - id: local-dsh-studio-shell
+      name: '@local/dsh-studio-shell'
+    - id: local-dsh-studio-demo
+      name: '@local/dsh-studio-demo'
+      disabled: true
