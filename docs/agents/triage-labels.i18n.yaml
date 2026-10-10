@@ -1,0 +1,7 @@
+# Bilingual-pair consistency record for triage-labels.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write docs/agents/triage-labels.md
+/triage-labels:
+  en: 17a3b2139fe977fd
+  zh: c4a4ebd5f942945f

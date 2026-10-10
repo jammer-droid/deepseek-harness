@@ -1,5 +1,7 @@
 # Triage labels
 
+English | [中文](triage-labels.zh.md)
+
 Use these tracker labels when an engineering skill names a canonical triage role.
 
 | Role | Tracker label | Meaning |

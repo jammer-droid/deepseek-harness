@@ -1,5 +1,7 @@
 # Domain docs
 
+English | [中文](domain.zh.md)
+
 Use one shared domain context for this repository. Existing documentation owns terminology and decisions; do not create a parallel glossary or ADR tree.
 
 ## Before exploring

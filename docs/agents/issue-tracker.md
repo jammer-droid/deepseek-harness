@@ -1,5 +1,7 @@
 # Issue tracker: GitHub
 
+English | [中文](issue-tracker.zh.md)
+
 Track work in GitHub Issues on `jammer-droid/deepseek-harness`. Use the `gh` CLI with an explicit `--repo jammer-droid/deepseek-harness` argument; do not infer the tracker from the upstream remote.
 
 ## Skill operations
