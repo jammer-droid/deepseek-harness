@@ -4,6 +4,8 @@ Use one shared domain context for this repository. Existing documentation owns t
 
 ## Before exploring
 
+For Studio work, read the [product goals and scope](../../studio/goals.ko.md) and [development guide](../../studio/development.ko.md). Product goals are not shipped behavior; implementation candidates remain proposals until approved.
+
 Read the [shared glossary](../glossary.md), then relevant active Agent Notes under `.agents/notes/`. Use the [Agent Note guide](../../.agents/notes/README.md) to locate records by lifecycle and class.
 
 Implemented notes describe shipped decisions. Proposed notes are not adopted decisions. Rejected notes preserve reasons not to take an approach. Archived notes are frozen historical records, not current authority.
