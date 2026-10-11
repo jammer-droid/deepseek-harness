@@ -284,6 +284,8 @@ export class StudioDelegation extends Service {
         this.followups.delete(childId); this.reservations.delete(childId); this.observed.delete(childId);
       }
     }).catch(() => {
+      const owner = this.owners.get(operation.record.cycleId);
+      if (owner) this.uncertain.add(owner);
       this.failures.set(childId, 'studio-settlement-unknown');
     }).finally(() => this.settlements.delete(settlement));
     this.settlements.add(settlement);
