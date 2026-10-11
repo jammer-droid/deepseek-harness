@@ -34,7 +34,7 @@ The editor distinguishes unconfigured, applied, and saved-but-not-applied states
 
 `studioRoles.capture(role)` is Host-only and returns a detached creation-time settings snapshot. Later Apply operations do not mutate that capture. Child creation, execution, resume, and recording requested versus effective call configuration belong to the subsequent delegation ticket; this feature does not create or alter existing children.
 
-`generate-roles.mjs` uses the public Typert generator with an isolated declaration workspace and writes Host reflection and Client Remote JS/DTS. `build` runs generation, both strict compiler faces, and bundles public Host imports externally. Focused tests cover actual YAML Loader activation of the built plugin, real LlmRuntime capability validation, generated Registry/Gateway dispatch, strict wire rejection, plugin disposal, profile reopen, restart ABA, serialized Apply, storage failure, post-save activation failure, DOM edit/Apply behavior, and Client request races. The Loader fixture explicitly registers generated reflection; installed-package reflection discovery, a real browser Slot mount, and cold-process durable-backend restart remain manual verification requirements.
+`generate-roles.mjs` uses the public Typert generator with an isolated declaration workspace and writes Host reflection and Client Remote JS/DTS. `build` runs generation, both strict compiler faces, and bundles public Host imports externally. Focused validation lives in `test/`; the Loader fixture explicitly registers generated reflection. Installed-package reflection discovery, a real browser Slot mount, and cold-process durable-backend restart require separate integration verification.
 
 ## Installation
 
