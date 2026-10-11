@@ -4,14 +4,11 @@
     "composite": false,
     "incremental": false,
     "noEmit": true,
-    "rewriteRelativeImportExtensions": false
+    "rewriteRelativeImportExtensions": false,
+    "paths": {}
   },
   "include": [
     "src/host/*.ts"
   ],
-  "references": [
-    {
-      "path": "../vendor/cordis"
-    }
-  ]
+  "references": []
 }

@@ -7,10 +7,10 @@ async function compile(options) {
 }
 import { fileURLToPath } from 'node:url';
 const root = fileURLToPath(new URL('.', import.meta.url));
-for (const part of ['shell', 'demo']) {
+for (const part of ['shell', 'demo', 'roles']) {
   await compile({
-    absWorkingDir: root, tsconfig: 'tsconfig.host.json', entryPoints: [`src/host/${part}.ts`], outfile: `packages/${part}/index.js`,
-    bundle: true, platform: 'node', format: 'esm', target: 'node22', packages: 'external',
+    absWorkingDir: root, tsconfig: 'tsconfig.host.json', entryPoints: [part === 'roles' ? 'packages/roles/src/index.ts' : `src/host/${part}.ts`], outfile: `packages/${part}/index.js`,
+    bundle: true, platform: 'node', format: 'esm', target: 'node22', packages: 'external', external: ['@deepseek-ai/*'],
   });
   await compile({
     absWorkingDir: root, tsconfig: 'tsconfig.client.json', entryPoints: [`src/${part}.tsx`], outfile: `packages/${part}/client.js`,

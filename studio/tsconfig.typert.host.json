@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.host.json",
+  "compilerOptions": { "paths": {} },
+  "files": [],
+  "include": [],
+  "references": [
+    { "path": "./packages/roles/tsconfig.host.json" }
+  ]
+}

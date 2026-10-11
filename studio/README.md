@@ -15,15 +15,26 @@ pnpm --dir studio test
 pnpm --dir studio run watch
 ```
 
-`prepare:types` builds official Host artifacts, generated Remote declarations, and referenced Client declarations. Repeat it after upstream API changes. Host and Client use separate checks with official compiler bases and project references. `watch` rebuilds Studio JavaScript only; run `pnpm --dir studio run typecheck` separately.
+`prepare:types` builds official Host artifacts, generated Remote declarations, and referenced Client declarations. Repeat it after upstream API changes. Host and Client use separate strict artifact-plane checks with official compiler bases, cleared source aliases, and public package declarations; the prerequisite artifacts must exist before checking Studio. `watch` rebuilds Studio JavaScript only; run `pnpm --dir studio run typecheck` separately.
 
 ## Packages
 
 - `packages/shell`: sidebar page and profile enablement switch.
 - `packages/demo`: disposable Client timer.
+- `packages/roles`: profile-persistent implementer/reviewer settings, generated Remote, and locale-owned editor.
 - `packages/bundle`: workspace bundle; demo disabled by default.
 
 Edit `src/`, not generated JavaScript. Native Plugin Manager persists enablement; timer state belongs to each Client instance. Framework types come from official Cordis and DSH packages.
+
+## Fixed role settings
+
+Studio owns exactly two roles: implementer and reviewer. Instructions, provider, and model are required; optional reasoning effort must be supported by the exact advertised model. Blank effort requests the adapter default, not a frozen effective effort. Editing never executes a role or saves automatically. Apply validates both roles, checks the observed process/revision/snapshot tokens, durably saves the pair, then revalidates activation. A conflict requires reloading before retrying. Explicit reload replaces the draft; reconnect requery retains it. Locale and Client subscriptions are disposed with the plugin.
+
+The editor distinguishes unconfigured, applied, and saved-but-not-applied states and displays durable saved and applied identities separately from the in-process revision. Failed validation or persistence preserves the previous snapshot. Failed post-save activation blocks new captures and requires repairing model availability/settings and applying again. A transport failure leaves the outcome unknown: requery before retrying. Host storage remains active while the Studio page is closed and uses profile-common Storage Domain persistence rather than browser storage.
+
+`studioRoles.capture(role)` is Host-only and returns a detached creation-time settings snapshot. Later Apply operations do not mutate that capture. Child creation, execution, resume, and recording requested versus effective call configuration belong to the subsequent delegation ticket; this feature does not create or alter existing children.
+
+`generate-roles.mjs` uses the public Typert generator with an isolated declaration workspace and writes Host reflection and Client Remote JS/DTS. `build` runs generation, both strict compiler faces, and bundles public Host imports externally. Focused tests cover actual YAML Loader activation of the built plugin, real LlmRuntime capability validation, generated Registry/Gateway dispatch, strict wire rejection, plugin disposal, profile reopen, restart ABA, serialized Apply, storage failure, post-save activation failure, DOM edit/Apply behavior, and Client request races. The Loader fixture explicitly registers generated reflection; installed-package reflection discovery, a real browser Slot mount, and cold-process durable-backend restart remain manual verification requirements.
 
 ## Installation
 

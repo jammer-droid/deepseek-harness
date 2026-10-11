@@ -8,7 +8,8 @@
   ],
   "dependencies": {
     "@local/dsh-studio-shell": "workspace:*",
-    "@local/dsh-studio-demo": "workspace:*"
+    "@local/dsh-studio-demo": "workspace:*",
+    "@local/dsh-studio-roles": "workspace:*"
   },
   "peerDependencies": {
     "@deepseek-ai/dsh": "0.2.1-alpha.2"
