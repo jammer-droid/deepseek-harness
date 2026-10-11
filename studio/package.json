@@ -6,8 +6,9 @@
     "typecheck": "node generate-roles.mjs && tsc -p tsconfig.host.json && tsc -p tsconfig.client.json",
     "build": "npm run typecheck && node build.mjs",
     "test": "npm run build && node --import tsx --test test/*.test.mjs",
+    "test:browser": "vitest run --config test/vitest.browser.config.ts",
     "pack:bundle": "node pack.mjs",
-    "prepare:types": "pnpm --dir .. run build:lib:host && pnpm --dir .. exec tsc -b packages/client/ui-workspace packages/client/ui-renderer packages/client/ui-sidebar",
+    "prepare:types": "pnpm --dir .. run build:lib:host && pnpm --dir .. exec tsc -b packages/client/ui-workspace packages/client/ui-renderer packages/client/ui-sidebar packages/client/locale",
     "watch": "node build.mjs --watch"
   },
   "devDependencies": {
@@ -17,6 +18,8 @@
     "@deepseek-ai/dsh-typert-generator": "workspace:*",
     "@deepseek-ai/dsh-typert-protocol": "workspace:*",
     "@deepseek-ai/dsh-storage-domain": "workspace:*",
+    "@deepseek-ai/dsh-storage": "workspace:*",
+    "@deepseek-ai/dsh-storage-json": "workspace:*",
     "@deepseek-ai/dsh-llm": "workspace:*",
     "@deepseek-ai/dsh-app-boot": "workspace:*",
     "@local/dsh-studio-roles": "workspace:*",

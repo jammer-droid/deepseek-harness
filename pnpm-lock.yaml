@@ -15515,9 +15515,15 @@ importers:
       '@deepseek-ai/dsh-plugin-manager':
         specifier: workspace:*
         version: link:../packages/boot/plugin-manager
+      '@deepseek-ai/dsh-storage':
+        specifier: workspace:*
+        version: link:../packages/storage/storage
       '@deepseek-ai/dsh-storage-domain':
         specifier: workspace:*
         version: link:../packages/storage/storage-domain
+      '@deepseek-ai/dsh-storage-json':
+        specifier: workspace:*
+        version: link:../packages/storage/storage-json
       '@deepseek-ai/dsh-typert-generator':
         specifier: workspace:*
         version: link:../packages/typert/generator

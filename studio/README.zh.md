@@ -32,12 +32,12 @@ Studio 仅拥有实现者和审查者两个角色。指令、提供者和模型�
 
 编辑器区分未配置、已应用、已保存但未应用三种状态，分别显示持久化保存标识、已应用标识和进程内 revision。验证或持久化失败时保留原快照。保存后激活失败会阻止新的捕获，需修复模型可用性或设置后再次应用。传输失败意味着结果未知，应先重新查询再重试。关闭 Studio 页面不影响 Host 存储；设置使用 profile 公共 Storage Domain 持久化，而非浏览器存储。
 
-`studioRoles.capture(role)` 仅供 Host 调用，返回独立的创建时设置快照。之后的 Apply 不会修改该捕获值。子任务创建、执行、恢复以及请求配置和实际调用配置的记录由后续委派功能负责；本功能不会创建或更改已有子任务。
+`studioRoles.capture(role)` 仅供 Host 调用，返回独立的创建时设置快照。之后的 Apply 不会修改该捕获值。捕获不会创建、恢复或更改子任务；消费者负责子任务执行以及请求配置和实际调用配置的记录。
 
-`generate-roles.mjs` 在隔离的声明工作区中调用公共 Typert 生成器，输出 Host 反射以及 Client Remote JS/DTS。`build` 执行生成、两侧严格编译检查和打包，并将公共 Host 导入保留为外部依赖。针对性验证位于 `test/`；Loader 测试显式注册生成的反射。安装包反射自动发现、真实浏览器 Slot 挂载以及冷进程持久化后端重启需要单独的集成验证。
+`generate-roles.mjs` 在隔离的声明工作区中调用公共 Typert 生成器，输出 Host 反射以及 Client Remote JS/DTS。`build` 执行生成、两侧严格编译检查和打包，并将公共 Host 导入保留为外部依赖。[针对性测试](test/README.zh.md)覆盖生成的 Remote 调度、自动发现反射的真实浏览器 Slot 渲染以及冷进程磁盘持久化。
 
 ## 安装
 
 先运行 `pnpm --dir studio run build`，再运行 `pnpm --dir studio run pack:bundle`。打包将 manifest 暂存于 `dist/bundle`，不会修改工作区元数据。bundle 引用组件 tarball 的绝对路径：需保留 `dist`，移动检出目录后重新打包。此格式用于本地安装，不用于公开分发。
 
-使用独立的开发 profile 和匹配的 DSH 运行时。未经兼容性验证，不得用 fork 的 alpha 版本产物替换旧版 Desktop 安装。Studio watch 和官方 Web watcher 都不会自动更新已安装的 tarball。实际浏览器渲染和冷启动行为需要手动验证。
+使用独立的开发 profile 和匹配的 DSH 运行时。未经兼容性验证，不得用 fork 的 alpha 版本产物替换旧版 Desktop 安装。Studio watch 和官方 Web watcher 都不会自动更新已安装的 tarball。集成测试使用隔离且版本匹配的 Web 运行时，不验证现有安装的 GUI 或其他运行时版本的兼容性。
