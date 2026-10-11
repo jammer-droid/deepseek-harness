@@ -36,6 +36,14 @@ The editor distinguishes unconfigured, applied, and saved-but-not-applied states
 
 `generate-roles.mjs` uses the public Typert generator with an isolated declaration workspace and writes Host reflection and Client Remote JS/DTS. `build` runs generation, both strict compiler faces, and bundles public Host imports externally. [Focused tests](test/README.md) cover generated Remote dispatch, real-browser Slot rendering with automatic reflection discovery, and cold-process disk persistence.
 
+## Managed delegation
+
+Select Studio as the new-task Agent preset before creating a root session. Its orchestrator exposes planning/read tools and `studio_delegate`, not generic subagent, workflow, shell/write, plugin, or goal management. Executor guards also reject an Agent-owned capability outside the allowlist. Unmanaged presets remain unchanged; managed tool execution fails closed for a resumed session or child without a live reservation; persisted rows cannot restore execution authority.
+
+`studio_delegate` accepts `initial` with role `implementer`, a nonempty task prompt, and optional context `fresh`; or `status` alone. Initial captures applied instructions/provider/model/effort, persists Host-generated cycle/operation/child identifiers, then starts one real fresh implementer. The immediate logged receipt identifies the accepted message; status reads recorded output and terminal state without waking children. Unknown admission blocks retry on that live orchestrator. Arbitrary IDs, route/tool overrides, forks, reviewer execution, review, rework, and resume are rejected. Each independent initial call has a new cycle; initial work has rework count zero. Both Agents share the workspace: fresh context is not filesystem isolation.
+
+The conversation’s Agents tab sits beside Trajectory. It displays captured settings and instructions separately from observed persisted request configuration, task/output, membership identifiers, and state. Reload is explicit. Status reads and full-address child browsing do not wake children; opening the parent may activate its ordinary session without starting a model turn. Blank effort uses the adapter default even if the parent requested another effort. Later settings changes never alter existing captures. Reservations and results use Studio-owned Storage Domain rows, not modified Session formats; cold records convey facts, not executable authority.
+
 ## Installation
 
 Run `pnpm --dir studio run build` followed by `pnpm --dir studio run pack:bundle`. Packaging stages its manifest under `dist/bundle` without changing workspace metadata. The bundle references absolute component tarball paths: preserve `dist` and repack after moving the checkout. This format is for local installation, not public distribution.

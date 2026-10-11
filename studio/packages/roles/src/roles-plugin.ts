@@ -3,6 +3,8 @@ import type { Context } from '@deepseek-ai/cordis';
 import type {} from '@deepseek-ai/dsh-app-boot';
 import { RoleSettings } from './roles.ts';
 import { RoleSettingsRemote } from './roles-remote.ts';
+import { StudioDelegation } from './delegation.ts';
+import { delegationSpec } from './delegation-store.ts';
 /** Required public services for profile storage and capability validation. */
 export const inject = ['storageDomain', 'llm', 'profileContext'];
 /** Mount the profile settings owner and its public Remote.
@@ -12,4 +14,7 @@ export async function apply(ctx: Context): Promise<void> {
   const owner = await RoleSettings.open({ storageDomain: ctx.storageDomain, llm: ctx.llm, profile: ctx.profileContext.name });
   ctx.effect(() => () => owner.close());
   ctx.plugin(RoleSettingsRemote, owner);
+  const domain = await ctx.storageDomain.open(delegationSpec);
+  // Delegation owns domain closure after its accepted operations have drained.
+  ctx.plugin(StudioDelegation, domain);
 }

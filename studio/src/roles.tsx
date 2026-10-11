@@ -5,6 +5,7 @@ import type {} from './contracts.ts';
 import type {} from '@deepseek-ai/dsh-client-locale/client';
 import { TYPERT_REMOTE } from '@local/dsh-studio-roles/remote';
 import { RoleEditor } from './roles-editor.tsx';
+import { registerAgentsView } from './agents-view.tsx';
 import { roleCopy } from './roles-locales.ts';
 import { createRoleStore, type RoleStore } from './roles-store.ts';
 /** Mount required public services before registering the editor. */
@@ -21,6 +22,7 @@ export async function apply(ctx: Context): Promise<void> {
   const unmount = await ctx.remote.$mount(TYPERT_REMOTE);
   ctx.effect(() => unmount);
   ctx.inject(['remote.studioRoles'], ctx => {
+    ctx.inject(['uiWorkspace'], registerAgentsView);
     const store = createRoleStore({
       async describe() {
         const response = await ctx.remote.studioRoles.describe();

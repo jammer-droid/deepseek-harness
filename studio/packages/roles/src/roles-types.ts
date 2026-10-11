@@ -1,5 +1,6 @@
 /** Wire values owned by Studio role settings. */
 import type { Branded } from '@deepseek-ai/dsh-brand';
+export type { DelegationRecord, CycleId, OperationId } from './delegation-store.ts';
 /** Durable identity of one saved role pair. */
 export type RoleSnapshotId = Branded<'StudioRoleSnapshotId'>;
 /** Identity of one running settings owner; prevents revision ABA. */

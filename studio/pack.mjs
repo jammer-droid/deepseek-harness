@@ -12,7 +12,7 @@ for (const part of ['shell', 'demo', 'roles']) {
   dependencies[`@local/dsh-studio-${part}`] = `file:${path.join(dist, JSON.parse(output)[0].filename)}`;
 }
 const manifest = JSON.parse(await readFile(path.join(root, 'packages/bundle/package.json'), 'utf8'));
-await writeFile(path.join(staging, 'package.json'), JSON.stringify({ ...manifest, dependencies }, null, 2) + '\n');
+await writeFile(path.join(staging, 'package.json'), JSON.stringify({ ...manifest, dependencies: { ...manifest.dependencies, ...dependencies } }, null, 2) + '\n');
 await copyFile(path.join(root, 'packages/bundle/cordis.patch.yml'), path.join(staging, 'cordis.patch.yml'));
 const output = execFileSync('npm', ['pack', '--ignore-scripts', '--json', '--pack-destination', dist], { cwd: staging, encoding: 'utf8' });
 console.log(path.join(dist, JSON.parse(output)[0].filename));

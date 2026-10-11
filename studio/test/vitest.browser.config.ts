@@ -15,11 +15,12 @@ export default defineConfig({
   plugins: [tsconfigPaths({ projects: [resolve(runtime, 'tsconfig.base.json')] }), standardDecoratorPlugin()],
   resolve: { alias: {
     '@studio-test/scaffold': resolve(runtime, 'apps/web/tests/scaffold.ts'),
+    '@studio-test/support': resolve(runtime, 'apps/web/tests/support.ts'),
     playwright: webRequire.resolve('playwright'),
   } },
   test: {
     execArgv: vitestExecArgv,
-    include: ['studio/test/role-editor.browser.test.ts'],
+    include: ['studio/test/*.browser.test.ts'],
     testTimeout: 120_000,
     hookTimeout: 120_000,
     fileParallelism: false,

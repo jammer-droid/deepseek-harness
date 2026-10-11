@@ -1,0 +1,48 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`logs a model-origin delegation receipt in the parent transcript > logged initial receipt 1`] = `
+{
+  "childId": "<childId>",
+  "cycleId": "<cycleId>",
+  "messageId": "<messageId>",
+  "operationId": "<operationId>",
+  "state": "running",
+}
+`;
+
+exports[`logs a model-origin delegation receipt in the parent transcript > model-visible delegation schema 1`] = `
+{
+  "description": "Start a fresh implementer using applied Studio roles, or read this session’s recorded status without waking children. Initial requires role implementer and prompt; status accepts only action. The workspace is shared. No model, effort, tool, ID overrides, or later actions.",
+  "name": "studio_delegate",
+  "parameters": {
+    "properties": {
+      "action": {
+        "enum": [
+          "initial",
+          "status",
+        ],
+        "type": "string",
+      },
+      "context": {
+        "enum": [
+          "fresh",
+        ],
+        "type": "string",
+      },
+      "prompt": {
+        "type": "string",
+      },
+      "role": {
+        "enum": [
+          "implementer",
+        ],
+        "type": "string",
+      },
+    },
+    "required": [
+      "action",
+    ],
+    "type": "object",
+  },
+}
+`;
