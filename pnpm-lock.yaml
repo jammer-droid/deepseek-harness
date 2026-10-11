@@ -15625,6 +15625,9 @@ importers:
         specifier: ^4.4.3
         version: 4.4.3
     devDependencies:
+      '@deepseek-ai/dsh-session-persistence':
+        specifier: workspace:*
+        version: link:../../../packages/session/session-persistence
       '@deepseek-ai/dsh-session-query':
         specifier: workspace:*
         version: link:../../../packages/session-query/session-query

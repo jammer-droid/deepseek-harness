@@ -1,4 +1,4 @@
-/** Managed Studio admission; durable links are never cold-process authority. */
+/** Managed Studio admission with durable-log verification before owner recovery. */
 import { randomUUID } from 'node:crypto';
 import { Service, type Context } from '@deepseek-ai/cordis';
 import type { Agent } from '@deepseek-ai/dsh-agent';
@@ -6,6 +6,7 @@ import type {} from '@deepseek-ai/dsh-agent-preset-registry';
 import { defineTool, type ToolExecution } from '@deepseek-ai/dsh-tools';
 import type {} from '@deepseek-ai/dsh-subagent';
 import type {} from '@deepseek-ai/dsh-session-query';
+import type {} from '@deepseek-ai/dsh-session-persistence';
 import type { Domain } from '@deepseek-ai/dsh-storage-domain';
 import { SessionId, type TurnEndReason } from '@deepseek-ai/dsh-session';
 import { ReasoningEffortId, type MessageId, type ToolCallId } from '@deepseek-ai/dsh-llm';
@@ -21,7 +22,7 @@ const REVIEW_TOOLS = new Set(['read', 'glob', 'grep', 'structured_output']);
 declare module '@deepseek-ai/cordis' { interface Context { studioDelegation: StudioDelegation } }
 /** Owns admission and restricts only explicitly managed agents. */
 export class StudioDelegation extends Service {
-  static inject = ['studioRoles', 'tools', 'agentPresets', 'storageDomain', 'subagents', 'sessionQuery'];
+  static inject = ['studioRoles', 'tools', 'agentPresets', 'storageDomain', 'subagents', 'sessionQuery', 'sessionPersistence', 'llm'];
   private readonly admitted = new WeakMap<Agent, 'orchestrator' | 'implementer' | 'reviewer'>();
   private readonly reservations = new Map<SessionId, DelegationRecord>();
   private readonly owners = new Map<CycleId, Agent>();
@@ -33,10 +34,12 @@ export class StudioDelegation extends Service {
   private readonly pending = new WeakSet<Agent>();
   private readonly uncertain = new WeakSet<Agent>();
   private readonly observed = new Map<SessionId, NonNullable<DelegationRecord['observed']>>();
-  private readonly settlements = new Set<Promise<void>>();
+  private readonly settlements = new Map<Promise<void>, SessionId>();
   private readonly activations = new Set<import('@deepseek-ai/dsh-subagent').SubagentActivation>();
   private readonly failures = new Map<SessionId, string>();
-  private readonly admissions = new Set<Promise<string>>();
+  private readonly admissions = new Map<Promise<string>, Agent>();
+  private readonly stops = new Map<CycleId, Promise<string>>();
+  private readonly admissionCancellation = new Map<OperationId, AbortController>();
   private readonly shutdown = new AbortController();
   private readonly domain: Domain<typeof delegationSpec>;
   private readonly reworkCap: number;
@@ -47,13 +50,14 @@ export class StudioDelegation extends Service {
     this.reworkCap = policy.reworkCap;
     ctx.effect(() => async () => {
       this.shutdown.abort(new Error('studio-delegation-closed'));
-      await Promise.allSettled(this.admissions);
+      await Promise.allSettled(this.admissions.keys());
       const disposed = await Promise.allSettled([
         ...[...this.activations].map(activation => activation.dispose()),
         ...[...new Set(this.owners.values())].map(owner => ctx.subagents.drainChildren(owner, [...this.followups.values()].filter(operation => operation.record.parentId === owner.id).map(operation => operation.record.childId))),
       ]);
-      await Promise.allSettled(this.settlements);
-      const recorded = await Promise.allSettled([...this.followups.values()].map(operation => domain.table('children').update(operation.record.childId, row => ({ ...row, state: 'unknown', diagnostic: 'studio-shutdown-unsettled', ...(row.role === 'implementer' ? { cyclePhase: 'unknown' as const } : {}) }))));
+      await Promise.allSettled(this.settlements.keys());
+      const recorded = await Promise.allSettled([...this.followups.values()].map(operation => domain.table('children').update(operation.record.childId, row => ({ ...row, lastConfirmedState: row.lastConfirmedState ?? row.state, state: 'unknown', diagnostic: 'studio-shutdown-unsettled', ...(row.role === 'implementer' ? { cyclePhase: 'unknown' as const } : {}) }))));
+      await Promise.allSettled(this.stops.values());
       const closed = await Promise.allSettled([domain.close()]);
       const failures = [...disposed, ...recorded, ...closed].filter(result => result.status === 'rejected');
       if (failures.length) throw new AggregateError(failures.map(result => result.reason), 'studio-disposal-failed');
@@ -102,7 +106,9 @@ export class StudioDelegation extends Service {
       agent.ctx.effect(() => agent.ctx.tools.presentAs('native'));
       const reservation = this.reservations.get(agent.id);
       const child = reservation !== undefined && reservation.parentId === agent.session.header.parentSession && (source === 'startup' || (source === 'resume' && this.followups.has(agent.id) && this.owners.get(reservation.cycleId)?.id === reservation.parentId));
-      const root = source === 'startup' && !agent.session.header.parentSession;
+      const root = !agent.session.header.parentSession;
+      if (root && source === 'resume') await this.restoreOwner(agent);
+      if (!child && agent.session.header.parentSession) throw new Error('studio-managed-recovery-required');
       const capabilities = child ? reservation.role === 'reviewer' ? REVIEW_TOOLS : CHILD_TOOLS : root ? ROOT_TOOLS : new Set<string>();
       const names = ctx.tools.schemas(agent).map(tool => tool.name).filter(name => name !== 'structured_output' && capabilities.has(name));
       agent.ctx.effect(() => agent.ctx.tools.restrict({ allow: names }));
@@ -122,6 +128,126 @@ export class StudioDelegation extends Service {
       else if (root) this.admitted.set(agent, 'orchestrator');
     });
   }
+  private async reconcileAcceptance(record: DelegationRecord, initial = false): Promise<MessageId | undefined> {
+    try {
+      using observation = await this.ctx.sessionQuery.observeSession(record.childId, { projectionMode: 'none' });
+      const matches = new Set<MessageId>();
+      for (const event of observation.events) {
+        if (event.type !== 'agent/inbox/spliced') continue;
+        for (const message of event.data.inserted) {
+          const texts = message.content.filter(block => block.type === 'text').map(block => block.text);
+          if (initial && texts.join('\n') === record.prompt) { matches.add(message.id); continue; }
+          for (const text of texts) {
+            let value: unknown;
+            try { value = JSON.parse(text); } catch (_syntaxError) { continue; }
+            if (typeof value === 'object' && value !== null && 'operationId' in value && value.operationId === record.operationId && 'cycleId' in value && value.cycleId === record.cycleId) matches.add(message.id);
+          }
+        }
+      }
+      return matches.size === 1 ? [...matches][0] : undefined;
+    } catch (_queryError) { return undefined; } // Unavailable evidence cannot authorize a retry.
+  }
+  private async operationEvidence(row: DelegationRecord) {
+    await using stored = await this.ctx.sessionPersistence.open(row.childId, 'read');
+    if (stored.header.parentSession !== row.parentId || stored.header.agentPreset !== MANAGED_PRESET || stored.inheritedEventCount !== row.inheritedEventCount) throw new Error('studio-recovery-identity-mismatch');
+    const { events } = await stored.read(stored.inheritedEventCount);
+    const pending: Record<'next-turn' | 'next-step', MessageId[]> = { 'next-turn': [], 'next-step': [] };
+    let openTurn: number | undefined;
+    let claimedTurn: number | undefined;
+    let terminal: TurnEndReason | undefined;
+    let lastTurn: number | undefined;
+    let dropped = false;
+    for (const event of events) {
+      if (event.type === 'turn/start') { openTurn = event.data.turn; lastTurn = openTurn; }
+      if (event.type === 'agent/inbox/spliced') {
+        const { target, start, removedCount = 0, inserted, outcome } = event.data;
+        const removed = pending[target].splice(start, removedCount, ...inserted.map(message => message.id));
+        if (row.messageId !== null && removed.includes(row.messageId)) {
+          if (outcome === 'canceled') dropped = true;
+          else claimedTurn = openTurn;
+        }
+      }
+      if (event.type === 'turn/end') {
+        if (event.data.turn === claimedTurn) terminal = event.data.reason;
+        openTurn = undefined;
+      }
+    }
+    const settled = !pending['next-turn'].length && !pending['next-step'].length && openTurn === undefined && (dropped || (claimedTurn !== undefined && claimedTurn === lastTurn && terminal !== undefined));
+    return { settled, terminal, dropped };
+  }
+  /** Freeze admission and await the selected cycle's execution and durable outcome.
+   * @param agent Owning managed orchestrator.
+   * @param cycleId Recorded cycle to stop.
+   * @returns Recorded stop observation; confirmation never implies that work was rolled back.
+   */
+  async stop(agent: Agent, cycleId: CycleId): Promise<string> {
+    this.shutdown.signal.throwIfAborted();
+    if (this.admitted.get(agent) !== 'orchestrator' || !this.describe(agent.id).some(row => row.parentId === agent.id && row.cycleId === cycleId)) throw new Error('studio-managed-recovery-required');
+    const existing = this.stops.get(cycleId);
+    if (existing) return existing;
+    this.uncertain.add(agent);
+    const stopping = this.stopCycle(agent, cycleId);
+    this.stops.set(cycleId, stopping);
+    return stopping;
+  }
+  private async stopCycle(agent: Agent, cycleId: CycleId): Promise<string> {
+    const table = this.domain.table('children');
+    const rows = this.describe(agent.id).filter(row => row.cycleId === cycleId);
+    const requestedAt = Date.now();
+    try {
+      const intentFailures: unknown[] = [];
+      for (const row of rows) {
+        try { await table.update(row.childId, saved => ({ ...saved, stop: { requestedAt, status: 'requested' } })); }
+        catch (error) { intentFailures.push(error); }
+      }
+      for (const row of this.describe(agent.id).filter(row => row.cycleId === cycleId)) {
+        this.admissionCancellation.get(row.operationId)?.abort(new Error('studio-stop-requested'));
+        if (row.cycleOperation) this.admissionCancellation.get(row.cycleOperation)?.abort(new Error('studio-stop-requested'));
+      }
+      await Promise.allSettled([...this.admissions].filter(([, owner]) => owner === agent).map(([admission]) => admission));
+      const current = this.describe(agent.id).filter(row => row.cycleId === cycleId);
+      const ids = current.map(row => row.childId);
+      await this.ctx.subagents.drainChildren(agent, ids);
+      await Promise.allSettled([...this.settlements].filter(([, childId]) => ids.includes(childId)).map(([settlement]) => settlement));
+      if (intentFailures.length === 1) throw intentFailures[0];
+      if (intentFailures.length > 1) throw new AggregateError(intentFailures, 'studio-stop-intent-write-failed');
+      for (const row of current) {
+        const saved = table.get(row.childId)!;
+        const evidence = await this.operationEvidence(saved);
+        const confirmed = evidence.settled && !this.failures.has(row.childId);
+        await table.update(row.childId, latest => ({ ...latest, stop: { requestedAt, status: confirmed ? 'confirmed' : 'unknown' }, ...(evidence.dropped ? { state: 'interrupted' as const, diagnostic: 'studio-stop-input-canceled' } : {}), ...(latest.role === 'implementer' ? { cyclePhase: 'unknown' as const } : {}) }));
+      }
+      return JSON.stringify({ cycleId, records: this.describe(agent.id).filter(row => row.cycleId === cycleId) });
+    } catch (error) {
+      for (const row of this.describe(agent.id).filter(row => row.cycleId === cycleId)) {
+        this.failures.set(row.childId, 'studio-stop-unknown');
+        try { await table.update(row.childId, saved => ({ ...saved, stop: { requestedAt, status: 'unknown' }, diagnostic: 'studio-stop-unknown' })); }
+        catch (_storageError) { /* The live diagnostic remains available when durable reporting also fails. */ }
+      }
+      throw error;
+    }
+  }
+  private async restoreOwner(agent: Agent): Promise<void> {
+    const rows = [...this.domain.table('children').entries()].map(([, row]) => row).filter(row => row.parentId === agent.id);
+    if (!rows.length) throw new Error('studio-managed-recovery-required');
+    for (const row of rows) {
+      try {
+        const implementer = rows.find(item => item.cycleId === row.cycleId && item.role === 'implementer');
+        if (!implementer || implementer.reworkCap === undefined || !['review-ready', 'judged', 'complete'].includes(implementer.cyclePhase ?? '') || row.state !== 'completed' || row.messageId === null || row.inheritedEventCount === undefined) throw new Error('studio-recovery-unsettled');
+        const evidence = await this.operationEvidence(row);
+        if (!evidence.settled || evidence.terminal?.kind !== 'completed' || row.stop) throw new Error('studio-recovery-terminal-unconfirmed');
+        const models = await this.ctx.llm.listModels(row.settings.provider);
+        if (!models.some(model => model.id === row.settings.model)) throw new Error('studio-recovery-model-unavailable');
+        await this.ctx.llm.resolveCallConfig({ provider: row.settings.provider, model: row.settings.model, ...(row.settings.reasoningEffort === undefined ? {} : { reasoningEffort: ReasoningEffortId(row.settings.reasoningEffort) }) });
+      } catch (error) {
+        this.uncertain.add(agent);
+        const diagnostic = error instanceof Error ? error.message : 'studio-recovery-unavailable';
+        this.failures.set(row.childId, diagnostic);
+        await this.domain.table('children').update(row.childId, saved => ({ ...saved, diagnostic }));
+      }
+    }
+    if (!this.uncertain.has(agent)) for (const row of rows) this.owners.set(row.cycleId, agent);
+  }
   /** Read related sidecar rows without loading or waking any Agent.
    * @param sessionId Parent or child whose recorded delegation is displayed.
    * @returns Detached records with live uncertainty diagnostics; empty means no recorded managed membership.
@@ -131,7 +257,7 @@ export class StudioDelegation extends Service {
       .filter(row => row.parentId === sessionId || row.childId === sessionId).map(row => {
         const copy = structuredClone(row);
         const failure = this.failures.get(row.childId);
-        return failure ? { ...copy, state: 'unknown', diagnostic: failure } : copy;
+        return failure ? { ...copy, lastConfirmedState: copy.lastConfirmedState ?? copy.state, state: 'unknown', diagnostic: failure } : copy;
       });
   }
   /** Start a fresh child only after its detached role reservation is durable.
@@ -144,7 +270,7 @@ export class StudioDelegation extends Service {
   async initial(agent: Agent, prompt: string, signal: AbortSignal, context: 'fresh' | 'fork' = 'fresh'): Promise<string> {
     this.shutdown.signal.throwIfAborted();
     const admission = this.admit(agent, prompt, AbortSignal.any([signal, this.shutdown.signal]), undefined, context);
-    this.admissions.add(admission);
+    this.admissions.set(admission, agent);
     try { return await admission; } finally { this.admissions.delete(admission); }
   }
   /** Admit review or explicit completion for an owned settled cycle.
@@ -158,7 +284,7 @@ export class StudioDelegation extends Service {
   async reviewCycle(agent: Agent, cycleId: CycleId, evidence: ReviewEvidence | undefined, signal: AbortSignal, context?: 'fresh' | 'fork'): Promise<string> {
     this.shutdown.signal.throwIfAborted();
     const admission = this.advance(agent, cycleId, evidence, AbortSignal.any([signal, this.shutdown.signal]), context);
-    this.admissions.add(admission);
+    this.admissions.set(admission, agent);
     try { return await admission; } finally { this.admissions.delete(admission); }
   }
   /** Reserve one counted same-child implementation wake.
@@ -170,7 +296,7 @@ export class StudioDelegation extends Service {
    */
   async rework(agent: Agent, cycleId: CycleId, prompt: string, signal: AbortSignal): Promise<string> {
     const admission = this.sendRework(agent, cycleId, prompt, AbortSignal.any([signal, this.shutdown.signal]));
-    this.admissions.add(admission);
+    this.admissions.set(admission, agent);
     try { return await admission; } finally { this.admissions.delete(admission); }
   }
   private async sendRework(agent: Agent, cycleId: CycleId, prompt: string, signal: AbortSignal): Promise<string> {
@@ -180,6 +306,9 @@ export class StudioDelegation extends Service {
     const original = rows.find(row => row.role === 'implementer');
     if (!original || original.reworkCap === undefined || original.cycleCompletedAt !== undefined || (original.cyclePhase !== 'judged' && original.cyclePhase !== 'review-ready') || rows.some(row => row.state !== 'completed')) throw new Error('studio-cycle-not-ready');
     const operationId = brandString<OperationId>(randomUUID());
+    const cancellation = new AbortController();
+    this.admissionCancellation.set(operationId, cancellation);
+    signal = AbortSignal.any([signal, cancellation.signal]);
     this.pending.add(agent);
     const table = this.domain.table('children');
     try {
@@ -201,16 +330,20 @@ export class StudioDelegation extends Service {
       } catch (error) {
         this.uncertain.add(agent);
         this.failures.set(record.childId, 'studio-acceptance-unknown');
-        await table.update(record.childId, row => ({ ...row, state: 'unknown', cyclePhase: 'unknown' }));
+        const reconciledMessageId = await this.reconcileAcceptance(record);
+        await table.update(record.childId, row => ({ ...row, ...(reconciledMessageId ? { reconciledMessageId } : {}), lastConfirmedState: row.lastConfirmedState ?? row.state, state: 'unknown', cyclePhase: 'unknown' }));
         throw error;
       }
-    } finally { this.pending.delete(agent); }
+    } finally { this.admissionCancellation.delete(operationId); this.pending.delete(agent); }
   }
   private async sendReview(agent: Agent, implementer: DelegationRecord, reviewer: DelegationRecord, evidence: ReviewEvidence, signal: AbortSignal): Promise<string> {
     if (this.owners.get(implementer.cycleId) !== agent) throw new Error('studio-managed-recovery-required');
     this.pending.add(agent);
     const table = this.domain.table('children');
     const operationId = brandString<OperationId>(randomUUID());
+    const cancellation = new AbortController();
+    this.admissionCancellation.set(operationId, cancellation);
+    signal = AbortSignal.any([signal, cancellation.signal]);
     try {
       signal.throwIfAborted();
       await table.update(implementer.childId, row => {
@@ -235,9 +368,14 @@ export class StudioDelegation extends Service {
       this.uncertain.add(agent);
       this.failures.set(implementer.childId, 'studio-acceptance-unknown');
       this.failures.set(reviewer.childId, 'studio-acceptance-unknown');
+      const savedReviewer = table.get(reviewer.childId);
+      if (savedReviewer) {
+        const reconciledMessageId = await this.reconcileAcceptance(savedReviewer);
+        if (reconciledMessageId) await table.update(reviewer.childId, row => ({ ...row, reconciledMessageId }));
+      }
       await table.update(implementer.childId, row => ({ ...row, cyclePhase: 'unknown' }));
       throw error;
-    } finally { this.pending.delete(agent); }
+    } finally { this.admissionCancellation.delete(operationId); this.pending.delete(agent); }
   }
   private installCapture(agent: Agent): void {
     if (this.captureAgents.has(agent)) return;
@@ -292,7 +430,7 @@ export class StudioDelegation extends Service {
       if (owner) this.uncertain.add(owner);
       this.failures.set(childId, 'studio-settlement-unknown');
     }).finally(() => this.settlements.delete(settlement));
-    this.settlements.add(settlement);
+    this.settlements.set(settlement, childId);
   }
   private async advance(agent: Agent, cycleId: CycleId, evidence: ReviewEvidence | undefined, signal: AbortSignal, context?: 'fresh' | 'fork'): Promise<string> {
     if (this.admitted.get(agent) !== 'orchestrator') throw new Error('studio-managed-recovery-required');
@@ -343,6 +481,9 @@ export class StudioDelegation extends Service {
     if (role === 'implementer') record.cycleOperation = record.operationId;
     const table = domain.table('children');
     const implementer = role === 'reviewer' ? [...table.entries()].map(([, row]) => row).find(row => row.cycleId === cycleId && row.role === 'implementer') : undefined;
+    const cancellation = new AbortController();
+    this.admissionCancellation.set(record.operationId, cancellation);
+    signal = AbortSignal.any([signal, cancellation.signal]);
     try {
       if (context === 'fork') {
         using observation = await this.ctx.sessionQuery.observeSession(agent.id, { signal, projectionMode: 'none' });
@@ -396,7 +537,7 @@ export class StudioDelegation extends Service {
         this.settlements.delete(settlement);
         this.activations.delete(activation);
       });
-      this.settlements.add(settlement);
+      this.settlements.set(settlement, record.childId);
       try { await receiptWrite; } catch (error) { await activation.dispose(); throw error; }
       return JSON.stringify({ cycleId: record.cycleId, operationId: record.operationId, childId: record.childId, messageId: activation.messageId, state: 'running' });
     } catch (error) {
@@ -409,10 +550,12 @@ export class StudioDelegation extends Service {
       const saved = table.get(record.childId);
       if (saved?.state === 'reserved' || saved?.state === 'running') {
         this.uncertain.add(agent);
-        await table.update(record.childId, row => ({ ...row, state: 'unknown' }));
+        const reconciledMessageId = await this.reconcileAcceptance(record, true);
+        await table.update(record.childId, row => ({ ...row, ...(reconciledMessageId ? { reconciledMessageId } : {}), lastConfirmedState: row.lastConfirmedState ?? row.state, state: 'unknown' }));
       }
       throw error;
     } finally {
+      this.admissionCancellation.delete(record.operationId);
       this.pending.delete(agent);
     }
   }

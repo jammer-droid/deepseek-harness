@@ -22,7 +22,9 @@ function CycleStatus({ row, rows, t }: { row: DelegationRecord; rows: Delegation
   const phase = cycle?.cyclePhase;
   const currentReview = reviewer?.operationId === cycle?.cycleOperation ? reviewer : undefined;
   let next: keyof typeof agentsLocales.en = 'nextUnavailable';
-  if (cycle?.state === 'unknown' || cycle?.state === 'failed' || cycle?.state === 'interrupted' || phase === 'unknown') next = 'nextUnknown';
+  const stop = cycle?.stop ?? row.stop;
+  if (stop) next = stop.status === 'requested' ? 'nextStopRequested' : stop.status === 'confirmed' ? 'nextStopped' : 'nextStopUnknown';
+  else if (cycle?.state === 'unknown' || cycle?.state === 'failed' || cycle?.state === 'interrupted' || phase === 'unknown') next = 'nextUnknown';
   else if (phase === 'complete') next = 'nextComplete';
   else if (phase === 'implementation' || phase === 'review') next = 'nextWait';
   else if (phase === 'review-ready') next = 'nextReview';
@@ -36,6 +38,26 @@ function CycleStatus({ row, rows, t }: { row: DelegationRecord; rows: Delegation
       <dt>{t('phase')}</dt><dd>{t(phase === undefined ? 'phaseUnavailable' : `phase-${phase}`)}</dd>
       <dt>{t('usage')}</dt><dd>{cycle ? `${cycle.reworkCount} / ${cycle.reworkCap === undefined ? t('capUnavailable') : cycle.reworkCap}` : t('phaseUnavailable')}</dd>
       <dt>{t('next')}</dt><dd>{t(next)}</dd>
+    </dl>
+  </section>;
+}
+function RecoveryStatus({ row, t }: { row: DelegationRecord } & PropsLocale<'studio.agents'>) {
+  const uncertain = row.state === 'unknown' || row.state === 'failed' || row.state === 'interrupted';
+  if (!row.stop && !row.diagnostic && !uncertain) return null;
+  return <section aria-label={t('recoveryStatus')}>
+    {row.stop && <section aria-label={t('stopStatus')}>
+      <p>{t(`stop-${row.stop.status}`)}</p>
+      <dl><dt>{t('stopRequestedAt')}</dt><dd>{new Date(row.stop.requestedAt).toISOString()}</dd></dl>
+    </section>}
+    {(uncertain || row.diagnostic) && <p role="alert">{row.diagnostic === 'studio-review-invalid-result' ? t('invalidReview') : t(row.state === 'unknown' ? 'recoveryUnknown' : 'recoveryFailure')}</p>}
+    <p>{t('recoveryNext')}</p>
+    <dl>
+      {row.lastConfirmedState !== undefined && <><dt>{t('lastConfirmed')}</dt><dd>{t(row.lastConfirmedState)}</dd></>}
+      <dt>{t('parentIdentity')}</dt><dd>{row.parentId}</dd>
+      <dt>{t('childIdentity')}</dt><dd>{row.childId}</dd>
+      <dt>{t('messageIdentity')}</dt><dd>{row.messageId ?? t('phaseUnavailable')}</dd>
+      {row.reconciledMessageId !== undefined && <><dt>{t('reconciledMessageIdentity')}</dt><dd>{row.reconciledMessageId}</dd></>}
+      {row.diagnostic && <><dt>{t('diagnostic')}</dt><dd><code>{row.diagnostic}</code></dd></>}
     </dl>
   </section>;
 }
@@ -85,7 +107,7 @@ function AgentsView({ selectedId, load, open, historyClient, t }: ConvViewProps 
       <button onClick={() => open(row.parentId)}>{t('parent')}</button> <button onClick={() => open({ parentSessionId: row.parentId, childSessionId: row.childId, mode: 'continuable' })}>{t(row.role === 'reviewer' ? 'reviewChild' : 'child')}</button>
       <CapturedDetails row={row} t={t} />
       <ContextHistory client={historyClient} row={row} t={t} />
-      {row.diagnostic && <p role="alert">{row.diagnostic === 'studio-review-invalid-result' ? t('invalidReview') : row.diagnostic}</p>}
+      <RecoveryStatus row={row} t={t} />
     </article>)}
   </section>;
 }

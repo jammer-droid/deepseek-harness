@@ -1,0 +1,93 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`shows confirmed stop evidence without authorizing or waking work > stop outcome EN 1`] = `
+"Execution was observed stopped or finished. This does not undo changes or complete the cycle.
+
+Stop requested at
+<requested-at>
+
+Ask a human to inspect the child log and recorded diagnostic. Do not retry, resume, or create replacement work blindly.
+
+Parent Session ID
+<parent>
+Child Session ID
+<child>
+Accepted message ID
+<message>"
+`;
+
+exports[`shows confirmed stop evidence without authorizing or waking work > stop outcome ZH 1`] = `
+"已观察到执行停止或结束。这不会撤销更改，也不会完成周期
+
+停止请求时间
+<requested-at>
+
+请人工检查子会话日志和记录的诊断。不要盲目重试、恢复或创建替代工作
+
+父会话 ID
+<parent>
+子会话 ID
+<child>
+已接受消息 ID
+<message>"
+`;
+
+exports[`shows confirmed stop evidence without authorizing or waking work > stop requested EN 1`] = `
+"Stop requested. Waiting for execution and its recorded outcome to be checked; stopping is not yet confirmed.
+
+Stop requested at
+<requested-at>
+
+Ask a human to inspect the child log and recorded diagnostic. Do not retry, resume, or create replacement work blindly.
+
+Parent Session ID
+<parent>
+Child Session ID
+<child>
+Accepted message ID
+<message>"
+`;
+
+exports[`shows unknown stop evidence without authorizing or waking work > stop outcome EN 1`] = `
+"The stop outcome could not be confirmed. Work may have continued or finished.
+
+Stop requested at
+<requested-at>
+
+The current execution outcome is unknown. Saved details are evidence, not permission to retry.
+
+Ask a human to inspect the child log and recorded diagnostic. Do not retry, resume, or create replacement work blindly.
+
+Last confirmed activation state
+Completed
+Parent Session ID
+<parent>
+Child Session ID
+<child>
+Accepted message ID
+<message>
+Recorded diagnostic
+studio-stop-unknown"
+`;
+
+exports[`shows unknown stop evidence without authorizing or waking work > stop outcome ZH 1`] = `
+"无法确认停止结果，工作可能仍在运行或已经结束
+
+停止请求时间
+<requested-at>
+
+当前执行结果未知。保存的详情只是证据，并不表示可以重试
+
+请人工检查子会话日志和记录的诊断。不要盲目重试、恢复或创建替代工作
+
+最后确认的激活状态
+已完成
+父会话 ID
+<parent>
+子会话 ID
+<child>
+已接受消息 ID
+<message>
+记录的诊断
+studio-stop-unknown"
+`;

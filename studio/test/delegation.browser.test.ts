@@ -241,18 +241,8 @@ it('offers only managed planning capabilities and rejects initial work until rol
         expect(JSON.stringify(denied)).toContain('studio-managed-tool-denied')
       } finally { own() }
       await handle.dispose()
-      const resumed = await ctx.agents.resume({ resumeSessionId: handle.agent.id, setup: agentCtx => ctx.agentPresets.mount(agentCtx, 'studio-managed').then(() => undefined) })
-      try {
-        expect(ctx.tools.schemas(resumed.agent)).toEqual([])
-        const denied = await ctx.tools.execute({ agent: resumed.agent, signal: new AbortController().signal, callId: ToolCallId('resume-denied'), name: 'studio_delegate', arguments: { action: 'status' } })
-        expect(JSON.stringify(denied)).toContain('studio-managed-recovery-required')
-      } finally { await resumed.dispose() }
-      const orphan = await ctx.agents.create({ sessionId: SessionId('studio-missing-reservation'), meta: { cwd: scaffold.workspaceCwd, agentPreset: 'studio-managed', parentSession: handle.agent.id, origin: 'subagent', delegationDepth: 1 }, setup: agentCtx => ctx.agentPresets.mount(agentCtx, 'studio-managed').then(() => undefined) })
-      try {
-        expect(ctx.tools.schemas(orphan.agent)).toEqual([])
-        const denied = await ctx.tools.execute({ agent: orphan.agent, signal: new AbortController().signal, callId: ToolCallId('orphan-denied'), name: 'bash', arguments: {} })
-        expect(JSON.stringify(denied)).toContain('studio-managed-recovery-required')
-      } finally { await orphan.dispose() }
+      await expect(ctx.agents.resume({ resumeSessionId: handle.agent.id, setup: agentCtx => ctx.agentPresets.mount(agentCtx, 'studio-managed').then(() => undefined) })).rejects.toThrow('studio-managed-recovery-required')
+      await expect(ctx.agents.create({ sessionId: SessionId('studio-missing-reservation'), meta: { cwd: scaffold.workspaceCwd, agentPreset: 'studio-managed', parentSession: handle.agent.id, origin: 'subagent', delegationDepth: 1 }, setup: agentCtx => ctx.agentPresets.mount(agentCtx, 'studio-managed').then(() => undefined) })).rejects.toThrow('studio-managed-recovery-required')
       const unmanaged = await ctx.agents.create({ sessionId: SessionId('studio-unmanaged-control'), meta: { cwd: scaffold.workspaceCwd } })
       const unmanagedTool = unmanaged.agent.ctx.tools.register(defineTool({ name: 'studio_unmanaged_probe', description: 'Unmanaged positive control', parameters: {}, output: { schema: { type: 'string' }, render: (_args, value) => [{ type: 'text', text: value }] }, async execute() { return 'UNMANAGED_OK' } }))
       try {
