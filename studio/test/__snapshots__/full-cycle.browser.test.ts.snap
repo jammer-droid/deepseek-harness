@@ -1,0 +1,60 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`repairs feedback files with one counted rework, an independent rereview, and explicit completion > actual tool and cycle evidence 1`] = `
+[
+  {
+    "context": "fork",
+    "count": 1,
+    "judgment": null,
+    "phase": "complete",
+    "role": "implementer",
+    "tools": [
+      "read",
+      "write",
+      "read",
+      "write",
+    ],
+  },
+  {
+    "context": "fork",
+    "count": 0,
+    "judgment": "pass",
+    "phase": undefined,
+    "role": "reviewer",
+    "tools": [
+      "read",
+      "structured_output",
+      "read",
+      "studio_review_submit",
+    ],
+  },
+]
+`;
+
+exports[`repairs feedback files with one counted rework, an independent rereview, and explicit completion > explicitly completed fixture cycle 1`] = `
+[
+  "Cycle phaseExplicitly completedRework used / cap1 / 2Next actionNo further work in this completed cycle.",
+  "Cycle phaseExplicitly completedRework used / cap1 / 2Next actionNo further work in this completed cycle.",
+]
+`;
+
+exports[`repairs feedback files with one counted rework, an independent rereview, and explicit completion > first review requires rework 1`] = `
+[
+  "Cycle phaseReview judgedRework used / cap0 / 2Next actionAsk the orchestrator to request rework, including verification-only work, within the remaining cap. Report conflicting or ambiguous judgments to a human.",
+  "Cycle phaseReview judgedRework used / cap0 / 2Next actionAsk the orchestrator to request rework, including verification-only work, within the remaining cap. Report conflicting or ambiguous judgments to a human.",
+]
+`;
+
+exports[`repairs feedback files with one counted rework, an independent rereview, and explicit completion > pass still requires explicit completion 1`] = `
+[
+  "Cycle phaseReview judgedRework used / cap1 / 2Next actionExplicitly complete through the orchestrator, or request rework within the remaining cap.",
+  "Cycle phaseReview judgedRework used / cap1 / 2Next actionExplicitly complete through the orchestrator, or request rework within the remaining cap.",
+]
+`;
+
+exports[`repairs feedback files with one counted rework, an independent rereview, and explicit completion > repaired editor Apply feedback 1`] = `
+[
+  "Saved and applied.",
+  "No unsaved changes.",
+]
+`;
