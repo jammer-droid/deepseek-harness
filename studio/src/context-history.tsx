@@ -32,7 +32,7 @@ function EventContent({ entry, row, initialSeq, finalResponse, t }: { entry: Ses
   const event = entry.event;
   const [showContent, setShowContent] = React.useState(false);
   const inherited = row.context === 'fork' && row.inheritedEventCount !== undefined && event.seq < row.inheritedEventCount;
-  const category = event.type === 'user/message' ? (event.seq === initialSeq ? 'historyInput' : initialSeq === undefined ? 'historyUser' : 'historyFollowup')
+  const category = event.type === 'user/message' && ['user', 'agent-message'].includes(event.data.source.kind) ? (event.seq === initialSeq ? 'historyInput' : initialSeq === undefined ? 'historyUser' : 'historyFollowup')
     : event.type === 'tool/call' ? 'historyToolCall' : event.type === 'tool/result' ? 'historyToolResult'
       : event.type === 'assistant/message' ? (finalResponse ? 'historyFinal' : 'historyResponse') : event.type.startsWith('compaction/') ? 'historyCompacted' : 'historyEvent';
   return <li data-context-event={event.seq}>
@@ -55,7 +55,7 @@ function LoadedHistory({ binding, row, t }: { binding: SessionBinding; row: Dele
   const [pagingFailed, setPagingFailed] = React.useState(false);
   const entries = events.entries.filter(entry => entry.type === 'event');
   const inheritedCount = row.inheritedEventCount ?? (row.context === 'fresh' ? 0 : undefined);
-  const initialSeq = inheritedCount !== undefined && (!events.hasMore || (entries[0]?.event.seq ?? Infinity) <= inheritedCount) ? entries.find(entry => entry.event.seq >= inheritedCount && entry.event.type === 'user/message')?.event.seq : undefined;
+  const initialSeq = inheritedCount !== undefined && (!events.hasMore || (entries[0]?.event.seq ?? Infinity) <= inheritedCount) ? entries.find(entry => entry.event.seq >= inheritedCount && entry.event.type === 'user/message' && entry.event.data.source.kind === 'user')?.event.seq : undefined;
   const end = endSeq === Infinity ? entries.length : entries.findIndex(entry => entry.event.seq > endSeq);
   const endIndex = end < 0 ? entries.length : end;
   const start = Math.max(0, endIndex - 1);

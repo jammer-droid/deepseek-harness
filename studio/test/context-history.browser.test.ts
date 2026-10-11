@@ -4,6 +4,7 @@ import { chromium, type WebSocketRoute } from 'playwright';
 import { it, expect } from 'vitest';
 import { CompactionId, compactCheckpointSource } from '@deepseek-ai/dsh-compaction';
 import type {} from '@deepseek-ai/dsh-token-meter';
+import type {} from '@deepseek-ai/dsh-agent-loop';
 import { ToolCallId, createUserMessage } from '@deepseek-ai/dsh-llm';
 import { launchWebScaffold, readPersistedEvents } from '@studio-test/scaffold';
 import { connectFreshWorkspace } from '@studio-test/support';
@@ -119,7 +120,37 @@ it.each(['fresh', 'fork'] as const)('browses %s context evidence without child a
         await history.getByRole('button', { name: 'Older events', exact: true }).click();
         await expect.poll(() => history.locator('[data-context-event]').getAttribute('data-context-event')).not.toBe(seq);
       }
-      expect(labels.join('\n')).toContain('Captured additional input');
+      const inheritedCount = row.inheritedEventCount ?? 0;
+      const initialInput = before.find(event => event.seq >= inheritedCount && event.type === 'user/message' && event.data.source.kind === 'user');
+      const runtimeContext = before.find(event => event.seq >= inheritedCount && event.type === 'user/message' && event.data.source.kind === 'runtime-context');
+      if (!initialInput || !runtimeContext) throw new Error('Missing actual initial task or runtime context');
+      expect(runtimeContext.seq).not.toBe(initialInput.seq);
+      let initialChecked = false;
+      let runtimeChecked = false;
+      let checkpointChecked = false;
+      // Every older page is resident before source labels are asserted; the initial boundary is known.
+      for (let count = 0; count < before.length; count++) {
+        const seq = Number(await history.locator('[data-context-event]').getAttribute('data-context-event'));
+        const event = before.find(item => item.seq === seq);
+        const label = await history.locator('[data-context-event] > p').innerText();
+        if (seq === initialInput.seq) {
+          expect(label).toContain('Captured additional input');
+          initialChecked = true;
+        }
+        if (event?.type === 'user/message' && (event.data.source.kind === 'runtime-context' || event.data.source.kind === 'compact-checkpoint')) {
+          expect(label).not.toContain('Captured additional input');
+          expect(label).not.toContain('Follow-up message');
+          if (event.data.source.kind === 'runtime-context') runtimeChecked = true;
+          else checkpointChecked = true;
+        }
+        if (await history.getByRole('button', { name: 'Newer events', exact: true }).isDisabled()) break;
+        await history.getByRole('button', { name: 'Newer events', exact: true }).click();
+        await expect.poll(() => history.locator('[data-context-event]').getAttribute('data-context-event')).not.toBe(String(seq));
+      }
+      expect(initialChecked).toBe(true);
+      expect(runtimeChecked).toBe(true);
+      if (context === 'fork') expect(checkpointChecked).toBe(true);
+
       expect(labels.join('\n')).toContain('Final response');
       expect(contents.join('\n')).toContain('IMPLEMENTER_DONE');
       expect(contents.join('\n')).not.toContain('replayState');
