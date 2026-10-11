@@ -1,0 +1,122 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`captures a fresh structured pass without automatically completing its cycle > logged review evidence and implementation output 1`] = `
+[
+  {
+    "text": "{"requirementsAndEvidence":{"requirements":"Required behavior","summary":"Changes made","changedFiles":["example.ts"],"validations":[{"command":"npm test","result":"passed"}],"failures":[],"unrun":["full suite"]},"implementerOutput":"IMPLEMENTER_DONE"}",
+    "type": "text",
+  },
+]
+`;
+
+exports[`captures a fresh structured pass without automatically completing its cycle > reviewer read/search and structured submission schema 1`] = `
+[
+  {
+    "description": "Find files, not directories, whose paths match a glob pattern, including hidden and ignored files. Returns up to 100 paths in modification-time order; a larger result keeps the first paths and reports where the complete list was saved.",
+    "name": "glob",
+    "parameters": {
+      "properties": {
+        "path": {
+          "description": "Directory to search in. Defaults to the session workspace; a relative path resolves against it.",
+          "type": "string",
+        },
+        "pattern": {
+          "description": "Glob pattern to match file paths against (e.g. "**/*.ts", "src/**/*.test.js"). A pattern with no "/" matches the basename at any depth, so "*" and "*.ts" both search the whole tree; include a separator to anchor the depth.",
+          "type": "string",
+        },
+      },
+      "required": [
+        "pattern",
+      ],
+      "type": "object",
+    },
+  },
+  {
+    "description": "Search file contents with a ripgrep regular expression. Returns matching lines with line numbers, grouped by file. Returns up to 250 matches; a larger result reports where the complete match list was saved.",
+    "name": "grep",
+    "parameters": {
+      "properties": {
+        "include": {
+          "description": "One glob filter for which files to search (e.g. "*.ts", "*.{js,jsx}"). Not a list; negation is not supported.",
+          "type": "string",
+        },
+        "path": {
+          "description": "File or directory to search. Defaults to the session workspace; a relative path resolves against it.",
+          "type": "string",
+        },
+        "pattern": {
+          "description": "Regular expression to search for (ripgrep syntax).",
+          "type": "string",
+        },
+      },
+      "required": [
+        "pattern",
+      ],
+      "type": "object",
+    },
+  },
+  {
+    "description": "Read a UTF-8 text file and return line-numbered content.",
+    "name": "read",
+    "parameters": {
+      "properties": {
+        "file_path": {
+          "description": "Path to read, resolved by the filesystem backend.",
+          "type": "string",
+        },
+        "limit": {
+          "description": "Maximum number of lines to return. Defaults to 2000.",
+          "type": "number",
+        },
+        "offset": {
+          "description": "1-based first line to return. Defaults to 1.",
+          "type": "number",
+        },
+      },
+      "required": [
+        "file_path",
+      ],
+      "type": "object",
+    },
+  },
+  {
+    "description": "Report your final structured result. Call this exactly once, when your answer is complete; the arguments must match this tool's parameter schema exactly.",
+    "name": "structured_output",
+    "parameters": {
+      "additionalProperties": false,
+      "properties": {
+        "additionalVerification": {
+          "items": {
+            "type": "string",
+          },
+          "type": "array",
+        },
+        "evidence": {
+          "items": {
+            "type": "string",
+          },
+          "type": "array",
+        },
+        "explanation": {
+          "type": "string",
+        },
+        "judgment": {
+          "enum": [
+            "pass",
+            "needs-changes",
+            "unable-to-judge",
+          ],
+          "type": "string",
+        },
+      },
+      "required": [
+        "judgment",
+        "explanation",
+        "evidence",
+        "additionalVerification",
+      ],
+      "type": "object",
+    },
+  },
+]
+`;

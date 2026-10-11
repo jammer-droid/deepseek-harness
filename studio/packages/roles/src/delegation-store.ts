@@ -1,10 +1,11 @@
-/** Durable first-delegation reservations; records never authorize a cold process. */
+/** Durable cycle reservations and review facts; records never authorize a cold process. */
 import { z } from 'zod';
 import { defineDomain, domainTable } from '@deepseek-ai/dsh-storage-domain';
 import { brandString, type Branded } from '@deepseek-ai/dsh-brand';
 import { SessionId } from '@deepseek-ai/dsh-session';
 import { MessageId } from '@deepseek-ai/dsh-llm';
 import type { RoleSnapshotId } from './roles-types.ts';
+import { reviewJudgment } from './review.ts';
 /** Host-generated cycle identity. */
 export type CycleId = Branded<'StudioCycleId'>;
 /** Host-generated admission identity. */
@@ -15,14 +16,16 @@ export const delegationRecord = z.object({
   cycleId: z.string().uuid().transform(value => brandString<CycleId>(value)),
   operationId: z.string().uuid().transform(value => brandString<OperationId>(value)),
   parentId: z.string().transform(SessionId), childId: z.string().transform(SessionId),
-  role: z.literal('implementer'), context: z.literal('fresh'),
+  role: z.enum(['implementer', 'reviewer']), context: z.literal('fresh'),
+  judgment: reviewJudgment.optional(),
+  cycleCompletedAt: z.number().optional(),
   snapshotId: z.string().uuid().transform(value => brandString<RoleSnapshotId>(value)), settings: setting,
   state: z.enum(['reserved', 'running', 'completed', 'interrupted', 'failed', 'unknown']),
   prompt: z.string(), createdAt: z.number(),
   messageId: z.string().transform(MessageId).nullable(), diagnostic: z.string().nullable(),
   output: z.string().nullable(),
   observed: z.object({ provider: z.string(), model: z.string(), reasoningEffort: z.string().nullable() }).nullable(),
-  // Reserved for the later review cycle; initial execution is not rework.
+  // Rework is not supported; fresh implementation and review retain zero.
   reworkCount: z.literal(0),
 }).strict();
 /** Validated sidecar row. */

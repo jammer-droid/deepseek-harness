@@ -1,26 +1,41 @@
 // packages/roles/src/delegation-tool.ts
 import { defineTool } from "@deepseek-ai/dsh-tools";
+import { z as z2 } from "zod";
+
+// packages/roles/src/review.ts
 import { z } from "zod";
-var request = z.discriminatedUnion("action", [
-  z.object({ action: z.literal("initial"), role: z.literal("implementer"), prompt: z.string().trim().min(1), context: z.literal("fresh").optional() }).strict(),
-  z.object({ action: z.literal("status") }).strict()
+var reviewEvidence = z.object({ requirements: z.string().trim().min(1), summary: z.string().trim().min(1), changedFiles: z.array(z.string()), validations: z.array(z.object({ command: z.string(), result: z.string() }).strict()), failures: z.array(z.string()), unrun: z.array(z.string()) }).strict();
+var reviewJudgment = z.object({ judgment: z.enum(["pass", "needs-changes", "unable-to-judge"]), explanation: z.string().trim().min(1), evidence: z.array(z.string().trim().min(1)).min(1), additionalVerification: z.array(z.string().trim().min(1)) }).strict();
+
+// packages/roles/src/delegation-tool.ts
+import { brandString } from "@deepseek-ai/dsh-brand";
+var request = z2.discriminatedUnion("action", [
+  z2.object({ action: z2.literal("initial"), role: z2.literal("implementer"), prompt: z2.string().trim().min(1), context: z2.literal("fresh").optional() }).strict(),
+  z2.object({ action: z2.literal("status") }).strict(),
+  z2.object({ action: z2.literal("review"), cycleId: z2.string().uuid().transform((value) => brandString(value)), evidence: reviewEvidence }).strict(),
+  z2.object({ action: z2.literal("complete"), cycleId: z2.string().uuid().transform((value) => brandString(value)) }).strict()
 ]);
 var inject = ["tools", "studioDelegation"];
 function apply(ctx) {
   ctx.effect(() => ctx.tools.register(defineTool({
     name: "studio_delegate",
-    description: "Start a fresh implementer using applied Studio roles, or read this session\u2019s recorded status without waking children. Initial requires role implementer and prompt; status accepts only action. The workspace is shared. No model, effort, tool, ID overrides, or later actions.",
+    description: "Coordinate Studio cycles in the shared workspace. initial requires role implementer and prompt and creates a fresh cycle. status accepts only action and reads durable facts without waking children. review requires an owned settled cycleId and evidence: requirements, summary, changedFiles, validations with command/result, failures, and unrun checks; it creates one fresh read/search-only reviewer using currently applied reviewer settings. Read the validated judgment and additionalVerification through status. Implementation completion or review pass does not complete the cycle. complete requires cycleId, a validated pass, and no pending additional verification. Rework, extra implementation in the same cycle, reviewer retries, and model/effort/tool/identity overrides are unsupported.",
     parameters: {
-      action: { type: "string", required: true, enum: ["initial", "status"] },
+      action: { type: "string", required: true, enum: ["initial", "status", "review", "complete"] },
       role: { type: "string", enum: ["implementer"] },
       prompt: { type: "string" },
-      context: { type: "string", enum: ["fresh"] }
+      context: { type: "string", enum: ["fresh"] },
+      cycleId: { type: "string" },
+      evidence: { type: "object", additionalProperties: false, properties: { requirements: { type: "string", required: true }, summary: { type: "string", required: true }, changedFiles: { type: "array", required: true, items: { type: "string" } }, validations: { type: "array", required: true, items: { type: "object", properties: { command: { type: "string", required: true }, result: { type: "string", required: true } }, additionalProperties: false } }, failures: { type: "array", required: true, items: { type: "string" } }, unrun: { type: "array", required: true, items: { type: "string" } } } }
     },
     output: { schema: { type: "string" }, render: (_args, value) => [{ type: "text", text: value }] },
     async execute(args, exec) {
       const parsed = request.parse(args);
       if (!exec.agent) throw new Error("studio-agent-required");
       if (parsed.action === "status") return JSON.stringify(ctx.studioDelegation.describe(exec.agent.id));
+      if (parsed.action === "review" || parsed.action === "complete") {
+        return ctx.studioDelegation.reviewCycle(exec.agent, parsed.cycleId, parsed.action === "review" ? parsed.evidence : void 0, exec.signal);
+      }
       return ctx.studioDelegation.initial(exec.agent, parsed.prompt, exec.signal);
     },
     presentCall: () => ({ card: "generic", title: "Studio delegation", kind: "other" })

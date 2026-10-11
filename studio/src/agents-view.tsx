@@ -29,8 +29,15 @@ function AgentsView({ selectedId, load, open, t }: ConvViewProps & Injected & Pr
   return <section aria-label={t('title')}>
     <p>{t('shared')}</p><button onClick={reload}>{t('reload')}</button>
     {failed === selectedId ? <p role="alert">{t('unavailable')}</p> : loading || loaded?.id !== selectedId ? <p role="status">{t('loading')}</p> : rows.length === 0 ? <p>{t('empty')}</p> : rows.map(row => <article key={row.childId}>
-      <h2>{t('implementer')}</h2><p>{t('fresh')}</p><p>{t(row.state)}</p>
-      <button onClick={() => open(row.parentId)}>{t('parent')}</button> <button onClick={() => open({ parentSessionId: row.parentId, childSessionId: row.childId, mode: 'continuable' })}>{t('child')}</button>
+      <h2>{t(row.role)}</h2><p>{t('fresh')}</p><p>{t(row.state)}</p>
+      {row.role === 'implementer' && <p>{t(row.cycleCompletedAt === undefined ? 'cycleOpen' : 'cycleComplete')}</p>}
+      {row.role === 'reviewer' && <section aria-label={t('judgment')}>
+        <p>{row.judgment ? t(row.judgment.judgment) : t('noJudgment')}</p>
+        {row.judgment && <><p>{row.judgment.explanation}</p><ul>{row.judgment.evidence.map((item, index) => <li key={index}>{item}</li>)}</ul>
+          {row.judgment.additionalVerification.length > 0 && <><h3>{t('verification')}</h3><ul>{row.judgment.additionalVerification.map((item, index) => <li key={index}>{item}</li>)}</ul></>}
+        </>}
+      </section>}
+      <button onClick={() => open(row.parentId)}>{t('parent')}</button> <button onClick={() => open({ parentSessionId: row.parentId, childSessionId: row.childId, mode: 'continuable' })}>{t(row.role === 'reviewer' ? 'reviewChild' : 'child')}</button>
       <dl>
         <dt>{t('cycle')}</dt><dd>{row.cycleId}</dd><dt>{t('operation')}</dt><dd>{row.operationId}</dd>
         <dt>{t('snapshot')}</dt><dd>{row.snapshotId}</dd>
@@ -39,7 +46,7 @@ function AgentsView({ selectedId, load, open, t }: ConvViewProps & Injected & Pr
         <dt>{t('instructions')}</dt><dd><pre>{row.settings.instructions}</pre></dd>
         <dt>{t('task')}</dt><dd><pre>{row.prompt}</pre></dd>
       </dl>
-      {row.diagnostic && <p role="alert">{row.diagnostic}</p>}
+      {row.diagnostic && <p role="alert">{row.diagnostic === 'studio-review-invalid-result' ? t('invalidReview') : row.diagnostic}</p>}
       {row.output && <pre>{row.output}</pre>}
     </article>)}
   </section>;

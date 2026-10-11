@@ -7,14 +7,14 @@ import { launchWebScaffold, readPersistedEvents } from '@studio-test/scaffold';
 import { connectFreshWorkspace } from '@studio-test/support';
 import type {} from '../packages/roles/src/roles-remote.ts';
 const studio = fileURLToPath(new URL('..', import.meta.url));
-it('opens Agents beside Trajectory and navigates the real implementer without reactivation', async () => {
+it.each(['pass', 'needs-changes', 'unable-to-judge', 'invalid'])('shows review outcome %s and browses both children without reactivation', async outcome => {
   const browser = await chromium.launch({ ...(process.env.DSH_TEST_BROWSER_CHANNEL ? { channel: process.env.DSH_TEST_BROWSER_CHANNEL } : {}) });
   try {
     const scaffold = await launchWebScaffold({
       extraOverlayPath: `${studio}/packages/bundle/cordis.patch.yml`,
       extraInstallAnchors: ['bundle', 'shell', 'roles', 'demo'].map(name => `${studio}/packages/${name}/package.json`),
       replayFixture: `${studio}/test/fixtures/delegation/session.v4.jsonl`,
-      replayChildFixtures: [`${studio}/test/fixtures/delegation/session.1.v4.jsonl`], compareReplaySession: false,
+      replayChildFixtures: [`${studio}/test/fixtures/delegation/session.1.v4.jsonl`, `${studio}/test/fixtures/delegation/review-${outcome}.v4.jsonl`], compareReplaySession: false,
     });
     try {
       const ctx = scaffold.ctx;
@@ -41,6 +41,11 @@ it('opens Agents beside Trajectory and navigates the real implementer without re
       expect(receipt.isError, JSON.stringify(receipt)).toBe(false);
       await expect.poll(() => ctx.studioRoles.agents(parent.id)[0]?.state).toBe('completed');
       const row = ctx.studioRoles.agents(parent.id)[0]; if (!row) throw new Error('Missing child row');
+      const review = await ctx.tools.execute({ agent: parent, signal: new AbortController().signal, name: 'studio_delegate', callId: ToolCallId('browser-review'), arguments: { action: 'review', cycleId: row.cycleId, evidence: { requirements: 'Browser task', summary: 'Implementation complete', changedFiles: [], validations: [], failures: [], unrun: ['full suite'] } } });
+      expect(review.isError, JSON.stringify(review)).toBe(false);
+      await expect.poll(() => ctx.studioRoles.agents(parent.id).find(item => item.role === 'reviewer')?.state).toBe('completed');
+      const reviewer = ctx.studioRoles.agents(parent.id).find(item => item.role === 'reviewer')!;
+      const reviewerEvents = await readPersistedEvents(scaffold, reviewer.childId);
       const beforeNavigation = await readPersistedEvents(scaffold, row.childId);
       await page.getByRole('tab', { name: 'Agents', exact: true }).click();
       const panel = page.getByRole('region', { name: 'Agents', exact: true });
@@ -48,6 +53,13 @@ it('opens Agents beside Trajectory and navigates the real implementer without re
       expect(await panel.innerText()).toContain(settings.instructions);
       expect(await page.getByRole('tab', { name: 'Trajectory', exact: true }).count()).toBe(1);
       expect(await panel.innerText()).toContain('Fresh context');
+      expect(await panel.getByRole('region', { name: 'Review judgment', exact: true }).innerText()).toContain(outcome === 'invalid' ? 'No validated review judgment' : 'Requirements met');
+      if (outcome === 'invalid') expect(await panel.getByRole('alert').innerText()).toContain('Cycle completion is blocked');
+      expect(await panel.innerText()).toContain('Cycle open — explicit completion required');
+      const completion = await ctx.tools.execute({ agent: parent, signal: new AbortController().signal, name: 'studio_delegate', callId: ToolCallId('browser-complete'), arguments: { action: 'complete', cycleId: row.cycleId } });
+      expect(completion.isError).toBe(outcome !== 'pass');
+      await panel.getByRole('button', { name: 'Reload', exact: true }).click();
+      await expect.poll(() => panel.innerText()).toContain(outcome === 'pass' ? 'Cycle explicitly completed' : 'Cycle open — explicit completion required');
       const loading = Promise.withResolvers<void>();
       const release = Promise.withResolvers<void>();
       await page.route('**/api/studioRoles/agents', async route => { loading.resolve(); await release.promise; await route.fulfill({ status: 503, body: 'Test unavailable' }); }, { times: 1 });
@@ -64,7 +76,14 @@ it('opens Agents beside Trajectory and navigates the real implementer without re
       await page.getByRole('tab', { name: 'Agents', exact: true }).click();
       await panel.getByRole('button', { name: 'Open orchestrator', exact: true }).click();
       await page.locator(`[data-conversation-session="${parent.id}"]`).waitFor();
-      expect(await ctx.subagents.listChildren(parent.id)).toHaveLength(1);
+      await page.getByRole('tab', { name: 'Agents', exact: true }).click();
+      await panel.getByRole('button', { name: 'Open reviewer', exact: true }).click();
+      await page.locator(`[data-conversation-session="${reviewer.childId}"]`).waitFor();
+      await page.getByRole('tab', { name: 'Agents', exact: true }).click();
+      await panel.getByRole('button', { name: 'Open orchestrator', exact: true }).click();
+      await page.locator(`[data-conversation-session="${parent.id}"]`).waitFor();
+      expect(await ctx.subagents.listChildren(parent.id)).toHaveLength(2);
+      expect(await readPersistedEvents(scaffold, reviewer.childId)).toEqual(reviewerEvents);
       expect(await readPersistedEvents(scaffold, row.childId)).toEqual(beforeNavigation);
       await page.getByRole('button', { name: 'Settings', exact: true }).click();
       await page.getByRole('dialog', { name: 'Settings' }).getByRole('button', { name: 'English', exact: true }).click();
@@ -75,6 +94,9 @@ it('opens Agents beside Trajectory and navigates the real implementer without re
       const translated = page.getByRole('region', { name: '代理', exact: true });
       await expect.poll(() => translated.innerText()).toContain('全新上下文');
       expect(await translated.innerText()).toContain(settings.instructions);
+      expect(await translated.innerText()).toContain(outcome === 'pass' ? '周期已显式完成' : '周期未完成');
+      expect(await translated.getByRole('region', { name: '审查结论', exact: true }).innerText()).toContain(outcome === 'pass' ? '通过' : outcome === 'needs-changes' ? '需要修改' : outcome === 'unable-to-judge' ? '无法判断' : '没有经过验证的审查结论');
+      if (outcome === 'invalid') expect(await translated.getByRole('alert').innerText()).toContain('周期无法完成');
       expect(await readPersistedEvents(scaffold, row.childId)).toEqual(beforeNavigation);
     } catch (error) { console.error('Browser primary failure', error); throw error; } finally { await scaffold.close(); }
   } finally { await browser.close(); }
