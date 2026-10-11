@@ -18,6 +18,23 @@ test('A reconnect supersedes late Apply confirmation and requery failure blocks 
   assert.equal(store.getSnapshot().unavailable, false);
   store.dispose();
 });
+test('Reconnect retains the draft generation while explicit reload replaces it, and locale changes notify', async () => {
+  const store = createRoleStore({ describe: async () => state, apply: async () => state }, 'en');
+  await store.reload();
+  const original = store.getSnapshot().generation;
+  let notices = 0;
+  const unsubscribe = store.subscribe(() => { notices++; });
+  store.reset();
+  await Promise.resolve();
+  assert.equal(store.getSnapshot().generation, original);
+  assert.equal(store.getSnapshot().unavailable, false);
+  store.setLocale('ko');
+  assert.equal(store.getSnapshot().locale, 'ko');
+  assert.ok(notices >= 3);
+  await store.reload();
+  assert.equal(store.getSnapshot().generation, original + 1);
+  unsubscribe(); store.dispose();
+});
 test('Disposed stores reject new Apply and do not start reads', async () => {
   let calls = 0;
   const store = createRoleStore({ describe: async () => { calls++; return state; }, apply: async () => { calls++; return state; } }, 'en');

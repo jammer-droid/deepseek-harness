@@ -21,22 +21,22 @@ export async function apply(ctx: Context): Promise<void> {
   const unmount = await ctx.remote.$mount(TYPERT_REMOTE);
   ctx.effect(() => unmount);
   ctx.inject(['remote.studioRoles'], ctx => {
-  const store = createRoleStore({
-    async describe() {
-      const response = await ctx.remote.studioRoles.describe();
-      if (!response.ok) throw response.error;
-      return response.value;
-    },
-    async apply(request) {
-      const response = await ctx.remote.studioRoles.apply(request);
-      if (!response.ok) throw response.error;
-      return response.value;
-    },
-  }, ctx.locale.getLocale().active);
-  ctx.effect(() => () => store.dispose());
-  ctx.effect(() => ctx.locale.subscribe(() => store.setLocale(ctx.locale.getLocale().active)));
-  ctx.on('connection/reset', () => store.reset());
-  void store.reload();
-  ctx.slots.inject('local.dsh-studio.features', () => ctx.slots.register({ name: 'local.dsh-studio.features', id: 'role-settings', order: -10 }, () => <Settings store={store} />));
+    const store = createRoleStore({
+      async describe() {
+        const response = await ctx.remote.studioRoles.describe();
+        if (!response.ok) throw response.error;
+        return response.value;
+      },
+      async apply(request) {
+        const response = await ctx.remote.studioRoles.apply(request);
+        if (!response.ok) throw response.error;
+        return response.value;
+      },
+    }, ctx.locale.getLocale().active);
+    ctx.effect(() => () => store.dispose());
+    ctx.effect(() => ctx.locale.subscribe(() => store.setLocale(ctx.locale.getLocale().active)));
+    ctx.on('connection/reset', () => store.reset());
+    void store.reload();
+    ctx.slots.inject('local.dsh-studio.features', () => ctx.slots.register({ name: 'local.dsh-studio.features', id: 'role-settings', order: -10 }, () => <Settings store={store} />));
   });
 }
