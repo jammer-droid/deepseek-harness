@@ -1,0 +1,22 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`separates cycle phase and activation, counts reused work, and localizes next actions > current pass at cap ZH 1`] = `
+[
+  "周期阶段已有审查结论已用返工次数 / 上限2 / 2下一步操作通过协调者显式完成。已达到返工上限；进一步返工需要人工处理。",
+  "周期阶段已有审查结论已用返工次数 / 上限2 / 2下一步操作通过协调者显式完成。已达到返工上限；进一步返工需要人工处理。",
+]
+`;
+
+exports[`separates cycle phase and activation, counts reused work, and localizes next actions > rework awaiting review EN 1`] = `
+[
+  "Cycle phaseReady for reviewRework used / cap1 / 2Next actionRequest review through the orchestrator. Completion requires a current validated review.",
+  "Cycle phaseReady for reviewRework used / cap1 / 2Next actionRequest review through the orchestrator. Completion requires a current validated review.",
+]
+`;
+
+exports[`separates cycle phase and activation, counts reused work, and localizes next actions > rework awaiting review ZH 1`] = `
+[
+  "周期阶段等待审查已用返工次数 / 上限1 / 2下一步操作通过协调者请求审查。完成周期需要当前有效的审查结论。",
+  "周期阶段等待审查已用返工次数 / 上限1 / 2下一步操作通过协调者请求审查。完成周期需要当前有效的审查结论。",
+]
+`;

@@ -21,6 +21,12 @@ import { MemoryStorageBackend } from '../../packages/storage/storage-domain/test
 import * as RolesPlugin from '../packages/roles/index.js';
 import { TYPERT } from '../packages/roles/lib/typert.host.js';
 
+test('operator cap defaults to two and rejects invalid profile values', () => {
+  assert.deepEqual(RolesPlugin.Config.parse({}), { reworkCap: 2 });
+  for (const reworkCap of [-1, 1.5, Infinity, Number.MAX_SAFE_INTEGER + 1, '2']) assert.throws(() => RolesPlugin.Config.parse({ reworkCap }));
+  assert.deepEqual(RolesPlugin.Config.parse({ reworkCap: 0 }), { reworkCap: 0 });
+});
+
 test('YAML Loader mounts the built plugin and generated Gateway accepts only explicit valid Apply', async () => {
   const root = await mkdtemp(join(tmpdir(), 'studio-roles-loader-'));
   assert.equal(resolve(root), root);

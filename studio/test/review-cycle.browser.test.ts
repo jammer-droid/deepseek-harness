@@ -30,6 +30,7 @@ it('captures a fresh structured pass without automatically completing its cycle'
       expect((await execute({ action: 'initial', role: 'implementer', prompt: 'Implement required behavior.' })).isError).toBe(false)
       await expect.poll(() => ctx.studioRoles.agents(handle.agent.id)[0]?.state).toBe('completed')
       const implementer = ctx.studioRoles.agents(handle.agent.id)[0]!
+       expect(implementer.reworkCap).toBe(2)
       expect((await execute({ action: 'complete', cycleId: implementer.cycleId })).isError).toBe(true)
       const other = await ctx.agents.create({ sessionId: SessionId('other-orchestrator'), meta: { cwd: scaffold.workspaceCwd, agentPreset: 'studio-managed' }, setup: agentCtx => ctx.agentPresets.mount(agentCtx, 'studio-managed').then(() => undefined) })
       try {
@@ -64,7 +65,8 @@ it('captures a fresh structured pass without automatically completing its cycle'
       const reviewer = ctx.studioRoles.agents(handle.agent.id).find(row => String(row.role) === 'reviewer')!
       expect(reviewer.settings).toEqual(reviewerSettings)
       expect(reviewer.snapshotId).not.toBe(implementer.snapshotId)
-      expect(ctx.studioRoles.agents(handle.agent.id).find(row => row.role === 'implementer')).toEqual(implementer)
+      await expect.poll(() => ctx.studioRoles.agents(handle.agent.id).find(row => row.role === 'implementer')?.cyclePhase).toBe('judged')
+      expect(ctx.studioRoles.agents(handle.agent.id).find(row => row.role === 'implementer')).toEqual({ ...implementer, cyclePhase: 'judged', cycleOperation: reviewer.operationId })
       expect((await execute({ action: 'review', cycleId: implementer.cycleId, evidence })).isError).toBe(true)
       expect(reviewer.cycleId).toBe(implementer.cycleId)
       expect(reviewer.childId).not.toBe(implementer.childId)
@@ -131,7 +133,8 @@ it.each(['needs-changes', 'unable-to-judge', 'verification', 'invalid', 'missing
       }
       expect((await execute({ action: 'complete', cycleId })).isError).toBe(true)
       expect((await execute({ action: 'review', cycleId, evidence })).isError).toBe(true)
-      expect((await execute({ action: 'rework', cycleId, prompt: 'Do more.' })).isError).toBe(true)
+      // Failed native reviews remain fenced; judged outcomes may request bounded rework (covered by rework-cycle).
+      if (outcome === 'missing') expect((await execute({ action: 'rework', cycleId, prompt: 'Do more.' })).isError).toBe(true)
       expect(ctx.studioRoles.agents(handle.agent.id)).toHaveLength(2)
       expect(ctx.studioRoles.agents(handle.agent.id)[0]?.cycleCompletedAt).toBeUndefined()
     } finally { await handle.dispose() }

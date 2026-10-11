@@ -25,8 +25,11 @@ export const delegationRecord = z.object({
   messageId: z.string().transform(MessageId).nullable(), diagnostic: z.string().nullable(),
   output: z.string().nullable(),
   observed: z.object({ provider: z.string(), model: z.string(), reasoningEffort: z.string().nullable() }).nullable(),
-  // Rework is not supported; fresh implementation and review retain zero.
-  reworkCount: z.literal(0),
+  // Older rows remain unchanged and cannot acquire a new policy implicitly.
+  reworkCap: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER).optional(),
+  cyclePhase: z.enum(['implementation', 'review-ready', 'review', 'judged', 'complete', 'unknown']).optional(),
+  cycleOperation: z.string().uuid().transform(value => brandString<OperationId>(value)).optional(),
+  reworkCount: z.number().int().nonnegative(),
 }).strict();
 /** Validated sidecar row. */
 export type DelegationRecord = z.infer<typeof delegationRecord>;

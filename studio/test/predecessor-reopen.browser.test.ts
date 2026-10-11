@@ -8,8 +8,8 @@ import type {} from '../packages/roles/src/roles-remote.ts'
 const studio = fileURLToPath(new URL('..', import.meta.url))
 const predecessor = process.env.DSH_TEST_PREDECESSOR_STUDIO
 it.skipIf(!predecessor)('reopens exact predecessor Loader sidecars with unchanged identities and captured settings', async () => {
-  if (!predecessor) throw new Error('Set DSH_TEST_PREDECESSOR_STUDIO to the built ticket8 Studio directory')
-  const scaffold = await launchWebScaffold({ extraOverlayPath: `${predecessor}/packages/bundle/cordis.patch.yml`, extraInstallAnchors: ['bundle', 'shell', 'roles', 'demo'].map(name => `${predecessor}/packages/${name}/package.json`), replayFixture: `${studio}/test/fixtures/delegation/session.v4.jsonl`, replayChildFixtures: [`${studio}/test/fixtures/delegation/session.1.v4.jsonl`], compareReplaySession: false })
+  if (!predecessor) throw new Error('Set DSH_TEST_PREDECESSOR_STUDIO to the built ticket9 Studio directory')
+  const scaffold = await launchWebScaffold({ extraOverlayPath: `${predecessor}/packages/bundle/cordis.patch.yml`, extraInstallAnchors: ['bundle', 'shell', 'roles', 'demo'].map(name => `${predecessor}/packages/${name}/package.json`), replayFixture: `${studio}/test/fixtures/delegation/session.v4.jsonl`, replayChildFixtures: [`${studio}/test/fixtures/delegation/session.1.v4.jsonl`, `${studio}/test/fixtures/delegation/review-pass.v4.jsonl`], compareReplaySession: false })
   try {
     const ctx = scaffold.ctx
     const current = ctx.studioRoles.describe()
@@ -27,9 +27,17 @@ it.skipIf(!predecessor)('reopens exact predecessor Loader sidecars with unchange
       expect(rows).toHaveLength(1)
       expect(rows[0]).not.toHaveProperty('judgment')
       expect(rows[0]).not.toHaveProperty('cycleCompletedAt')
-      const unsupported = await ctx.tools.execute({ agent: handle.agent, signal: new AbortController().signal, callId: ToolCallId('predecessor-review-refused'), name: 'studio_delegate', arguments: { action: 'review', cycleId: rows[0]!.cycleId, evidence: { requirements: 'Old action refusal', summary: 'Settled implementation', changedFiles: [], validations: [], failures: [], unrun: [] } } })
+      const unsupported = await ctx.tools.execute({ agent: handle.agent, signal: new AbortController().signal, callId: ToolCallId('predecessor-review-refused'), name: 'studio_delegate', arguments: { action: 'rework', cycleId: rows[0]!.cycleId, prompt: 'Predecessor has no rework authority.' } })
       expect(unsupported.isError).toBe(true)
       expect(ctx.studioRoles.agents(handle.agent.id)).toEqual(rows)
+      const review = await ctx.tools.execute({ agent: handle.agent, signal: new AbortController().signal, callId: ToolCallId('predecessor-review'), name: 'studio_delegate', arguments: { action: 'review', cycleId: rows[0]!.cycleId, evidence: { requirements: 'Preserve completed predecessor', summary: 'Settled implementation', changedFiles: [], validations: [], failures: [], unrun: [] } } })
+      expect(review.isError).toBe(false)
+      await expect.poll(() => ctx.studioRoles.agents(handle.agent.id).find(row => row.role === 'reviewer')?.judgment?.judgment).toBe('pass')
+      const complete = await ctx.tools.execute({ agent: handle.agent, signal: new AbortController().signal, callId: ToolCallId('predecessor-complete'), name: 'studio_delegate', arguments: { action: 'complete', cycleId: rows[0]!.cycleId } })
+      expect(complete.isError).toBe(false)
+      rows = ctx.studioRoles.agents(handle.agent.id)
+      expect(rows).toHaveLength(2)
+      expect(rows[0]?.cycleCompletedAt).toBeTypeOf('number')
     } finally { await handle.dispose() }
     const old = [...ctx.loader.entries()].find(entry => entry.options.name === '@local/dsh-studio-roles')
     if (!old?.fiber) throw new Error('Missing predecessor Loader entry')
@@ -39,6 +47,8 @@ it.skipIf(!predecessor)('reopens exact predecessor Loader sidecars with unchange
     for (const entry of ctx.loader.entries()) await entry.fiber?.await()
     expect(ctx.studioRoles.agents(SessionId('predecessor-parent'))).toEqual(rows)
     expect(ctx.studioRoles.capture('implementer').settings).toEqual(settings)
-    expect(ctx.studioRoles.agents(SessionId('predecessor-parent'))).toHaveLength(1)
+    expect(ctx.studioRoles.agents(SessionId('predecessor-parent'))).toHaveLength(2)
+    expect(ctx.studioRoles.agents(SessionId('predecessor-parent'))[0]).not.toHaveProperty('reworkCap')
+    expect(ctx.studioRoles.agents(SessionId('predecessor-parent'))[0]).not.toHaveProperty('cyclePhase')
   } finally { await scaffold.close() }
 })

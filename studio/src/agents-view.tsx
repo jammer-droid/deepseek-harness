@@ -1,4 +1,4 @@
-/** Read-only Agents view. Loading and navigation never admit child work. */
+/** Read-only Agents view. Cycle guidance uses the implementer record and current review operation; absent legacy policy stays unknown. Loading and navigation never admit child work. */
 import React from 'react';
 import type { Context } from '@deepseek-ai/cordis';
 import type { SessionId } from '@deepseek-ai/dsh-session/types';
@@ -12,6 +12,29 @@ interface Injected {
   selectedId: SessionId;
   load: () => Promise<DelegationRecord[]>;
   open: (target: SessionId | import('@deepseek-ai/dsh-subagent/client').SubagentAddress) => void;
+}
+function CycleStatus({ row, rows, t }: { row: DelegationRecord; rows: DelegationRecord[] } & PropsLocale<'studio.agents'>) {
+  const cycle = rows.find(item => item.cycleId === row.cycleId && item.role === 'implementer');
+  const reviewer = rows.find(item => item.cycleId === row.cycleId && item.role === 'reviewer');
+  const phase = cycle?.cyclePhase;
+  const currentReview = reviewer?.operationId === cycle?.cycleOperation ? reviewer : undefined;
+  let next: keyof typeof agentsLocales.en = 'nextUnavailable';
+  if (cycle?.state === 'unknown' || cycle?.state === 'failed' || cycle?.state === 'interrupted' || phase === 'unknown') next = 'nextUnknown';
+  else if (phase === 'complete') next = 'nextComplete';
+  else if (phase === 'implementation' || phase === 'review') next = 'nextWait';
+  else if (phase === 'review-ready') next = 'nextReview';
+  else if (phase === 'judged' && cycle?.reworkCap !== undefined) {
+    if (!currentReview?.judgment || currentReview.state !== 'completed') next = 'nextUnknown';
+    else if (currentReview.judgment.judgment === 'pass' && currentReview.judgment.additionalVerification.length === 0) next = cycle.reworkCount < cycle.reworkCap ? 'nextCompleteOrRework' : 'nextExplicitComplete';
+    else next = cycle.reworkCount < cycle.reworkCap ? 'nextRework' : 'nextCap';
+  }
+  return <section aria-label={t('cycleStatus')}>
+    <dl>
+      <dt>{t('phase')}</dt><dd>{t(phase === undefined ? 'phaseUnavailable' : `phase-${phase}`)}</dd>
+      <dt>{t('usage')}</dt><dd>{cycle ? `${cycle.reworkCount} / ${cycle.reworkCap === undefined ? t('capUnavailable') : cycle.reworkCap}` : t('phaseUnavailable')}</dd>
+      <dt>{t('next')}</dt><dd>{t(next)}</dd>
+    </dl>
+  </section>;
 }
 function AgentsView({ selectedId, load, open, t }: ConvViewProps & Injected & PropsLocale<'studio.agents'>) {
   const [loaded, setLoaded] = React.useState<{ id: SessionId; rows: DelegationRecord[] }>();
@@ -29,7 +52,9 @@ function AgentsView({ selectedId, load, open, t }: ConvViewProps & Injected & Pr
   return <section aria-label={t('title')}>
     <p>{t('shared')}</p><button onClick={reload}>{t('reload')}</button>
     {failed === selectedId ? <p role="alert">{t('unavailable')}</p> : loading || loaded?.id !== selectedId ? <p role="status">{t('loading')}</p> : rows.length === 0 ? <p>{t('empty')}</p> : rows.map(row => <article key={row.childId}>
-      <h2>{t(row.role)}</h2><p>{t('fresh')}</p><p>{t(row.state)}</p>
+      <h2>{t(row.role)}</h2><p>{t('fresh')}</p>
+      <dl><dt>{t('activation')}</dt><dd>{t(row.state)}</dd></dl>
+      <CycleStatus row={row} rows={rows} t={t} />
       {row.role === 'implementer' && <p>{t(row.cycleCompletedAt === undefined ? 'cycleOpen' : 'cycleComplete')}</p>}
       {row.role === 'reviewer' && <section aria-label={t('judgment')}>
         <p>{row.judgment ? t(row.judgment.judgment) : t('noJudgment')}</p>
