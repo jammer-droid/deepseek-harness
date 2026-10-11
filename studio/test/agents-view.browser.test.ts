@@ -49,6 +49,7 @@ it.each(['pass', 'needs-changes', 'unable-to-judge', 'invalid'])('shows review o
       const beforeNavigation = await readPersistedEvents(scaffold, row.childId);
       await page.getByRole('tab', { name: 'Agents', exact: true }).click();
       const panel = page.getByRole('region', { name: 'Agents', exact: true });
+      await panel.getByRole('button', { name: 'Show captured details', exact: true }).first().click();
       await expect.poll(() => panel.innerText()).toContain('IMPLEMENTER_DONE');
       expect(await panel.innerText()).toContain(settings.instructions);
       expect(await page.getByRole('tab', { name: 'Trajectory', exact: true }).count()).toBe(1);
@@ -93,6 +94,7 @@ it.each(['pass', 'needs-changes', 'unable-to-judge', 'invalid'])('shows review o
       await page.getByRole('tab', { name: '代理', exact: true }).click();
       const translated = page.getByRole('region', { name: '代理', exact: true });
       await expect.poll(() => translated.innerText()).toContain('全新上下文');
+      await translated.getByRole('button', { name: '显示捕获详情', exact: true }).first().click();
       expect(await translated.innerText()).toContain(settings.instructions);
       expect(await translated.innerText()).toContain(outcome === 'pass' ? '周期已显式完成' : '周期未完成');
       expect(await translated.getByRole('region', { name: '审查结论', exact: true }).innerText()).toContain(outcome === 'pass' ? '通过' : outcome === 'needs-changes' ? '需要修改' : outcome === 'unable-to-judge' ? '无法判断' : '没有经过验证的审查结论');

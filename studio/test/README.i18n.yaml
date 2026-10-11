@@ -3,5 +3,5 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write studio/test/README.md
 /studio-browser-acceptance:
-  en: 80b8c5238e52d5ff
-  zh: d8e086b7b544a31d
+  en: 2616aada242b8c30
+  zh: 20e4b2348d7c75b7

@@ -223,7 +223,7 @@ it('offers only managed planning capabilities and rejects initial work until rol
       expect(JSON.stringify(status)).toContain('[]')
       for (const arguments_ of [
         { action: 'initial', role: 'reviewer', prompt: 'x' },
-        { action: 'initial', role: 'implementer', prompt: 'x', context: 'fork' },
+        { action: 'initial', role: 'implementer', prompt: 'x', context: 'copy' },
         { action: 'initial', role: 'implementer', prompt: 'x', provider: 'arbitrary' },
         { action: 'initial', role: 'implementer', prompt: 'x', cycleId: 'invented' },
         { action: 'initial', role: 'implementer', prompt: 'x', tools: ['bash'] },

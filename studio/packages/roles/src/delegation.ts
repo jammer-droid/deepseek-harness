@@ -5,6 +5,7 @@ import type { Agent } from '@deepseek-ai/dsh-agent';
 import type {} from '@deepseek-ai/dsh-agent-preset-registry';
 import { defineTool, type ToolExecution } from '@deepseek-ai/dsh-tools';
 import type {} from '@deepseek-ai/dsh-subagent';
+import type {} from '@deepseek-ai/dsh-session-query';
 import type { Domain } from '@deepseek-ai/dsh-storage-domain';
 import { SessionId, type TurnEndReason } from '@deepseek-ai/dsh-session';
 import { ReasoningEffortId, type MessageId, type ToolCallId } from '@deepseek-ai/dsh-llm';
@@ -20,7 +21,7 @@ const REVIEW_TOOLS = new Set(['read', 'glob', 'grep', 'structured_output']);
 declare module '@deepseek-ai/cordis' { interface Context { studioDelegation: StudioDelegation } }
 /** Owns admission and restricts only explicitly managed agents. */
 export class StudioDelegation extends Service {
-  static inject = ['studioRoles', 'tools', 'agentPresets', 'storageDomain', 'subagents'];
+  static inject = ['studioRoles', 'tools', 'agentPresets', 'storageDomain', 'subagents', 'sessionQuery'];
   private readonly admitted = new WeakMap<Agent, 'orchestrator' | 'implementer' | 'reviewer'>();
   private readonly reservations = new Map<SessionId, DelegationRecord>();
   private readonly owners = new Map<CycleId, Agent>();
@@ -94,7 +95,7 @@ export class StudioDelegation extends Service {
       operation.claims.set(message.id, turn);
       this.scheduleFollowup(agent.id);
     });
-    ctx.on('agent/created', ({ agent, source }) => {
+    ctx.on('agent/created', async ({ agent, source }) => {
       if (ctx.agentPresets.composedPreset(agent.ctx) !== MANAGED_PRESET) return;
       this.live.set(agent.id, agent);
       agent.ctx.effect(() => () => { if (this.live.get(agent.id) === agent) this.live.delete(agent.id); });
@@ -106,6 +107,7 @@ export class StudioDelegation extends Service {
       const names = ctx.tools.schemas(agent).map(tool => tool.name).filter(name => name !== 'structured_output' && capabilities.has(name));
       agent.ctx.effect(() => agent.ctx.tools.restrict({ allow: names }));
       if (child) {
+        if (source === 'startup') await domain.table('children').update(agent.id, row => ({ ...row, inheritedEventCount: agent.session.inheritedEventCount }));
         this.admitted.set(agent, reservation.role);
         if (reservation.role === 'reviewer' && this.followups.has(agent.id)) this.installCapture(agent);
         agent.ctx.on('agent/request', async (_payload, next) => {
@@ -134,13 +136,14 @@ export class StudioDelegation extends Service {
   }
   /** Start a fresh child only after its detached role reservation is durable.
    * @param agent Current managed orchestrator.
-   * @param prompt Task input; no conversation fork.
+   * @param prompt Additional task input, separate from any inherited history.
    * @param signal Caller cancellation before publication.
+   * @param context Initial context selection; fork inherits completed parent turns only.
    * @returns Durable accepted identifiers; the child continues independently.
    */
-  async initial(agent: Agent, prompt: string, signal: AbortSignal): Promise<string> {
+  async initial(agent: Agent, prompt: string, signal: AbortSignal, context: 'fresh' | 'fork' = 'fresh'): Promise<string> {
     this.shutdown.signal.throwIfAborted();
-    const admission = this.admit(agent, prompt, AbortSignal.any([signal, this.shutdown.signal]));
+    const admission = this.admit(agent, prompt, AbortSignal.any([signal, this.shutdown.signal]), undefined, context);
     this.admissions.add(admission);
     try { return await admission; } finally { this.admissions.delete(admission); }
   }
@@ -149,11 +152,12 @@ export class StudioDelegation extends Service {
    * @param cycleId Previously issued cycle identity.
    * @param evidence Explicit review input, omitted only for completion.
    * @param signal Caller cancellation before admission.
+   * @param context First reviewer context; forbidden for subsequent reviews.
    * @returns Recorded admission or completion receipt.
    */
-  async reviewCycle(agent: Agent, cycleId: CycleId, evidence: ReviewEvidence | undefined, signal: AbortSignal): Promise<string> {
+  async reviewCycle(agent: Agent, cycleId: CycleId, evidence: ReviewEvidence | undefined, signal: AbortSignal, context?: 'fresh' | 'fork'): Promise<string> {
     this.shutdown.signal.throwIfAborted();
-    const admission = this.advance(agent, cycleId, evidence, AbortSignal.any([signal, this.shutdown.signal]));
+    const admission = this.advance(agent, cycleId, evidence, AbortSignal.any([signal, this.shutdown.signal]), context);
     this.admissions.add(admission);
     try { return await admission; } finally { this.admissions.delete(admission); }
   }
@@ -290,7 +294,7 @@ export class StudioDelegation extends Service {
     }).finally(() => this.settlements.delete(settlement));
     this.settlements.add(settlement);
   }
-  private async advance(agent: Agent, cycleId: CycleId, evidence: ReviewEvidence | undefined, signal: AbortSignal): Promise<string> {
+  private async advance(agent: Agent, cycleId: CycleId, evidence: ReviewEvidence | undefined, signal: AbortSignal, context?: 'fresh' | 'fork'): Promise<string> {
     if (this.admitted.get(agent) !== 'orchestrator') throw new Error('studio-managed-recovery-required');
     if (this.uncertain.has(agent)) throw new Error('studio-admission-unknown');
     if (this.pending.has(agent)) throw new Error('studio-admission-pending');
@@ -302,10 +306,11 @@ export class StudioDelegation extends Service {
     if (evidence !== undefined) {
       if (implementer.cycleCompletedAt !== undefined) throw new Error('studio-review-already-requested');
       if (reviewer) {
+        if (context !== undefined) throw new Error('studio-context-creation-only');
         if (implementer.cyclePhase !== 'review-ready' || implementer.reworkCount === 0) throw new Error('studio-review-already-requested');
         return this.sendReview(agent, implementer, reviewer, evidence, signal);
       }
-      return this.admit(agent, JSON.stringify({ requirementsAndEvidence: evidence, implementerOutput: implementer.output }), signal, implementer.cycleId);
+      return this.admit(agent, JSON.stringify({ requirementsAndEvidence: evidence, implementerOutput: implementer.output }), signal, implementer.cycleId, context);
     }
     if (implementer.reworkCap !== undefined && implementer.cycleCompletedAt === undefined && (implementer.cyclePhase !== 'judged' || implementer.cycleOperation !== reviewer?.operationId)) throw new Error('studio-current-review-required');
     if (!reviewer || reviewer.judgment?.judgment !== 'pass' || reviewer.judgment.additionalVerification.length > 0) throw new Error('studio-review-pass-required');
@@ -320,7 +325,7 @@ export class StudioDelegation extends Service {
       return JSON.stringify({ cycleId, state: 'completed' });
     } finally { this.pending.delete(agent); }
   }
-  private async admit(agent: Agent, prompt: string, signal: AbortSignal, cycleId?: CycleId): Promise<string> {
+  private async admit(agent: Agent, prompt: string, signal: AbortSignal, cycleId?: CycleId, context: 'fresh' | 'fork' = 'fresh'): Promise<string> {
     if (this.admitted.get(agent) !== 'orchestrator') throw new Error('studio-managed-recovery-required');
     if (this.uncertain.has(agent)) throw new Error('studio-admission-unknown');
     if (this.pending.has(agent)) throw new Error('studio-admission-pending');
@@ -330,7 +335,7 @@ export class StudioDelegation extends Service {
     this.pending.add(agent);
     const record: DelegationRecord = {
       cycleId: cycleId ?? brandString<CycleId>(randomUUID()), operationId: brandString<OperationId>(randomUUID()),
-      parentId: agent.id, childId: SessionId(randomUUID()), role, context: 'fresh',
+      parentId: agent.id, childId: SessionId(randomUUID()), role, context,
       snapshotId: captured.snapshotId, settings: captured.settings, state: 'reserved', prompt, createdAt: Date.now(),
       messageId: null, diagnostic: null, output: null, observed: null, reworkCount: 0,
       ...(cycleId === undefined ? { reworkCap: this.reworkCap, cyclePhase: 'implementation' as const } : {}),
@@ -339,6 +344,18 @@ export class StudioDelegation extends Service {
     const table = domain.table('children');
     const implementer = role === 'reviewer' ? [...table.entries()].map(([, row]) => row).find(row => row.cycleId === cycleId && row.role === 'implementer') : undefined;
     try {
+      if (context === 'fork') {
+        using observation = await this.ctx.sessionQuery.observeSession(agent.id, { signal, projectionMode: 'none' });
+        const events = observation.events;
+        const completed = events.findLastIndex(event => event.type === 'turn/end');
+        const evidence = events.slice(completed + 1).flatMap(event => {
+          const content = event.type === 'user/message' ? event.data.content : event.type === 'assistant/message' || event.type === 'tool/result' ? event.data.message.content : undefined;
+          const text = content?.filter(block => block.type === 'text').map(block => block.text);
+          return text?.length ? [{ seq: event.seq, type: event.type, text }] : [];
+        });
+        record.inputCapturedThroughSeq = observation.cursor;
+        record.prompt = JSON.stringify({ additionalTask: prompt, parentEvidence: { capturedThroughSeq: observation.cursor, events: evidence } });
+      }
       if (implementer?.reworkCap !== undefined) await table.update(implementer.childId, row => {
         if (row.cyclePhase !== 'review-ready') throw new Error('studio-cycle-not-ready');
         return { ...row, cyclePhase: 'review', cycleOperation: record.operationId };
@@ -347,8 +364,8 @@ export class StudioDelegation extends Service {
       if (role === 'implementer') this.owners.set(record.cycleId, agent);
       this.reservations.set(record.childId, record);
       const activation = await this.ctx.subagents.startActivation({
-        provider: 'spawn', label: `Studio ${role}`, childId: record.childId, delivery: 'caller', signal,
-        request: { ...(role === 'reviewer' ? { outputSchema: reviewOutputSchema } : {}), parent: agent, prompt: [{ type: 'text', text: prompt }], persona: captured.settings.instructions,
+        provider: context === 'fork' ? 'fork' : 'spawn', label: `Studio ${role}`, childId: record.childId, delivery: 'caller', signal,
+        request: { ...(role === 'reviewer' ? { outputSchema: reviewOutputSchema } : {}), parent: agent, prompt: [{ type: 'text', text: record.prompt }], persona: captured.settings.instructions,
           agentOptions: { provider: captured.settings.provider, model: captured.settings.model,
             ...(captured.settings.reasoningEffort === undefined ? {} : { reasoningEffort: ReasoningEffortId(captured.settings.reasoningEffort) }) },
         },

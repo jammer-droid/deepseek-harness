@@ -1,15 +1,18 @@
 /** Read-only Agents view. Cycle guidance uses the implementer record and current review operation; absent legacy policy stays unknown. Loading and navigation never admit child work. */
 import React from 'react';
+import type { ConnectionHandle } from '@deepseek-ai/dsh-client-connection/client';
 import type { Context } from '@deepseek-ai/cordis';
 import type { SessionId } from '@deepseek-ai/dsh-session/types';
 import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots';
 import type { ConvViewProps } from '@deepseek-ai/dsh-client-ui-conversation/client';
 import type {} from '@deepseek-ai/dsh-client-ui-workspace/client';
 import type { DelegationRecord } from '@local/dsh-studio-roles/types';
+import { ContextHistory, type HistoryClient } from './context-history.tsx';
 import { agentsLocales } from './agents-locales.ts';
 const NS = 'studio.agents';
 interface Injected {
   selectedId: SessionId;
+  historyClient: HistoryClient;
   load: () => Promise<DelegationRecord[]>;
   open: (target: SessionId | import('@deepseek-ai/dsh-subagent/client').SubagentAddress) => void;
 }
@@ -36,7 +39,24 @@ function CycleStatus({ row, rows, t }: { row: DelegationRecord; rows: Delegation
     </dl>
   </section>;
 }
-function AgentsView({ selectedId, load, open, t }: ConvViewProps & Injected & PropsLocale<'studio.agents'>) {
+function CapturedDetails({ row, t }: { row: DelegationRecord } & PropsLocale<'studio.agents'>) {
+  const [expanded, setExpanded] = React.useState(false);
+  return <div><button aria-expanded={expanded} onClick={() => setExpanded(!expanded)}>{t(expanded ? 'capturedHide' : 'capturedShow')}</button>
+    {expanded && <>
+      <p>{t('capturedSettings')}</p>
+      <dl>
+        <dt>{t('cycle')}</dt><dd>{row.cycleId}</dd><dt>{t('operation')}</dt><dd>{row.operationId}</dd>
+        <dt>{t('snapshot')}</dt><dd>{row.snapshotId}</dd>
+        <dt>{t('requested')}</dt><dd>{row.settings.provider} / {row.settings.model} / {row.settings.reasoningEffort ?? t('defaultEffort')}</dd>
+        <dt>{t('observed')}</dt><dd>{row.observed ? `${row.observed.provider} / ${row.observed.model} / ${row.observed.reasoningEffort ?? t('defaultEffort')}` : t('unobserved')}</dd>
+        <dt>{t('instructions')}</dt><dd><pre>{row.settings.instructions}</pre></dd>
+        <dt>{t('task')}</dt><dd><pre>{row.prompt}</pre></dd>
+      </dl>
+      {row.output && <pre>{row.output}</pre>}
+    </>}
+  </div>;
+}
+function AgentsView({ selectedId, load, open, historyClient, t }: ConvViewProps & Injected & PropsLocale<'studio.agents'>) {
   const [loaded, setLoaded] = React.useState<{ id: SessionId; rows: DelegationRecord[] }>();
   const rows = loaded?.id === selectedId ? loaded.rows : [];
   const [failed, setFailed] = React.useState<SessionId>();
@@ -52,7 +72,7 @@ function AgentsView({ selectedId, load, open, t }: ConvViewProps & Injected & Pr
   return <section aria-label={t('title')}>
     <p>{t('shared')}</p><button onClick={reload}>{t('reload')}</button>
     {failed === selectedId ? <p role="alert">{t('unavailable')}</p> : loading || loaded?.id !== selectedId ? <p role="status">{t('loading')}</p> : rows.length === 0 ? <p>{t('empty')}</p> : rows.map(row => <article key={row.childId}>
-      <h2>{t(row.role)}</h2><p>{t('fresh')}</p>
+      <h2>{t(row.role)}</h2><p>{t(row.context)}</p><p>{row.settings.provider} / {row.settings.model}</p>
       <dl><dt>{t('activation')}</dt><dd>{t(row.state)}</dd></dl>
       <CycleStatus row={row} rows={rows} t={t} />
       {row.role === 'implementer' && <p>{t(row.cycleCompletedAt === undefined ? 'cycleOpen' : 'cycleComplete')}</p>}
@@ -63,16 +83,9 @@ function AgentsView({ selectedId, load, open, t }: ConvViewProps & Injected & Pr
         </>}
       </section>}
       <button onClick={() => open(row.parentId)}>{t('parent')}</button> <button onClick={() => open({ parentSessionId: row.parentId, childSessionId: row.childId, mode: 'continuable' })}>{t(row.role === 'reviewer' ? 'reviewChild' : 'child')}</button>
-      <dl>
-        <dt>{t('cycle')}</dt><dd>{row.cycleId}</dd><dt>{t('operation')}</dt><dd>{row.operationId}</dd>
-        <dt>{t('snapshot')}</dt><dd>{row.snapshotId}</dd>
-        <dt>{t('requested')}</dt><dd>{row.settings.provider} / {row.settings.model} / {row.settings.reasoningEffort ?? t('defaultEffort')}</dd>
-        <dt>{t('observed')}</dt><dd>{row.observed ? `${row.observed.provider} / ${row.observed.model} / ${row.observed.reasoningEffort ?? t('defaultEffort')}` : t('unobserved')}</dd>
-        <dt>{t('instructions')}</dt><dd><pre>{row.settings.instructions}</pre></dd>
-        <dt>{t('task')}</dt><dd><pre>{row.prompt}</pre></dd>
-      </dl>
+      <CapturedDetails row={row} t={t} />
+      <ContextHistory client={historyClient} row={row} t={t} />
       {row.diagnostic && <p role="alert">{row.diagnostic === 'studio-review-invalid-result' ? t('invalidReview') : row.diagnostic}</p>}
-      {row.output && <pre>{row.output}</pre>}
     </article>)}
   </section>;
 }
@@ -82,10 +95,11 @@ function AgentsView({ selectedId, load, open, t }: ConvViewProps & Injected & Pr
 export function registerAgentsView(ctx: Context): void {
   ctx.effect(() => ctx.locale.register(NS, agentsLocales));
   const t = ctx.locale.bind(NS);
+  const historyClient: HistoryClient = { sessions: ctx.sessions, connection: ctx.get('connection') as ConnectionHandle };
   ctx.slots.inject('conversation.view', () => ctx.slots.register({
     name: 'conversation.view', id: 'studio-agents', order: 20, locale: NS, label: () => t('title'),
     inject: (selectedId: SessionId): Injected => ({
-      selectedId,
+      selectedId, historyClient,
       load: async () => {
         const response = await ctx.remote.studioRoles.agents(selectedId);
         if (!response.ok) throw response.error;

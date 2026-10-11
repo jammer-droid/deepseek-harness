@@ -22,7 +22,7 @@ export async function apply(ctx: Context): Promise<void> {
   const unmount = await ctx.remote.$mount(TYPERT_REMOTE);
   ctx.effect(() => unmount);
   ctx.inject(['remote.studioRoles'], ctx => {
-    ctx.inject(['uiWorkspace'], registerAgentsView);
+    ctx.inject(['uiWorkspace', 'sessions', 'connection'], registerAgentsView);
     const store = createRoleStore({
       async describe() {
         const response = await ctx.remote.studioRoles.describe();

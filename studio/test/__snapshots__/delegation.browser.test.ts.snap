@@ -12,7 +12,7 @@ exports[`logs a model-origin delegation receipt in the parent transcript > logge
 
 exports[`logs a model-origin delegation receipt in the parent transcript > model-visible delegation schema 1`] = `
 {
-  "description": "Coordinate Studio cycles in the shared workspace. initial requires role implementer and prompt and creates a fresh cycle. status accepts only action and reads durable facts without waking children. review requires an owned settled cycleId and evidence: requirements, summary, changedFiles, validations with command/result, failures, and unrun checks; it creates one fresh read/search-only reviewer using currently applied reviewer settings. Read the validated judgment and additionalVerification through status. Implementation completion or review pass does not complete the cycle. complete requires cycleId, a validated pass, and no pending additional verification. rework requires cycleId and prompt and wakes the existing implementer with its creation settings; every wake including verification-only uses one frozen cycle allowance (default two). After rework, review wakes the same reviewer with fresh evidence and a new judgment. Existing children never change context or settings. Cap exhaustion, active operations, or unknown acceptance stop the cycle: report the reason, do not retry blindly or create a replacement cycle. Model/effort/tool/identity/cap overrides are unsupported.",
+  "description": "Coordinate Studio cycles in the shared workspace. initial requires role implementer and prompt and creates a cycle. initial and the first review accept context fresh (default) or fork; fork inherits only completed parent turns and logs current-turn evidence separately. No cache reuse is guaranteed. status accepts only action and reads durable facts without waking children. review requires an owned settled cycleId and evidence: requirements, summary, changedFiles, validations with command/result, failures, and unrun checks; it creates one read/search-only reviewer using currently applied reviewer settings. Read the validated judgment and additionalVerification through status. Implementation completion or review pass does not complete the cycle. complete requires cycleId, a validated pass, and no pending additional verification. rework requires cycleId and prompt and wakes the existing implementer with its creation settings; every wake including verification-only uses one frozen cycle allowance (default two). After rework, review wakes the same reviewer with fresh evidence and a new judgment. Existing children never change context or settings. Cap exhaustion, active operations, or unknown acceptance stop the cycle: report the reason, do not retry blindly or create a replacement cycle. Model/effort/tool/identity/cap overrides are unsupported.",
   "name": "studio_delegate",
   "parameters": {
     "properties": {
@@ -29,6 +29,7 @@ exports[`logs a model-origin delegation receipt in the parent transcript > model
       "context": {
         "enum": [
           "fresh",
+          "fork",
         ],
         "type": "string",
       },

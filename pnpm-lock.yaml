@@ -15482,6 +15482,24 @@ importers:
 
   studio:
     devDependencies:
+      '@deepseek-ai/dsh-compaction':
+        specifier: workspace:*
+        version: link:../packages/compaction/compaction
+      '@deepseek-ai/dsh-client-connection':
+        specifier: workspace:*
+        version: link:../packages/client/connection
+      '@deepseek-ai/dsh-api-session-controller':
+        specifier: workspace:*
+        version: link:../packages/api/session-controller
+      '@deepseek-ai/dsh-client-ui-conversation':
+        specifier: workspace:*
+        version: link:../packages/client/ui-conversation
+      '@deepseek-ai/dsh-subagent':
+        specifier: workspace:*
+        version: link:../packages/subagent/subagent
+      '@deepseek-ai/dsh-session':
+        specifier: workspace:*
+        version: link:../packages/core/session
       '@deepseek-ai/cordis':
         specifier: workspace:~
         version: link:../vendor/cordis
@@ -15607,6 +15625,9 @@ importers:
         specifier: ^4.4.3
         version: 4.4.3
     devDependencies:
+      '@deepseek-ai/dsh-session-query':
+        specifier: workspace:*
+        version: link:../../../packages/session-query/session-query
       '@deepseek-ai/cordis':
         specifier: workspace:~
         version: link:../../../vendor/cordis

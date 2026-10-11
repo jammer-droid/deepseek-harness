@@ -1,0 +1,10 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`logs first-turn evidence separately and excludes inherited catalogs from reviewer ownership > logged additional task and visible current-turn evidence 1`] = `
+[
+  {
+    "text": "{"additionalTask":"Implement the model delegated task.","parentEvidence":{"capturedThroughSeq":14,"events":[{"seq":8,"type":"user/message","text":["Current unfinished parent evidence."]},{"seq":9,"type":"user/message","text":["Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\\n\\nCurrent working directory: \\"<workspace>\\".\\n\\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \\"<workspace>\\". Some platform temporary areas may also be writable.\\n\\nApproval policy: ask. Operations that require approval may ask through the configured answerers; without an available answerer, the request fails closed."]},{"seq":13,"type":"assistant/message","text":["Visible current-turn evidence."]}]}}",
+    "type": "text",
+  },
+]
+`;
