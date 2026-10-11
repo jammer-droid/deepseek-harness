@@ -13,7 +13,7 @@ paths.playwright = [resolve(runtime, 'apps/web/node_modules/playwright')];
 const config = ts.parseJsonConfigFileContent({
   compilerOptions: { ...base.compilerOptions, composite: false, incremental: false, noEmit: true, rewriteRelativeImportExtensions: false, paths },
   files: ['test/delegation.browser.test.ts', 'test/agents-view.browser.test.ts', 'test/host-augments.ts'],
-  include: ['test/fork-context.browser.test.ts', 'test/context-history*.browser.test.ts', 'test/rework-*.browser.test.ts', 'test/agents-cycle-ui.browser.test.ts', 'test/predecessor-reopen.browser.test.ts', 'test/review-cycle.browser.test.ts'],
+  include: ['test/blocker-conflict.browser.test.ts', 'test/fork-context.browser.test.ts', 'test/context-history*.browser.test.ts', 'test/rework-*.browser.test.ts', 'test/agents-cycle-ui.browser.test.ts', 'test/predecessor-reopen.browser.test.ts', 'test/review-cycle.browser.test.ts'],
   references: host.references.map(ref => ({ path: resolve(runtime, ref.path) })),
 }, ts.sys, studio);
 const program = ts.createProgram({ rootNames: config.fileNames, options: config.options, projectReferences: config.projectReferences });

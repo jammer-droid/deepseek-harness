@@ -29,3 +29,5 @@ Fork 验收通过真实激活提供者验证两个角色：已完成父轮次前
 验证前代兼容性时，在运行时变量之外设置 `DSH_TEST_PREDECESSOR_STUDIO=/path/to/built-ticket9/studio`，并运行 `studio/test/predecessor-reopen.browser.test.ts`；未设置时跳过该测试。真实前代 Loader 写入旁路存储后，当前插件重新打开同一后端并检查标识和设置不变；这是插件及存储域重新打开，不是进程重启或恢复执行权限。应使用经过核验的 ticket9 构建产物，不能使用解析到当前 Studio 的路径。
 
 使用 `DSH_TEST_RUNTIME_ROOT=/path/to/runtime-checkout node studio/test/typecheck.mjs` 严格检查集成测试。它使用所选运行时的官方 Host 引用和服务声明，但检查当前工作树的 Studio 源码与测试，不写出含机器路径的配置。产品 Host/Client 产物检查仍属于 `build`。
+
+隔离的输入阻止器 fixture 在浏览器中使用公开 Slot 和阻止器存储。它验证输入与发送禁用及普通会话独立性，再展示相同原因写入会丢失所有权，而恢复旧值可能覆盖其他写入者。这记录的是 API 限制；Studio 不提供该不安全输入阻止器。
