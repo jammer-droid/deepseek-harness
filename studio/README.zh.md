@@ -70,4 +70,4 @@ Studio 仅拥有实现者和审查者两个角色。指令、提供者和模型�
 
 先运行 `pnpm --dir studio run build`，再运行 `pnpm --dir studio run pack:bundle`。打包将 manifest 暂存于 `dist/bundle`，不会修改工作区元数据：源码依赖使用 `workspace:*`；暂存的原生依赖使用各自工作区 manifest 中的精确版本，Studio 组件则使用本地 tarball。bundle 引用组件 tarball 的绝对路径：需保留 `dist`，移动检出目录后重新打包。此格式用于本地安装，不用于公开分发。
 
-使用独立的开发 profile 和匹配的 DSH 运行时。未经兼容性验证，不得用 fork 的 alpha 版本产物替换旧版 Desktop 安装。Studio watch 和官方 Web watcher 都不会自动更新已安装的 tarball。集成测试使用隔离且版本匹配的 Web 运行时，不验证现有安装的 GUI 或其他运行时版本的兼容性。
+使用独立的开发 profile 和匹配的 DSH 运行时。`npm --prefix studio run build:desktop` 在 `dist/desktop-0.2.0-rc.2` 下构建独立的 Desktop `0.2.0-rc.2` bundle；它在临时工作区中解析已发布的依赖，检查两侧编译程序，并选择该运行时的公开子 Agent API。首次审查使用当前操作专用的 `studio_review_submit` 工具，原生子 Agent 完成通知可能唤醒父 Agent。默认构建面向工作区运行时。两种构建都不会安装到现有 profile；watch 不会更新已安装的 tarball。安装步骤见[韩文开发指南](development.ko.md)，隔离兼容性探针见[测试说明](test/README.zh.md)。

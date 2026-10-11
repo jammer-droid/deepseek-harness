@@ -4,7 +4,8 @@ import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 const root = fileURLToPath(new URL('.', import.meta.url));
-const dist = path.join(root, 'dist');
+const dist = path.resolve(root, process.env.STUDIO_PACK_DIST ?? 'dist');
+const runtimeVersion = process.env.STUDIO_RUNTIME_VERSION;
 const staging = path.join(dist, 'bundle');
 await mkdir(staging, { recursive: true });
 const dependencies = {};
@@ -20,8 +21,8 @@ for (const file of globSync('packages/*/*/package.json', { cwd: path.resolve(roo
 }
 for (const [name, spec] of Object.entries(manifest.dependencies)) {
   if (name in dependencies) continue;
-  if (spec !== 'workspace:*' || !versions.has(name)) throw new Error(`Unresolved bundle dependency: ${name}`);
-  dependencies[name] = versions.get(name);
+  if (spec !== 'workspace:*' || (!runtimeVersion && !versions.has(name))) throw new Error(`Unresolved bundle dependency: ${name}`);
+  dependencies[name] = runtimeVersion ?? versions.get(name);
 }
 await writeFile(path.join(staging, 'package.json'), JSON.stringify({ ...manifest, dependencies }, null, 2) + '\n');
 await copyFile(path.join(root, 'packages/bundle/cordis.patch.yml'), path.join(staging, 'cordis.patch.yml'));

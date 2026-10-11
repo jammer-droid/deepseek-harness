@@ -1,0 +1,49 @@
+/** Build and package against Desktop 0.2.0-rc.2's published declarations. */
+import { cp, mkdir, mkdtemp, readFile, writeFile, symlink } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { execFileSync } from 'node:child_process';
+
+const root = fileURLToPath(new URL('.', import.meta.url));
+const version = '0.2.0-rc.2';
+const workspace = process.env.STUDIO_DESKTOP_BUILD_ROOT ?? await mkdtemp(join(tmpdir(), 'studio-desktop-build-'));
+const stage = join(workspace, 'studio');
+const dist = join(root, 'dist', `desktop-${version}`);
+const dependencies = {};
+for (const file of ['package.json', 'packages/roles/package.json']) {
+  const manifest = JSON.parse(await readFile(join(root, file), 'utf8'));
+  for (const [name, spec] of Object.entries(manifest.devDependencies)) {
+    if (name.startsWith('@local/')) continue;
+    dependencies[name] = name.startsWith('@deepseek-ai/dsh') ? version : name === '@deepseek-ai/cordis' ? '4.0.4' : spec;
+  }
+}
+await mkdir(workspace, { recursive: true });
+await writeFile(join(workspace, 'package.json'), JSON.stringify({ private: true, type: 'module', dependencies }, null, 2) + '\n');
+execFileSync('npm', ['install', '--ignore-scripts', '--no-audit', '--no-fund'], { cwd: workspace, stdio: 'inherit' });
+for (const entry of ['src', 'packages', 'build.mjs', 'generate-roles.mjs', 'pack.mjs', 'tsconfig.host.json', 'tsconfig.client.json', 'tsconfig.typert.host.json']) {
+  await cp(join(root, entry), join(stage, entry), { recursive: true, filter: source => !['node_modules', 'dist'].includes(source.split('/').at(-1)) });
+}
+for (const name of ['tsconfig.base.json', 'tsconfig.base.client.json']) await cp(join(root, '..', name), join(workspace, name));
+await cp(join(root, '../scripts/types'), join(workspace, 'scripts/types'), { recursive: true });
+await writeFile(join(stage, 'package.json'), JSON.stringify({ private: true, type: 'module' }) + '\n');
+await cp(join(root, 'compat/desktop-0.2.0/child-runtime.ts.template'), join(stage, 'packages/roles/src/child-runtime.ts'));
+for (const part of ['roles', 'shell', 'demo', 'bundle']) {
+  const path = join(stage, 'packages', part, 'package.json');
+  const manifest = JSON.parse(await readFile(path, 'utf8'));
+  for (const name of Object.keys(manifest.peerDependencies ?? {})) {
+    if (name.startsWith('@deepseek-ai/dsh')) manifest.peerDependencies[name] = version;
+    if (name === '@deepseek-ai/cordis') manifest.peerDependencies[name] = '4.0.4';
+  }
+  await writeFile(path, JSON.stringify(manifest, null, 2) + '\n');
+}
+const local = join(workspace, 'node_modules/@local/dsh-studio-roles');
+await mkdir(dirname(local), { recursive: true });
+try { await symlink(join(stage, 'packages/roles'), local); }
+catch (error) { if (error.code !== 'EEXIST') throw error; }
+const run = (file, args = []) => execFileSync(process.execPath, [file, ...args], { cwd: stage, stdio: 'inherit' });
+run(join(stage, 'generate-roles.mjs'));
+for (const config of ['tsconfig.host.json', 'packages/roles/tsconfig.host.json', 'tsconfig.client.json']) run(join(workspace, 'node_modules/typescript/bin/tsc'), ['-p', config]);
+run(join(stage, 'build.mjs'));
+execFileSync(process.execPath, [join(stage, 'pack.mjs')], { cwd: stage, stdio: 'inherit', env: { ...process.env, STUDIO_RUNTIME_VERSION: version, STUDIO_PACK_DIST: dist } });
+console.log(`Desktop ${version} build: ${dist}\nBuild workspace: ${workspace}`);

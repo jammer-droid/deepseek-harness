@@ -56,14 +56,65 @@ DSH_HOME="$PWD/studio/.dsh-home" pnpm dsh web
 
 pack은 `dist/bundle`에 배포 manifest를 생성하며 workspace manifest를 덮어쓰지 않는다. bundle은 같은 머신의 component tarball 절대 경로를 참조한다. dist를 보존하고 checkout 이동 시 다시 pack한다. 공개 npm 배포용 형식은 아니다.
 
+## Desktop 실행
+
+### 작업공간 버전으로 Studio 실행
+
+현재 Studio bundle의 대상은 DSH `0.2.1-alpha.2`다. 레포 루트에서 Studio를 패키징한 뒤 같은 작업공간의 개발용 Desktop을 실행한다. `dev:desktop`은 공식 런타임과 Desktop 산출물도 빌드한다.
+
+```sh
+pnpm --dir studio run build
+pnpm --dir studio run pack:bundle
+DSH_HOME="$PWD/apps/desktop/.desktop-build/development/home" pnpm run dev:desktop
+```
+
+개발용 설정·세션·플러그인은 위 `DSH_HOME`에 저장되고, 브라우저 데이터는 기본적으로 `apps/desktop/.desktop-build/development/electron-user-data`에 저장된다. 기존 설치 앱의 기본 저장소와 분리된다. 외부 모델을 사용하려면 개발용 Desktop에도 모델 자격을 설정한다.
+
+다른 터미널을 같은 레포 루트에서 열고, 동일한 `DSH_HOME`의 `desktop` 프로필에 Studio bundle을 설치한다.
+
+```sh
+DSH_HOME="$PWD/apps/desktop/.desktop-build/development/home" pnpm dsh plugin --profile desktop add "$PWD/studio/dist/local-dsh-studio-0.1.1.tgz"
+```
+
+설치 결과에서 재시작을 요구하면 개발용 Desktop을 종료한다(macOS에서는 창 닫기 대신 `⌘Q`). 이미 빌드된 산출물로 다시 실행할 때는 다음 명령을 사용한다.
+
+```sh
+DSH_HOME="$PWD/apps/desktop/.desktop-build/development/home" pnpm run start:desktop
+```
+
+Desktop의 **DSH Studio → Role settings**에서 구현자·리뷰어의 지침과 사용 가능한 모델을 입력하고 **Apply**한다. **Settings → Agent presets**에서 **Studio**를 새 작업 기본값으로 선택한 뒤 새 작업을 만든다. 설치된 tarball은 Studio 소스의 `watch` 결과를 자동으로 반영하지 않으므로 수정 후에는 재빌드·재패키징·재설치한다.
+
+이 Desktop 기동·설치 경로는 수동 검증 절차다. 실행하는 개발자가 시작 로그의 bundle 로딩, 역할 설정 Apply, Studio preset으로 만든 새 작업을 확인한다. 자동화된 격리 Web 검증을 Desktop 설치 검증으로 간주하지 않는다. 런처와 저장소 위치의 상세는 [Desktop 개발 문서](../apps/desktop/README.md#develop)를 따른다.
+
+### 기존 설치 앱 실행(macOS)
+
+```sh
+open "/Applications/DeepSeek Harness.app"
+```
+
+이 명령은 설치된 앱을 열며 작업공간 소스를 빌드하거나 설치하지 않는다. 이 머신의 설치본 `0.2.0-rc.2`에는 다음 전용 빌드를 사용한다.
+
+```sh
+npm --prefix studio run build:desktop
+```
+
+산출물은 `studio/dist/desktop-0.2.0-rc.2/local-dsh-studio-0.1.1.tgz`다. 빌드는 임시 작업공간에서 해당 버전의 공식 패키지와 타입을 설치하고 Host·Client를 검사한다. 현재 레포의 의존성 링크나 Desktop 프로필은 변경하지 않는다. 구버전의 첫 리뷰는 `studio_review_submit`으로 판정을 제출하며, 자식 완료 시 구버전의 기본 알림이 부모를 깨울 수 있다.
+
+설치된 `dsh --version`이 `0.2.0-rc.2`인지 확인한다. 기존 Desktop에 적용할 때는 앱을 종료한 뒤 아래 명령으로 설치하고 다시 연다. 사용자 지정 `DSH_HOME`으로 앱을 운영한다면 설치 명령에도 같은 값을 지정한다.
+
+```sh
+dsh plugin --profile desktop add "$PWD/studio/dist/desktop-0.2.0-rc.2/local-dsh-studio-0.1.1.tgz"
+open "/Applications/DeepSeek Harness.app"
+```
+
+bundle이 참조하는 component tarball도 같은 `dist/desktop-0.2.0-rc.2`에 있으므로 디렉터리 전체를 보존한다. 설치된 Desktop 런타임의 격리 Web 프로필에서 위임·리뷰·재작업·완료·종료와 Studio 설정 화면을 확인했다. 기존 사용자 Desktop 프로필에 설치한 뒤 네이티브 창에서도 Studio 역할 설정 화면의 로딩을 확인했다. 실제 모델 API 호출은 이 검증에 포함하지 않는다. 재현 명령은 [테스트 문서](test/README.md)에 있다. 보존된 이전 Studio 배포는 아래 [기존 Desktop 배포 분리](#기존-desktop-배포-분리)를 참조한다.
+
 ## 검증 범위
 
 공식 Host 빌드, 참조 Client 선언 빌드, Studio Host/Client strict 타입 검사, JS 빌드, 10개 회귀 테스트, tarball 패키징을 통과했다. 테스트는 Remote envelope, toggle 재조회, 중복 행 거부, 늦은 응답/해제, 타이머 정리, restart 안내 및 ModuleLoader factory 계약을 확인한다. 이 fork 버전의 실제 화면·버튼·재시작 복원은 아직 수동 확인이 필요하다.
 
-Git origin은 개인 fork, upstream은 DeepSeek 공식 저장소다. 개발 브랜치는 `studio/development`다.
+Git origin은 개인 fork, upstream은 DeepSeek 공식 저장소다. 현재 통합 브랜치는 `studio/role-delegation-integration`이다.
 
 ## 기존 Desktop 배포 분리
 
-DSH `0.2.0-rc.2` Desktop은 이 fork의 alpha 빌드 대신 기존 설치 payload를 보존한 wrapper `0.1.2`를 사용한다. 배포 위치는 `~/.dsh/artifacts/dsh-studio/desktop-0.2.0-rc.2/installed-0.1.1/release/`다. shell/demo의 JS와 manifest는 기존 설치본과 바이트 단위로 동일하며 profile patch도 유지했다. profile manifest/lock 및 설치된 wrapper의 기존 HEL Studio 경로 의존성은 제거했다.
-
-설치 결과는 `restart-required`다. 앱 재시작 후 로딩·화면은 아직 확인하지 않았다. 같은 artifact 루트의 `original-packages/`, `profile-backup/`, `legacy-hel-project/`에 복구 자료를 보존한다. 기존 HEL 프로젝트는 백업 위치로 이동했으며, 이 머신별 자료는 커밋하지 않는다. 별도 `dsh-session-cycle` 플러그인의 HEL 링크는 이번 Studio 이전 범위가 아니다.
+기존 shell/demo 전용 wrapper와 복구 자료는 `~/.dsh/artifacts/dsh-studio/desktop-0.2.0-rc.2/installed-0.1.1/`에 보존한다. `release/`, `original-packages/`, `profile-backup/`, `legacy-hel-project/`는 머신별 복구 자료이며 커밋하지 않는다. 현재 역할 위임 기능을 설치할 때는 위의 Desktop 전용 bundle을 사용한다. 별도 `dsh-session-cycle` 플러그인의 HEL 링크는 Studio 설치 범위가 아니다.

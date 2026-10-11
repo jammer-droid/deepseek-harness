@@ -1,5 +1,7 @@
 /** Managed Studio admission with durable-log verification before owner recovery. */
 import { randomUUID } from 'node:crypto';
+import { startChild, drainChildren, observeInitial } from './child-runtime.ts';
+import type { ChildReceipt } from './child-runtime-types.ts';
 import { Service, type Context } from '@deepseek-ai/cordis';
 import type { Agent } from '@deepseek-ai/dsh-agent';
 import type {} from '@deepseek-ai/dsh-agent-preset-registry';
@@ -35,7 +37,7 @@ export class StudioDelegation extends Service {
   private readonly uncertain = new WeakSet<Agent>();
   private readonly observed = new Map<SessionId, NonNullable<DelegationRecord['observed']>>();
   private readonly settlements = new Map<Promise<void>, SessionId>();
-  private readonly activations = new Set<import('@deepseek-ai/dsh-subagent').SubagentActivation>();
+  private readonly activations = new Set<NonNullable<ChildReceipt['completion']>>();
   private readonly failures = new Map<SessionId, string>();
   private readonly admissions = new Map<Promise<string>, Agent>();
   private readonly stops = new Map<CycleId, Promise<string>>();
@@ -53,7 +55,7 @@ export class StudioDelegation extends Service {
       await Promise.allSettled(this.admissions.keys());
       const disposed = await Promise.allSettled([
         ...[...this.activations].map(activation => activation.dispose()),
-        ...[...new Set(this.owners.values())].map(owner => ctx.subagents.drainChildren(owner, [...this.followups.values()].filter(operation => operation.record.parentId === owner.id).map(operation => operation.record.childId))),
+        ...[...new Set(this.owners.values())].map(owner => drainChildren(ctx, owner, [...this.followups.values()].filter(operation => operation.record.parentId === owner.id).map(operation => operation.record.childId))),
       ]);
       await Promise.allSettled(this.settlements.keys());
       const recorded = await Promise.allSettled([...this.followups.values()].map(operation => domain.table('children').update(operation.record.childId, row => ({ ...row, lastConfirmedState: row.lastConfirmedState ?? row.state, state: 'unknown', diagnostic: 'studio-shutdown-unsettled', ...(row.role === 'implementer' ? { cyclePhase: 'unknown' as const } : {}) }))));
@@ -207,7 +209,7 @@ export class StudioDelegation extends Service {
       await Promise.allSettled([...this.admissions].filter(([, owner]) => owner === agent).map(([admission]) => admission));
       const current = this.describe(agent.id).filter(row => row.cycleId === cycleId);
       const ids = current.map(row => row.childId);
-      await this.ctx.subagents.drainChildren(agent, ids);
+      await drainChildren(this.ctx, agent, ids);
       await Promise.allSettled([...this.settlements].filter(([, childId]) => ids.includes(childId)).map(([settlement]) => settlement));
       if (intentFailures.length === 1) throw intentFailures[0];
       if (intentFailures.length > 1) throw new AggregateError(intentFailures, 'studio-stop-intent-write-failed');
@@ -468,6 +470,7 @@ export class StudioDelegation extends Service {
     if (this.uncertain.has(agent)) throw new Error('studio-admission-unknown');
     if (this.pending.has(agent)) throw new Error('studio-admission-pending');
     const role = cycleId === undefined ? 'implementer' : 'reviewer';
+    if (observeInitial && role === 'reviewer') prompt = JSON.stringify({ evidence: prompt, instruction: 'Submit current judgment with studio_review_submit.' });
     const captured = this.ctx.studioRoles.capture(role);
     const domain = this.domain;
     this.pending.add(agent);
@@ -504,16 +507,25 @@ export class StudioDelegation extends Service {
       await table.put(record.childId, record);
       if (role === 'implementer') this.owners.set(record.cycleId, agent);
       this.reservations.set(record.childId, record);
-      const activation = await this.ctx.subagents.startActivation({
-        provider: context === 'fork' ? 'fork' : 'spawn', label: `Studio ${role}`, childId: record.childId, delivery: 'caller', signal,
+      if (observeInitial) this.followups.set(record.childId, { record, claims: new Map(), turns: new Map(), settling: false });
+      const receipt = await startChild(this.ctx, {
+        provider: context === 'fork' ? 'fork' : 'spawn', label: `Studio ${role}`, childId: record.childId, signal,
         request: { ...(role === 'reviewer' ? { outputSchema: reviewOutputSchema } : {}), parent: agent, prompt: [{ type: 'text', text: record.prompt }], persona: captured.settings.instructions,
           agentOptions: { provider: captured.settings.provider, model: captured.settings.model,
             ...(captured.settings.reasoningEffort === undefined ? {} : { reasoningEffort: ReasoningEffortId(captured.settings.reasoningEffort) }) },
         },
       });
+      const activation = receipt.completion;
+      if (!activation) {
+        try { await table.update(record.childId, row => ({ ...row, state: 'running', messageId: receipt.messageId })); }
+        catch (error) { await drainChildren(this.ctx, agent, [record.childId]); throw error; }
+        this.followups.get(record.childId)!.messageId = receipt.messageId;
+        this.scheduleFollowup(record.childId);
+        return JSON.stringify({ cycleId: record.cycleId, operationId: record.operationId, childId: record.childId, messageId: receipt.messageId, state: 'running' });
+      }
       this.activations.add(activation);
       const outcome = activation.result.then(result => ({ result }), error => ({ error }));
-      const receiptWrite = Promise.resolve().then(() => table.update(record.childId, row => ({ ...row, state: 'running', messageId: activation.messageId })));
+      const receiptWrite = Promise.resolve().then(() => table.update(record.childId, row => ({ ...row, state: 'running', messageId: receipt.messageId })));
       const settlement = outcome.then(async outcome => {
         await receiptWrite;
         if ('error' in outcome) throw outcome.error;
@@ -539,7 +551,7 @@ export class StudioDelegation extends Service {
       });
       this.settlements.set(settlement, record.childId);
       try { await receiptWrite; } catch (error) { await activation.dispose(); throw error; }
-      return JSON.stringify({ cycleId: record.cycleId, operationId: record.operationId, childId: record.childId, messageId: activation.messageId, state: 'running' });
+      return JSON.stringify({ cycleId: record.cycleId, operationId: record.operationId, childId: record.childId, messageId: receipt.messageId, state: 'running' });
     } catch (error) {
       // Retain uncertain admission; no automatic retry or fresh child allocation.
       if (implementer && table.get(implementer.childId)?.cycleOperation === record.operationId) {

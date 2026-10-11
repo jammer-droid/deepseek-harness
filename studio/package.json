@@ -5,7 +5,9 @@
   "scripts": {
     "typecheck": "node generate-roles.mjs && tsc -p tsconfig.host.json && tsc -p tsconfig.client.json",
     "build": "npm run typecheck && node build.mjs",
+    "build:desktop": "node build-desktop.mjs",
     "test": "npm run build && node --import tsx --test test/*.test.mjs",
+    "test:desktop": "node test/desktop/run.mjs",
     "test:browser": "vitest run --config test/vitest.browser.config.ts",
     "pack:bundle": "node pack.mjs",
     "prepare:types": "pnpm --dir .. run build:lib:host && pnpm --dir .. exec tsc -b packages/client/ui-workspace packages/client/ui-renderer packages/client/ui-sidebar packages/client/locale",
