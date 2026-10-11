@@ -1,4 +1,5 @@
 import { mkdir, writeFile, readFile, copyFile } from 'node:fs/promises';
+import { globSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
@@ -12,7 +13,17 @@ for (const part of ['shell', 'demo', 'roles']) {
   dependencies[`@local/dsh-studio-${part}`] = `file:${path.join(dist, JSON.parse(output)[0].filename)}`;
 }
 const manifest = JSON.parse(await readFile(path.join(root, 'packages/bundle/package.json'), 'utf8'));
-await writeFile(path.join(staging, 'package.json'), JSON.stringify({ ...manifest, dependencies: { ...manifest.dependencies, ...dependencies } }, null, 2) + '\n');
+const versions = new Map();
+for (const file of globSync('packages/*/*/package.json', { cwd: path.resolve(root, '..') })) {
+  const pkg = JSON.parse(await readFile(path.resolve(root, '..', file), 'utf8'));
+  versions.set(pkg.name, pkg.version);
+}
+for (const [name, spec] of Object.entries(manifest.dependencies)) {
+  if (name in dependencies) continue;
+  if (spec !== 'workspace:*' || !versions.has(name)) throw new Error(`Unresolved bundle dependency: ${name}`);
+  dependencies[name] = versions.get(name);
+}
+await writeFile(path.join(staging, 'package.json'), JSON.stringify({ ...manifest, dependencies }, null, 2) + '\n');
 await copyFile(path.join(root, 'packages/bundle/cordis.patch.yml'), path.join(staging, 'cordis.patch.yml'));
 const output = execFileSync('npm', ['pack', '--ignore-scripts', '--json', '--pack-destination', dist], { cwd: staging, encoding: 'utf8' });
 console.log(path.join(dist, JSON.parse(output)[0].filename));

@@ -14,6 +14,9 @@ test('packed bundle preserves native dependencies and overrides only Studio comp
   assert.deepEqual(Object.keys(packed.dependencies).sort(), Object.keys(original.dependencies).sort());
   for (const [name, value] of Object.entries(original.dependencies)) {
     if (name.startsWith('@local/dsh-studio-')) assert.match(packed.dependencies[name], /^file:.*\.tgz$/);
-    else assert.equal(packed.dependencies[name], value);
+    else {
+      assert.equal(value, 'workspace:*');
+      assert.equal(packed.dependencies[name], original.peerDependencies['@deepseek-ai/dsh']);
+    }
   }
 });

@@ -46,6 +46,6 @@ The conversation’s Agents tab sits beside Trajectory. It displays captured set
 
 ## Installation
 
-Run `pnpm --dir studio run build` followed by `pnpm --dir studio run pack:bundle`. Packaging stages its manifest under `dist/bundle` without changing workspace metadata. The bundle references absolute component tarball paths: preserve `dist` and repack after moving the checkout. This format is for local installation, not public distribution.
+Run `pnpm --dir studio run build` followed by `pnpm --dir studio run pack:bundle`. Packaging stages its manifest under `dist/bundle` without changing workspace metadata: source dependencies use `workspace:*`; staged native dependencies use exact versions from their workspace manifests, while Studio components use local tarballs. The bundle references absolute component tarball paths: preserve `dist` and repack after moving the checkout. This format is for local installation, not public distribution.
 
 Use a separate development profile and the matching DSH runtime. The fork's alpha-version artifacts must not replace an older Desktop installation without compatibility verification. Neither Studio watch nor the official Web watcher automatically updates an installed tarball. Integration tests use an isolated matching Web runtime; they do not validate an existing installed GUI or compatibility with another runtime version.

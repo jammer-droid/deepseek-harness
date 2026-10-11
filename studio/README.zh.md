@@ -46,6 +46,6 @@ Studio 仅拥有实现者和审查者两个角色。指令、提供者和模型�
 
 ## 安装
 
-先运行 `pnpm --dir studio run build`，再运行 `pnpm --dir studio run pack:bundle`。打包将 manifest 暂存于 `dist/bundle`，不会修改工作区元数据。bundle 引用组件 tarball 的绝对路径：需保留 `dist`，移动检出目录后重新打包。此格式用于本地安装，不用于公开分发。
+先运行 `pnpm --dir studio run build`，再运行 `pnpm --dir studio run pack:bundle`。打包将 manifest 暂存于 `dist/bundle`，不会修改工作区元数据：源码依赖使用 `workspace:*`；暂存的原生依赖使用各自工作区 manifest 中的精确版本，Studio 组件则使用本地 tarball。bundle 引用组件 tarball 的绝对路径：需保留 `dist`，移动检出目录后重新打包。此格式用于本地安装，不用于公开分发。
 
 使用独立的开发 profile 和匹配的 DSH 运行时。未经兼容性验证，不得用 fork 的 alpha 版本产物替换旧版 Desktop 安装。Studio watch 和官方 Web watcher 都不会自动更新已安装的 tarball。集成测试使用隔离且版本匹配的 Web 运行时，不验证现有安装的 GUI 或其他运行时版本的兼容性。
