@@ -4,12 +4,16 @@ import { chromium, type WebSocketRoute } from 'playwright';
 import { it, expect } from 'vitest';
 import { CompactionId, compactCheckpointSource } from '@deepseek-ai/dsh-compaction';
 import type {} from '@deepseek-ai/dsh-token-meter';
-import type {} from '@deepseek-ai/dsh-agent-loop';
+import type { SessionEvent } from '@deepseek-ai/dsh-session/types';
 import { ToolCallId, createUserMessage } from '@deepseek-ai/dsh-llm';
 import { launchWebScaffold, readPersistedEvents } from '@studio-test/scaffold';
 import { connectFreshWorkspace } from '@studio-test/support';
 import type {} from '../packages/roles/src/roles-remote.ts';
 const studio = fileURLToPath(new URL('..', import.meta.url));
+/** Runtime producers can declare message-source kinds absent from emitted public declarations. */
+function messageSourceKind(event: SessionEvent): string | undefined {
+  return event.type === 'user/message' ? event.data.source.kind : undefined;
+}
 it.each(['fresh', 'fork'] as const)('browses %s context evidence without child admission', async context => {
   const browser = await chromium.launch({ ...(process.env.DSH_TEST_BROWSER_CHANNEL ? { channel: process.env.DSH_TEST_BROWSER_CHANNEL } : {}) });
   try {
@@ -122,7 +126,7 @@ it.each(['fresh', 'fork'] as const)('browses %s context evidence without child a
       }
       const inheritedCount = row.inheritedEventCount ?? 0;
       const initialInput = before.find(event => event.seq >= inheritedCount && event.type === 'user/message' && event.data.source.kind === 'user');
-      const runtimeContext = before.find(event => event.seq >= inheritedCount && event.type === 'user/message' && event.data.source.kind === 'runtime-context');
+      const runtimeContext = before.find(event => event.seq >= inheritedCount && messageSourceKind(event) === 'runtime-context');
       if (!initialInput || !runtimeContext) throw new Error('Missing actual initial task or runtime context');
       expect(runtimeContext.seq).not.toBe(initialInput.seq);
       let initialChecked = false;
@@ -137,10 +141,11 @@ it.each(['fresh', 'fork'] as const)('browses %s context evidence without child a
           expect(label).toContain('Captured additional input');
           initialChecked = true;
         }
-        if (event?.type === 'user/message' && (event.data.source.kind === 'runtime-context' || event.data.source.kind === 'compact-checkpoint')) {
+        const kind = event === undefined ? undefined : messageSourceKind(event);
+        if (kind === 'runtime-context' || kind === 'compact-checkpoint') {
           expect(label).not.toContain('Captured additional input');
           expect(label).not.toContain('Follow-up message');
-          if (event.data.source.kind === 'runtime-context') runtimeChecked = true;
+          if (kind === 'runtime-context') runtimeChecked = true;
           else checkpointChecked = true;
         }
         if (await history.getByRole('button', { name: 'Newer events', exact: true }).isDisabled()) break;
