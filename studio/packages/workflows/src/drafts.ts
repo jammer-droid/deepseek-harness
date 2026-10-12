@@ -2,17 +2,41 @@
 import { z } from 'zod';
 import { brandString } from '@deepseek-ai/dsh-brand';
 import { defineDomain, domainTable, type Domain, type DomainFacility } from '@deepseek-ai/dsh-storage-domain';
-import type { ComponentRegistry, ComponentId } from './component-registry.ts';
-import type { DraftId, DraftFailure, SaveDraftRequest, SavedDraft } from './workflow-types.ts';
+import type { ComponentId } from './component-registry.ts';
+import type { DraftId, DraftFailure, SaveDraftRequest, SavedDraft, InstanceId, ConnectionId, SystemId, WorkflowDocument } from './workflow-types.ts';
 
 const component = z.object({
   id: z.string().min(1).transform(value => brandString<ComponentId>(value)),
   version: z.number().int().positive(), scope: z.literal('role'), config: z.record(z.string(), z.json()),
 }).strict();
-const document = z.object({ name: z.string(), mainRole: z.object({ name: z.string(), components: z.array(component) }).strict() }).strict();
+const legacyDocument = z.object({ name: z.string(), mainRole: z.object({ name: z.string(), components: z.array(component) }).strict() }).strict();
+const instanceId = z.string().min(1).transform(value => brandString<InstanceId>(value));
+const endpoint = z.object({ kind: z.enum(['component', 'system']), instanceId, portId: z.string().min(1) }).strict();
+const currentDocument = z.object({
+  documentVersion: z.literal(2), name: z.string(),
+  mainRole: z.object({ name: z.string(), components: z.array(component.extend({ instanceId, scope: z.string() })) }).strict(),
+  systems: z.array(z.object({ instanceId, id: z.string().min(1).transform(value => brandString<SystemId>(value)), version: z.number().int().positive(), scope: z.string(), executionLocation: z.string(), config: z.record(z.string(), z.json()) }).strict()),
+  connections: z.array(z.object({ id: z.string().min(1).transform(value => brandString<ConnectionId>(value)), from: endpoint, to: endpoint }).strict()),
+}).strict().superRefine((value, ctx) => {
+  const ids = [...value.mainRole.components, ...value.systems].map(item => item.instanceId);
+  if (new Set(ids).size !== ids.length || new Set(value.connections.map(item => item.id)).size !== value.connections.length) ctx.addIssue({ code: 'custom', message: 'Duplicate document identity' });
+});
+const document = z.union([legacyDocument, currentDocument]);
+function normalize(value: z.infer<typeof document>, draftId: DraftId): WorkflowDocument {
+  if ('documentVersion' in value) return value;
+  return { ...value, documentVersion: 2, mainRole: { ...value.mainRole, components: value.mainRole.components.map((item, index) => ({ ...item, instanceId: brandString<InstanceId>(`legacy:${draftId}:component:${index}`) })) }, systems: [], connections: [] };
+}
+/** Validate new-format wire input without applying semantic policy.
+ * @param value Untrusted Remote document. @returns Parsed detached document.
+ */
+export function parseDocument(value: unknown): WorkflowDocument {
+  const parsed = currentDocument.safeParse(value);
+  if (!parsed.success) throw new DraftError('invalid-document', { cause: parsed.error });
+  return parsed.data;
+}
 const id = z.string().uuid().transform(value => brandString<DraftId>(value));
 const saved = z.object({ id, revision: z.number().int().positive(), document }).strict();
-const requestSchema = z.object({ id, expectedRevision: z.number().int().nonnegative(), document }).strict();
+const requestSchema = z.object({ id, expectedRevision: z.number().int().nonnegative(), document: currentDocument }).strict();
 const spec = defineDomain({ name: 'studio_workflow_drafts', version: 1, tables: { profiles: domainTable(z.object({ drafts: z.array(saved) }).strict()) } });
 
 /** Refusals preserve saved data; uncertain storage requires reopening the owner. */
@@ -25,16 +49,16 @@ export class DraftStore {
   private closed = false;
   private uncertain = false;
   private queue: Promise<void> = Promise.resolve();
-  private constructor(private readonly domain: Domain<typeof spec>, private readonly profile: string, private readonly registry: ComponentRegistry) {}
+  private constructor(private readonly domain: Domain<typeof spec>, private readonly profile: string) {}
 
-  /** @param storage Public domain facility. @param profile Current profile. @param registry Shared declarations.
+  /** @param storage Public domain facility. @param profile Current profile.
    * @returns Open owner; caller must close it on plugin disposal.
    */
-  static async open(storage: Pick<DomainFacility, 'open'>, profile: string, registry: ComponentRegistry): Promise<DraftStore> {
+  static async open(storage: Pick<DomainFacility, 'open'>, profile: string): Promise<DraftStore> {
     const domain = await storage.open(spec);
     try {
       if (!domain.table('profiles').get(profile)) await domain.table('profiles').put(profile, { drafts: [] });
-      return new DraftStore(domain, profile, registry);
+      return new DraftStore(domain, profile);
     } catch (error) { await domain.close(); throw error; }
   }
 
@@ -46,7 +70,7 @@ export class DraftStore {
   /** @returns Detached confirmed documents; refuses uncertain storage state. */
   list(): SavedDraft[] {
     this.usable();
-    return structuredClone(this.domain.table('profiles').get(this.profile)!.drafts);
+    return structuredClone(this.domain.table('profiles').get(this.profile)!.drafts.map(draft => ({ ...draft, document: normalize(draft.document, draft.id) })));
   }
 
   /** @returns Confirmed documents after writes already admitted to this owner settle. */
@@ -62,19 +86,13 @@ export class DraftStore {
     this.usable();
     const parsed = requestSchema.safeParse(request);
     if (!parsed.success) throw new DraftError('invalid-document', { cause: parsed.error });
-    const operation = this.queue.then(() => this.commit(parsed.data));
+    const operation = this.queue.then(() => this.commit({ ...parsed.data, document: normalize(parsed.data.document, parsed.data.id) }));
     this.queue = operation.then(() => {}, () => {});
     return operation;
   }
 
   private async commit(request: SaveDraftRequest): Promise<SavedDraft> {
     if (this.uncertain) throw new DraftError('storage-uncertain');
-    const declarations = this.registry.describe();
-    for (const instance of request.document.mainRole.components) {
-      const definition = declarations.find(item => item.id === instance.id && item.version === instance.version);
-      if (!definition) continue; // Unavailable versions remain documents, never execution input.
-      if (definition.fields.some(field => instance.config[field.key] === undefined ? field.required : typeof instance.config[field.key] !== 'string')) throw new DraftError('invalid-document');
-    }
     const next: SavedDraft = { id: request.id, revision: request.expectedRevision + 1, document: request.document };
     try {
       await this.domain.table('profiles').update(this.profile, current => {

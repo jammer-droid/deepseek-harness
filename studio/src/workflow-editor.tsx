@@ -1,6 +1,7 @@
 /** Draft selection and explicit persistence; never invokes preset application. */
 import React from 'react';
-import type { ComponentDefinition, DraftId, SavedDraft, SaveDraftRequest, WorkflowDocument } from '@local/dsh-studio-workflows/types';
+import { WorkflowForms } from './workflow-forms.tsx';
+import type { CatalogSnapshot, ValidationResult, DraftId, SavedDraft, SaveDraftRequest, WorkflowDocument } from '@local/dsh-studio-workflows/types';
 import { workflowText } from './workflow-locales.ts';
 import { Button } from './ui.tsx';
 import { workflowFailure, type WorkflowFailure } from './workflow-failures.ts';
@@ -9,13 +10,17 @@ import { workflowFailure, type WorkflowFailure } from './workflow-failures.ts';
 export interface WorkflowApi {
   drafts(): Promise<SavedDraft[]>;
   save(request: SaveDraftRequest): Promise<SavedDraft>;
+  catalog(): Promise<CatalogSnapshot>;
+  validate(document: WorkflowDocument): Promise<ValidationResult>;
+  subscribeCatalog(listener: (revision: number) => void): () => void;
+  subscribeConnection(listener: (connected: boolean) => void): () => void;
 }
 
 /** @param props Initial confirmed drafts and declarations with explicit persistence operations.
  * @returns Multiple-draft editor retaining local edits until save or confirmed discard.
  */
-export function WorkflowEditor({ locale, components, initialDrafts, api }: {
-  locale: string; components: ComponentDefinition[]; initialDrafts: SavedDraft[]; api: WorkflowApi;
+export function WorkflowEditor({ locale, initialDrafts, api }: {
+  locale: string; initialDrafts: SavedDraft[]; api: WorkflowApi;
 }) {
   const t = workflowText(locale);
   const [drafts, setDrafts] = React.useState(initialDrafts);
@@ -33,7 +38,7 @@ export function WorkflowEditor({ locale, components, initialDrafts, api }: {
     if (dirty || failure !== null) setPending({ action, reload }); else action();
   }
   function create() {
-    change(() => select({ id: crypto.randomUUID() as DraftId, revision: 0, document: { name: '', mainRole: { name: '', components: [] } } }));
+    change(() => select({ id: crypto.randomUUID() as DraftId, revision: 0, document: { documentVersion: 2, name: '', mainRole: { name: '', components: [] }, systems: [], connections: [] } }));
   }
   async function save() {
     if (!selected || !document) return;
@@ -68,7 +73,49 @@ export function WorkflowEditor({ locale, components, initialDrafts, api }: {
     } catch (error) { if (active.current) setFailure(previous => previous ?? (workflowFailure(error) === 'unknown-outcome' ? 'read-failed' : workflowFailure(error))); }
     finally { if (active.current) setBusy(false); }
   }
-  const available = components.filter(item => item.scope === 'role');
+  const [catalog, setCatalog] = React.useState<CatalogSnapshot>({ revision: 0, components: [], systems: [] });
+  const [availability, setAvailability] = React.useState<'checking' | 'ready' | 'unknown'>('checking');
+  const [refresh, setRefresh] = React.useState(0);
+  const [decision, setDecision] = React.useState<{ document: WorkflowDocument; result: ValidationResult } | null>(null);
+  const validation = decision?.document === document ? decision.result : null;
+  const setValidation = (result: ValidationResult | null) => setDecision(result && document ? { document, result } : null);
+  const [validationFailed, setValidationFailed] = React.useState(false);
+  const catalogEpoch = React.useRef(0);
+  const minimumRevision = React.useRef(0);
+  const validationEpoch = React.useRef(0);
+  React.useEffect(() => {
+    let mounted = true;
+    async function load() {
+      const epoch = ++catalogEpoch.current;
+      ++validationEpoch.current;
+      setAvailability('checking'); setValidation(null);
+      try {
+        const next = await api.catalog();
+        if (!mounted || epoch !== catalogEpoch.current) return;
+        if (next.revision < minimumRevision.current) { setAvailability('unknown'); return; }
+        minimumRevision.current = next.revision;
+        setCatalog(next); setAvailability('ready');
+      } catch (error) { if (mounted && epoch === catalogEpoch.current) setAvailability('unknown'); }
+    }
+    const stopCatalog = api.subscribeCatalog(revision => { minimumRevision.current = Math.max(minimumRevision.current, revision); void load(); });
+    const stopConnection = api.subscribeConnection(connected => {
+      ++catalogEpoch.current; ++validationEpoch.current; minimumRevision.current = 0; setValidation(null);
+      if (connected) void load(); else setAvailability('unknown');
+    });
+    void load();
+    return () => { mounted = false; ++catalogEpoch.current; ++validationEpoch.current; stopCatalog(); stopConnection(); };
+  }, [api, refresh]);
+  React.useEffect(() => {
+    const epoch = ++validationEpoch.current;
+    setValidation(null); setValidationFailed(false);
+    if (!document || availability !== 'ready') return;
+    void api.validate(document).then(result => {
+      if (epoch !== validationEpoch.current) return;
+      if (result.catalogRevision !== catalog.revision) { setAvailability('unknown'); return; }
+      setValidation(result);
+    }, () => { if (epoch === validationEpoch.current) setValidationFailed(true); });
+    return () => { ++validationEpoch.current; };
+  }, [api, document, catalog, availability]);
   return <section className="studio-card">
     <h2>{t.title}</h2><p>{t.draftOnly}</p>
     <fieldset disabled={busy || pending !== null}>
@@ -82,21 +129,9 @@ export function WorkflowEditor({ locale, components, initialDrafts, api }: {
       <Button disabled={failure !== null} onClick={create}>{t.create}</Button>
       {document && selected ? <>
         <label>{t.draftName}<input value={document.name} onChange={event => setDocument({ ...document, name: event.target.value })} /></label>
-        <fieldset><legend>{t.mainRole}</legend>
-          <label>{t.name}<input value={document.mainRole.name} onChange={event => setDocument({ ...document, mainRole: { ...document.mainRole, name: event.target.value } })} /></label>
-          {document.mainRole.components.map((instance, index) => {
-            const definition = available.find(item => item.id === instance.id && item.version === instance.version);
-            if (!definition) return <p key={index}>{instance.id}: {t.unknown}</p>;
-            return definition.fields.map(field => { const value = instance.config[field.key]; return <label key={`${index}:${field.key}`}>{t.instructions}<textarea aria-label={t.instructions}
-              value={typeof value === 'string' ? value : ''}
-              onChange={event => setDocument({ ...document, mainRole: { ...document.mainRole, components: document.mainRole.components.map((item, i) => i === index ? { ...item, config: { ...item.config, [field.key]: event.target.value } } : item) } })}
-            /></label>; });
-          })}
-          {available.filter(definition => !document.mainRole.components.some(item => item.id === definition.id)).map(definition =>
-            <Button key={definition.id} onClick={() => setDocument({ ...document, mainRole: { ...document.mainRole, components: [...document.mainRole.components, {
-              id: definition.id, version: definition.version, scope: definition.scope, config: Object.fromEntries(definition.fields.map(field => [field.key, ''])),
-            }] } })}>{t.add}</Button>)}
-        </fieldset>
+        <WorkflowForms document={document} catalog={catalog} enabled={availability === 'ready'} diagnostics={validation?.diagnostics ?? []} locale={locale} onChange={setDocument} />
+        <p aria-live="polite">{availability !== 'ready' ? availability === 'checking' ? t.checking : t.availabilityUnknown : validationFailed ? t.validationFailed : validation ? validation.valid ? t.valid : t.invalidConfiguration : t.checking}</p>
+        <Button onClick={() => setRefresh(value => value + 1)}>{t.refresh}</Button>
         <Button primary disabled={!dirty || (failure !== null && failure !== 'invalid-document')} onClick={() => void save()}>{t.save}</Button>
         <p role="status">{busy ? t.saving : dirty ? t.unsaved : t.saved}</p>
       </> : <p>{t.empty}</p>}

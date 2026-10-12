@@ -36,6 +36,16 @@ Studio lists independently registered services: Preset Builder (the default), DS
 
 Design preview contains the four mock Workflows, Agents, Components, and Systems pages, with their own navigation and page-local sample data. These pages never read or write Host state. The functional Workflow draft editor is separate from this preview. DSH settings edits profile-owned preset declarations without replacing the built-in Settings screen. Experiments uses the same DetailLayout navigation and content scroller as Preset Builder and contains a profile-persisted agent-optimization editor. The disposable timer and its Client contribution are not shipped. Each optimization independently targets main agents, subagents, both, or neither; saved changes apply only when an agent starts, including resumed sessions. All optimizations default off. See [experiment policies](docs/experiment-policies.md) for preserved test-plugin defaults, Goal suppression, waiting limits, and coexistence restrictions.
 
+### Workflow configuration drafts
+
+The Workflow editor saves independent drafts, not active presets. Registered components and systems provide editable fields and input/output ports. Connections retain stable instance identities when items are reordered or renamed. Host validation reports missing registrations and systems, invalid references, port direction and meaning, connection counts, field values, and unsupported scopes or execution locations. Configuration validation does not confirm model, permission, or execution support.
+
+Structurally valid drafts remain saveable with configuration errors. Registration removal preserves saved and unsaved settings and connections; unavailable or version-mismatched items become read-only and may be explicitly deleted. Re-registering the same version restores interpretation. Catalog refresh never reloads the draft. Failed availability checks remain visible and disable new additions until availability is confirmed. With no registered connection providers, the editor shows an empty state rather than offering simulated execution features.
+
+Live catalog notifications require the runtime's effect-owned `remoteEventContributions` service from api-remotes. Rebuild the runtime before building or deploying this Studio version; updating only the Studio bundle on an older runtime does not provide that service.
+
+Existing drafts normalize on read and acquire stable component instance IDs without an automatic storage write. Their next explicit save writes document version 2. Back up storage before upgrading if a downgrade may be needed; older builds cannot read the new format. See the [draft storage upgrade guide](../docs/upgrade-guide/v0.2.1-alpha.2/studio-workflow-drafts/guide.md) and [workflow package](packages/workflows/README.md) for storage and registration details.
+
 ### Preset overrides
 
 Select a preset, change existing text/number/boolean configuration fields or plugin enablement, add components or mark rows for removal, confirm the tools-and-policies warning, and apply explicitly. Nested groups are supported; arrays and executable expressions are retained without editing. Cancel restores the loaded draft, reload reads saved settings, and restore removes the profile configuration override in favor of its inherited definition. Changes are user-only and are not exposed as agent tools.

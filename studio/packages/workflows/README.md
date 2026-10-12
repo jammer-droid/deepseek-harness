@@ -15,7 +15,13 @@ description: "Studio 워크플로 초안 저장과 실패 복구 API."
 
 ## 공개 서비스
 
-Host의 `studioWorkflows.register(definition)`은 `ctx.effect()`에 연결할 해제 함수를 반환한다. 정의는 안정적 ID, 양의 버전, 역할 범위와 텍스트 필드를 가진다. `components()`, `drafts()`, `save(request)`만 Remote에 노출한다. 저장 실패는 `studio-workflows/rejected` 코드와 `reason`으로 분류한다.
+Host의 `studioWorkflows.register(definition, validator?)`와 `registerSystem(definition, validator?)`은 `ctx.effect()`에 연결할 해제 함수를 반환한다. 컴포넌트와 시스템의 등록 ID 공간은 구분되며 중복 ID·필드·포트, 잘못된 버전·범위·연결 수 선언은 등록 시 거절한다. 필요한 시스템은 정확한 등록 버전과 같은 워크플로우의 해당 시스템 인스턴스가 모두 있어야 충족된다. 등록되지 않은 의존 대상의 선언 자체는 허용한다.
+
+`components()`, `catalog()`, `validate(document)`, `drafts()`, `save(request)`를 Remote에 노출한다. `catalog()`는 분리된 선언과 증가하는 revision을 반환하며 등록 추가·해제마다 `studio-workflows/catalog-changed` Cordis 이벤트를 보낸다. `remoteEventContributions`의 effect 소유 등록이 기존 애플리케이션 Remote source를 통해 Client에 전달하며 별도 Gateway source를 만들지 않는다. Host와 Remote의 `validate()`는 같은 검증기를 사용한다. 결과는 `catalogRevision`, `valid`, 위치·관련 ID·현지화 값을 갖는 `diagnostics`이며 실행 허가가 아니다. 순수 동기 Host 의미 검증기는 복사된 입력을 받고 같은 진단 형식을 반환한다. 함수는 Client 카탈로그에 포함되지 않는다. 저장 실패는 `studio-workflows/rejected` 코드와 `reason`으로 분류한다.
+
+새 문서는 `documentVersion: 2`, 메인 역할 컴포넌트, 워크플로우 소유 시스템, 방향 연결을 보관한다. 인스턴스·연결 ID는 등록 ID와 별개이며 재정렬·이름 변경으로 바뀌지 않는다. 삭제 후 남은 연결도 보존하여 누락 진단으로 표시한다. 시스템 실행 위치는 명시적으로 저장하며 현재 `dsh`만 지원한다. 다른 위치를 자동 대체하지 않는다. 포트 방향은 출력→입력이고 의미 ID는 정확히 일치해야 하며 양쪽 `allowedPeers`에 상대 등록 ID가 있어야 한다. 빈 허용 목록은 아무 상대도 허용하지 않는다. 텍스트 필드의 `required`는 존재 여부를 검사하며 빈 문자열은 허용한다.
+
+저장은 문서 형식만 검사한다. 잘못된 조합·설정 필드 타입·미지원 위치도 유효한 JSON 문서이면 저장할 수 있으며 구성 검증은 별도 요청이다. 저장 domain 버전은 1을 유지하며 legacy 문서는 draft ID와 원래 컴포넌트 위치에서 결정적인 인스턴스 ID를 생성하고 빈 시스템·연결 배열을 부여한다. 읽기는 저장소를 다시 쓰거나 revision을 바꾸지 않는다. 다음 명시적 저장은 기존 revision을 비교한 뒤 새 문서를 기록한다. 손상된 문서는 빈 초안으로 대체하지 않는다. 새 형식을 이전 코드로 읽는 downgrade는 지원하지 않는다.
 
 문서는 컴포넌트 ID·버전·JSON 설정을 보관한다. 사용할 수 없는 컴포넌트나 버전도 저장·재열기 시 보존하며 실행 가능하다고 해석하지 않는다. 모델 설정, 임의 역할, 삭제·복제, 템플릿과 프리셋 적용은 이 패키지의 현재 범위가 아니다.
 

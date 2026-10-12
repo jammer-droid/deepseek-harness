@@ -40,7 +40,7 @@ Client 组合挂载 Office 转换、Commands、凭据、settings、Goal、Schedu
 <a id="forwarded-host-events"></a>
 ## 转发的 Host 事件
 
-`src/remote-events.ts` 持有 `API_REMOTE_FORWARDED_EVENTS`，即本应用不改名转发给消费端的 Host Cordis 事件名单；每个条目还会选择普通发送或 agent-scoped waterfall（瀑布式事件）投递。该名单同时就是 `ctx.remote.$on` 的合法键集，只含类型的 `src/types.ts` 派生其选择面。多转发一个事件只需在该数组里加一项：类型投影、消费端键面与 Host 转发循环全部由它派生。
+`src/remote-events.ts` 持有 `API_REMOTE_FORWARDED_EVENTS`，即本应用不改名转发的内置 Host Cordis 事件；每个条目选择普通发送或 Agent-scoped waterfall 投递。只含类型的 `src/types.ts` 派生其选择面。插件在 `ctx.effect()` 中调用 `ctx.remoteEventContributions.register(event)` 贡献普通通知，事件所有者提供 Client 安全的 Cordis `Events` 和 `TypertRemoteEventSelection` 声明。贡献通过现有应用 source 向当前和未来的 Client 流投递，不替换 Gateway 的唯一 source。重复的内置或贡献事件名会被拒绝。释放贡献会停止后续投递、保留已入队的通知，且不会删除同名的后续注册。不支持动态 waterfall 贡献。
 
 监听器签名不在此处重写。名单内每条事件的 Cordis `Events` 声明都住在其 owner 包 client-safe 的 `./types` 导出，本包两个 face 都把那些声明纳入编译面。Host face 还会把每个条目断言给 `TypertForwardableEventEntry`：`emit` 条目必须是已声明的单向事件，`waterfall` 条目则必须是已声明的 agent-scoped waterfall，且其最后一个参数是返回相同结果类型的 `next()` 回调。
 

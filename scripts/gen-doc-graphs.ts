@@ -371,6 +371,13 @@ const SERVICE_ROLES: ServiceRole[] = [
     note: 'Associates generated Remote descriptors with live Cordis services, resolves registered identities, and exposes unary calls through the shared Connection RPC carrier.',
   },
   {
+    key: 'remoteEventContributions',
+    pkg: 'api-remotes',
+    title: 'Remote notification contributions',
+    mode: 'core',
+    note: 'Effect-owned plugin notifications join the application Remote event source for existing and future Client streams.',
+  },
+  {
     key: 'sessionPersistence',
     pkg: 'session-persistence',
     title: 'Durable session persistence seam',

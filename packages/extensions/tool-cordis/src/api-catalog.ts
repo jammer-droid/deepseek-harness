@@ -1860,6 +1860,25 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
     ],
   },
   {
+    key: 'remoteEventContributions',
+    summary: 'Adds notifications without replacing Gateway\'s application source or built-in events.',
+    description: 'Adds notifications without replacing Gateway\'s application source or built-in events.',
+    methods: [
+      {
+        signature: 'register(event: RemoteNotificationEvent): () => void',
+        description: 'Forward one ordinary notification to connected Clients.',
+        parameters: [{ name: 'event', description: 'Ordinary Cordis event selected by its owner.' }],
+        returns: 'Idempotent disposer for use with the owner\'s ctx.effect().',
+      },
+      {
+        signature: 'attach(consume: (dispatch: TypertRemoteEventDispatch) => void): () => void',
+        description: 'Subscribe an application-source Client stream to contributed notifications.',
+        parameters: [{ name: 'consume', description: 'One Client stream queue.' }],
+        returns: 'Disposer detaching that stream from future notifications.',
+      },
+    ],
+  },
+  {
     key: 'sandbox',
     summary: 'Abstract process-sandbox service.',
     description: 'Abstract process-sandbox service. confine must return enforcing argv or fail closed at wrap or runner-execution time; silent unconfined passthrough is forbidden. Functional probes arbitrate multi-runner chains and may be skipped for a sole candidate, whose own refusal remains the fail-closed end.',
@@ -6462,6 +6481,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export interface RemoteEventHostInfo {\n    readonly home: string;\n}',
   },
   {
+    name: 'RemoteNotificationEvent',
+    declaration: 'export type RemoteNotificationEvent = Extract<TypertForwardableEventEntry, {\n    mode: \'emit\';\n}>[\'event\'];',
+  },
+  {
     name: 'RenderedDocumentBytes',
     declaration: 'export interface RenderedDocumentBytes extends WorkspaceFileBytes {\n    readonly missingFonts: string[];\n    readonly generation: OfficeToPdfGeneration;\n}',
   },
@@ -8116,6 +8139,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'TypertEventModel',
     declaration: 'export interface TypertEventModel extends TypertDocumentation {\n    readonly name: string;\n    readonly mode?: string;\n    readonly signature: string;\n}',
+  },
+  {
+    name: 'TypertForwardableEventEntry',
+    declaration: 'export type TypertForwardableEventEntry = {\n    [Event in keyof Events]: TypertForwardingMode<Event> extends infer Mode ? Mode extends \'emit\' | \'waterfall\' ? {\n        readonly event: Event;\n        readonly mode: Mode;\n    } : never : never;\n}[keyof Events];',
   },
   {
     name: 'TypertGatewayBinding',

@@ -1,0 +1,16 @@
+# Bilingual-pair consistency record for guide.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write docs/upgrade-guide/v0.2.1-alpha.2/studio-workflow-drafts/guide.md
+/:
+  en: eb40b85a3d333830
+  zh: 30f2c07c448c5c15
+/studio-workflow-draft-storage:
+  en: 4050c17e8d0a4dc9
+  zh: 4e21067b38a759fe
+/studio-workflow-draft-storage/change:
+  en: 8c7329d02e8a9cd2
+  zh: 64adeca9aa37ba41
+/studio-workflow-draft-storage/migration:
+  en: 042e6f7498fc2567
+  zh: ab080594c7741f40

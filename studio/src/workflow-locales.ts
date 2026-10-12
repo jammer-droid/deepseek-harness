@@ -4,7 +4,7 @@ const en = {
   discard: 'Discard unsaved changes?', confirm: 'Discard and continue', cancel: 'Keep editing',
   saveFailed: 'Save was not confirmed. Your edits are kept. Read again; editing stays blocked until a newer saved revision confirms the outcome.',
   restart: 'Storage could not confirm the saved state. Writes are stopped. Restart the workflow plugin, then read again.',
-  invalid: 'The draft contains invalid component settings. Correct the fields before saving.',
+  invalid: 'The draft format could not be saved. Your edits are kept. Read the saved version to recover.',
   closed: 'The workflow service stopped. Enable it again, then read the saved drafts.',
   readFailed: 'Could not read saved drafts. Your edits are kept. Try reading again.',
   conflict: 'This draft changed elsewhere. Read the saved version before saving again.',
@@ -15,13 +15,16 @@ const en = {
   unsaved: 'Unsaved draft', loading: 'Loading workflow components',
   loadFailed: 'Could not load workflow components. Try reading again.', retry: 'Read again',
   unavailable: 'The instructions component is unavailable. Read again after enabling its plugin.',
+  systems: 'Systems', connections: 'Connections', addSystem: 'Add system', addComponent: 'Add component', removeSystem: 'Delete system', removeComponent: 'Delete component', removeConnection: 'Delete connection', addConnection: 'Add connection', from: 'Output port', to: 'Input port', location: 'Execution location',
+  noPorts: 'No registered connection providers are available. Enable a plugin that declares ports.', noSystems: 'No systems are registered.', checking: 'Checking configuration…', valid: 'Configuration validated — execution support not verified.', invalidConfiguration: 'Configuration needs attention. You can still save this draft.', availabilityUnknown: 'Feature availability is unknown. Your edits are kept. Retry the connection.', validationFailed: 'Could not validate this draft. Your edits are kept. Try again.', refresh: 'Refresh availability',
+  diagnostics: { 'missing-registration': 'Registration is unavailable.', 'version-mismatch': 'The registered version does not match.', 'missing-system': 'Add the required system and version.', 'missing-instance': 'The connected item is missing.', 'missing-port': 'The connected port is missing.', 'port-direction': 'Connect an output to an input.', 'port-semantic': 'The ports have different meanings.', 'port-peer': 'These ports do not allow this connection.', 'connection-count': 'The port connection count is outside its allowed range.', 'invalid-scope': 'This scope is not supported.', 'unsupported-location': 'This execution location is not supported.', 'required-field': 'Enter a value for this field.', 'field-type': 'This field has an invalid value type.', semantic: 'The provider rejected this configuration.' },
 };
 const ko: typeof en = {
   select: '초안 선택', create: '새 초안', draftName: '초안 이름', save: '초안 저장', saved: '저장됨', saving: '저장 중',
   discard: '저장하지 않은 변경을 버릴까요?', confirm: '버리고 계속', cancel: '계속 편집',
   saveFailed: '저장을 확인하지 못했습니다. 편집 내용은 유지됩니다. 다시 읽어 주세요. 더 최신의 저장 버전으로 결과를 확인할 때까지 저장과 전환은 차단됩니다.',
   restart: '저장 상태를 확인할 수 없어 쓰기를 중단했습니다. 워크플로 플러그인을 다시 시작한 뒤 다시 읽어 주세요.',
-  invalid: '컴포넌트 설정이 올바르지 않습니다. 입력을 수정한 뒤 저장해 주세요.',
+  invalid: '초안 형식을 저장할 수 없습니다. 편집 내용은 유지됩니다. 저장된 버전을 다시 읽어 복구해 주세요.',
   closed: '워크플로 서비스가 중지되었습니다. 다시 켠 뒤 저장된 초안을 읽어 주세요.',
   readFailed: '저장된 초안을 읽지 못했습니다. 편집 내용은 유지됩니다. 다시 읽어 주세요.',
   conflict: '다른 곳에서 초안이 변경되었습니다. 저장 내용을 다시 읽어 주세요.',
@@ -32,13 +35,16 @@ const ko: typeof en = {
   unsaved: '저장하지 않은 초안', loading: '워크플로 컴포넌트 불러오는 중',
   loadFailed: '워크플로 컴포넌트를 불러오지 못했습니다. 다시 읽어 주세요.', retry: '다시 읽기',
   unavailable: '지침 컴포넌트를 사용할 수 없습니다. 플러그인을 켠 뒤 다시 읽어 주세요.',
+  systems: '시스템', connections: '연결', addSystem: '시스템 추가', addComponent: '컴포넌트 추가', removeSystem: '시스템 삭제', removeComponent: '컴포넌트 삭제', removeConnection: '연결 삭제', addConnection: '연결 추가', from: '출력 포트', to: '입력 포트', location: '실행 위치',
+  noPorts: '등록된 연결 제공자가 없습니다. 포트를 선언하는 플러그인을 켜 주세요.', noSystems: '등록된 시스템이 없습니다.', checking: '구성 확인 중…', valid: '구성 검증 통과 — 실행 지원 미확인', invalidConfiguration: '구성을 확인해 주세요. 초안은 저장할 수 있습니다.', availabilityUnknown: '기능 가용성을 확인하지 못했습니다. 편집 내용은 유지됩니다. 연결을 다시 시도해 주세요.', validationFailed: '초안을 검증하지 못했습니다. 편집 내용은 유지됩니다. 다시 시도해 주세요.', refresh: '가용성 새로 확인',
+  diagnostics: { 'missing-registration': '등록을 사용할 수 없습니다.', 'version-mismatch': '등록 버전이 일치하지 않습니다.', 'missing-system': '필요한 시스템과 버전을 추가해 주세요.', 'missing-instance': '연결된 항목이 없습니다.', 'missing-port': '연결된 포트가 없습니다.', 'port-direction': '출력과 입력을 연결해 주세요.', 'port-semantic': '포트의 의미가 다릅니다.', 'port-peer': '이 포트 사이의 연결은 허용되지 않습니다.', 'connection-count': '포트 연결 수가 허용 범위를 벗어났습니다.', 'invalid-scope': '지원하지 않는 범위입니다.', 'unsupported-location': '지원하지 않는 실행 위치입니다.', 'required-field': '필드 값을 입력해 주세요.', 'field-type': '필드 값의 형식이 올바르지 않습니다.', semantic: '제공자가 이 구성을 거절했습니다.' },
 };
 const zh: typeof en = {
   select: '选择草稿', create: '新建草稿', draftName: '草稿名称', save: '保存草稿', saved: '已保存', saving: '正在保存',
   discard: '放弃未保存的更改？', confirm: '放弃并继续', cancel: '继续编辑',
   saveFailed: '未能确认保存结果。编辑内容已保留。请重新读取；在确认更新的已保存版本之前，保存和切换将保持禁用。',
   restart: '存储无法确认保存状态，写入已停止。请重启工作流插件后重新读取。',
-  invalid: '草稿包含无效的组件设置。请修改后再保存。',
+  invalid: '无法保存此草稿格式，编辑内容已保留，请重新读取已保存版本以恢复',
   closed: '工作流服务已停止。请重新启用后读取已保存的草稿。',
   readFailed: '无法读取已保存的草稿。编辑内容已保留，请重新读取。',
   conflict: '此草稿已在其他位置更改。请先读取已保存的版本。',
@@ -49,6 +55,9 @@ const zh: typeof en = {
   unsaved: '未保存的草稿', loading: '正在加载工作流组件',
   loadFailed: '无法加载工作流组件，请重新读取。', retry: '重新读取',
   unavailable: '指令组件不可用。请启用其插件后重新读取。',
+  systems: '系统', connections: '连接', addSystem: '添加系统', addComponent: '添加组件', removeSystem: '删除系统', removeComponent: '删除组件', removeConnection: '删除连接', addConnection: '添加连接', from: '输出端口', to: '输入端口', location: '执行位置',
+  noPorts: '没有已注册的连接提供者，请启用声明端口的插件', noSystems: '尚无已注册的系统', checking: '正在检查配置…', valid: '配置验证通过 — 执行支持尚未确认', invalidConfiguration: '请检查配置，仍可保存草稿', availabilityUnknown: '无法确认功能可用性，编辑内容已保留，请重新连接', validationFailed: '无法验证草稿，编辑内容已保留，请重试', refresh: '刷新可用性',
+  diagnostics: { 'missing-registration': '注册不可用', 'version-mismatch': '注册版本不匹配', 'missing-system': '请添加所需系统及版本', 'missing-instance': '连接的项目不存在', 'missing-port': '连接的端口不存在', 'port-direction': '请将输出连接到输入', 'port-semantic': '端口含义不同', 'port-peer': '这些端口不允许此连接', 'connection-count': '端口连接数超出允许范围', 'invalid-scope': '不支持此范围', 'unsupported-location': '不支持此执行位置', 'required-field': '请输入字段值', 'field-type': '字段值类型无效', semantic: '提供者拒绝了此配置' },
 };
 /** @param locale Active application locale. @returns Localized editor copy. */
 export function workflowText(locale: string): typeof en { return locale.startsWith('ko') ? ko : locale.startsWith('zh') ? zh : en; }

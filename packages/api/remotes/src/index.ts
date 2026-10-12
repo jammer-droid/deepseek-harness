@@ -12,6 +12,8 @@ import type {
 import { Deque } from '@deepseek-ai/dsh-deque'
 import { carrierKeyOf } from '@deepseek-ai/dsh-scope'
 import { isJsonValue, type JsonValue } from '@deepseek-ai/dsh-util-values'
+import { RemoteEventContributions } from './contributions.ts'
+export { RemoteEventContributions, type RemoteNotificationEvent } from './contributions.ts'
 import { API_REMOTE_FORWARDED_EVENTS } from './remote-events.ts'
 
 // The owner packages' client-safe `./types` exports carry the cordis `Events`
@@ -38,17 +40,18 @@ export const inject = ['typertGateway']
 
 /** Host plugin body registering this application's selected Cordis event source. */
 export function apply(ctx: Context): void {
+  const contributions = new RemoteEventContributions(ctx)
   ctx.effect(
-    () => ctx.typertGateway.registerRemoteEvents(remoteEventSource(ctx), { home: homedir() }),
+    () => ctx.typertGateway.registerRemoteEvents(remoteEventSource(ctx, contributions), { home: homedir() }),
     'api-remotes: forwarded Cordis event source',
   )
 }
 
 /** Create the sole queue and listener set consumed by the registered Gateway. */
-function remoteEventSource(ctx: Context): TypertRemoteEventSource {
+function remoteEventSource(ctx: Context, contributions: RemoteEventContributions): TypertRemoteEventSource {
   return (signal) => {
     const queue = new RemoteEventQueue()
-    const disposers = API_REMOTE_FORWARDED_EVENTS.map(({ event, mode }) => {
+    const disposers: Array<() => void> = API_REMOTE_FORWARDED_EVENTS.map(({ event, mode }) => {
       if (mode === 'emit') {
         return ctx.on(event as never, ((...args: unknown[]) => {
           queue.push({ event, args: assertJsonArgs(event, args) })
@@ -74,6 +77,7 @@ function remoteEventSource(ctx: Context): TypertRemoteEventSource {
         )
       }) as never)
     })
+    disposers.push(contributions.attach((dispatch) => { queue.push(dispatch) }))
     return queue.iterate(signal, () => {
       for (const dispose of disposers) dispose()
     })
@@ -110,6 +114,7 @@ class RemoteEventQueue {
       while (true) {
         if (this.done || signal.aborted) return
         while (this.buffer.size > 0) yield this.buffer.popFront() as TypertRemoteEventDispatch
+        if (this.done || signal.aborted) return
         await new Promise<void>((resolve) => { this.waiter = resolve })
         this.waiter = undefined
       }
