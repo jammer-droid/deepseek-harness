@@ -15,6 +15,20 @@ export function WorkflowForms({ document, catalog, models, enabled, diagnostics,
   const role = document.roles.find(item => item.id === selectedId);
   const updateRole = (next: WorkflowRole) => onChange({ ...document, roles: document.roles.map(item => item.id === next.id ? next : item) });
   const textValue = (value: ConfigValue | undefined): string => typeof value === 'string' ? value : '';
+  const fieldLabel = (id: string, key: string): string => {
+    if (id === 'studio.instructions' && key === 'text') return t.instructions;
+    if (id === 'studio.model') {
+      if (key === 'provider') return t.provider;
+      if (key === 'model') return t.model;
+      if (key === 'reasoningEffort') return t.reasoningEffort;
+    }
+    if (id === 'studio.tools') {
+      if (key === 'allow') return t.allow;
+      if (key === 'deny') return t.deny;
+    }
+    return key;
+  };
+  const addLabel = (id: string): string => id === 'studio.instructions' ? t.add : id === 'studio.model' ? t.addModel : id === 'studio.tools' ? t.addTools : `${t.addComponent}: ${id}`;
   const endpoints: { endpoint: WorkflowEndpoint; port: PortDefinition; registration: string; label: string }[] = [];
   for (const kind of ['component', 'system'] as const) {
     const instances = kind === 'component' ? document.roles.flatMap(role => role.components) : document.systems;
@@ -43,12 +57,13 @@ export function WorkflowForms({ document, catalog, models, enabled, diagnostics,
         const definition = catalog.components.find(item => item.id === instance.id && item.version === instance.version);
         return <fieldset key={instance.instanceId}><legend>{instance.id} · {instance.instanceId}</legend>
           <label><input type="checkbox" checked={instance.enabled !== false} onChange={event => updateRole({ ...role, components: role.components.map(item => item.instanceId === instance.instanceId ? { ...item, enabled: event.target.checked } : item) })} />{t.enabled}</label>
-          {!definition ? <p>{t.unknown}</p> : definition.fields.map(field => <label key={field.key}>{instance.id === 'studio.instructions' ? t.instructions : field.key}<textarea aria-label={instance.id === 'studio.instructions' ? t.instructions : field.key} disabled={!enabled} value={textValue(instance.config[field.key])} onChange={event => updateRole({ ...role, components: role.components.map(item => item.instanceId === instance.instanceId ? { ...item, config: { ...item.config, [field.key]: event.target.value } } : item) })} /></label>)}
+          {!definition ? <p>{t.unknown}</p> : definition.fields.map(field => <label key={field.key}>{fieldLabel(instance.id, field.key)}<textarea aria-label={fieldLabel(instance.id, field.key)} disabled={!enabled} value={textValue(instance.config[field.key])} onChange={event => updateRole({ ...role, components: role.components.map(item => item.instanceId === instance.instanceId ? { ...item, config: { ...item.config, [field.key]: event.target.value } } : item) })} /></label>)}
+          {instance.id === 'studio.tools' && <p>{t.toolHelp}</p>}
           {notices('component', instance.instanceId)}
           <Button onClick={() => updateRole({ ...role, components: role.components.filter(item => item.instanceId !== instance.instanceId) })}>{t.removeComponent}: {instance.id}</Button>
         </fieldset>;
       })}
-      {catalog.components.filter(item => item.scope === 'role').map(definition => <Button key={definition.id} disabled={!enabled} onClick={() => updateRole({ ...role, components: [...role.components, { instanceId: crypto.randomUUID() as InstanceId, id: definition.id, version: definition.version, scope: 'role', config: Object.fromEntries(definition.fields.map(field => [field.key, ''])) }] })}>{definition.id === 'studio.instructions' ? t.add : `${t.addComponent}: ${definition.id}`}</Button>)}
+      {catalog.components.filter(item => item.scope === 'role').map(definition => <Button key={definition.id} disabled={!enabled} onClick={() => updateRole({ ...role, components: [...role.components, { instanceId: crypto.randomUUID() as InstanceId, id: definition.id, version: definition.version, scope: 'role', config: Object.fromEntries(definition.fields.map(field => [field.key, ''])) }] })}>{addLabel(definition.id)}</Button>)}
     </fieldset>;
   }
   return <>{notices('document')}
@@ -73,7 +88,7 @@ export function WorkflowForms({ document, catalog, models, enabled, diagnostics,
             <label>{t.location}<select disabled={!enabled} value={instance.executionLocation} onChange={event => onChange({ ...document, systems: document.systems.map(item => item.instanceId === instance.instanceId ? { ...item, executionLocation: event.target.value } : item) })}>
               {!definition.executionLocations.includes(instance.executionLocation) && <option>{instance.executionLocation}</option>}{definition.executionLocations.map(location => <option key={location}>{location}</option>)}
             </select></label>
-            {definition.fields.map(field => <label key={field.key}>{field.key}<textarea aria-label={instance.id === 'studio.instructions' ? t.instructions : field.key} disabled={!enabled} value={textValue(instance.config[field.key])} onChange={event => onChange({ ...document, systems: document.systems.map(item => item.instanceId === instance.instanceId ? { ...item, config: { ...item.config, [field.key]: event.target.value } } : item) })} /></label>)}
+            {definition.fields.map(field => <label key={field.key}>{field.key}<textarea aria-label={fieldLabel(instance.id, field.key)} disabled={!enabled} value={textValue(instance.config[field.key])} onChange={event => onChange({ ...document, systems: document.systems.map(item => item.instanceId === instance.instanceId ? { ...item, config: { ...item.config, [field.key]: event.target.value } } : item) })} /></label>)}
           </>}{notices('system', instance.instanceId)}
           <Button onClick={() => onChange({ ...document, systems: document.systems.filter(item => item.instanceId !== instance.instanceId) })}>{t.removeSystem}: {instance.id}</Button>
         </fieldset>;

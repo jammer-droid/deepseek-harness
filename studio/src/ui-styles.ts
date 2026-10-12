@@ -17,6 +17,7 @@ export const studioStyles = `/* Only this adapter references host tokens. Studio
   --studio-on-primary: var(--dsw-alias-label-primary-foreground);
   --studio-focus: var(--dsw-focus-ring-color);
   --studio-error: var(--dsw-alias-state-error-primary);
+  --studio-success: var(--dsw-alias-state-success-primary);
   --studio-radius: 12px;
   --studio-control-radius: var(--dsw-radius-md);
   --studio-small-radius: var(--dsw-radius-sm);
@@ -29,6 +30,34 @@ export const studioStyles = `/* Only this adapter references host tokens. Studio
   overflow-wrap: anywhere;
 }
 .studio-ui *, .studio-ui *::before, .studio-ui *::after { box-sizing: border-box; }
+.studio-ui .studio-comparison { margin-top: 24px; }
+.studio-ui .studio-comparison-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: var(--studio-gap); align-items: start; }
+.studio-ui .studio-comparison-grid > section { min-width: 0; }
+.studio-ui .studio-comparison h4 { font-size: 14px; font-weight: 500; margin: 8px 0; }
+.studio-ui .studio-comparison-panel { border: 1px solid var(--studio-line); border-radius: var(--studio-radius); background: var(--studio-surface); padding: 6px; overflow: hidden; }
+.studio-ui .studio-comparison-native-row { display: grid; grid-template-columns: 8px minmax(0, 1fr) auto 12px; gap: 12px; padding: 12px; align-items: center; border-radius: var(--studio-radius); }
+.studio-ui .studio-comparison-native-row:first-child { background: var(--studio-hover); }
+.studio-ui .studio-comparison-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--studio-success); align-self: start; margin-top: 8px; }
+.studio-ui .studio-comparison-label > div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.studio-ui .studio-comparison-secondary, .studio-ui .studio-comparison-metrics, .studio-ui .studio-comparison-chevron { color: var(--studio-muted); }
+.studio-ui .studio-comparison-metrics { text-align: right; font-size: 12px; white-space: nowrap; }
+.studio-ui .studio-comparison-chevron { font-size: 20px; }
+.studio-ui .studio-comparison-panel .studio-catalog-row { padding: 10px; }
+.studio-ui .studio-comparison-panel .studio-catalog-row:first-child { border-top: 0; }
+.studio-ui .studio-comparison-snapshot { background: var(--studio-inset); border-radius: var(--studio-small-radius); padding: 8px; margin-top: 8px; }
+.studio-ui .studio-comparison-navigation { color: var(--studio-muted); }
+.studio-ui.studio-catalog { width: min(336px, calc(100vw - 32px)); max-height: 65vh; overflow: auto; padding: 8px; }
+.studio-ui .studio-catalog-row { padding: 8px 0; border-top: 1px solid var(--studio-line); }
+.studio-ui .studio-catalog-row p { margin: 4px 0; }
+.studio-ui .studio-catalog-meta { color: var(--studio-muted); font-size: 12px; }
+.studio-ui .studio-catalog-branch .studio-catalog-branch { margin-left: 12px; padding-left: 8px; border-left: 1px solid var(--studio-line); }
+.studio-ui .studio-catalog-task, .studio-ui .studio-catalog-row pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+.studio-ui .studio-catalog-expand { color: var(--studio-ink); background: transparent; border: 0; border-radius: var(--studio-small-radius); padding: 4px 8px; font: inherit; cursor: pointer; }
+.studio-ui .studio-catalog-expand:hover { background: var(--studio-hover); }
+.studio-ui .studio-catalog-expand:focus-visible { outline: 2px solid var(--studio-focus); }
+.studio-ui.studio-catalog-launch fieldset { border: 0; padding: 0; margin: 0 0 12px; }
+.studio-ui.studio-catalog-launch textarea { min-height: 100px; }
+
 .studio-ui h1, .studio-ui h2, .studio-ui h3, .studio-ui h4, .studio-ui strong, .studio-ui legend { font-weight: 500; }
 .studio-ui h1 { font-size: 28px; line-height: 1.3; margin: 8px 0 12px; }
 .studio-ui h2 { font-size: 18px; line-height: 1.4; margin: 0 0 12px; }

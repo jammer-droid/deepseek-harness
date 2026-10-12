@@ -20,6 +20,40 @@ test('Unavailable configuration and empty connection providers match user-visibl
   if (process.env.UPDATE_SNAPSHOTS) await writeFile(new URL('./workflow-ui.expected.html', import.meta.url), output + '\n');
   assert.equal(output + '\n', await readFile(new URL('./workflow-ui.expected.html', import.meta.url), 'utf8'));
 });
+test('Role composition fields and add actions have distinct localized labels', async () => {
+  const root = createRoot(document.getElementById('root'));
+  try {
+    const { workflowText } = await import('../src/workflow-locales.ts');
+    const components = [
+      { id: 'studio.model', version: 1, scope: 'role', fields: ['provider', 'model', 'reasoningEffort'].map(key => ({ key, kind: 'text', required: key !== 'reasoningEffort' })) },
+      { id: 'studio.tools', version: 1, scope: 'role', fields: ['allow', 'deny'].map(key => ({ key, kind: 'text', required: false })) },
+    ];
+    const api = { drafts: async () => [], save: async () => { throw new Error('not called'); } };
+    for (const [locale, expected] of [['en', ['Provider', 'Model', 'Allowed tools (one name per line)']], ['ko', ['공급자', '모델', '허용할 도구 (한 줄에 이름 하나)']], ['zh', ['提供商', '模型', '允许的工具（每行一个名称）']]]) {
+      const initialDrafts = [{ id: 'role', revision: 1, document: { documentVersion: 3, name: 'Draft', mainRoleId: 'main', roles: [{ id: 'main', name: 'Role', model: { provider: 'provider', model: 'model' }, components: components.map(item => ({ instanceId: `${item.id}-instance`, id: item.id, version: 1, scope: 'role', config: {} })) }], systems: [], connections: [] } }];
+      await act(async () => root.render(React.createElement(WorkflowEditor, { key: locale, locale, components, initialDrafts, api })));
+      const t = workflowText(locale);
+      const view = document.getElementById('root');
+      for (const label of [...expected, t.reasoningEffort, t.deny]) {
+        const field = view.querySelector(`textarea[aria-label="${label}"]`);
+        assert.ok(field, `Missing localized field: ${label}`);
+        assert.equal(field.closest('label').textContent, label);
+      }
+      assert.ok(view.querySelector(`select[aria-label="${t.roleModel}"]`), 'v3 role model selector remains available');
+      assert.ok(view.textContent.includes(t.toolHelp));
+      const actions = [...view.querySelectorAll('button')].map(button => button.textContent);
+      assert.ok(actions.includes(t.addModel));
+      assert.ok(actions.includes(t.addTools));
+      assert.ok(!actions.includes(t.model), 'field label is not reused as an add action');
+    }
+    const initialDrafts = [{ id: 'role', revision: 1, document: { documentVersion: 3, name: 'Draft', mainRoleId: 'main', roles: [{ id: 'main', name: 'Role', components: [] }], systems: [], connections: [] } }];
+    await act(async () => root.render(React.createElement(WorkflowEditor, { key: 'empty', locale: 'en', components, initialDrafts, api })));
+    await click('Add model');
+    await click('Add tool restrictions');
+    assert.ok(document.querySelector('textarea[aria-label="Provider"]'));
+    assert.ok(document.querySelector('textarea[aria-label="Allowed tools (one name per line)"]'));
+  } finally { await act(async () => root.unmount()); }
+});
 after(() => dom.window.close());
 test('Systems and port connections can be added, changed and explicitly deleted with stable IDs', async () => {
   const root = createRoot(document.getElementById('root'));

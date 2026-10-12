@@ -47,3 +47,5 @@ worktrees/
 .agents/worktrees/
 .typert-*/
 native/system/test/bin/
+/.studio-web-home/
+/studio/packages/sub-agent-catalog/tool.js

@@ -4,7 +4,7 @@
 import React from 'react';
 import { Tag, type StateDotState, type TagTone } from '@deepseek-ai/dsh-client-ui-primitives';
 
-export { Checkbox, Modal, SegmentedControl, StateDot, Tag, Toast } from '@deepseek-ai/dsh-client-ui-primitives';
+export { Checkbox, Menu, MenuItemButton, Modal, SegmentedControl, StateDot, Tag, Toast } from '@deepseek-ai/dsh-client-ui-primitives';
 export type { StateDotState, TagTone } from '@deepseek-ai/dsh-client-ui-primitives';
 
 /** Whether Studio can deliver a setting, component, or system as configured. */

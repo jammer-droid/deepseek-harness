@@ -15524,6 +15524,9 @@ importers:
       '@deepseek-ai/dsh-client-ui-sidebar':
         specifier: workspace:*
         version: link:../packages/client/ui-sidebar
+      '@deepseek-ai/dsh-client-ui-sidebar-right':
+        specifier: workspace:*
+        version: link:../packages/client/ui-sidebar-right
       '@deepseek-ai/dsh-client-ui-slots':
         specifier: workspace:*
         version: link:../packages/client/ui-slots
@@ -15554,6 +15557,9 @@ importers:
       '@deepseek-ai/dsh-subagent':
         specifier: workspace:*
         version: link:../packages/subagent/subagent
+      '@deepseek-ai/dsh-token-meter':
+        specifier: workspace:*
+        version: link:../packages/llm/token-meter
       '@deepseek-ai/dsh-typert-generator':
         specifier: workspace:*
         version: link:../packages/typert/generator
@@ -15563,6 +15569,9 @@ importers:
       '@deepseek-ai/dsh-typert-registry':
         specifier: workspace:*
         version: link:../packages/typert/registry
+      '@local/dsh-studio-sub-agent-catalog':
+        specifier: workspace:*
+        version: link:packages/sub-agent-catalog
       '@local/dsh-studio-experiments':
         specifier: workspace:*
         version: link:packages/experiments
@@ -15623,6 +15632,9 @@ importers:
       '@deepseek-ai/dsh-tool-todo':
         specifier: workspace:*
         version: link:../../../packages/todo/tool-todo
+      '@local/dsh-studio-sub-agent-catalog':
+        specifier: workspace:*
+        version: link:../sub-agent-catalog
       '@local/dsh-studio-experiments':
         specifier: workspace:*
         version: link:../experiments
@@ -15642,6 +15654,60 @@ importers:
       '@deepseek-ai/dsh':
         specifier: workspace:*
         version: link:../../../apps/cli
+
+  studio/packages/sub-agent-catalog:
+    devDependencies:
+      '@deepseek-ai/cordis':
+        specifier: workspace:~
+        version: link:../../../vendor/cordis
+      '@deepseek-ai/dsh':
+        specifier: workspace:*
+        version: link:../../../apps/cli
+      '@deepseek-ai/dsh-agent':
+        specifier: workspace:*
+        version: link:../../../packages/core/agent
+      '@deepseek-ai/dsh-app-boot':
+        specifier: workspace:*
+        version: link:../../../packages/boot/app-boot
+      '@deepseek-ai/dsh-brand':
+        specifier: workspace:*
+        version: link:../../../packages/util/brand
+      '@deepseek-ai/dsh-goal':
+        specifier: workspace:*
+        version: link:../../../packages/goal/goal
+      '@deepseek-ai/dsh-jobs':
+        specifier: workspace:*
+        version: link:../../../packages/jobs/jobs
+      '@deepseek-ai/dsh-llm':
+        specifier: workspace:*
+        version: link:../../../packages/llm/llm
+      '@deepseek-ai/dsh-session':
+        specifier: workspace:*
+        version: link:../../../packages/core/session
+      '@deepseek-ai/dsh-spill':
+        specifier: workspace:*
+        version: link:../../../packages/spill/spill
+      '@deepseek-ai/dsh-storage-domain':
+        specifier: workspace:*
+        version: link:../../../packages/storage/storage-domain
+      '@deepseek-ai/dsh-subagent':
+        specifier: workspace:*
+        version: link:../../../packages/subagent/subagent
+      '@deepseek-ai/dsh-system-prompt':
+        specifier: workspace:*
+        version: link:../../../packages/core/system-prompt
+      '@deepseek-ai/dsh-tools':
+        specifier: workspace:*
+        version: link:../../../packages/core/tools
+      '@deepseek-ai/dsh-typert-protocol':
+        specifier: workspace:*
+        version: link:../../../packages/typert/protocol
+      '@local/dsh-studio-workflows':
+        specifier: workspace:*
+        version: link:../workflows
+      zod:
+        specifier: 4.4.3
+        version: 4.4.3
 
   studio/packages/experiments:
     devDependencies:

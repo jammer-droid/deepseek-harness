@@ -81,7 +81,7 @@ primitives는 CSS 모듈을 함께 불러오므로 Node 단위 테스트에서 �
 
 | 부품 | 쓰는 곳 |
 | --- | --- |
-| `Checkbox`, `Modal`, `SegmentedControl`, `StateDot`, `Tag`, `Toast` | DSH primitives 재수출 |
+| `Checkbox`, `Menu`, `MenuItemButton`, `Modal`, `SegmentedControl`, `StateDot`, `Tag`, `Toast` | DSH primitives 재수출 |
 | `ComponentCard` | 구성 요소 하나의 접이식 카드. 펼친 순서는 사유 → 편집 폼 → 모델에 전달되는 변화 → 카드 동작으로 고정 |
 | `SupportTag`, `SUPPORT_DOT` | 지원 상태 태그와 상태 점 매핑 |
 | `DialogBody`, `DialogFooter` | Modal 내용과 버튼 줄. Modal은 문서 body로 포털되므로 Studio 스타일 범위를 다시 연다 |
