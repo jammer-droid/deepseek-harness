@@ -73,7 +73,7 @@ export class ComponentRegistry {
     for (const [definition, validator] of contributions) {
       const instances = definition.scope === 'role' ? document.roles.flatMap(role => role.components) : document.systems;
       for (const instance of instances) {
-        if (instance.id === definition.id && instance.version === definition.version) result.diagnostics.push(...structuredClone(validator(structuredClone(instance), structuredClone(document), structuredClone(catalog))));
+        if (instance.enabled !== false && instance.id === definition.id && instance.version === definition.version) result.diagnostics.push(...structuredClone(validator(structuredClone(instance), structuredClone(document), structuredClone(catalog))));
       }
     }
     result.valid = result.diagnostics.length === 0;

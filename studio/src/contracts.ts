@@ -20,7 +20,7 @@ export type StudioProps = PropsRenderSlots<'local.dsh-studio.features'>;
 export interface IconProps { size?: number; active?: boolean }
 declare module '@deepseek-ai/dsh-client-ui-slots' {
   interface SlotMap {
-    'local.dsh-studio.services': { kind: 'list'; props: Record<string, never> };
+    'local.dsh-studio.services': { kind: 'list'; owner: { active: boolean } };
     'local.dsh-studio.features': { kind: 'list'; props: Record<string, never> };
   }
 }

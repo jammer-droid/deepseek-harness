@@ -25,8 +25,8 @@ const roleId = z.string().min(1).transform(value => brandString<RoleId>(value));
 const model = z.object({ provider: z.string().min(1), model: z.string().min(1), reasoningEffort: z.string().min(1).optional() }).strict();
 const currentDocument = z.object({
   documentVersion: z.literal(3), name: z.string(), mainRoleId: roleId,
-  roles: z.array(z.object({ id: roleId, name: z.string(), components: z.array(component.extend({ instanceId, scope: z.string() })), model: model.optional() }).strict()),
-  initialModel: model.optional(), systems: v2Document.shape.systems, connections: v2Document.shape.connections,
+  roles: z.array(z.object({ id: roleId, name: z.string(), components: z.array(component.extend({ instanceId, scope: z.string(), enabled: z.boolean().optional() })), model: model.optional() }).strict()),
+  initialModel: model.optional(), systems: z.array(v2Document.shape.systems.element.extend({ enabled: z.boolean().optional() })), connections: v2Document.shape.connections,
 }).strict().superRefine((value, ctx) => {
   const ids = [...value.roles.flatMap(role => role.components), ...value.systems].map(item => item.instanceId);
   if (new Set(ids).size !== ids.length || new Set(value.roles.map(role => role.id)).size !== value.roles.length || new Set(value.connections.map(item => item.id)).size !== value.connections.length) ctx.addIssue({ code: 'custom', message: 'Duplicate document identity' });

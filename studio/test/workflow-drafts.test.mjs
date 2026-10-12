@@ -19,6 +19,17 @@ async function fixture(pool = new MemoryMediaPool(), profile = 'web') {
   const store = await DraftStore.open(facility, profile);
   return { store, pool, registry, async close() { await store.close(); await ctx.fiber.dispose(); } };
 }
+test('Local usage flags and retained connections survive save and reopen', async () => {
+  const pool = new MemoryMediaPool();
+  const first = await fixture(pool);
+  const document = { documentVersion: 3, name: 'Disabled', mainRoleId: 'main', roles: [{ id: 'main', name: 'Main', components: [{ instanceId: 'c', id: 'missing', version: 1, scope: 'role', enabled: false, config: { text: 'Keep' } }] }], systems: [{ instanceId: 's', id: 'missing-system', version: 1, scope: 'workflow', executionLocation: 'dsh', enabled: false, config: { keep: true } }], connections: [{ id: 'wire', from: { kind: 'component', instanceId: 'c', portId: 'out' }, to: { kind: 'system', instanceId: 's', portId: 'in' } }] };
+  await first.store.save({ id: randomUUID(), expectedRevision: 0, document });
+  await first.close();
+  const second = await fixture(pool);
+  assert.deepEqual(second.store.list()[0].document, document);
+  await second.close();
+});
+
 test('Legacy reads normalize deterministically without changing persisted revision or writing', async () => {
   const pool = new MemoryMediaPool();
   const ctx = new Context(); await ctx.plugin(Storage);

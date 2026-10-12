@@ -15794,9 +15794,6 @@ importers:
       '@deepseek-ai/dsh':
         specifier: workspace:*
         version: link:../../../apps/cli
-      '@deepseek-ai/dsh-api-remotes':
-        specifier: workspace:*
-        version: link:../../../packages/api/remotes
       '@deepseek-ai/dsh-app-boot':
         specifier: workspace:*
         version: link:../../../packages/boot/app-boot

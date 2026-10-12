@@ -1,5 +1,4 @@
 /** Wire values for Studio documents, never executable preset settings. */
-import type {} from './remote-events.ts';
 import type { Branded } from '@deepseek-ai/dsh-brand';
 import type { ComponentId, SystemId, CatalogSnapshot } from './component-registry.ts';
 export type { ComponentDefinition, ComponentId, SystemDefinition, SystemId, PortDefinition, CatalogSnapshot } from './component-registry.ts';
@@ -12,9 +11,9 @@ export type ConnectionId = Branded<'StudioWorkflowConnectionId'>;
 /** JSON retains configuration of unavailable providers. */
 export type ConfigValue = null | boolean | number | string | ConfigValue[] | { [key: string]: ConfigValue };
 /** Component attached to a role; unsupported scopes remain diagnosable. */
-export interface ComponentInstance { instanceId: InstanceId; id: ComponentId; version: number; scope: string; config: { [key: string]: ConfigValue } }
+export interface ComponentInstance { instanceId: InstanceId; id: ComponentId; version: number; enabled?: boolean | undefined; scope: string; config: { [key: string]: ConfigValue } }
 /** Workflow-owned system and explicitly selected execution location. */
-export interface SystemInstance { instanceId: InstanceId; id: SystemId; version: number; scope: string; executionLocation: string; config: { [key: string]: ConfigValue } }
+export interface SystemInstance { instanceId: InstanceId; id: SystemId; version: number; enabled?: boolean | undefined; scope: string; executionLocation: string; config: { [key: string]: ConfigValue } }
 /** One endpoint, retained even when its instance or port disappears. */
 export interface WorkflowEndpoint { kind: 'component' | 'system'; instanceId: InstanceId; portId: string }
 /** Directed connection owned by its workflow. */

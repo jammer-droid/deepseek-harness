@@ -13,7 +13,7 @@ test('registered services retain edits across selection and disappear on removal
   const { createRoot } = await import('react-dom/client');
   const root = createRoot(document.getElementById('root'));
   const services = [{ id: 'workflow', label: 'Workflow' }, { id: 'preview', label: 'Design preview' }];
-  const renderSlot = (_name, _props, { only }) => React.createElement('textarea', { defaultValue: only });
+  const renderSlot = (_name, props, { only }) => React.createElement('textarea', { defaultValue: only, 'data-active': props.active });
   const render = (items, locale = 'en') => act(async () => root.render(React.createElement(ServiceLayout, { services: items, locale, renderSlot })));
   try {
     await render(services);
@@ -21,8 +21,11 @@ test('registered services retain edits across selection and disappear on removal
     assert.equal(buttons()[0].getAttribute('aria-current'), 'page');
     const draft = document.querySelector('textarea');
     draft.value = 'unsaved instruction';
+    assert.equal(draft.dataset.active, 'true');
     await act(async () => buttons()[1].click());
+    assert.equal(draft.dataset.active, 'false');
     await act(async () => buttons()[0].click());
+    assert.equal(draft.dataset.active, 'true');
     assert.equal(document.querySelector('textarea'), draft);
     assert.equal(draft.value, 'unsaved instruction');
     await act(async () => buttons()[1].click());

@@ -3,6 +3,9 @@ import type { CatalogSnapshot } from './component-registry.ts';
 import type { WorkflowDocument, WorkflowDiagnostic, ValidationResult, WorkflowEndpoint } from './workflow-types.ts';
 /** @param document Editable document. @param catalog Detached registration snapshot. @returns Ordered configuration diagnostics. */
 export function validateWorkflow(document: WorkflowDocument, catalog: CatalogSnapshot): ValidationResult {
+  // A disabled endpoint excludes its retained connection, but not active requirements.
+  const disabled = new Set([...document.roles.flatMap(role => role.components), ...document.systems].filter(item => item.enabled === false).map(item => item.instanceId));
+  document = { ...document, roles: document.roles.map(role => ({ ...role, components: role.components.filter(item => item.enabled !== false) })), systems: document.systems.filter(item => item.enabled !== false), connections: document.connections.filter(item => !disabled.has(item.from.instanceId) && !disabled.has(item.to.instanceId)) };
   const diagnostics: WorkflowDiagnostic[] = [];
   if (!document.roles.some(role => role.id === document.mainRoleId)) diagnostics.push({ code: 'missing-main-role', target: { kind: 'document', fieldPath: 'mainRoleId' }, relatedIds: [document.mainRoleId], details: {} });
   for (const kind of ['component', 'system'] as const) {

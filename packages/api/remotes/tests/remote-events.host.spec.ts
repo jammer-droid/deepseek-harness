@@ -9,13 +9,6 @@ import { scopeTarget } from '@deepseek-ai/dsh-scope'
 import { describe, expect, it } from 'vitest'
 import { apply, inject } from '../src/index.ts'
 
-declare module '@deepseek-ai/cordis' {
-  interface Events {
-    /** Test contribution notification. @param revision Catalog revision. @mode emit */
-    'fixture/catalog-changed'(revision: number): void
-  }
-}
-
 interface GatewayProbe {
   source: TypertRemoteEventSource | undefined
   host: RemoteEventHostInfo | undefined
@@ -86,33 +79,6 @@ function invocationOf(value: unknown): TypertRemoteEventInvocation {
 }
 
 describe('Remote event Host source', () => {
-  it('forwards effect-owned notifications to existing and future streams without replacing the source', async () => {
-    const { ctx, gateway, fiber } = await setup()
-    const firstAbort = new AbortController()
-    const first = sourceOf(gateway)(firstAbort.signal)[Symbol.asyncIterator]()
-    const remove = ctx.remoteEventContributions.register('fixture/catalog-changed')
-    expect(() => ctx.remoteEventContributions.register('fixture/catalog-changed')).toThrow(/already/)
-    const secondAbort = new AbortController()
-    const second = sourceOf(gateway)(secondAbort.signal)[Symbol.asyncIterator]()
-    ctx.emit('fixture/catalog-changed', 1)
-    for (const stream of [first, second]) expect((await stream.next()).value).toEqual({ event: 'fixture/catalog-changed', args: [1] })
-    remove(); remove()
-    const replacement = ctx.remoteEventContributions.register('fixture/catalog-changed')
-    remove()
-    ctx.emit('fixture/catalog-changed', 2)
-    for (const stream of [first, second]) expect((await stream.next()).value).toEqual({ event: 'fixture/catalog-changed', args: [2] })
-    expect(() => emitRaw(ctx, 'fixture/catalog-changed', [() => {}])).toThrow(/JSON/)
-    replacement()
-    ctx.emit('fixture/catalog-changed', 3)
-    emitRaw(ctx, 'settings/document-updated', ['marker', 3])
-    for (const stream of [first, second]) expect((await stream.next()).value).toEqual({ event: 'settings/document-updated', args: ['marker', 3] })
-    firstAbort.abort(); secondAbort.abort()
-    expect((await first.next()).done).toBe(true)
-    expect((await second.next()).done).toBe(true)
-    await fiber.dispose()
-    expect(gateway.removals).toBe(1)
-  })
-
   it('registers the Host home used by Client connection generations', async () => {
     const { gateway, fiber } = await setup()
     expect(gateway.host?.home).toBeTypeOf('string')

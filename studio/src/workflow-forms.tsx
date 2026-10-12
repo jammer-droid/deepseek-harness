@@ -42,6 +42,7 @@ export function WorkflowForms({ document, catalog, models, enabled, diagnostics,
       {role.components.map(instance => {
         const definition = catalog.components.find(item => item.id === instance.id && item.version === instance.version);
         return <fieldset key={instance.instanceId}><legend>{instance.id} · {instance.instanceId}</legend>
+          <label><input type="checkbox" checked={instance.enabled !== false} onChange={event => updateRole({ ...role, components: role.components.map(item => item.instanceId === instance.instanceId ? { ...item, enabled: event.target.checked } : item) })} />{t.enabled}</label>
           {!definition ? <p>{t.unknown}</p> : definition.fields.map(field => <label key={field.key}>{instance.id === 'studio.instructions' ? t.instructions : field.key}<textarea aria-label={instance.id === 'studio.instructions' ? t.instructions : field.key} disabled={!enabled} value={textValue(instance.config[field.key])} onChange={event => updateRole({ ...role, components: role.components.map(item => item.instanceId === instance.instanceId ? { ...item, config: { ...item.config, [field.key]: event.target.value } } : item) })} /></label>)}
           {notices('component', instance.instanceId)}
           <Button onClick={() => updateRole({ ...role, components: role.components.filter(item => item.instanceId !== instance.instanceId) })}>{t.removeComponent}: {instance.id}</Button>
@@ -67,6 +68,7 @@ export function WorkflowForms({ document, catalog, models, enabled, diagnostics,
       {document.systems.map(instance => {
         const definition = catalog.systems.find(item => item.id === instance.id && item.version === instance.version);
         return <fieldset key={instance.instanceId}><legend>{instance.id} · {instance.instanceId}</legend>
+          <label><input type="checkbox" checked={instance.enabled !== false} onChange={event => onChange({ ...document, systems: document.systems.map(item => item.instanceId === instance.instanceId ? { ...item, enabled: event.target.checked } : item) })} />{t.enabled}</label>
           {!definition ? <p>{t.unknown}</p> : <>
             <label>{t.location}<select disabled={!enabled} value={instance.executionLocation} onChange={event => onChange({ ...document, systems: document.systems.map(item => item.instanceId === instance.instanceId ? { ...item, executionLocation: event.target.value } : item) })}>
               {!definition.executionLocations.includes(instance.executionLocation) && <option>{instance.executionLocation}</option>}{definition.executionLocations.map(location => <option key={location}>{location}</option>)}

@@ -79,6 +79,34 @@ test('Host-only semantic validators cannot mutate caller documents or serialized
   assert.doesNotThrow(() => structuredClone(registry.catalog()));
 });
 
+test('Disabled instances retain data, skip checks, and cannot satisfy active requirements', () => {
+  const { registry, document } = fixture();
+  const other = structuredClone(document);
+  document.systems[0].enabled = false;
+  const disabled = structuredClone(document);
+  const result = registry.validate(document);
+  assert.deepEqual(result.diagnostics.map(item => item.code), ['missing-system', 'connection-count']);
+  assert.ok(result.diagnostics.every(item => item.target.instanceId === 'c'));
+  assert.deepEqual(document, disabled);
+  assert.equal(registry.validate(other).valid, true);
+  document.roles[0].components[0].enabled = false;
+  document.roles[0].components[0].config = {};
+  document.systems[0].id = 'removed-provider';
+  assert.equal(registry.validate(document).valid, true);
+  document.roles[0].components[0].enabled = true;
+  assert.ok(registry.validate(document).diagnostics.some(item => item.code === 'required-field'));
+  assert.equal(document.connections.length, 1);
+});
+
+test('Disabled instances do not invoke provider semantic validators', () => {
+  const { document } = fixture();
+  const registry = new ComponentRegistry();
+  registry.register(component, () => { throw new Error('Disabled validator invoked'); });
+  registry.registerSystem(system);
+  document.roles[0].components[0].enabled = false;
+  assert.doesNotThrow(() => registry.validate(document));
+});
+
 test('Host validates required systems and directed compatible connections against one catalog revision', () => {
   const { registry, document } = fixture();
   assert.deepEqual(registry.validate(document), { catalogRevision: 2, valid: true, diagnostics: [] });

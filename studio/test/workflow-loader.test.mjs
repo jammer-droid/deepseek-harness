@@ -4,7 +4,6 @@ import assert from 'node:assert/strict';
 import { Context } from '@deepseek-ai/cordis';
 import Loader from '@deepseek-ai/cordis-plugin-loader';
 import TypertRegistry from '@deepseek-ai/dsh-typert-registry';
-import * as ApiRemotes from '@deepseek-ai/dsh-api-remotes';
 import Gateway from '@deepseek-ai/dsh-api-gateway';
 import Storage from '@deepseek-ai/dsh-storage';
 import Llm, { LlmAdapter, ReasoningEffortId } from '@deepseek-ai/dsh-llm';
@@ -22,14 +21,8 @@ test('Workflow declarations mount independently and leave with their Loader row'
     ctx.provide('profileContext', { name: 'web' });
     await ctx.plugin(TypertRegistry);
     await ctx.plugin(Gateway);
-    await ctx.plugin(ApiRemotes);
-    const eventAbort = new AbortController();
-    const events = (await ctx.typertGateway.wireStream.open('$events', { args: {} }, undefined, undefined, eventAbort.signal))[Symbol.asyncIterator]();
-    assert.equal((await events.next()).value.type, 'ready');
     ctx.effect(() => ctx.typert.register(TYPERT));
     await ctx.plugin(Loader);
-    const revisions = [];
-    ctx.on('studio-workflows/catalog-changed', revision => revisions.push(revision));
     const provider = { inject: ['studioWorkflows'], apply(providerContext) {
       providerContext.effect(() => providerContext.studioWorkflows.registerSystem({ id: 'test.system', version: 1, scope: 'workflow', fields: [], ports: [], executionLocations: ['dsh'] }));
     } };
@@ -69,13 +62,7 @@ test('Workflow declarations mount independently and leave with their Loader row'
     assert.deepEqual((await validate(systemDocument)).diagnostics.map(issue => issue.code), ['model-lookup-failed']);
     assert.deepEqual(await validate(systemDocument), await ctx.studioWorkflows.validate(systemDocument));
     await assert.rejects(validate({ ...systemDocument, documentVersion: 99 }), /invalid-document|validation/i);
-    assert.deepEqual(revisions.slice(0, 4), [1, 2, 3, 4]);
-    for (const revision of [1, 2, 3, 4]) {
-      const notification = (await events.next()).value;
-      assert.equal(notification.event, 'studio-workflows/catalog-changed');
-      assert.deepEqual(notification.args, [revision]);
-    }
-    eventAbort.abort(); await events.return?.();
+
     assert.deepEqual((await ctx.studioWorkflows.drafts())[0], stored);
     assert.equal(ctx.get('studioRoles'), undefined);
     assert.equal(ctx.get('studioDelegation'), undefined);
@@ -89,8 +76,6 @@ test('Workflow declarations mount independently and leave with their Loader row'
 
 test('Workflow Gateway observes effect-owned LLM routes and preserves invalid saved selections', { timeout: 10000 }, async () => {
   const ctx = new Context();
-  const eventAbort = new AbortController();
-  let events;
   try {
     await ctx.plugin(Storage);
     ctx.storage.backend.register('memory', new MemoryStorageBackend(new MemoryMediaPool()));
@@ -98,7 +83,6 @@ test('Workflow Gateway observes effect-owned LLM routes and preserves invalid sa
     ctx.provide('profileContext', { name: 'web' });
     await ctx.plugin(TypertRegistry);
     await ctx.plugin(Gateway);
-    await ctx.plugin(ApiRemotes);
     ctx.effect(() => ctx.typert.register(TYPERT));
     await ctx.plugin(Loader);
     class FixtureAdapter extends LlmAdapter {
@@ -127,8 +111,6 @@ test('Workflow Gateway observes effect-owned LLM routes and preserves invalid sa
     const invoke = (method, args = {}) => ctx.typertGateway.invoke({ namespace: 'studioWorkflows', method, args });
     assert.equal((await invoke('models')).status, 'unavailable');
     const initialRevision = (await invoke('catalog')).revision;
-    events = (await ctx.typertGateway.wireStream.open('$events', { args: {} }, undefined, undefined, eventAbort.signal))[Symbol.asyncIterator]();
-    assert.equal((await events.next()).value.type, 'ready');
     await ctx.loader.create({ name: 'test-llm' });
     await settle();
     await ctx.loader.create({ name: 'test-model-provider' });
@@ -160,22 +142,12 @@ test('Workflow Gateway observes effect-owned LLM routes and preserves invalid sa
     assert.ok(removed.catalogRevision > before.catalogRevision);
     assert.deepEqual(await invoke('drafts'), [stored]);
     assert.equal(stored.document.roles[1].model.reasoningEffort, 'unsupported');
-    for (const expected of [before.catalogRevision, removed.catalogRevision]) {
-      let notification;
-      do {
-        const next = await events.next();
-        assert.equal(next.done, false);
-        notification = next.value;
-      } while (notification.event !== 'studio-workflows/catalog-changed');
-      assert.deepEqual(notification.args, [expected]);
-    }
+
     await ctx.loader.create({ name: 'test-model-provider' });
     await settle();
     assert.equal((await invoke('validate', { document: validDocument })).valid, true);
     assert.deepEqual(await invoke('drafts'), [stored]);
   } finally {
-    eventAbort.abort();
-    await events?.return?.();
     await ctx.fiber.dispose();
   }
 });

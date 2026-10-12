@@ -88,9 +88,8 @@ export class WorkflowRemote extends TypertRemoteService {
  * @param ctx Owning plugin context.
  */
 export async function apply(ctx: Context): Promise<void> {
-  ctx.effect(() => ctx.remoteEventContributions.register('studio-workflows/catalog-changed'));
   let revision = 0;
-  const changed = () => ctx.emit('studio-workflows/catalog-changed', ++revision);
+  const changed = () => { ++revision; };
   const registry = new ComponentRegistry(changed);
   ctx.on('llm/adapters-updated', changed);
   ctx.effect(() => registry.register(instructionsDefinition));
@@ -99,5 +98,5 @@ export async function apply(ctx: Context): Promise<void> {
   ctx.plugin(WorkflowRemote, { registry, store, models: () => new WorkflowModels(ctx.get('llm')), revision: () => revision });
 }
 
-/** Document storage, profile identity and event forwarding; model lookup is optional and never required to save drafts. */
-export const inject = ['storageDomain', 'profileContext', 'remoteEventContributions'];
+/** Document storage and profile identity; model lookup is optional and never required to save drafts. */
+export const inject = ['storageDomain', 'profileContext'];

@@ -13,15 +13,14 @@ export interface WorkflowApi {
   models(): Promise<ModelCatalog>;
   catalog(): Promise<CatalogSnapshot>;
   validate(document: WorkflowDocument): Promise<ValidationResult>;
-  subscribeCatalog(listener: (revision: number) => void): () => void;
   subscribeConnection(listener: (connected: boolean) => void): () => void;
 }
 
 /** @param props Initial confirmed drafts and declarations with explicit persistence operations.
  * @returns Multiple-draft editor retaining local edits until save or confirmed discard.
  */
-export function WorkflowEditor({ locale, initialDrafts, api }: {
-  locale: string; initialDrafts: SavedDraft[]; api: WorkflowApi;
+export function WorkflowEditor({ locale, initialDrafts, api, visible = true }: {
+  locale: string; initialDrafts: SavedDraft[]; api: WorkflowApi; visible?: boolean;
 }) {
   const t = workflowText(locale);
   const [drafts, setDrafts] = React.useState(initialDrafts);
@@ -87,6 +86,7 @@ export function WorkflowEditor({ locale, initialDrafts, api }: {
   const minimumRevision = React.useRef(0);
   const validationEpoch = React.useRef(0);
   React.useEffect(() => {
+    if (!visible) { setAvailability('unknown'); setValidation(null); return; }
     let mounted = true;
     async function load() {
       const epoch = ++catalogEpoch.current;
@@ -100,14 +100,13 @@ export function WorkflowEditor({ locale, initialDrafts, api }: {
         setCatalog(next); setModels(nextModels); setAvailability('ready');
       } catch (error) { if (mounted && epoch === catalogEpoch.current) setAvailability('unknown'); }
     }
-    const stopCatalog = api.subscribeCatalog(revision => { minimumRevision.current = Math.max(minimumRevision.current, revision); void load(); });
     const stopConnection = api.subscribeConnection(connected => {
       ++catalogEpoch.current; ++validationEpoch.current; minimumRevision.current = 0; setValidation(null);
       if (connected) void load(); else setAvailability('unknown');
     });
     void load();
-    return () => { mounted = false; ++catalogEpoch.current; ++validationEpoch.current; stopCatalog(); stopConnection(); };
-  }, [api, refresh]);
+    return () => { mounted = false; ++catalogEpoch.current; ++validationEpoch.current; stopConnection(); };
+  }, [api, refresh, visible]);
   React.useEffect(() => {
     const epoch = ++validationEpoch.current;
     setValidation(null); setValidationFailed(false);
@@ -134,10 +133,10 @@ export function WorkflowEditor({ locale, initialDrafts, api }: {
         <label>{t.draftName}<input value={document.name} onChange={event => setDocument({ ...document, name: event.target.value })} /></label>
         <WorkflowForms key={selected.id} document={document} catalog={catalog} models={models} enabled={availability === 'ready'} diagnostics={validation?.diagnostics ?? []} locale={locale} onChange={setDocument} />
         <p aria-live="polite">{availability !== 'ready' ? availability === 'checking' ? t.checking : t.availabilityUnknown : validationFailed ? t.validationFailed : validation ? validation.valid ? t.valid : t.invalidConfiguration : t.checking}</p>
-        <Button onClick={() => setRefresh(value => value + 1)}>{t.refresh}</Button>
         <Button primary disabled={!dirty || (failure !== null && failure !== 'invalid-document')} onClick={() => void save()}>{t.save}</Button>
         <p role="status">{busy ? t.saving : dirty ? t.unsaved : t.saved}</p>
       </> : <p>{t.empty}</p>}
+      <Button onClick={() => setRefresh(value => value + 1)}>{t.refresh}</Button>
       <Button onClick={() => change(() => { void reload(); }, true)}>{t.retry}</Button>
     </fieldset>
     {failure && <p role="alert">{{ 'revision-conflict': t.conflict, 'storage-uncertain': t.restart, closed: t.closed, 'invalid-document': t.invalid, 'unknown-outcome': t.saveFailed, 'read-failed': t.readFailed }[failure]}</p>}

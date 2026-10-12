@@ -10,7 +10,7 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 const { createRoot } = await import('react-dom/client');
 const { WorkflowEditor: Editor } = await import('../src/workflow-editor.tsx');
 function WorkflowEditor(props) {
-  const api = React.useMemo(() => ({ models: async () => ({ status: 'available', providers: [] }), catalog: async () => ({ revision: 1, components: props.components, systems: [] }), validate: async () => ({ catalogRevision: 1, valid: true, diagnostics: [] }), subscribeCatalog: () => () => {}, subscribeConnection: () => () => {}, ...props.api }), [props.api]);
+  const api = React.useMemo(() => ({ models: async () => ({ status: 'available', providers: [] }), catalog: async () => ({ revision: 1, components: props.components, systems: [] }), validate: async () => ({ catalogRevision: 1, valid: true, diagnostics: [] }), subscribeConnection: () => () => {}, ...props.api }), [props.api]);
   return React.createElement(Editor, { ...props, api, initialDrafts: props.initialDrafts.map(draft => ({ ...draft, document: { documentVersion: 3, systems: [], connections: [], ...draft.document, mainRoleId: draft.document.mainRoleId, roles: draft.document.roles.map(role => ({ ...role, components: role.components.map((item, index) => ({ instanceId: `instance-${index}`, ...item })) })) } })) });
 }
 test('Unavailable configuration and empty connection providers match user-visible output', async () => {
@@ -28,7 +28,7 @@ test('Systems and port connections can be added, changed and explicitly deleted 
     { id: 'source', version: 1, scope: 'workflow', executionLocations: ['dsh'], fields: [{ key: 'text', kind: 'text', required: true }], ports: [{ id: 'out', direction: 'output', semantic: 'test', allowedPeers: ['sink'], minConnections: 0, maxConnections: 2 }] },
     { id: 'sink', version: 1, scope: 'workflow', executionLocations: ['dsh'], fields: [], ports: [{ id: 'in', direction: 'input', semantic: 'test', allowedPeers: ['source'], minConnections: 0, maxConnections: 2 }] },
   ] };
-  const api = { catalog: async () => catalog, validate: async () => ({ catalogRevision: 1, valid: true, diagnostics: [] }), subscribeCatalog: () => () => {}, subscribeConnection: () => () => {}, drafts: async () => [], save: async request => (saved = { ...request, revision: 1 }) };
+  const api = { catalog: async () => catalog, validate: async () => ({ catalogRevision: 1, valid: true, diagnostics: [] }), subscribeConnection: () => () => {}, drafts: async () => [], save: async request => (saved = { ...request, revision: 1 }) };
   try {
     await act(async () => root.render(React.createElement(WorkflowEditor, { locale: 'en', components: [], initialDrafts: [], api })));
     await click('New draft'); await click('Add system: source'); await click('Add system: sink');
@@ -68,24 +68,25 @@ test('A connection can switch atomically between disjoint compatible port pairs'
     assert.equal(saved.document.connections[0].to.instanceId, saved.document.systems[3].instanceId);
   } finally { await act(async () => root.unmount()); }
 });
-test('Live availability retains unsaved values, ignores reversed replies, and recovers after reconnect failure', async () => {
+test('Manual availability retains unsaved values, ignores reversed replies, and recovers after reconnect failure', async () => {
   const root = createRoot(document.getElementById('root'));
-  let changed; let connected; let current = { revision: 1, components, systems: [] }; let fail = false;
+  let connected; let current = { revision: 1, components, systems: [] }; let fail = false;
   let deferred; let hold = false;
-  const api = { catalog: async () => { if (fail) throw new Error('offline'); return current; }, subscribeCatalog: listener => { changed = listener; return () => {}; }, subscribeConnection: listener => { connected = listener; return () => {}; }, validate: async () => hold ? new Promise(resolve => { deferred = resolve; }) : ({ catalogRevision: current.revision, valid: true, diagnostics: [] }), drafts: async () => [], save: async request => ({ ...request, revision: 1 }) };
+  const api = { catalog: async () => { if (fail) throw new Error('offline'); return current; }, subscribeConnection: listener => { connected = listener; return () => {}; }, validate: async () => hold ? new Promise(resolve => { deferred = resolve; }) : ({ catalogRevision: current.revision, valid: true, diagnostics: [] }), drafts: async () => [], save: async request => ({ ...request, revision: 1 }) };
   try {
     await act(async () => root.render(React.createElement(WorkflowEditor, { locale: 'en', components, initialDrafts: [], api })));
     await click('New draft'); await click('Add instructions'); await input(document.querySelector('textarea'), 'Unsaved text');
     hold = true; await input(document.querySelector('textarea'), 'Latest text'); const old = deferred;
     current = { revision: 2, components: [], systems: [] }; hold = false;
-    await act(async () => changed(2));
+    assert.equal(document.querySelector('textarea').value, 'Latest text');
+    await click('Refresh availability');
     assert.equal(document.querySelector('textarea'), null);
     assert.match(document.body.textContent, /Unavailable component configuration is preserved/);
     current = { revision: 3, components: components.map(item => ({ ...item, version: 2 })), systems: [] };
-    await act(async () => changed(3)); assert.equal(document.querySelector('textarea'), null);
+    await click('Refresh availability'); assert.equal(document.querySelector('textarea'), null);
     await act(async () => old({ catalogRevision: 1, valid: false, diagnostics: [{ code: 'required-field', target: { kind: 'document' }, relatedIds: [], details: {} }] }));
     assert.doesNotMatch(document.body.textContent, /Enter a value for this field/);
-    current = { revision: 3, components, systems: [] }; await act(async () => changed(3));
+    current = { revision: 3, components, systems: [] }; await click('Refresh availability');
     assert.equal(document.querySelector('textarea').value, 'Latest text');
     await act(async () => connected(false));
     assert.equal(button('Add instructions').disabled, true);
@@ -98,11 +99,11 @@ test('Live availability retains unsaved values, ignores reversed replies, and re
 });
 test('Localized field diagnostics allow draft saving and ignore older validation and catalog responses', async () => {
   const root = createRoot(document.getElementById('root'));
-  const validations = []; const catalogs = []; let changed; let saved;
-  const api = { catalog: () => new Promise(resolve => catalogs.push(resolve)), subscribeCatalog: listener => { changed = listener; return () => {}; }, subscribeConnection: () => () => {}, validate: () => new Promise(resolve => validations.push(resolve)), drafts: async () => [], save: async request => (saved = { ...request, revision: 1 }) };
+  const validations = []; const catalogs = []; let saved;
+  const api = { catalog: () => new Promise(resolve => catalogs.push(resolve)), subscribeConnection: () => () => {}, validate: () => new Promise(resolve => validations.push(resolve)), drafts: async () => [], save: async request => (saved = { ...request, revision: 1 }) };
   try {
     await act(async () => root.render(React.createElement(WorkflowEditor, { locale: 'ko', components: [], initialDrafts: [], api })));
-    await act(async () => changed(2));
+    await click('가용성 새로 확인');
     await act(async () => catalogs[1]({ revision: 2, components, systems: [] }));
     await act(async () => catalogs[0]({ revision: 1, components: [], systems: [] }));
     await click('새 초안'); await click('지침 추가'); await input(document.querySelector('textarea'), 'A');
@@ -118,7 +119,7 @@ test('Localized field diagnostics allow draft saving and ignore older validation
 test('Validation transport failures retain edits, remain distinct from configuration errors, and release subscriptions', async () => {
   const root = createRoot(document.getElementById('root'));
   let stopped = 0;
-  const api = { catalog: async () => ({ revision: 1, components, systems: [] }), validate: async () => { throw new Error('offline'); }, subscribeCatalog: () => () => { stopped++; }, subscribeConnection: () => () => { stopped++; }, drafts: async () => [], save: async request => ({ ...request, revision: 1 }) };
+  const api = { catalog: async () => ({ revision: 1, components, systems: [] }), validate: async () => { throw new Error('offline'); }, subscribeConnection: () => () => { stopped++; }, drafts: async () => [], save: async request => ({ ...request, revision: 1 }) };
   try {
     await act(async () => root.render(React.createElement(WorkflowEditor, { locale: 'en', components, initialDrafts: [], api })));
     await click('New draft'); await click('Add instructions'); await input(document.querySelector('textarea'), 'Kept');
@@ -127,17 +128,17 @@ test('Validation transport failures retain edits, remain distinct from configura
     assert.equal(document.querySelector('textarea').value, 'Kept');
     assert.equal(button('Save draft').disabled, false);
   } finally { await act(async () => root.unmount()); }
-  assert.equal(stopped, 2);
+  assert.equal(stopped, 1);
 });
 test('Revision mismatches visibly stop additions instead of leaving validation pending', async () => {
   const root = createRoot(document.getElementById('root'));
   let changed;
-  const api = { catalog: async () => ({ revision: 1, components, systems: [] }), validate: async () => ({ catalogRevision: 2, valid: true, diagnostics: [] }), subscribeCatalog: listener => { changed = listener; return () => {}; }, subscribeConnection: () => () => {}, drafts: async () => [], save: async request => ({ ...request, revision: 1 }) };
+  const api = { catalog: async () => ({ revision: 1, components, systems: [] }), validate: async () => ({ catalogRevision: 2, valid: true, diagnostics: [] }), subscribeConnection: () => () => {}, drafts: async () => [], save: async request => ({ ...request, revision: 1 }) };
   try {
     await act(async () => root.render(React.createElement(WorkflowEditor, { locale: 'en', components, initialDrafts: [], api })));
     await click('New draft'); assert.match(document.body.textContent, /availability is unknown/);
     assert.equal(button('Add instructions').disabled, true);
-    await act(async () => changed(3)); assert.match(document.body.textContent, /availability is unknown/);
+    await click('Refresh availability'); assert.match(document.body.textContent, /availability is unknown/);
     await click('Refresh availability'); assert.match(document.body.textContent, /availability is unknown/);
     assert.equal(button('Add instructions').disabled, true);
   } finally { await act(async () => root.unmount()); }
@@ -286,12 +287,12 @@ test('Initial route and effort copy independently; deleting main keeps its ID an
   } finally { await act(async () => root.unmount()); }
 });
 test('Missing model route and effort remain visible and saved; stale model catalogs cannot replace newer choices', async () => {
-  const root = createRoot(document.getElementById('root')); let saved; let listener; const requests = [];
+  const root = createRoot(document.getElementById('root')); let saved; const requests = [];
   const draft = { id: 'draft', revision: 1, document: { documentVersion: 3, name: 'Kept', mainRoleId: 'role', roles: [{ id: 'role', name: '', components: [], model: { provider: 'gone', model: 'offline', reasoningEffort: 'custom' } }], systems: [], connections: [{ id: 'dangling', from: { kind: 'component', instanceId: 'deleted', portId: 'out' }, to: { kind: 'system', instanceId: 'missing', portId: 'in' } }] } };
-  const api = { models: () => new Promise(resolve => requests.push(resolve)), subscribeCatalog: callback => { listener = callback; return () => {}; }, drafts: async () => [], save: async request => (saved = { ...request, revision: 2 }) };
+  const api = { models: () => new Promise(resolve => requests.push(resolve)), drafts: async () => [], save: async request => (saved = { ...request, revision: 2 }) };
   try {
     await act(async () => root.render(React.createElement(WorkflowEditor, { locale: 'en', components: [], initialDrafts: [draft], api })));
-    await act(async () => listener(1));
+    await click('Refresh availability');
     await act(async () => requests[1](modelCatalog));
     await act(async () => requests[0]({ status: 'unavailable', providers: [] }));
     assert.match(document.querySelector('select[aria-label="Role model"]').textContent, /Alpha/);
@@ -305,9 +306,9 @@ test('Missing model route and effort remain visible and saved; stale model catal
 });
 
 test('Model service absence is distinct from lookup failure and refresh blocks stale choices', async () => {
-  const root = createRoot(document.getElementById('root')); let listener; let connected;
+  const root = createRoot(document.getElementById('root')); let connected;
   let current = modelCatalog;
-  const api = { models: async () => current, subscribeCatalog: callback => { listener = callback; return () => {}; }, subscribeConnection: callback => { connected = callback; return () => {}; }, drafts: async () => [], save: async request => ({ ...request, revision: 1 }) };
+  const api = { models: async () => current, subscribeConnection: callback => { connected = callback; return () => {}; }, drafts: async () => [], save: async request => ({ ...request, revision: 1 }) };
   try {
     await act(async () => root.render(React.createElement(WorkflowEditor, { locale: 'en', components: [], initialDrafts: [], api })));
     await click('New draft'); await choose('Initial model', JSON.stringify(['p', 'a']));
@@ -319,8 +320,49 @@ test('Model service absence is distinct from lookup failure and refresh blocks s
     assert.match(document.body.textContent, /model service is disabled/);
     assert.equal([...document.querySelectorAll('button')].find(item => item.textContent === 'Copy initial model to roles').disabled, true);
     current = { status: 'unavailable', providers: [], failure: { code: 'lookup-failed', operation: 'providers', message: 'offline' } };
-    await act(async () => listener(1));
+    await click('Refresh availability');
     assert.doesNotMatch(document.body.textContent, /model service is disabled/);
     assert.match(document.body.textContent, /Could not verify some model choices/);
+  } finally { await act(async () => root.unmount()); }
+});
+
+test('Local component and system toggles preserve editable configuration and incident connections', async () => {
+  const root = createRoot(document.getElementById('root')); let saved;
+  const connection = { id: 'link', from: { kind: 'component', instanceId: 'c', portId: 'out' }, to: { kind: 'system', instanceId: 's', portId: 'in' } };
+  const draft = { id: 'draft', revision: 1, document: { documentVersion: 3, name: 'Toggles', mainRoleId: 'main', roles: [{ id: 'main', name: 'Main', components: [{ instanceId: 'c', id: 'studio.instructions', version: 1, scope: 'role', config: { text: 'Before' } }] }], systems: [{ instanceId: 's', id: 'system', version: 1, scope: 'workflow', executionLocation: 'dsh', config: { text: 'System before' } }], connections: [connection] } };
+  const api = { catalog: async () => ({ revision: 1, components, systems: [{ id: 'system', version: 1, scope: 'workflow', executionLocations: ['dsh'], fields: [{ key: 'text', kind: 'text' }], ports: [] }] }), drafts: async () => [], save: async request => (saved = { ...request, revision: 2 }) };
+  const toggles = () => [...document.querySelectorAll('input[type="checkbox"]')];
+  try {
+    await act(async () => root.render(React.createElement(WorkflowEditor, { locale: 'en', components, initialDrafts: [draft], api })));
+    assert.deepEqual(toggles().map(item => item.checked), [true, true]);
+    await act(async () => toggles().forEach(item => item.click()));
+    await input(document.querySelector('textarea[aria-label="Instructions"]'), 'Edited while disabled');
+    await input(document.querySelector('textarea[aria-label="text"]'), 'System edited');
+    await click('Refresh availability'); await click('Save draft');
+    assert.equal(saved.document.roles[0].components[0].enabled, false);
+    assert.equal(saved.document.systems[0].enabled, false);
+    assert.equal(saved.document.roles[0].components[0].config.text, 'Edited while disabled');
+    assert.equal(saved.document.systems[0].config.text, 'System edited');
+    assert.deepEqual(saved.document.connections, [connection]);
+    await act(async () => toggles().forEach(item => item.click())); await click('Save draft');
+    assert.equal(saved.document.roles[0].components[0].enabled, true);
+    assert.equal(saved.document.systems[0].enabled, true);
+    assert.deepEqual(saved.document.connections, [connection]);
+  } finally { await act(async () => root.unmount()); }
+});
+
+test('Returning to the mounted editor refreshes catalogs without discarding local edits', async () => {
+  const root = createRoot(document.getElementById('root')); let calls = 0; let current = components;
+  const api = { catalog: async () => { calls++; return { revision: 1, components: current, systems: [] }; }, drafts: async () => [], save: async request => ({ ...request, revision: 1 }) };
+  const render = visible => act(async () => root.render(React.createElement(WorkflowEditor, { locale: 'en', visible, components, initialDrafts: [], api })));
+  try {
+    await render(true); await click('New draft'); await click('Add instructions');
+    await input(document.querySelector('textarea'), 'Kept across navigation');
+    await render(false); current = [];
+    assert.equal(calls, 1);
+    await render(true);
+    assert.equal(calls, 2); assert.equal(document.querySelector('textarea'), null);
+    await render(false); current = components; await render(true);
+    assert.equal(calls, 3); assert.equal(document.querySelector('textarea').value, 'Kept across navigation');
   } finally { await act(async () => root.unmount()); }
 });

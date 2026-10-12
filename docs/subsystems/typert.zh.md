@@ -380,30 +380,6 @@ interface TypertClientRemote extends TypertRemoteNamespaceMap {
 
 Generated from source by `scripts/gen-cordis-catalog.ts` (verified fresh by `pnpm run verify-cordis-catalog` in doc-sync; regenerate with `pnpm run gen-cordis-catalog`) — the language sides differ only in locale-specific paired document paths. Signature blocks use a `ts cordis-catalog` fence and keep the original source JSDoc; dispatch modes are defined in the [primer](../cordis-primer.zh.md#dispatch-modes), and the framework-inherited `ctx` API lives in [cordis-api/inherited.md](../cordis-api/inherited.md).
 
-<a id="ctxremoteeventcontributions--remoteeventcontributions"></a>
-
-### `ctx.remoteEventContributions` — `RemoteEventContributions`
-
-Adds notifications without replacing Gateway's application source or built-in events.
-
-```ts cordis-catalog
-/**
- * Forward one ordinary notification to connected Clients.
- * @param event Ordinary Cordis event selected by its owner.
- * @returns Idempotent disposer for use with the owner's ctx.effect().
- */
-register(event: RemoteNotificationEvent): () => void
-
-/**
- * Subscribe an application-source Client stream to contributed notifications.
- * @param consume One Client stream queue.
- * @returns Disposer detaching that stream from future notifications.
- */
-attach(consume: (dispatch: TypertRemoteEventDispatch) => void): () => void
-```
-
-Source: [`packages/api/remotes/src/contributions.ts`](../../packages/api/remotes/src/contributions.ts)
-
 <a id="ctxtypert--typertregistry"></a>
 
 ### `ctx.typert` — `TypertRegistry`

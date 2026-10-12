@@ -32,6 +32,6 @@ export function ServiceLayout({ locale, services, renderSlot }: PropsRenderSlots
     </nav>
     {!services.length && <p role="status" className="studio-muted">{t.empty}</p>}
     {services.map(service => <section className="studio-service-panel" key={service.id}
-      id={`${id}-${service.id}`} hidden={service.id !== active}>{renderSlot('local.dsh-studio.services', {}, { only: service.id })}</section>)}
+      id={`${id}-${service.id}`} hidden={service.id !== active}>{renderSlot('local.dsh-studio.services', { active: service.id === active }, { only: service.id })}</section>)}
   </div>;
 }

@@ -44,11 +44,13 @@ it('saves two independent drafts and restores their contents after page reload',
         expect(await editor.getByLabel('Role model', { exact: true }).inputValue()).toBe(copiedModel);
         await editor.getByLabel('Select role', { exact: true }).selectOption({ label: 'Main' });
         await editor.getByRole('button', { name: 'Add instructions', exact: true }).click();
+        await editor.getByLabel('Enabled', { exact: true }).uncheck();
         await editor.getByLabel('Instructions', { exact: true }).fill(`${name} instructions`);
         await page.getByRole('button', { name: 'Design preview', exact: true }).click();
         await navigation.getByRole('button', { name: 'Preset Builder', exact: true }).click();
         await builderMenu.getByRole('button', { name: 'Workflow', exact: true }).click();
         expect(await editor.getByLabel('Instructions', { exact: true }).inputValue()).toBe(`${name} instructions`);
+        expect(await editor.getByLabel('Enabled', { exact: true }).isChecked()).toBe(false);
         await editor.getByRole('button', { name: 'Save draft', exact: true }).click();
         await expect.poll(() => editor.getByRole('status').textContent()).toBe('Saved');
       }
@@ -60,6 +62,7 @@ it('saves two independent drafts and restores their contents after page reload',
       for (const name of ['First draft', 'Second draft']) {
         await editor.getByLabel('Select draft', { exact: true }).selectOption({ label: name });
         expect(await editor.getByLabel('Instructions', { exact: true }).inputValue()).toBe(`${name} instructions`);
+        expect(await editor.getByLabel('Enabled', { exact: true }).isChecked()).toBe(false);
       }
       await editor.getByRole('button', { name: 'Add component: test.sender', exact: true }).click();
       await editor.getByLabel('message', { exact: true }).fill('Retained provider text');
@@ -73,10 +76,13 @@ it('saves two independent drafts and restores their contents after page reload',
       const provider = [...scaffold.ctx.loader.entries()].find(entry => entry.options.id === 'workflow-browser-provider');
       if (!provider?.fiber) throw new Error('Browser provider did not mount');
       await provider.fiber.dispose();
+      await editor.getByRole('button', { name: 'Refresh availability', exact: true }).click();
       await expect.poll(() => editor.getByLabel('message', { exact: true }).count()).toBe(0);
       await expect.poll(() => editor.textContent()).toContain('Unavailable component configuration is preserved.');
       await scaffold.ctx.loader.create({ name: `${studio}/test/workflow-browser-provider.mjs` });
       await scaffold.ctx.loader.await();
+      await navigation.getByRole('button', { name: 'Design preview', exact: true }).click();
+      await navigation.getByRole('button', { name: 'Preset Builder', exact: true }).click();
       await expect.poll(() => editor.getByLabel('message', { exact: true }).inputValue()).toBe('Unsaved provider text');
       await editor.getByRole('button', { name: 'Save draft', exact: true }).click();
       await expect.poll(() => editor.getByRole('status').textContent()).toBe('Saved');
