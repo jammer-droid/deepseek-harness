@@ -6,7 +6,7 @@ import { ToolCallId, createUserMessage } from '@deepseek-ai/dsh-llm';
 import { launchWebScaffold } from '@studio-test/scaffold';
 const studio = fileURLToPath(new URL('..', import.meta.url));
 it('restores an owner before admitting a counted wake of its completed child', async () => {
-  const scaffold = await launchWebScaffold({ extraOverlayPath: `${studio}/packages/bundle/cordis.patch.yml`, extraInstallAnchors: ['bundle', 'shell', 'roles', 'demo'].map(name => `${studio}/packages/${name}/package.json`), replayFixture: `${studio}/test/fixtures/delegation/session.v4.jsonl`, replayChildFixtures: [`${studio}/test/fixtures/delegation/rework-once.v4.jsonl`], compareReplaySession: false });
+  const scaffold = await launchWebScaffold({ extraOverlayPath: `${studio}/packages/bundle/cordis.patch.yml`, extraInstallAnchors: ['bundle', 'shell', 'roles'].map(name => `${studio}/packages/${name}/package.json`), replayFixture: `${studio}/test/fixtures/delegation/session.v4.jsonl`, replayChildFixtures: [`${studio}/test/fixtures/delegation/rework-once.v4.jsonl`], compareReplaySession: false });
   try {
     const ctx = scaffold.ctx;
     const settings = { instructions: 'Preserved instructions.', provider: 'deepseek-official', model: 'deepseek-v4-flash-vision-exp' };

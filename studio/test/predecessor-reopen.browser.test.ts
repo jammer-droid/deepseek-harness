@@ -9,7 +9,7 @@ const studio = fileURLToPath(new URL('..', import.meta.url))
 const predecessor = process.env.DSH_TEST_PREDECESSOR_STUDIO
 it.skipIf(!predecessor)('reopens exact predecessor Loader sidecars with unchanged identities and captured settings', async () => {
   if (!predecessor) throw new Error('Set DSH_TEST_PREDECESSOR_STUDIO to the built ticket9 Studio directory')
-  const scaffold = await launchWebScaffold({ extraOverlayPath: `${predecessor}/packages/bundle/cordis.patch.yml`, extraInstallAnchors: ['bundle', 'shell', 'roles', 'demo'].map(name => `${predecessor}/packages/${name}/package.json`), replayFixture: `${studio}/test/fixtures/delegation/session.v4.jsonl`, replayChildFixtures: [`${studio}/test/fixtures/delegation/session.1.v4.jsonl`, `${studio}/test/fixtures/delegation/review-pass.v4.jsonl`], compareReplaySession: false })
+  const scaffold = await launchWebScaffold({ extraOverlayPath: `${predecessor}/packages/bundle/cordis.patch.yml`, extraInstallAnchors: ['bundle', 'shell', 'roles'].map(name => `${predecessor}/packages/${name}/package.json`), replayFixture: `${studio}/test/fixtures/delegation/session.v4.jsonl`, replayChildFixtures: [`${studio}/test/fixtures/delegation/session.1.v4.jsonl`, `${studio}/test/fixtures/delegation/review-pass.v4.jsonl`], compareReplaySession: false })
   try {
     const ctx = scaffold.ctx
     const current = ctx.studioRoles.describe()

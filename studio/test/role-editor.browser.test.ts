@@ -14,7 +14,7 @@ it('edits only two roles, applies explicitly, and reloads the saved snapshot in 
   try {
     const scaffold = await launchWebScaffold({
       extraOverlayPath: `${studio}/packages/bundle/cordis.patch.yml`,
-      extraInstallAnchors: ['bundle', 'shell', 'roles', 'demo'].map(name => `${studio}/packages/${name}/package.json`),
+      extraInstallAnchors: ['bundle', 'shell', 'roles'].map(name => `${studio}/packages/${name}/package.json`),
       replayFixture: fixture,
       replayProvidersOnly: true,
     })

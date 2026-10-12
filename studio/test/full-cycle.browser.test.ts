@@ -21,7 +21,7 @@ it('repairs feedback files with one counted rework, an independent rereview, and
     await writeFile(join(preview, 'client.js'), '');
     const scaffold = await launchWebScaffold({
       extraOverlayPath: `${studio}/packages/bundle/cordis.patch.yml`,
-      extraInstallAnchors: [...['bundle', 'shell', 'roles', 'demo'].map(name => `${studio}/packages/${name}/package.json`), join(preview, 'package.json')],
+      extraInstallAnchors: [...['bundle', 'shell', 'roles'].map(name => `${studio}/packages/${name}/package.json`), join(preview, 'package.json')],
       replayFixture: `${fixtures}/root.v4.jsonl`, replayChildFixtures: [`${fixtures}/implementer.v4.jsonl`, `${fixtures}/reviewer.v4.jsonl`], compareReplaySession: false,
     });
     try {

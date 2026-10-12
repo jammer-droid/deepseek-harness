@@ -6,7 +6,7 @@ import { ToolCallId, createUserMessage } from '@deepseek-ai/dsh-llm'
 import { launchWebScaffold } from '@studio-test/scaffold'
 const studio = fileURLToPath(new URL('..', import.meta.url))
 it.each(['rework', 'review', 'settlement'] as const)('exposes unknown after %s writes and fallback fail without resending', async action => {
-  const scaffold = await launchWebScaffold({ extraOverlayPath: `${studio}/packages/bundle/cordis.patch.yml`, extraInstallAnchors: ['bundle', 'shell', 'roles', 'demo'].map(name => `${studio}/packages/${name}/package.json`), replayFixture: `${studio}/test/fixtures/delegation/session.v4.jsonl`, replayChildFixtures: [`${studio}/test/fixtures/delegation/${action !== 'review' ? 'rework-once' : 'session.1'}.v4.jsonl`], compareReplaySession: false })
+  const scaffold = await launchWebScaffold({ extraOverlayPath: `${studio}/packages/bundle/cordis.patch.yml`, extraInstallAnchors: ['bundle', 'shell', 'roles'].map(name => `${studio}/packages/${name}/package.json`), replayFixture: `${studio}/test/fixtures/delegation/session.v4.jsonl`, replayChildFixtures: [`${studio}/test/fixtures/delegation/${action !== 'review' ? 'rework-once' : 'session.1'}.v4.jsonl`], compareReplaySession: false })
   try {
     const ctx = scaffold.ctx
     let faults = 0

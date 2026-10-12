@@ -11,7 +11,7 @@ const studio = fileURLToPath(new URL('..', import.meta.url));
 it('separates cycle phase and activation, counts reused work, and localizes next actions', async () => {
   const browser = await chromium.launch({ ...(process.env.DSH_TEST_BROWSER_CHANNEL ? { channel: process.env.DSH_TEST_BROWSER_CHANNEL } : {}) });
   try {
-    const scaffold = await launchWebScaffold({ extraOverlayPath: `${studio}/packages/bundle/cordis.patch.yml`, extraInstallAnchors: ['bundle', 'shell', 'roles', 'demo'].map(name => `${studio}/packages/${name}/package.json`), replayFixture: `${studio}/test/fixtures/delegation/session.v4.jsonl`, replayChildFixtures: [`${studio}/test/fixtures/delegation/rework-implementer.v4.jsonl`, `${studio}/test/fixtures/delegation/rework-reviewer.v4.jsonl`], compareReplaySession: false });
+    const scaffold = await launchWebScaffold({ extraOverlayPath: `${studio}/packages/bundle/cordis.patch.yml`, extraInstallAnchors: ['bundle', 'shell', 'roles'].map(name => `${studio}/packages/${name}/package.json`), replayFixture: `${studio}/test/fixtures/delegation/session.v4.jsonl`, replayChildFixtures: [`${studio}/test/fixtures/delegation/rework-implementer.v4.jsonl`, `${studio}/test/fixtures/delegation/rework-reviewer.v4.jsonl`], compareReplaySession: false });
     try {
       const ctx = scaffold.ctx;
       const settings = { instructions: 'Captured UI instructions.', provider: 'deepseek-official', model: 'deepseek-v4-flash-vision-exp' };

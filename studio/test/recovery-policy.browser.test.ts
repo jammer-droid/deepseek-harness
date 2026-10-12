@@ -7,7 +7,7 @@ const studio = fileURLToPath(new URL('..', import.meta.url));
 it('refuses managed creation before input when the policy storage owner is unavailable', async () => {
   const scaffold = await launchWebScaffold({
     extraOverlayPath: `${studio}/packages/bundle/cordis.patch.yml`,
-    extraInstallAnchors: ['bundle', 'shell', 'roles', 'demo'].map(name => `${studio}/packages/${name}/package.json`),
+    extraInstallAnchors: ['bundle', 'shell', 'roles'].map(name => `${studio}/packages/${name}/package.json`),
   });
   try {
     const ctx = scaffold.ctx;
@@ -30,7 +30,7 @@ it('refuses managed creation before input when the policy storage owner is unava
 it('refuses a managed child with no durable role reservation before input is released', async () => {
   const scaffold = await launchWebScaffold({
     extraOverlayPath: `${studio}/packages/bundle/cordis.patch.yml`,
-    extraInstallAnchors: ['bundle', 'shell', 'roles', 'demo'].map(name => `${studio}/packages/${name}/package.json`),
+    extraInstallAnchors: ['bundle', 'shell', 'roles'].map(name => `${studio}/packages/${name}/package.json`),
   });
   try {
     const ctx = scaffold.ctx;

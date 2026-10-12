@@ -79,7 +79,7 @@ it.skipIf(phase === undefined)('recovery process phase', async () => {
   const first: PhaseResult | undefined = phase === 'resume' ? JSON.parse(await readFile(join(phaseRoot, 'write.json'), 'utf8')) : undefined
   const scaffold = await launchWebScaffold({
     extraOverlayPath: [`${studio}/packages/bundle/cordis.patch.yml`, join(phaseRoot, 'restart.patch.yml')],
-    extraInstallAnchors: ['bundle', 'shell', 'roles', 'demo'].map(name => `${studio}/packages/${name}/package.json`),
+    extraInstallAnchors: ['bundle', 'shell', 'roles'].map(name => `${studio}/packages/${name}/package.json`),
     harnessHome: join(phaseRoot, `home-${phase}`),
     replayFixture: `${studio}/test/fixtures/delegation/${phase === 'write' ? 'session' : 'session.1'}.v4.jsonl`,
     ...(phase === 'write' ? { replayChildFixtures: [`${studio}/test/fixtures/delegation/session.1.v4.jsonl`] } : {}),

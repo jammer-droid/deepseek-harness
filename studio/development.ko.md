@@ -41,14 +41,14 @@ Host와 Client는 별도 TypeScript 프로그램이다. 공식 compiler base와 
 
 ## 구조
 
-- `src/shell.tsx`: 사이드바 아이콘, main 페이지, profile 스위치.
-- `src/demo.tsx`: 독립 해제되는 Client 타이머.
+- `src/shell.tsx`: 사이드바 아이콘과 Studio 서비스 내비게이션.
 - `src/contracts.ts`: 공식 타입 연결 및 Studio 소유 Slot 계약.
 - `src/host/`: 공식 Cordis Context를 받는 Host entry.
-- `packages/shell`, `packages/demo`: 각각 독립 Loader row와 Client factory.
-- `packages/bundle`: 두 패키지를 묶는 workspace bundle, 데모 기본 OFF.
+- `packages/shell`: Studio 페이지를 등록하는 Loader row와 Client factory.
+- `packages/experiments`: 프로필별 에이전트 최적화 정책과 Experiments 편집 UI.
+- `packages/bundle`: Studio 서비스 패키지를 묶는 workspace bundle.
 
-수정할 소스는 `src/`이며 `packages/*/index.js`, `client.js`는 생성 파일이다. ON/OFF는 native Plugin Manager가 profile에 저장한다. 타이머는 React mount가 아닌 Client 플러그인/Slot 생명주기에 속하며 페이지 간에 공유하지 않는다.
+수정할 소스는 `src/`와 각 패키지의 `src/`이며 `packages/*/index.js`, `client.js`는 생성 파일이다. 서비스 활성화는 native Plugin Manager가 profile에 저장한다. 테스트 타이머와 데모 Client 기여는 포함하지 않는다.
 
 ## Web 플러그인 업데이트 자동화
 

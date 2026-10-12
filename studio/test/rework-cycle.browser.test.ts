@@ -8,7 +8,7 @@ const studio = fileURLToPath(new URL('..', import.meta.url))
 const evidence = { requirements: 'Required behavior', summary: 'Changes made', changedFiles: ['example.ts'], validations: [], failures: [], unrun: ['verification'] }
 
 it('counts a verification-only wake after natural unload without replacing its child or settings', async () => {
-  const scaffold = await launchWebScaffold({ extraOverlayPath: `${studio}/packages/bundle/cordis.patch.yml`, extraInstallAnchors: ['bundle', 'shell', 'roles', 'demo'].map(name => `${studio}/packages/${name}/package.json`), replayFixture: `${studio}/test/fixtures/delegation/session.v4.jsonl`, replayChildFixtures: [`${studio}/test/fixtures/delegation/rework-implementer.v4.jsonl`, `${studio}/test/fixtures/delegation/rework-reviewer.v4.jsonl`], compareReplaySession: false })
+  const scaffold = await launchWebScaffold({ extraOverlayPath: `${studio}/packages/bundle/cordis.patch.yml`, extraInstallAnchors: ['bundle', 'shell', 'roles'].map(name => `${studio}/packages/${name}/package.json`), replayFixture: `${studio}/test/fixtures/delegation/session.v4.jsonl`, replayChildFixtures: [`${studio}/test/fixtures/delegation/rework-implementer.v4.jsonl`, `${studio}/test/fixtures/delegation/rework-reviewer.v4.jsonl`], compareReplaySession: false })
   try {
     const ctx = scaffold.ctx
     const settings = { instructions: 'Original implementer instructions.', provider: 'deepseek-official', model: 'deepseek-v4-flash-vision-exp' }

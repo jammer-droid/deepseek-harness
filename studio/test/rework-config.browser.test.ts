@@ -15,7 +15,7 @@ it('rejects every postinitial wake at cap zero and freezes old limits when the L
   try {
     const patch = join(directory, 'cap.patch.yml');
     await writeFile(patch, '- id: local-dsh-studio-roles\n  config:\n    reworkCap: 0\n');
-    const scaffold = await launchWebScaffold({ extraOverlayPath: [`${studio}/packages/bundle/cordis.patch.yml`, patch], extraInstallAnchors: ['bundle', 'shell', 'roles', 'demo'].map(name => `${studio}/packages/${name}/package.json`), replayFixture: `${studio}/test/fixtures/delegation/session.v4.jsonl`, replayChildFixtures: [`${studio}/test/fixtures/delegation/session.1.v4.jsonl`, `${studio}/test/fixtures/delegation/rework-once.v4.jsonl`], compareReplaySession: false });
+    const scaffold = await launchWebScaffold({ extraOverlayPath: [`${studio}/packages/bundle/cordis.patch.yml`, patch], extraInstallAnchors: ['bundle', 'shell', 'roles'].map(name => `${studio}/packages/${name}/package.json`), replayFixture: `${studio}/test/fixtures/delegation/session.v4.jsonl`, replayChildFixtures: [`${studio}/test/fixtures/delegation/session.1.v4.jsonl`, `${studio}/test/fixtures/delegation/rework-once.v4.jsonl`], compareReplaySession: false });
     try {
       const ctx = scaffold.ctx;
       const settings = { instructions: 'Frozen role settings.', provider: 'deepseek-official', model: 'deepseek-v4-flash-vision-exp' };

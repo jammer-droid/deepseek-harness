@@ -7,7 +7,7 @@ import { launchWebScaffold, readPersistedEvents } from '@studio-test/scaffold';
 import { delegationSpec } from '../packages/roles/src/delegation-store.ts';
 const studio = fileURLToPath(new URL('..', import.meta.url));
 it.each(['error', 'shutdown'] as const)('retains counted accepted rework and terminal details after %s', async mode => {
-  const scaffold = await launchWebScaffold({ extraOverlayPath: `${studio}/packages/bundle/cordis.patch.yml`, extraInstallAnchors: ['bundle', 'shell', 'roles', 'demo'].map(name => `${studio}/packages/${name}/package.json`), replayFixture: `${studio}/test/fixtures/delegation/session.v4.jsonl`, replayChildFixtures: [`${studio}/test/fixtures/delegation/session.1.v4.jsonl`], compareReplaySession: false });
+  const scaffold = await launchWebScaffold({ extraOverlayPath: `${studio}/packages/bundle/cordis.patch.yml`, extraInstallAnchors: ['bundle', 'shell', 'roles'].map(name => `${studio}/packages/${name}/package.json`), replayFixture: `${studio}/test/fixtures/delegation/session.v4.jsonl`, replayChildFixtures: [`${studio}/test/fixtures/delegation/session.1.v4.jsonl`], compareReplaySession: false });
   const release = Promise.withResolvers<void>();
   let off = () => {};
   try {

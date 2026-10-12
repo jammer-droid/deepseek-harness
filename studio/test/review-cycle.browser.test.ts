@@ -12,7 +12,7 @@ const evidence = { requirements: 'Required behavior', summary: 'Changes made', c
 it('captures a fresh structured pass without automatically completing its cycle', async () => {
   const scaffold = await launchWebScaffold({
     extraOverlayPath: `${studio}/packages/bundle/cordis.patch.yml`,
-    extraInstallAnchors: ['bundle', 'shell', 'roles', 'demo'].map(name => `${studio}/packages/${name}/package.json`),
+    extraInstallAnchors: ['bundle', 'shell', 'roles'].map(name => `${studio}/packages/${name}/package.json`),
     replayFixture: `${studio}/test/fixtures/delegation/session.v4.jsonl`,
     replayChildFixtures: [`${studio}/test/fixtures/delegation/session.1.v4.jsonl`, `${studio}/test/fixtures/delegation/review-pass.v4.jsonl`],
     compareReplaySession: false,
@@ -95,7 +95,7 @@ it('captures a fresh structured pass without automatically completing its cycle'
 })
 
 it.each(['needs-changes', 'unable-to-judge', 'verification', 'invalid', 'missing', 'start-failure'])('blocks completion after reviewer outcome %s', async outcome => {
-  const scaffold = await launchWebScaffold({ extraOverlayPath: `${studio}/packages/bundle/cordis.patch.yml`, extraInstallAnchors: ['bundle', 'shell', 'roles', 'demo'].map(name => `${studio}/packages/${name}/package.json`), replayFixture: `${studio}/test/fixtures/delegation/session.v4.jsonl`, replayChildFixtures: [`${studio}/test/fixtures/delegation/session.1.v4.jsonl`, ...(outcome === 'start-failure' ? [] : [`${studio}/test/fixtures/delegation/${outcome === 'missing' ? 'session.1' : `review-${outcome}`}.v4.jsonl`])], compareReplaySession: false })
+  const scaffold = await launchWebScaffold({ extraOverlayPath: `${studio}/packages/bundle/cordis.patch.yml`, extraInstallAnchors: ['bundle', 'shell', 'roles'].map(name => `${studio}/packages/${name}/package.json`), replayFixture: `${studio}/test/fixtures/delegation/session.v4.jsonl`, replayChildFixtures: [`${studio}/test/fixtures/delegation/session.1.v4.jsonl`, ...(outcome === 'start-failure' ? [] : [`${studio}/test/fixtures/delegation/${outcome === 'missing' ? 'session.1' : `review-${outcome}`}.v4.jsonl`])], compareReplaySession: false })
   try {
     const ctx = scaffold.ctx
     const current = ctx.studioRoles.describe()
@@ -144,7 +144,7 @@ it.each(['needs-changes', 'unable-to-judge', 'verification', 'invalid', 'missing
 it('rejects review and completion for a missing cycle', async () => {
   const scaffold = await launchWebScaffold({
     extraOverlayPath: `${studio}/packages/bundle/cordis.patch.yml`,
-    extraInstallAnchors: ['bundle', 'shell', 'roles', 'demo'].map(name => `${studio}/packages/${name}/package.json`),
+    extraInstallAnchors: ['bundle', 'shell', 'roles'].map(name => `${studio}/packages/${name}/package.json`),
     replayFixture: `${studio}/test/role-editor/session.v3.jsonl`,
     replayProvidersOnly: true,
   })

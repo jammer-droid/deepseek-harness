@@ -1,4 +1,4 @@
-import { Button, StudioSurface } from './ui.tsx';
+import { StudioSurface } from './ui.tsx';
 import React from "react";
 import { resolveSlotLabel } from '@deepseek-ai/dsh-client-ui-slots';
 import type { PropsRenderSlots } from '@deepseek-ai/dsh-client-ui-slots';
@@ -10,25 +10,12 @@ import { MockStudioProvider } from './mock-store.tsx';
 import { MockWorkflow } from './mock-workflow.tsx';
 import { MockAgents, MockComponents, MockSystems } from './mock-library.tsx';
 import type { StudioContext, StudioProps, IconProps } from "./contracts.js";
-import { createController, remoteManager } from "./controller.js";
+import { DetailLayout } from './detail-layout.tsx';
+import { experimentText } from './experiment-locales.ts';
 
 export const inject = ["slots", "remote", "remote.pluginManager", "locale"];
 const panel = "local-dsh-studio";
 export function apply(ctx: StudioContext) {
-    const controller = createController(
-        remoteManager(ctx.remote.pluginManager),
-    );
-    ctx.effect(() => () => controller.dispose());
-    ctx.effect(() => {
-        const refresh = () => void controller.refresh();
-        const offChange = ctx.remote.$on("plugin-manager/changed", refresh);
-        const offReset = ctx.on("connection/reset", refresh);
-        refresh();
-        return () => {
-            offChange();
-            offReset();
-        };
-    });
     const serviceListeners = new Set<() => void>();
     let services: readonly StudioServiceItem[] = [];
     const syncServices = () => {
@@ -47,88 +34,11 @@ export function apply(ctx: StudioContext) {
         </main></StudioSurface>;
     }
     function Experiments({ renderSlot }: StudioProps) {
-        const state = React.useSyncExternalStore(
-            controller.subscribe,
-            controller.getSnapshot,
-        );
-        const row = state.row;
-        return <div className="studio-content studio-feature-stack">
-                    <section className="studio-card" aria-label="Studio 기능">
-                        <div className="studio-row">
-                            <div>
-                                <h2>
-                                    데모 타이머
-                                </h2>
-                                <p className="studio-muted">
-                                    플러그인의 활성화와 자원 정리를 확인하는
-                                    작은 실험입니다.
-                                </p>
-                            </div>
-                            <Button
-                                type="button"
-                                role="switch"
-                                aria-label="데모 타이머"
-                                aria-checked={Boolean(row?.enabled)}
-                                disabled={
-                                    !row ||
-                                    state.busy ||
-                                    Boolean(row.readOnlyReason)
-                                }
-                                onClick={() => void controller.toggle()}
-                            >
-                                {state.busy
-                                    ? "적용 중…"
-                                    : !row
-                                      ? "확인 불가"
-                                      : row.enabled
-                                        ? "ON"
-                                        : "OFF"}
-                            </Button>
-                        </div>
-                        <p className="studio-muted">
-                            설정:{" "}
-                            {state.loading
-                                ? "조회 중"
-                                : !row
-                                  ? "확인 불가"
-                                  : row.enabled
-                                    ? "ON"
-                                    : "OFF"}{" "}
-                            · Host 상태:{" "}
-                            {!row ? "확인 불가" : (row.fiberPhase ?? "비활성")}{" "}
-                            · 범위: 현재 profile
-                        </p>
-                        {row?.readOnlyReason && (
-                            <p role="alert">
-                                변경할 수 없는 행입니다: {row.readOnlyReason}
-                            </p>
-                        )}
-                        {state.error && (
-                            <p
-                                role="alert"
-                            >
-                                {state.error}
-                            </p>
-                        )}
-                        {state.notice && <p role="status">{state.notice}</p>}
-                        <Button
-                            type="button"
-                            onClick={() => void controller.refresh()}
-                        >
-                            상태 새로고침
-                        </Button>
-                    </section>
-                    <section className="studio-card"
-                        aria-label="실행 중인 기능"
-                    >
-                        <h2>Client 실행 영역</h2>
-                        <p className="studio-muted">
-                            실제로 로드된 기능만 아래에 표시됩니다. OFF이면
-                            타이머와 화면 등록이 모두 해제됩니다.
-                        </p>
-                        {renderSlot("local.dsh-studio.features", {})}
-                    </section>
-        </div>;
+        const locale = React.useSyncExternalStore(listener => ctx.locale.subscribe(listener), () => ctx.locale.getLocale().active);
+        const t = experimentText(locale);
+        return <DetailLayout title={serviceText(locale).experiments} navigation={t.title}
+            pages={[{ id: 'agent-optimizations', label: t.title, content: renderSlot('local.dsh-studio.features', {}) }]}
+            selected="agent-optimizations" onSelect={() => {}} />;
     }
     function DesignPreview() {
         const locale = React.useSyncExternalStore(listener => ctx.locale.subscribe(listener), () => ctx.locale.getLocale().active);

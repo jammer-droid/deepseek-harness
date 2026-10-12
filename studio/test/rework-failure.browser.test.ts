@@ -8,7 +8,7 @@ import { delegationSpec } from '../packages/roles/src/delegation-store.ts'
 const studio = fileURLToPath(new URL('..', import.meta.url))
 
 it.each([false, true])('keeps counted rework uncertain when resume admission fails; shutdown %s', async shutdown => {
-  const scaffold = await launchWebScaffold({ extraOverlayPath: `${studio}/packages/bundle/cordis.patch.yml`, extraInstallAnchors: ['bundle', 'shell', 'roles', 'demo'].map(name => `${studio}/packages/${name}/package.json`), replayFixture: `${studio}/test/fixtures/delegation/session.v4.jsonl`, replayChildFixtures: [`${studio}/test/fixtures/delegation/session.1.v4.jsonl`], compareReplaySession: false })
+  const scaffold = await launchWebScaffold({ extraOverlayPath: `${studio}/packages/bundle/cordis.patch.yml`, extraInstallAnchors: ['bundle', 'shell', 'roles'].map(name => `${studio}/packages/${name}/package.json`), replayFixture: `${studio}/test/fixtures/delegation/session.v4.jsonl`, replayChildFixtures: [`${studio}/test/fixtures/delegation/session.1.v4.jsonl`], compareReplaySession: false })
   try {
     const ctx = scaffold.ctx
     const settings = { instructions: 'Fixed implementer.', provider: 'deepseek-official', model: 'deepseek-v4-flash-vision-exp' }

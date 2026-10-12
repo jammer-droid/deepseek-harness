@@ -10,7 +10,7 @@ const studio = fileURLToPath(new URL('..', import.meta.url))
 it('forks only the completed parent prefix with explicit role settings', async () => {
   const scaffold = await launchWebScaffold({
     extraOverlayPath: `${studio}/packages/bundle/cordis.patch.yml`,
-    extraInstallAnchors: ['bundle', 'shell', 'roles', 'demo'].map(name => `${studio}/packages/${name}/package.json`),
+    extraInstallAnchors: ['bundle', 'shell', 'roles'].map(name => `${studio}/packages/${name}/package.json`),
     replayFixture: `${studio}/test/fixtures/delegation/session.v4.jsonl`,
     replayChildFixtures: [`${studio}/test/fixtures/delegation/session.1.v4.jsonl`], compareReplaySession: false,
   })
@@ -46,7 +46,7 @@ it('forks only the completed parent prefix with explicit role settings', async (
 it('logs first-turn evidence separately and excludes inherited catalogs from reviewer ownership', async () => {
   const scaffold = await launchWebScaffold({
     extraOverlayPath: `${studio}/packages/bundle/cordis.patch.yml`,
-    extraInstallAnchors: ['bundle', 'shell', 'roles', 'demo'].map(name => `${studio}/packages/${name}/package.json`),
+    extraInstallAnchors: ['bundle', 'shell', 'roles'].map(name => `${studio}/packages/${name}/package.json`),
     replayFixture: `${studio}/test/fixtures/delegation/fork-model.v4.jsonl`,
     replayChildFixtures: [`${studio}/test/fixtures/delegation/session.1.v4.jsonl`, `${studio}/test/fixtures/delegation/review-pass.v4.jsonl`], compareReplaySession: false,
   })
@@ -99,7 +99,7 @@ it('logs first-turn evidence separately and excludes inherited catalogs from rev
 it('retains both fork identities and creation contexts through rework and re-review', async () => {
   const scaffold = await launchWebScaffold({
     extraOverlayPath: `${studio}/packages/bundle/cordis.patch.yml`,
-    extraInstallAnchors: ['bundle', 'shell', 'roles', 'demo'].map(name => `${studio}/packages/${name}/package.json`),
+    extraInstallAnchors: ['bundle', 'shell', 'roles'].map(name => `${studio}/packages/${name}/package.json`),
     replayFixture: `${studio}/test/fixtures/delegation/session.v4.jsonl`,
     replayChildFixtures: [`${studio}/test/fixtures/delegation/rework-implementer.v4.jsonl`, `${studio}/test/fixtures/delegation/rework-reviewer.v4.jsonl`], compareReplaySession: false,
   })

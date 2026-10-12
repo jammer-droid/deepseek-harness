@@ -1,6 +1,6 @@
 # DSH Studio
 
-Studio is a fork-local workspace with a sidebar page and an independently enabled demo timer. See the [Korean development guide](development.ko.md) for detailed local instructions.
+Studio is a fork-local workspace with independently registered sidebar services. See the [Korean development guide](development.ko.md) for detailed local instructions.
 
 ## Development
 
@@ -22,10 +22,9 @@ Run `npm --prefix studio run deploy:web -- --home /absolute/DSH_HOME --dry-run` 
 ## Packages
 
 - `packages/shell`: sidebar page and profile enablement switch.
-- `packages/demo`: disposable Client timer.
 - `packages/roles`: profile-persistent implementer/reviewer settings, generated Remote, and locale-owned editor.
 - `packages/general`: general DSH preset configuration and its own generated Remote, independent of role services.
-- `packages/bundle`: workspace bundle; demo disabled by default.
+- `packages/bundle`: workspace bundle.
 
 Edit `src/`, not generated JavaScript. Native Plugin Manager persists enablement; timer state belongs to each Client instance. Framework types come from official Cordis and DSH packages.
 
@@ -33,7 +32,7 @@ Edit `src/`, not generated JavaScript. Native Plugin Manager persists enablement
 
 Studio lists independently registered services: Preset Builder (the default), DSH settings, Role settings, Design preview, and Experiments. Preset Builder uses the same left-navigation and scrolling-content layout as Design preview; its Workflow menu opens the functional draft editor. Service selection preserves mounted editors and unsaved inputs; plugin removal removes its page and selects an available service. The shell discovers service labels, order, and pages through the `local.dsh-studio.services` Slot. See [service navigation](docs/service-navigation.md) for ownership and verification.
 
-Design preview contains the four mock Workflows, Agents, Components, and Systems pages, with their own navigation and page-local sample data. These pages never read or write Host state. The functional Workflow draft editor is separate from this preview. DSH settings edits profile-owned preset declarations without replacing the built-in Settings screen. Experiments contains the timer controls and disposable feature Slot.
+Design preview contains the four mock Workflows, Agents, Components, and Systems pages, with their own navigation and page-local sample data. These pages never read or write Host state. The functional Workflow draft editor is separate from this preview. DSH settings edits profile-owned preset declarations without replacing the built-in Settings screen. Experiments uses the same DetailLayout navigation and content scroller as Preset Builder and contains a profile-persisted agent-optimization editor. The disposable timer and its Client contribution are not shipped. Each optimization independently targets main agents, subagents, both, or neither; saved changes apply only when an agent starts, including resumed sessions. All optimizations default off. See [experiment policies](docs/experiment-policies.md) for preserved test-plugin defaults, Goal suppression, waiting limits, and coexistence restrictions.
 
 ### Preset overrides
 

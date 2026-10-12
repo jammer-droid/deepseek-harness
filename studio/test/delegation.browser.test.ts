@@ -13,7 +13,7 @@ const studio = fileURLToPath(new URL('..', import.meta.url))
 it('admits a fresh real implementer from captured applied settings', async () => {
   const scaffold = await launchWebScaffold({
     extraOverlayPath: `${studio}/packages/bundle/cordis.patch.yml`,
-    extraInstallAnchors: ['bundle', 'shell', 'roles', 'demo'].map(name => `${studio}/packages/${name}/package.json`),
+    extraInstallAnchors: ['bundle', 'shell', 'roles'].map(name => `${studio}/packages/${name}/package.json`),
     replayFixture: `${studio}/test/fixtures/delegation/session.v4.jsonl`,
     replayChildFixtures: [`${studio}/test/fixtures/delegation/session.1.v4.jsonl`, `${studio}/test/fixtures/delegation/session.1.v4.jsonl`],
     compareReplaySession: false,
@@ -68,7 +68,7 @@ it('admits a fresh real implementer from captured applied settings', async () =>
 it('logs a model-origin delegation receipt in the parent transcript', async () => {
   const scaffold = await launchWebScaffold({
     extraOverlayPath: `${studio}/packages/bundle/cordis.patch.yml`,
-    extraInstallAnchors: ['bundle', 'shell', 'roles', 'demo'].map(name => `${studio}/packages/${name}/package.json`),
+    extraInstallAnchors: ['bundle', 'shell', 'roles'].map(name => `${studio}/packages/${name}/package.json`),
     replayFixture: `${studio}/test/fixtures/delegation/model-session.v4.jsonl`,
     replayChildFixtures: [`${studio}/test/fixtures/delegation/session.1.v4.jsonl`], compareReplaySession: false,
   })
@@ -99,7 +99,7 @@ it('logs a model-origin delegation receipt in the parent transcript', async () =
 })
 
 it.each([false, true])('persists admission and fences failure, dispose while pending: %s', async disposePending => {
-  const scaffold = await launchWebScaffold({ extraOverlayPath: `${studio}/packages/bundle/cordis.patch.yml`, extraInstallAnchors: ['bundle', 'shell', 'roles', 'demo'].map(name => `${studio}/packages/${name}/package.json`), replayFixture: `${studio}/test/role-editor/session.v3.jsonl`, replayProvidersOnly: true })
+  const scaffold = await launchWebScaffold({ extraOverlayPath: `${studio}/packages/bundle/cordis.patch.yml`, extraInstallAnchors: ['bundle', 'shell', 'roles'].map(name => `${studio}/packages/${name}/package.json`), replayFixture: `${studio}/test/role-editor/session.v3.jsonl`, replayProvidersOnly: true })
   try {
     const ctx = scaffold.ctx
     const current = ctx.studioRoles.describe()
@@ -156,7 +156,7 @@ it.each([false, true])('persists admission and fences failure, dispose while pen
 })
 
 it('drains a live paced child before closing Studio storage', async () => {
-  const scaffold = await launchWebScaffold({ extraOverlayPath: `${studio}/packages/bundle/cordis.patch.yml`, extraInstallAnchors: ['bundle', 'shell', 'roles', 'demo'].map(name => `${studio}/packages/${name}/package.json`), replayFixture: `${studio}/test/fixtures/delegation/session.v4.jsonl`, replayChildFixtures: [`${studio}/test/fixtures/delegation/session.1.v4.jsonl`], compareReplaySession: false, paceMs: 100 })
+  const scaffold = await launchWebScaffold({ extraOverlayPath: `${studio}/packages/bundle/cordis.patch.yml`, extraInstallAnchors: ['bundle', 'shell', 'roles'].map(name => `${studio}/packages/${name}/package.json`), replayFixture: `${studio}/test/fixtures/delegation/session.v4.jsonl`, replayChildFixtures: [`${studio}/test/fixtures/delegation/session.1.v4.jsonl`], compareReplaySession: false, paceMs: 100 })
   let closed = false
   try {
     const ctx = scaffold.ctx
@@ -191,7 +191,7 @@ it('drains a live paced child before closing Studio storage', async () => {
 it('offers only managed planning capabilities and rejects initial work until roles are applied', async () => {
   const scaffold = await launchWebScaffold({
     extraOverlayPath: `${studio}/packages/bundle/cordis.patch.yml`,
-    extraInstallAnchors: ['bundle', 'shell', 'roles', 'demo'].map(name => `${studio}/packages/${name}/package.json`),
+    extraInstallAnchors: ['bundle', 'shell', 'roles'].map(name => `${studio}/packages/${name}/package.json`),
   })
   try {
     const ctx = scaffold.ctx

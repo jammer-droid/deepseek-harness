@@ -11,7 +11,7 @@ const studio = fileURLToPath(new URL('..', import.meta.url));
 it.each(['confirmed', 'unknown'] as const)('shows %s stop evidence without authorizing or waking work', async outcome => {
   const scaffold = await launchWebScaffold({
     extraOverlayPath: `${studio}/packages/bundle/cordis.patch.yml`,
-    extraInstallAnchors: ['bundle', 'shell', 'roles', 'demo'].map(name => `${studio}/packages/${name}/package.json`),
+    extraInstallAnchors: ['bundle', 'shell', 'roles'].map(name => `${studio}/packages/${name}/package.json`),
     replayFixture: `${studio}/test/fixtures/delegation/session.v4.jsonl`,
     replayChildFixtures: [`${studio}/test/fixtures/delegation/session.1.v4.jsonl`], compareReplaySession: false,
   });

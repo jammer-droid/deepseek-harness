@@ -15,7 +15,7 @@ const settings = { instructions: 'Preserve recorded uncertainty without retrying
 async function start(childFixture: string) {
   const scaffold = await launchWebScaffold({
     extraOverlayPath: `${studio}/packages/bundle/cordis.patch.yml`,
-    extraInstallAnchors: ['bundle', 'shell', 'roles', 'demo'].map(name => `${studio}/packages/${name}/package.json`),
+    extraInstallAnchors: ['bundle', 'shell', 'roles'].map(name => `${studio}/packages/${name}/package.json`),
     replayFixture: `${studio}/test/fixtures/delegation/session.v4.jsonl`,
     replayChildFixtures: [`${studio}/test/fixtures/delegation/${childFixture}.v4.jsonl`], compareReplaySession: false,
   })

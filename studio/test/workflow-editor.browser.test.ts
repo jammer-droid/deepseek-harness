@@ -9,7 +9,7 @@ it('saves two independent drafts and restores their contents after page reload',
   try {
     const scaffold = await launchWebScaffold({
       extraOverlayPath: `${studio}/packages/bundle/cordis.patch.yml`,
-      extraInstallAnchors: ['bundle', 'shell', 'general', 'roles', 'workflows', 'demo'].map(name => `${studio}/packages/${name}/package.json`),
+      extraInstallAnchors: ['bundle', 'shell', 'general', 'roles', 'workflows'].map(name => `${studio}/packages/${name}/package.json`),
       replayFixture: fileURLToPath(new URL('./role-editor/session.v3.jsonl', import.meta.url)),
       replayProvidersOnly: true,
     });

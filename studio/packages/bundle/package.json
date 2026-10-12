@@ -8,9 +8,9 @@
   ],
   "dependencies": {
     "@local/dsh-studio-shell": "workspace:*",
-    "@local/dsh-studio-demo": "workspace:*",
     "@local/dsh-studio-roles": "workspace:*",
     "@local/dsh-studio-general": "workspace:*",
+    "@local/dsh-studio-experiments": "workspace:*",
     "@local/dsh-studio-workflows": "workspace:*",
     "@deepseek-ai/dsh-agent-preset": "workspace:*",
     "@deepseek-ai/dsh-persona": "workspace:*",

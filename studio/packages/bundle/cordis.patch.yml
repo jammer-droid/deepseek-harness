@@ -3,6 +3,8 @@
       name: '@local/dsh-studio-shell'
     - id: local-dsh-studio-general
       name: '@local/dsh-studio-general'
+    - id: local-dsh-studio-experiments
+      name: '@local/dsh-studio-experiments'
     - id: local-dsh-studio-workflows
       name: '@local/dsh-studio-workflows'
     - id: local-dsh-studio-roles
@@ -26,6 +28,3 @@
             config:
               allowParallelInProgress: true
           - name: '@deepseek-ai/dsh-tool-ask-user'
-    - id: local-dsh-studio-demo
-      name: '@local/dsh-studio-demo'
-      disabled: true
