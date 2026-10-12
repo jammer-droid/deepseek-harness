@@ -1,195 +1,35 @@
-# AGENTS.md
+# Studio 플러그인 개발 작업 지침
 
-DeepSeek Harness is an all-plugin Cordis agent harness. Read [docs/architecture.md](docs/architecture.md) before changing `packages/`; follow [docs/AGENTS.md](docs/AGENTS.md) for documentation.
+## 개발 대상
 
-## Pre-stable APIs and released Session data
+이 프로젝트의 제품은 **수정하지 않은 DSH에 설치·배포하는 Studio 플러그인**이다. 이 checkout에 DSH 소스와 라이브러리를 함께 두는 이유는 공개 API와 구현을 참조하고 Studio를 개발하기 위해서이며, DSH 본체를 공동 개발하기 위해서가 아니다.
 
-Public APIs are pre-stable; update every consumer. Follow [version/status](docs/session-format-status.md) and [type acknowledgements](docs/cookbook/reviewing-persistence-type-changes.md). [Adjacent migration](.agents/notes/implemented/architecture/2026-08-31-released-session-format-migrations.md) may add a version-named successor but never move, overwrite, or delete committed generations; predecessors imply neither fallback nor downgrade support. SQLite uses monotonic `SCHEMA_VERSION`.
+Studio 작업에는 이 지침과 [Studio 작업 지침](studio/AGENTS.md)을 적용한다. DSH 유지보수용 하위 지침·문서·스킬의 코어 변경, 전체 빌드, 릴리스, 번역 및 검증 절차를 Studio 작업으로 가져오지 않는다. 사용자나 상위 시스템의 직접 지시가 있으면 그것을 우선한다.
 
-Acknowledge [declared persistence-type changes](docs/cookbook/reviewing-persistence-type-changes.md).
+## 변경 범위
 
-Record each externally perceptible breaking change immediately in an [upgrade guide](.agents/skills/dsh-create-upgrade-guide/SKILL.md).
+- 기본 변경 범위는 `studio/`다. 코어 소스·공용 API·런타임·공용 UI·루트 빌드 체계와 DSH 유지보수 문서는 수정하지 않는다. 본체 코드는 읽기 전용 참고 자료다.
+- `studio/` 밖의 파일은 사용자가 해당 변경을 명시적으로 승인한 경우에만 수정한다. 이 지침 자체, 루트 의존성 선언과 lockfile도 예외가 아니다. 설치나 생성 명령이 범위 밖 파일을 바꾸면 그 변경을 별도로 보고하고 임의로 커밋하지 않는다.
+- 필요한 기능이 배포 대상 DSH의 기존 공개 API에 없으면 제약과 대안을 보고한다. Studio 구현을 통과시키려고 코어에 서비스·이벤트·설정·확장점을 추가하거나 비공개 내부 구현에 의존하지 않는다.
+- 기존 코어 변경의 원복도 승인된 별도 작업으로 취급한다. 다른 이슈의 변경을 일괄 되돌리지 않는다.
+- 작업 시작과 커밋 전에 변경 파일을 확인한다. 기존 사용자 변경은 보존하고, 예상하지 못한 범위 밖 변경을 발견하면 진행을 멈춰 확인한다. 하위 에이전트에도 같은 수정 범위를 전달한다.
 
-**Application launch.** Only `dsh` profiles launch supported Node apps; package bins, demos, and public SDK argv escapes are forbidden ([rule](docs/architecture.md#application-launch)).
+## 참고 자료와 스킬
 
-## Repository layout
+플러그인 구현에 필요한 공개 서비스 API, Cordis 등록·해제 규칙, 패키지 exports, DSH UI 부품 사용법은 필요한 부분만 읽는다. 참고 자료를 읽는 것은 그 자료가 설명하는 코어를 수정할 권한을 뜻하지 않는다.
 
-```
-vendor/      Vendored Cordis (vendor/README.md)
-packages/    @deepseek-ai/dsh-<pkg> workspaces at packages/<group>/<pkg>/
-  core/                 agent/session API
-  api/                  remote BFF
-  typert/               type graphs
-  llm/                  model providers
-  shell/                command execution
-  subprocess/           child-process management
-  ssh/                  SSH execution providers
-  terminal/             persistent terminals
-  ptc-runtime/          PTC execution
-  sandbox/              process confinement
-  deliverables/         turn deliverables
-  fs/                   filesystem access
-  lsp/                  language servers
-  skill/                skill loading
-  web/                  search/fetch tools
-  computer-use/         computer interaction
-  browser-use/          browser interaction
-  compaction/           context compaction
-  context/              request context
-  subagent/             delegated agents
-  jobs/                 background jobs
-  bundle/               profile bundles
-  workflow/             workflow execution
-  todo/                 todo_write tool
-  plan/                 logged planning
-  goal/                 session goals
-  schedule/             scheduled follow-ups
-  preset/               agent composition
-  guard/                loop/tool guards
-  extensions/           runtime self-modification
-  session/              durable sessions
-  session-query/        browsing/search/export
-  attachment/           binary attachments
-  spill/                output spill
-  storage/              non-session storage
-  workspace/            workspace entities
-  feedback/             human feedback
-  identity/             anonymous identity
-  settings/             user settings
-  credentials/          credentials/authorization
-  acp/                  automation-only ACP
-  interaction/          human interaction
-  boot/                 application boot
-  sdk/                  JSON-RPC SDK
-  host/                 GUI host
-  client/               GUI client
-  mcp/                  external tools
-  experimental/         evaluated capabilities without a product-support commitment
-  test-support/         test infrastructure
-  util/                 zero-dependency utilities
-python/      Python SDK/runtime (python/README.md)
-native/      @deepseek-ai/node-addon-system source (native/README.md)
-benchmarks/  performance gates
-.agents/     Agent workflows/notes
-docs/        Documentation (docs/AGENTS.md)
-scripts/     gates and generators
-website/     VitePress documentation projection
-```
+이 저장소에 포함된 DSH 본체 개발·유지보수용 스킬은 Studio 작업의 기본 절차가 아니다. 사용자가 명시적으로 요청하거나 상위 지시가 요구하지 않는 한 호출하지 않는다. Studio 이슈의 작업 절차는 [Studio 이슈 작업 절차](studio/docs/design-workflow.md)를 따른다. 그 절차나 다른 스킬이 코어 수정 또는 저장소 전체 작업을 요구하면 자동으로 실행하지 말고 이 지침과의 충돌을 보고한다.
 
-Package groups: [packages/README.md](packages/README.md). [Experimental status](packages/experimental/README.md#status) is independent of optional delivery; nonexperimental packages need product use or an explicit [classification](scripts/product-package-policy.ts).
+## 빌드와 검증
 
-## Commands
+- 기본 검증은 변경한 Studio 기능의 테스트, Studio 타입 검사와 Studio 빌드다. 검증 범위는 변경과 위험에 맞춰 정한다.
+- 루트 전체 빌드·전체 테스트·전체 문서 검사와 DSH 공용 라이브러리 일괄 재빌드는 기본 절차가 아니다. 테스트 준비물이 없다는 이유로 자동 실행하지 않는다. 필요한 산출물과 막힌 검증을 보고하고, Studio 밖의 빌드가 필요하면 범위와 이유를 설명해 승인을 받는다.
+- workspace 소스와 연결된 테스트는 개발 중 회귀 확인일 뿐, 독립 배포 가능성의 증거가 아니다. 배포 검증은 대상 버전을 명시한 **수정하지 않은 DSH 런타임에 패키징한 Studio만 설치**하여 수행한다. 런타임 버전과 검증한 기능을 기록한다.
+- 본체 소스 수정이나 재빌드가 필요하면 독립 배포 조건을 만족하지 못한 것이다. 설치 검증을 하지 못했다면 구현·단위 테스트 결과와 분리하여 미검증으로 보고한다.
+- 설치된 사용자 앱·프로필은 승인 없이 수정하지 않는다. 로컬 Studio 빌드가 현재 실행 중인 GUI에 반영됐다고 가정하지 않는다.
 
-```sh
-pnpm install            # pnpm workspaces, node ^22.19 || >=24
-pnpm run clean           # remove build outputs and safe residue from deleted packages
-pnpm run test           # unit tests
-pnpm run test:coverage  # CI coverage gate: per-file 100% on packages/*/*/src
-pnpm run test:e2e       # real-API tests; self-skip without DEEPSEEK_API_KEY
-pnpm run test:expected  # owner-local process expectations
-pnpm run test:snapshot  # keyless recorded-session replay through shipped profiles; filter: -t <name>
-pnpm run test:snapshot:record  # re-record expected outputs (needs key)
-pnpm run typecheck
-pnpm run lint
-pnpm run duplication    # cross-file TypeScript clone detection
-pnpm run build          # tsc emits lib/types, tsdown bundles runtime
-pnpm run hygiene        # publint + workspace/package/dependency checks + NodeNext consumer check
-pnpm run check:windows-wine  # ONLY when diagnosing a known Windows failure (needs wine); CI owns this signal
-pnpm run doc-sync       # documentation gates (scripts/run-gates.ts)
-pnpm run test:docs      # quick documentation checks (no build; doc-quick aggregate)
-pnpm run website:build  # VitePress build (doubles as dead-link check)
-pnpm dsh --profile headless "task"  # run one task from source (needs DEEPSEEK_API_KEY)
-pnpm run demo:ptc -- "task"  # headless PTC mode run (needs key)
-pnpm run dev:web | dev:desktop  # build, then launch; Web also rebuilds client bundles on edits. start:web | start:desktop skip the build
-make web|dev-web|desktop|dev-desktop|build  # the same commands; ARGS='--no-open' forwards options
-```
+## 문서와 완료 보고
 
-### Host sandbox failures
+Studio 기능 문서와 마이그레이션 안내는 `studio/` 안에 작성한다. 새 문서는 한국어로 작성하며, DSH 본체용 업그레이드 가이드나 중국어 번역·페어링 파일을 자동 생성하지 않는다. 제품 UI의 locale 규칙은 [Studio 작업 지침](studio/AGENTS.md)의 별도 규칙을 따른다.
 
-If a required `gh`, `pnpm`, build, test, or generator command fails because the sandbox blocks credentials, network, IPC, watching, or nested `sandbox-exec`, retry unchanged with the narrowest host escalation. Require sandbox evidence; never bypass test failures or the product sandbox.
-
-### Run relevant checks locally
-
-Before pushing, follow [dsh-pre-push-checks](.agents/skills/dsh-pre-push-checks/SKILL.md); report only commands run. After `gh stack sync`, validate immediately; do not merge before checks pass.
-
-- Match evidence to the surface: focused behavior tests, model/user-output snapshots, `doc-sync` for docs, built smokes for published paths, and real-API e2e for providers.
-- Never default to the full suite or repeat a passing check for commit or push. CI owns exhaustive coverage and the platform matrix; rehearse all locally only by explicit request, for CI diagnosis, or for an irreducibly repository-wide change.
-- `test:coverage`, not `test`, is the CI coverage gate ([why](docs/testing.md)).
-- **Web browser automation and GIF recording:** launch with `pnpm dsh web --patch apps/web/tests/pin-browse-picker.overlay.yml` to use the [in-page directory picker](apps/web/tests/pin-browse-picker.overlay.yml); omit this override only when testing native picker behavior explicitly.
-
-## Secrets / .env
-
-Windows packaging/signing: [required reading](apps/desktop/README.md#windows-ev-signing).
-
-Real-API tests/demos read `DEEPSEEK_API_KEY`, optional `DEEPSEEK_BASE_URL`, and root `.env`. cordis.yml allows `!!js` (never `!js`) under plugin `config` and entry `disabled`; other metadata stays literal, so conditional composition also uses overlays ([primer](docs/cordis-primer.md#loader-configuration)). Never commit credentials. CI e2e skips without a key; [testing.md](docs/testing.md) owns key policy.
-
-## Conventions
-
-- Packages use `@deepseek-ai/dsh-<name>`; vendor is [rescoped](docs/rescope.md) and `private: true`. Harness packages declare `@deepseek-ai/cordis` in `peerDependencies`/`devDependencies`. Workspace dependency sections use DSH `workspace:*`, vendor/native `workspace:~` ([rules](.agents/notes/implemented/process/2026-08-10-npm-release-sequences.md)).
-- ESM everywhere (`"type": "module"`). Use package names across packages and `.ts` in local relative imports. Config subprocesses run built `lib/` under plain Node; source regressions use their declared launcher ([testing policy](docs/testing.md#test-subprocess-launch-modes)). The `dsh` CLI source launch runs through tsx's ESM-only hook (`node --import tsx/esm`); modules it reaches must stay ESM (no CJS-only exports) — Node's native TypeScript modes are unavailable across the engines range ([source-launch contract](.agents/notes/implemented/architecture/2026-07-29-dsh-source-launch-tsx-esm.md)). Raw/Web `cordis.yml` bare plugins must appear in their resolver manifest's `dependencies`; `verify-cordis-config` enforces it.
-- **Registrations are effects**: every contribution goes through `ctx.effect()` / `ctx.on()`; a registry's `register()` returns the disposer.
-- **Typed events use declaration merging** and merge-extensible maps. Event JSDoc needs `@mode` and payload `@param`. Public service methods document parameters and non-void returns. `SessionEventMap` members are required-on-read unless the envelope carries `ignorable: true`. Bump `SESSION_FORMAT_VERSION` only when existing discriminators cannot prevent unsafe interpretation; same-version changes require safe reader behavior ([review](.agents/notes/implemented/process/2026-10-08-session-reader-compatibility-review.md)).
-- **Switch on discriminant tags.** Closed unions end in `assertNever`; merge-extensible unions fall through a documented default.
-- **Waterfall listeners MUST call `next()`** to delegate; returning without it short-circuits the chain ([semantics](docs/cordis-primer.md#cordis-waterfall-semantics)).
-- **Model-visible ⟺ logged**: anything that reaches a model request must be reconstructable from the session log; a new model-visible input requires a session event.
-- **Plugins, not loop changes**: new behavior goes on documented extension points; changing `agent-loop` requires updating docs/architecture.md.
-- **A capability seam comprises Service Definition / Service Provider / Consumer roles.** It is complete, never one role; split only when roles evolve independently ([glossary](docs/glossary.md#capability-seam)).
-- **Prefer maintained dependencies over hand-rolling** when they genuinely delete owned code and tests ([policy](.agents/notes/implemented/process/2026-07-26-dependencies-over-hand-rolling.md)).
-- **Explicit > implicit at package boundaries**: defaulting is an explicit `resolve(request): Spec` step in the owning implementation, never a hidden `?? default` inside `run()` (the `dsh-shell` request/spec split is the template).
-- **No hardcoded tunables in plugins**: deployment-varying choices are validated `Config` fields changeable from cordis.yml; a `DEFAULT_*` constant or test hook is not configurability. Protocol constants, external specs, and security invariants stay fixed.
-- **Misconfiguration fails loud** at load when self-contained, otherwise at the earliest resolvable point; never silently skip a missing referent.
-- **Opaque cross-boundary ids are branded** (`Branded<B>` from `dsh-brand`), never bare `string`.
-- **Trust TypeScript at typed same-process boundaries.** Do not add runtime validation, fallback behavior, or hostile-input tests solely for values the static interface requires; validate at parser/config, queued, model/tool JSON, durable/file, worker, process, and wire boundaries.
-- **No new assertions to `unknown`** (`as unknown` or `<unknown>`). Preserve or reduce the exact legacy baseline; use typed values or validation for replacements ([rule](.agents/notes/implemented/process/2026-09-19-no-unknown-casts.md)).
-- **Source plane vs artifact plane, never mixed.** Static gates and tests resolve workspace imports through tsconfig `paths` to `src` and pass on a clean tree; gates consuming built `lib/` declare that dependency ([layout](docs/development.md#typescript-project-layout)).
-- **Keep compiler faces explicit.** A package with both Host and Client programs exposes face-specific leaf configs and a solution-only root; repo-wide programs seed a face config, never the root solution ([layout](docs/development.md#typescript-project-layout)).
-- **Error handling:** use typed, structured failures and localized, actionable reports. Define handling ownership, containment, and failure guarantees; stop dependent work and visibly report untrusted state or unknown outcomes. Follow [dsh-error-handling](.agents/skills/dsh-error-handling/SKILL.md).
-- **An empty `catch` names the error** and why; keep its `try` to one statement.
-- **Keep comments local.** Do not restate code, expand unrelated comments, or explain distant behavior without local need ([rationale](.agents/skills/dsh-prose-standard/SKILL.md)).
-- **Ban `prove` + `nance`** ([rule](.agents/notes/implemented/process/2026-08-26-ban-ambiguous-origin-label.md)).
-- **Prefer symmetry for parallel values**; unexplained asymmetry usually signals a missed extraction.
-- **Tests describe behavior, not correctness.** Change obsolete behavior with its tests; explain why in the PR.
-- **Create Agent Notes only for durable decision rationale;** mechanical/local edits are exempt, including local UI changes ([scope](.agents/notes/README.md#when-to-write-one)). Archived notes are frozen: never edit or treat them as current authority ([archive policy](.agents/notes/README.md#archiving-and-deletion)).
-- **Client UI copy is locale-owned.** Route product text through typed dictionaries and `t` or localized primitive props; `verify-client-ui-i18n` rejects hardcoded copy ([decision](.agents/notes/implemented/architecture/2026-08-23-locale-owned-client-ui-copy.md)).
-- **Testing policy** — [docs/testing.md](docs/testing.md). Every non-trivial model- or product-user-visible change updates a keyless recorded-session snapshot; [snapshot ownership](snapshots/AGENTS.md) reserves the top-level tree for session-driven cases and keeps other expected output owner-local. Fixtures replay on macOS/Linux; fix fixtures, not normalizers.
-- **Design each tool's UI presentation up front.** Host presenters stay pure; Web cards derive from raw events and persisted result metadata ([cookbook](docs/cookbook/adding-a-tool.md)).
-- **Plan unit, e2e, and snapshot coverage** for capability seams, lifecycle paths, and transcript output; include missing snapshot-harness support in the same change.
-- **Both SDKs project the loop.** Agent-loop, session-lifecycle, and `SessionEventMap` changes update the TypeScript and Python SDK expected outputs in the same PR; `pnpm run test` covers neither ([surfaces](docs/testing.md#when-a-snapshot-test-is-required)).
-- **Choose PR history deliberately.** Split independent changes and fix the introducing PR before propagation. Standalone/stack branches may merge-forward or rebase. Rewrites use `--force-with-lease`, abort on remote movement, never raw `--force`; preserve an in-progress merge-forward checkpoint before taking a newer base ([rationale](.agents/notes/implemented/process/2026-08-02-native-github-stacks-and-optional-rebases.md)).
-- **Labels:** one PR `kind/*`, all material `area/*`, and native Issue Type ([taxonomy](.agents/notes/implemented/process/2026-08-08-unified-github-label-taxonomy.md)).
-- TODO markers: `FIXME`/`TODO`/`XXX` by urgency ([semantics](docs/development.md)).
-- Files end with exactly one trailing newline; `git diff --cached --check` (pre-commit) gates it.
-
-## Defensive patterns
-
-Read [docs/defensive-patterns.md](docs/defensive-patterns.md) before lifecycle, concurrency, subprocess, or teardown work.
-
-## Type safety and documentation
-
-Everything compiles under `strict: true` with `noImplicitAny`; every remaining `any` explains why narrowing is infeasible. Every module and export has concise JSDoc for its non-obvious contract; function-like exports include `@param`/`@returns`, as enforced by `verify-export-jsdoc`. Heritage-declared members, plugin-protocol slots, and constructors keep their docs at the declaring Service Definition, protocol, or class.
-
-Comments and docs state complete contracts and context, not reasoning transcripts. Use direct, concrete terms. Do not use metaphors. Before writing `contract`, `boundary`, or `shape`, ask whether a more exact term names the subject: write `response fields`, `JSON validation`, or `ESM exports` instead of `response shape`, `validation boundary`, or `module shape`. Keep `contract` for preconditions, postconditions, invariants, compatibility promises, and other obligations that callers, callees, implementers, providers, producers, or consumers rely on. Keep a literal process, wire, security, transaction, or lifecycle boundary. Do not narrate control flow or tests, preserve review history, or restate code. Keep behavior, failure, timing, ownership, and safe-use facts; link the rationale. Use [dsh-prose-standard](.agents/skills/dsh-prose-standard/SKILL.md) for decisions. Wire mechanically checkable invariants into an executed top-level gate and prove each changed acceptance path rejects an invalid case. Use narrow, justified exceptions instead of disabling a rule globally.
-
-Docs accompany every code change: update affected README and JSDoc contracts together. Routine bilingual work follows [docs/AGENTS.md](docs/AGENTS.md); only explicit user invocation may run `dsh-translate-docs`. Current-state prose, one physical line per paragraph, one home per fact, and word budgets live there.
-
-## Editing these instructions
-
-`CLAUDE.md` symlinks `AGENTS.md` at root and `packages/`; edit the real file. Keep each rule self-contained while linking high-level docs. Condense when clarity survives; raise a `verify-doc-budgets` ceiling when the required content genuinely needs more space.
-
-## Agent skills
-
-### Issue tracker
-
-Use [fork GitHub Issues](docs/agents/issue-tracker.md).
-
-### Triage labels
-
-Use [default triage labels](docs/agents/triage-labels.md).
-
-### Domain docs
-
-Follow [domain docs](docs/agents/domain.md).
-
-## Vendoring policy
-
-`vendor/` packages are pinned source copies (manifest with upstream SHAs in [vendor/README.md](vendor/README.md)). Update via the sync procedure there; re-apply or retire the logged local modifications; rerun `pnpm run test && pnpm run build`.
+완료 보고에는 변경 범위, 실제 실행한 검사, 실패·미검증 항목, 독립 배포 검증 여부를 구분한다. 수정된 DSH에서만 성공한 결과를 플러그인 배포 성공으로 표현하지 않는다. 푸시·병합·배포·이슈 종료는 각각 사용자의 승인 범위를 따른다.
