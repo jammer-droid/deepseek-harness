@@ -15,6 +15,23 @@ test('Empty draft editor matches user-visible output', async () => {
   const output = renderToStaticMarkup(React.createElement(WorkflowEditor, { locale: 'en', components: [], initialDrafts: [], api: { drafts: async () => [], save: async () => { throw new Error('not called'); } } }));
   assert.equal(output + '\n', await readFile(new URL('./workflow-ui.expected.html', import.meta.url), 'utf8'));
 });
+test('Role composition fields and add actions have distinct localized labels', async () => {
+  const { renderToStaticMarkup } = await import('react-dom/server');
+  const components = [
+    { id: 'studio.model', version: 1, scope: 'role', fields: ['provider', 'model', 'reasoningEffort'].map(key => ({ key, kind: 'text', required: key !== 'reasoningEffort' })) },
+    { id: 'studio.tools', version: 1, scope: 'role', fields: ['allow', 'deny'].map(key => ({ key, kind: 'text', required: false })) },
+  ];
+  const api = { drafts: async () => [], save: async () => { throw new Error('not called'); } };
+  for (const [locale, expected] of [['en', ['Provider', 'Model', 'Allowed tools (one name per line)']], ['ko', ['공급자', '모델', '허용할 도구 (한 줄에 이름 하나)']], ['zh', ['提供商', '模型', '允许的工具（每行一个名称）']]]) {
+    const initialDrafts = [{ id: 'role', revision: 1, document: { name: 'Draft', mainRole: { name: 'Role', components: components.map(item => ({ id: item.id, version: 1, scope: 'role', config: {} })) } } }];
+    const output = renderToStaticMarkup(React.createElement(WorkflowEditor, { locale, components, initialDrafts, api }));
+    for (const label of expected) assert.ok(output.includes(`aria-label="${label}"`));
+  }
+  const initialDrafts = [{ id: 'role', revision: 1, document: { name: 'Draft', mainRole: { name: 'Role', components: [] } } }];
+  const output = renderToStaticMarkup(React.createElement(WorkflowEditor, { locale: 'en', components, initialDrafts, api }));
+  assert.match(output, /Add model/);
+  assert.match(output, /Add tool restrictions/);
+});
 after(() => dom.window.close());
 test('Conflict reports retain edits and require explicit replacement with the saved version', async () => {
   const root = createRoot(document.getElementById('root'));

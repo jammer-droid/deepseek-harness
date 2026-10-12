@@ -87,15 +87,20 @@ export function WorkflowEditor({ locale, components, initialDrafts, api }: {
           {document.mainRole.components.map((instance, index) => {
             const definition = available.find(item => item.id === instance.id && item.version === instance.version);
             if (!definition) return <p key={index}>{instance.id}: {t.unknown}</p>;
-            return definition.fields.map(field => { const value = instance.config[field.key]; return <label key={`${index}:${field.key}`}>{t.instructions}<textarea aria-label={t.instructions}
+            return definition.fields.map(field => {
+              const value = instance.config[field.key];
+              const labels: Record<string, string> = { 'studio.instructions:text': t.instructions, 'studio.model:provider': t.provider, 'studio.model:model': t.model, 'studio.model:reasoningEffort': t.reasoningEffort, 'studio.tools:allow': t.allow, 'studio.tools:deny': t.deny };
+              const label = labels[`${instance.id}:${field.key}`] ?? `${instance.id} / ${field.key}`;
+              return <label key={`${index}:${field.key}`}>{label}<textarea aria-label={label}
               value={typeof value === 'string' ? value : ''}
               onChange={event => setDocument({ ...document, mainRole: { ...document.mainRole, components: document.mainRole.components.map((item, i) => i === index ? { ...item, config: { ...item.config, [field.key]: event.target.value } } : item) } })}
             /></label>; });
           })}
+          {document.mainRole.components.some(item => item.id === 'studio.tools') && <p>{t.toolHelp}</p>}
           {available.filter(definition => !document.mainRole.components.some(item => item.id === definition.id)).map(definition =>
             <Button key={definition.id} onClick={() => setDocument({ ...document, mainRole: { ...document.mainRole, components: [...document.mainRole.components, {
               id: definition.id, version: definition.version, scope: definition.scope, config: Object.fromEntries(definition.fields.map(field => [field.key, ''])),
-            }] } })}>{t.add}</Button>)}
+            }] } })}>{definition.id === 'studio.instructions' ? t.add : definition.id === 'studio.model' ? t.addModel : definition.id === 'studio.tools' ? t.addTools : definition.id}</Button>)}
         </fieldset>
         <Button primary disabled={!dirty || (failure !== null && failure !== 'invalid-document')} onClick={() => void save()}>{t.save}</Button>
         <p role="status">{busy ? t.saving : dirty ? t.unsaved : t.saved}</p>

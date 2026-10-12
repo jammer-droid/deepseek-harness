@@ -11,9 +11,10 @@ await compile({
   absWorkingDir: root, tsconfig: 'tsconfig.host.json', entryPoints: ['packages/roles/src/delegation-tool.ts'], outfile: 'packages/roles/delegation-tool.js',
   bundle: true, platform: 'node', format: 'esm', target: 'node22', packages: 'external', external: ['@deepseek-ai/*'],
 });
-for (const part of ['shell', 'roles', 'general', 'workflows', 'experiments']) {
+await compile({ absWorkingDir: root, tsconfig: 'tsconfig.host.json', entryPoints: ['packages/catalog/src/tool.ts'], outfile: 'packages/catalog/tool.js', bundle: true, platform: 'node', format: 'esm', target: 'node22', packages: 'external' });
+for (const part of ['shell', 'roles', 'general', 'workflows', 'experiments', 'catalog']) {
   await compile({
-    absWorkingDir: root, tsconfig: 'tsconfig.host.json', entryPoints: [['roles', 'general', 'workflows', 'experiments'].includes(part) ? `packages/${part}/src/index.ts` : `src/host/${part}.ts`], outfile: `packages/${part}/index.js`,
+    absWorkingDir: root, tsconfig: 'tsconfig.host.json', entryPoints: [['roles', 'general', 'workflows', 'experiments', 'catalog'].includes(part) ? `packages/${part}/src/index.ts` : `src/host/${part}.ts`], outfile: `packages/${part}/index.js`,
     bundle: true, platform: 'node', format: 'esm', target: 'node22', packages: 'external', external: ['@deepseek-ai/*'],
   });
   await compile({
