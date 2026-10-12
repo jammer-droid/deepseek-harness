@@ -10,6 +10,7 @@
     "@local/dsh-studio-shell": "workspace:*",
     "@local/dsh-studio-demo": "workspace:*",
     "@local/dsh-studio-roles": "workspace:*",
+    "@local/dsh-studio-general": "workspace:*",
     "@deepseek-ai/dsh-agent-preset": "workspace:*",
     "@deepseek-ai/dsh-persona": "workspace:*",
     "@deepseek-ai/dsh-tool-fs": "workspace:*",

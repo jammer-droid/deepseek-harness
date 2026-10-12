@@ -1,7 +1,7 @@
 /** Structured edits preserve unknown data and reject stale/forged requests. */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { PresetSettingsOwner } from '../packages/roles/src/preset-settings.ts';
+import { PresetSettingsOwner } from '../packages/general/src/preset-settings.ts';
 
 function fixture() {
   const initial = { id: 'test', name: 'Test', plugins: [
@@ -46,6 +46,21 @@ test('edits literals and nested rows, preserves conditions and arrays, resets to
   const [reset] = await owner.apply({ ...after, reset: true, plugins: [] });
   assert.equal(reset.overridden, false);
   assert.deepEqual(entry.options.config, initial);
+});
+
+test('removes groups, restores inherited components, and rejects unknown templates', async () => {
+  const { owner, entry } = fixture();
+  const [before] = await owner.describe();
+  const group = before.components.find(item => item.name === 'group');
+  assert.equal(group.plugins.length, 2);
+  const [removed] = await owner.apply({ ...before, reset: false, remove: [[2]] });
+  assert.equal(entry.options.config.plugins.length, 2);
+  assert.ok(removed.components.some(item => item.key === group.key));
+  const [restored] = await owner.apply({ ...removed, reset: false, add: [group.key] });
+  assert.equal(entry.options.config.plugins[2].config[0].config.value, 'nested');
+  await assert.rejects(owner.apply({ ...restored, reset: false, add: ['missing'] }), /component-unavailable/);
+  await assert.rejects(owner.apply({ ...restored, reset: false, remove: [[123]] }), /invalid-plugin-removal/);
+  assert.equal(entry.options.config.plugins.length, 3);
 });
 
 test('rejects changed paths, conditional enablement, wrong field types and unavailable entries without writing', async () => {

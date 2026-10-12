@@ -6,7 +6,6 @@ import type {} from './contracts.ts';
 import type {} from '@deepseek-ai/dsh-client-locale/client';
 import { TYPERT_REMOTE } from '@local/dsh-studio-roles/remote';
 import { RoleEditor } from './roles-editor.tsx';
-import { PresetEditor, type PresetApi } from './preset-editor.tsx';
 import { registerAgentsView } from './agents-view.tsx';
 import { roleCopy } from './roles-locales.ts';
 import { createRoleStore, type RoleStore } from './roles-store.ts';
@@ -40,15 +39,6 @@ export async function apply(ctx: Context): Promise<void> {
     ctx.effect(() => () => store.dispose());
     ctx.effect(() => ctx.locale.subscribe(() => store.setLocale(ctx.locale.getLocale().active)));
     ctx.on('connection/reset', () => store.reset());
-    const presetApi: PresetApi = {
-      async describe() { const result = await ctx.remote.studioRoles.presets(); if (!result.ok) throw result.error; return result.value; },
-      async apply(request) { const result = await ctx.remote.studioRoles.applyPreset(request); if (!result.ok) throw result.error; return result.value; },
-    };
-    function Presets() {
-      const locale = React.useSyncExternalStore(listener => ctx.locale.subscribe(listener), () => ctx.locale.getLocale().active);
-      return <PresetEditor locale={locale} api={presetApi} />;
-    }
-    ctx.slots.inject('local.dsh-studio.presets', () => ctx.slots.register({ name: 'local.dsh-studio.presets', id: 'preset-settings' }, Presets));
     void store.reload();
     ctx.slots.inject('local.dsh-studio.features', () => ctx.slots.register({ name: 'local.dsh-studio.features', id: 'role-settings', order: -10 }, () => <Settings store={store} />));
   });

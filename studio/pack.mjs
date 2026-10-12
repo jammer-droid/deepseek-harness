@@ -9,7 +9,7 @@ const runtimeVersion = process.env.STUDIO_RUNTIME_VERSION;
 const staging = path.join(dist, 'bundle');
 await mkdir(staging, { recursive: true });
 const dependencies = {};
-for (const part of ['shell', 'demo', 'roles']) {
+for (const part of ['shell', 'demo', 'roles', 'general']) {
   const output = execFileSync('npm', ['pack', '--ignore-scripts', '--json', '--pack-destination', dist], { cwd: path.join(root, 'packages', part), encoding: 'utf8' });
   dependencies[`@local/dsh-studio-${part}`] = `file:${path.join(dist, JSON.parse(output)[0].filename)}`;
 }

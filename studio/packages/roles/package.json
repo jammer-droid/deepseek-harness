@@ -7,7 +7,6 @@
     "./client": "./client.js",
     "./delegation-tool": { "types": "./src/delegation-tool.ts", "default": "./delegation-tool.js" },
     "./types": { "types": "./src/roles-types.ts" },
-    "./preset-types": { "types": "./src/preset-types.ts" },
     "./typert": { "types": "./lib/typert.host.d.ts", "default": "./lib/typert.host.js" },
     "./remote": { "types": "./lib/typert.remote-client.d.ts", "default": "./lib/typert.remote-client.js" }
   },

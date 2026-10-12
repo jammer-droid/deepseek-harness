@@ -10,6 +10,13 @@ export interface PresetPlugin {
   disabled: boolean | null;
   fields: PresetField[];
 }
+/** Host-owned template; its key changes when its complete configuration changes. */
+export interface PresetComponent {
+  key: string;
+  name: string;
+  source: string;
+  plugins: PresetPlugin[];
+}
 /** Snapshot for optimistic, explicit profile edits. */
 export interface PresetSettings {
   entryId: string;
@@ -19,11 +26,14 @@ export interface PresetSettings {
   overridden: boolean;
   availability: 'available' | 'broken' | 'unknown';
   plugins: PresetPlugin[];
+  components: PresetComponent[];
 }
-/** Only literals already present in a declaration can be changed. */
+/** Existing literals and explicit structural operations, committed together. */
 export interface PresetChange {
   entryId: string;
   revision: string;
   reset: boolean;
   plugins: PresetPlugin[];
+  remove?: number[][];
+  add?: string[];
 }

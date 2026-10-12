@@ -13,7 +13,9 @@ import { fileURLToPath } from 'node:url';
 import { WorkspaceAnalyzer, FaceModelEmitter } from '@deepseek-ai/dsh-typert-generator';
 
 const root = fileURLToPath(new URL('.', import.meta.url));
-const packageRoot = new URL('./packages/roles/', import.meta.url);
+const part = process.argv[2] ?? 'roles';
+if (!['roles', 'general'].includes(part)) throw new Error('Unknown Studio package');
+const packageRoot = new URL(`./packages/${part}/`, import.meta.url);
 const manifest = JSON.parse(await readFile(new URL('package.json', packageRoot), 'utf8'));
 const outputs = [
   ['./typert', 'typert.host'],
@@ -49,7 +51,7 @@ try {
   await writeFile(join(staging, 'aggregate.json'), JSON.stringify({
     extends: '../../tsconfig.typert.host.json',
     compilerOptions: { paths: { '@deepseek-ai/dsh-typert-protocol': [join(staging, 'declarations/index.d.ts')] } },
-    references: [{ path: '../roles/tsconfig.host.json' }, { path: './tsconfig.json' }],
+    references: [{ path: `../${part}/tsconfig.host.json` }, { path: './tsconfig.json' }],
   }));
   const workspace = new WorkspaceAnalyzer({
     root,

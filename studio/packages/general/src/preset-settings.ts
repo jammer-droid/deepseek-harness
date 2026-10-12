@@ -41,9 +41,32 @@ function childAt(rows: unknown, path: number[]): Record<string, unknown> {
   if (!object(row)) throw new Error('invalid-plugin-path');
   return row;
 }
+/** Builtin leaf templates require their ordinary Host services; activation remains registry-owned. */
+const builtinComponents = [
+  '@deepseek-ai/dsh-persona', '@deepseek-ai/dsh-tool-fs', '@deepseek-ai/dsh-tool-fs-search',
+  '@deepseek-ai/dsh-tool-bash', '@deepseek-ai/dsh-tool-todo', '@deepseek-ai/dsh-tool-ask-user',
+];
+function component(row: Record<string, unknown>, source: string) {
+  return { key: revision(row), name: String(row.name ?? row.id), source, plugins: plugins([row]), row };
+}
 /** User-only editor: toggles may change the tools and policies of future Agents. */
 export class PresetSettingsOwner {
   constructor(private readonly ctx: Context) {}
+  private catalog() {
+    const editor = this.ctx.get('configEditor');
+    if (!editor) throw new Error('config-editor-unavailable');
+    const candidates = builtinComponents.map(name => component(name === '@deepseek-ai/dsh-persona' ? { name, config: { prefix: '', suffix: '', complete: false, includeRuntimeContext: true } } : { name }, 'DSH'));
+    for (const { entry, inherited } of editor.configuration()) {
+      if (entry.options.name !== '@deepseek-ai/dsh-agent-preset') continue;
+      for (const config of [inherited, entry.options.config]) {
+        if (!object(config) || !Array.isArray(config.plugins)) continue;
+        for (const row of config.plugins) {
+          if (object(row)) candidates.push(component(row, String(config.name ?? config.id)));
+        }
+      }
+    }
+    return [...new Map(candidates.map(item => [item.key, item])).values()];
+  }
   /** @returns Editable profile-owned preset declarations, or an unavailable error. */
   async describe(): Promise<PresetSettings[]> {
     const editor = this.ctx.get('configEditor');
@@ -57,6 +80,7 @@ export class PresetSettingsOwner {
         entryId: entry.options.id, id: String(config.id), name: String(config.name ?? config.id),
         revision: revision(config), overridden: Object.keys(override).length > 0,
         plugins: plugins(config.plugins),
+        components: this.catalog().map(({ key, name, source, plugins }) => ({ key, name, source, plugins })),
       };
     });
   }
@@ -96,6 +120,38 @@ export class PresetSettingsOwner {
           if (!object(target) || !Object.hasOwn(target, key)) throw new Error('invalid-field');
           Object.defineProperty(target, key, { value: field.value, enumerable: true, configurable: true, writable: true });
         }
+      }
+      const removals = request.remove ?? [];
+      const removed = new Set<string>();
+      for (const path of removals) {
+        if (!expected.some(row => isDeepStrictEqual(row.path, path)) || removed.has(JSON.stringify(path))) throw new Error('invalid-plugin-removal');
+        removed.add(JSON.stringify(path));
+      }
+      const prune = (rows: unknown, parent: number[] = []): unknown => {
+        if (!Array.isArray(rows)) return rows;
+        return rows.flatMap((row, index) => {
+          const path = [...parent, index];
+          if (removed.has(JSON.stringify(path))) return [];
+          if (object(row) && row.group) row.config = prune(row.config, path);
+          return [row];
+        });
+      };
+      current.plugins = prune(current.plugins);
+      const additions = request.add ?? [];
+      const catalog = this.catalog();
+      for (const key of additions) {
+        const template = catalog.find(item => item.key === key);
+        if (!template) throw new Error('component-unavailable');
+        if (!Array.isArray(current.plugins)) throw new Error('invalid-plugin-list');
+        const row = structuredClone(template.row);
+        // Loader generates fresh entry identities; group-local metadata remains intact.
+        const clearIds = (entry: Record<string, unknown>) => {
+          delete entry.id;
+          if (entry.group && Array.isArray(entry.config)) for (const child of entry.config) if (object(child)) clearIds(child);
+        };
+        clearIds(row);
+        if (current.plugins.some(existing => object(existing) && existing.name === row.name && row.name !== 'cordis:group')) throw new Error('duplicate-component');
+        current.plugins.push(row);
       }
       return current;
     });
