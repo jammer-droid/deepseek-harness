@@ -1,5 +1,5 @@
 import type { Context } from '@deepseek-ai/cordis';
-import type { ReactNode } from 'react';
+import type { PropsRenderSlots } from '@deepseek-ai/dsh-client-ui-slots';
 import type {} from '@deepseek-ai/dsh-client-ui-renderer/client';
 import type {} from '@deepseek-ai/dsh-client-ui-workspace/client';
 import type {} from '@deepseek-ai/dsh-client-ui-sidebar/client';
@@ -16,13 +16,11 @@ export interface PluginManager {
   listPlugins(): Promise<PluginInfo[]>;
   setPluginEnabled(id: PluginEntryId, enabled: boolean): Promise<ChangeResult>;
 }
-export interface StudioProps {
-  renderSlot(name: 'local.dsh-studio.features' | 'local.dsh-studio.presets', props: Record<string, never>): ReactNode;
-}
+export type StudioProps = PropsRenderSlots<'local.dsh-studio.features'>;
 export interface IconProps { size?: number; active?: boolean }
 declare module '@deepseek-ai/dsh-client-ui-slots' {
   interface SlotMap {
-    'local.dsh-studio.presets': { kind: 'list'; props: Record<string, never> };
+    'local.dsh-studio.services': { kind: 'list'; props: Record<string, never> };
     'local.dsh-studio.features': { kind: 'list'; props: Record<string, never> };
   }
 }

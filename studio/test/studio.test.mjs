@@ -64,6 +64,6 @@ for (const part of ['shell', 'demo']) test(`${part} build exposes loader contrac
   let loaded;
   vm.runInNewContext(await readFile(new URL(`../packages/${part}/client.js`, import.meta.url), 'utf8'), { window: { __ModuleLoader__: { load(value) { loaded = value; } } } });
   assert.equal(loaded.id, `@local/dsh-studio-${part}`);
-  const module = loaded.factory(name => { assert.ok(['react', 'react/jsx-runtime', '@deepseek-ai/dsh-client-ui-primitives'].includes(name)); return {}; });
+  const module = loaded.factory(name => { assert.ok(['react', 'react/jsx-runtime', '@deepseek-ai/dsh-client-ui-primitives', '@deepseek-ai/dsh-client-ui-slots'].includes(name)); return {}; });
   assert.equal(typeof module.apply, 'function'); assert.ok(module.inject.includes('slots'));
 });

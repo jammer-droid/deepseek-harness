@@ -42,6 +42,12 @@
 /* Page frame: navigation and content scroll independently, so selecting a section never moves the navigation. */
 .studio-ui.studio-shell { height: 100%; overflow: hidden; container: studio-shell / inline-size; }
 .studio-ui .studio-page { height: 100%; background: var(--studio-bg); }
+.studio-ui .studio-services { display: flex; flex-direction: column; height: 100%; min-height: 0; }
+.studio-ui .studio-service-nav { display: flex; flex: 0 0 auto; gap: 8px; padding: 12px 16px; overflow-x: auto; border-bottom: .5px solid var(--studio-line); }
+.studio-ui .studio-service-nav .studio-nav-item { white-space: nowrap; flex-shrink: 0; }
+.studio-ui .studio-service-panel { flex: 1; min-height: 0; overflow-y: auto; }
+.studio-ui .studio-service-panel[hidden] { display: none; }
+.studio-ui .studio-service-panel &gt; .studio-ui { max-width: 960px; margin: 0 auto; padding: 24px clamp(16px, 3vw, 40px) 48px; }
 .studio-ui .studio-layout { display: grid; grid-template-columns: 208px minmax(0, 1fr); height: 100%; }
 .studio-ui nav.studio-nav { display: flex; flex-direction: column; flex-wrap: nowrap; gap: 2px; margin: 0; padding: 24px 12px; border-inline-end: .5px solid var(--studio-line); overflow-y: auto; }
 .studio-ui .studio-nav-title { padding: 0 10px 8px; font-size: 14px; }

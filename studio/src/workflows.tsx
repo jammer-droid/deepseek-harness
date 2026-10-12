@@ -7,6 +7,8 @@ import { TYPERT_REMOTE } from '@local/dsh-studio-workflows/remote';
 import type { ComponentDefinition, SavedDraft } from '@local/dsh-studio-workflows/types';
 import { WorkflowEditor, type WorkflowApi } from './workflow-editor.tsx';
 import { workflowText } from './workflow-locales.ts';
+import { serviceText } from './service-locales.ts';
+import { DetailLayout } from './detail-layout.tsx';
 import { StudioSurface, Button } from './ui.tsx';
 export const inject = ['remote', 'slots', 'locale'];
 /** @param ctx Owning Client context. */
@@ -38,6 +40,13 @@ export async function apply(ctx: Context): Promise<void> {
         {data ? <WorkflowEditor locale={locale} components={data.components} initialDrafts={data.drafts} api={api} /> : !failed && <div role="status" aria-label={t.loading} aria-busy="true" />}
       </StudioSurface>;
     }
-    ctx.slots.inject('local.dsh-studio.features', () => ctx.slots.register({ name: 'local.dsh-studio.features', id: 'workflow-drafts' }, Workflows));
+    function PresetBuilder() {
+      const locale = React.useSyncExternalStore(listener => ctx.locale.subscribe(listener), () => ctx.locale.getLocale().active);
+      const t = serviceText(locale);
+      return <DetailLayout title={t.builder} navigation={t.builder}
+        pages={[{ id: 'workflow', label: t.workflow, content: <Workflows /> }]}
+        selected="workflow" onSelect={() => {}} />;
+    }
+    ctx.slots.inject('local.dsh-studio.services', () => ctx.slots.register({ name: 'local.dsh-studio.services', id: 'preset-builder', order: 0, label: () => serviceText(ctx.locale.getLocale().active).builder }, PresetBuilder));
   });
 }

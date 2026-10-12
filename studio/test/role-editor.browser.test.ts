@@ -22,6 +22,7 @@ it('edits only two roles, applies explicitly, and reloads the saved snapshot in 
       const page = await browser.newPage({ locale: 'en-US', viewport: { width: 1440, height: 1200 } })
       await page.goto(scaffold.authenticatedUrl)
       await page.getByRole('button', { name: 'DSH Studio', exact: true }).click()
+      await page.getByRole('button', { name: 'Role settings', exact: true }).click()
       const editor = page.getByRole('region', { name: 'Role settings', exact: true })
       await editor.waitFor({ timeout: 30_000 })
       expect(await editor.getByRole('group').allTextContents()).toHaveLength(2)
@@ -57,7 +58,8 @@ it('edits only two roles, applies explicitly, and reloads the saved snapshot in 
       expect(await editor.locator('dd').allTextContents()).toEqual(saved)
       await page.reload()
       await page.getByRole('button', { name: 'DSH Studio', exact: true }).waitFor()
-      if (!await editor.isVisible()) await page.getByRole('button', { name: 'DSH Studio', exact: true }).click()
+      await page.getByRole('button', { name: 'DSH Studio', exact: true }).click()
+      await page.getByRole('button', { name: 'Role settings', exact: true }).click()
       await expect.poll(() => status.allTextContents(), { timeout: 15_000 }).toEqual(['Saved and applied.', 'No unsaved changes.'])
       for (const role of ['Implementer', 'Reviewer']) {
         expect(await editor.getByRole('textbox', { name: `${role} Instructions`, exact: true }).inputValue()).toBe(`${role}: browser acceptance instructions`)

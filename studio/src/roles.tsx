@@ -8,6 +8,7 @@ import { TYPERT_REMOTE } from '@local/dsh-studio-roles/remote';
 import { RoleEditor } from './roles-editor.tsx';
 import { registerAgentsView } from './agents-view.tsx';
 import { roleCopy } from './roles-locales.ts';
+import { serviceText } from './service-locales.ts';
 import { createRoleStore, type RoleStore } from './roles-store.ts';
 /** Mount required public services before registering the editor. */
 export const inject = ['remote', 'slots', 'locale'];
@@ -40,6 +41,6 @@ export async function apply(ctx: Context): Promise<void> {
     ctx.effect(() => ctx.locale.subscribe(() => store.setLocale(ctx.locale.getLocale().active)));
     ctx.on('connection/reset', () => store.reset());
     void store.reload();
-    ctx.slots.inject('local.dsh-studio.features', () => ctx.slots.register({ name: 'local.dsh-studio.features', id: 'role-settings', order: -10 }, () => <Settings store={store} />));
+    ctx.slots.inject('local.dsh-studio.services', () => ctx.slots.register({ name: 'local.dsh-studio.services', id: 'role-settings', order: 20, label: () => serviceText(ctx.locale.getLocale().active).roles }, () => <Settings store={store} />));
   });
 }

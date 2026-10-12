@@ -13,30 +13,25 @@ const { createRoot } = await import('react-dom/client');
 test('section navigation keeps every section mounted and starts on workflows', async () => {
   const root = createRoot(document.getElementById('root'));
   try {
-    const pages = { workflows: React.createElement('p', null, 'workflow mock'), agents: React.createElement('p', null, 'agent mock'), components: React.createElement('p', null, 'component mock'), systems: React.createElement('p', null, 'system mock') };
-    await act(async () => root.render(React.createElement(SettingsLayout, { locale: 'ko', pages, presets: React.createElement('button', null, 'preset editor') }, React.createElement('textarea', { defaultValue: 'draft' }))));
-    const [workflows, agents, components, systems, dsh, studio] = document.querySelectorAll('nav.studio-nav button');
+    const pages = { workflows: React.createElement('textarea', { defaultValue: 'draft' }), agents: React.createElement('p', null, 'agent mock'), components: React.createElement('p', null, 'component mock'), systems: React.createElement('p', null, 'system mock') };
+    await act(async () => root.render(React.createElement(SettingsLayout, { locale: 'ko', pages,  }, React.createElement('textarea', { defaultValue: 'draft' }))));
+    const [workflows, agents, components, systems] = document.querySelectorAll('nav.studio-nav button');
     const sections = [...document.querySelectorAll('section')];
     const visible = () => sections.filter(section => !section.hidden).map(section => section.id);
     const draft = document.querySelector('textarea');
     draft.value = 'unsaved changes';
     assert.equal(workflows.getAttribute('aria-current'), 'page');
     assert.deepEqual(visible(), [workflows.getAttribute('aria-controls')]);
-    assert.equal(document.getElementById(workflows.getAttribute('aria-controls')).textContent, 'workflow mock');
+    assert.ok(document.getElementById(workflows.getAttribute('aria-controls')).contains(draft));
     for (const [button, text] of [[agents, 'agent mock'], [components, 'component mock'], [systems, 'system mock']]) {
       await act(async () => button.click());
       assert.deepEqual(visible(), [button.getAttribute('aria-controls')]);
       assert.equal(document.getElementById(button.getAttribute('aria-controls')).textContent, text);
     }
-    await act(async () => dsh.click());
-    assert.equal(document.getElementById(dsh.getAttribute('aria-controls')).querySelector('button').textContent, 'preset editor');
-    await act(async () => studio.click());
-    assert.equal(studio.getAttribute('aria-current'), 'page');
-    assert.equal(workflows.getAttribute('aria-current'), null);
     assert.equal(document.querySelector('textarea'), draft);
     assert.equal(draft.value, 'unsaved changes');
     for (const [locale, label] of [['en', 'Workflows'], ['zh', '工作流']]) {
-      await act(async () => root.render(React.createElement(SettingsLayout, { locale }, React.createElement('textarea'))));
+      await act(async () => root.render(React.createElement(SettingsLayout, { locale, pages })));
       assert.equal(document.querySelector('nav.studio-nav button').textContent, label);
     }
   } finally {

@@ -49,6 +49,7 @@ it('repairs feedback files with one counted rework, an independent rereview, and
       expect(defective).not.toBe(originalLocale);
       await writeFile(join(workspace, 'roles-locales.ts'), defective);
       await writeFile(join(workspace, 'roles-editor.tsx'), originalEditor);
+      for (const file of ['ui.tsx', 'ui-host.tsx', 'ui-styles.ts']) await copyFile(`${studio}/src/${file}`, join(workspace, file));
       const turn = async (prompt: string) => {
         const settled = scaffold.whenTurnSettled();
         const input = page.locator('[data-composer-input][contenteditable="true"]').first();
@@ -144,11 +145,12 @@ export function apply(ctx) {
   });
 }
 `);
-      await build({ entryPoints: [join(preview, 'preview.tsx')], outfile: join(preview, 'client.js'), bundle: true, platform: 'browser', format: 'cjs', target: 'es2022', external: ['react', 'react/jsx-runtime'], banner: { js: "window.__ModuleLoader__.load({id: '@fixture/studio-feedback-preview', factory: (require) => { const module = { exports: {} }; const exports = module.exports;" }, footer: { js: 'return module.exports; }});' } });
+      await build({ entryPoints: [join(preview, 'preview.tsx')], outfile: join(preview, 'client.js'), bundle: true, platform: 'browser', format: 'cjs', target: 'es2022', external: ['react', 'react/jsx-runtime', '@deepseek-ai/dsh-client-ui-primitives'], banner: { js: "window.__ModuleLoader__.load({id: '@fixture/studio-feedback-preview', factory: (require) => { const module = { exports: {} }; const exports = module.exports;" }, footer: { js: 'return module.exports; }});' } });
       const entry = await ctx.loader.create({ name: '@fixture/studio-feedback-preview' });
       await ctx.loader.resolve(entry).fiber?.await();
       await page.reload();
       await page.getByRole('button', { name: 'DSH Studio', exact: true }).click();
+      await page.getByRole('button', { name: 'Experiments', exact: true }).click();
       const verified = page.getByRole('region', { name: 'Verified fixture', exact: true });
       await verified.waitFor({ timeout: 30_000 });
       await expect.poll(() => verified.getByRole('status').allTextContents()).toContain(expected.applied);
