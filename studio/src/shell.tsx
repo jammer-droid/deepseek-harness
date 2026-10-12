@@ -1,7 +1,10 @@
 import { Button, StudioSurface } from './ui.tsx';
 import React from "react";
 import type {} from '@deepseek-ai/dsh-client-locale/client';
-import { SettingsLayout } from './settings-layout.tsx';
+import { SettingsLayout, type StudioSection } from './settings-layout.tsx';
+import { MockStudioProvider } from './mock-store.tsx';
+import { MockWorkflow } from './mock-workflow.tsx';
+import { MockAgents, MockComponents, MockSystems } from './mock-library.tsx';
 import type { StudioContext, StudioProps, IconProps } from "./contracts.js";
 import { createController, remoteManager } from "./controller.js";
 
@@ -32,17 +35,12 @@ export function apply(ctx: StudioContext) {
             () => ctx.locale.getLocale().active,
         );
         const row = state.row;
+        const [section, setSection] = React.useState<StudioSection>('workflows');
         return (
-            <StudioSurface className="studio-shell"><main className="studio-page"
-            >
-                <div className="studio-content">
-                    <div className="studio-eyebrow">
-                        HARNESS ENGINEERING LAB
-                    </div>
-                    <h1>
-                        DSH Studio
-                    </h1>
-                    <SettingsLayout locale={locale} presets={renderSlot('local.dsh-studio.presets', {})}>
+            <StudioSurface className="studio-shell"><main className="studio-page">
+                <MockStudioProvider locale={locale} go={setSection}>
+                    <SettingsLayout locale={locale} section={section} onSectionChange={setSection} presets={renderSlot('local.dsh-studio.presets', {})}
+                        pages={{ workflows: <MockWorkflow />, agents: <MockAgents />, components: <MockComponents />, systems: <MockSystems /> }}>
                     <section className="studio-card" aria-label="Studio 기능">
                         <div className="studio-row">
                             <div>
@@ -119,7 +117,7 @@ export function apply(ctx: StudioContext) {
                         {renderSlot("local.dsh-studio.features", {})}
                     </section>
                     </SettingsLayout>
-                </div>
+                </MockStudioProvider>
             </main></StudioSurface>
         );
     }

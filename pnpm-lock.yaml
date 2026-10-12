@@ -15506,6 +15506,9 @@ importers:
       '@deepseek-ai/dsh-client-ui-conversation':
         specifier: workspace:*
         version: link:../packages/client/ui-conversation
+      '@deepseek-ai/dsh-client-ui-primitives':
+        specifier: workspace:*
+        version: link:../packages/client/ui-primitives
       '@deepseek-ai/dsh-client-ui-renderer':
         specifier: workspace:*
         version: link:../packages/client/ui-renderer
@@ -15624,6 +15627,24 @@ importers:
       '@deepseek-ai/dsh':
         specifier: workspace:*
         version: link:../../../apps/cli
+
+  studio/packages/general:
+    devDependencies:
+      '@deepseek-ai/cordis':
+        specifier: workspace:~
+        version: link:../../../vendor/cordis
+      '@deepseek-ai/dsh':
+        specifier: workspace:*
+        version: link:../../../apps/cli
+      '@deepseek-ai/dsh-agent-preset-registry':
+        specifier: workspace:*
+        version: link:../../../packages/preset/agent-preset-registry
+      '@deepseek-ai/dsh-config-editor':
+        specifier: workspace:*
+        version: link:../../../packages/boot/config-editor
+      '@deepseek-ai/dsh-typert-protocol':
+        specifier: workspace:*
+        version: link:../../../packages/typert/protocol
 
   studio/packages/roles:
     dependencies:
@@ -15853,24 +15874,6 @@ importers:
       vue:
         specifier: 3.5.42
         version: 3.5.42(typescript@6.0.3)
-
-  studio/packages/general:
-    devDependencies:
-      '@deepseek-ai/dsh':
-        specifier: workspace:*
-        version: link:../../../apps/cli
-      '@deepseek-ai/cordis':
-        specifier: workspace:~
-        version: link:../../../vendor/cordis
-      '@deepseek-ai/dsh-agent-preset-registry':
-        specifier: workspace:*
-        version: link:../../../packages/preset/agent-preset-registry
-      '@deepseek-ai/dsh-config-editor':
-        specifier: workspace:*
-        version: link:../../../packages/boot/config-editor
-      '@deepseek-ai/dsh-typert-protocol':
-        specifier: workspace:*
-        version: link:../../../packages/typert/protocol
 
 packages:
 

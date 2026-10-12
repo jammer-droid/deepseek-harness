@@ -1,57 +1,76 @@
-/** Studio-only navigation; hidden feature content stays mounted to retain drafts. */
+/** Studio-only navigation; hidden sections stay mounted to retain drafts. */
 import React from 'react';
-import { Button } from './ui.tsx';
+
+/** Addressable Studio page sections. */
+export type StudioSection = 'workflows' | 'agents' | 'components' | 'systems' | 'dsh' | 'studio';
+/** Mock design pages supplied by the shell; this module stays free of host primitives. */
+export type DesignPages = Partial<Record<'workflows' | 'agents' | 'components' | 'systems', React.ReactNode>>;
 
 const ko = {
-  navigation: 'Studio 설정 영역', dsh: 'DSH 설정', studio: 'Studio 기능',
-  intro: 'DSH 기본 설정과 Studio 전용 기능을 구분하여 관리합니다.',
-  title: 'DSH 설정 오버라이드',
-  description: '기본 설정 화면은 그대로 두고, Studio에서 필요한 설정을 재정의하는 영역입니다.',
-  preset: '에이전트 프리셋',
-  presetDescription: '프리셋의 지침, 도구 구성, 플러그인 옵션을 편집할 공간입니다.',
-  pending: '편집 기능 준비 중',
-  note: '현재는 화면 구성만 제공하며, DSH 설정을 읽거나 변경하지 않습니다.',
-  studioDescription: 'Studio에서 제공하는 역할 설정과 실험 기능을 관리합니다.',
+  navigation: 'Studio 영역', design: '설계', mock: '목업', legacy: '기존 기능',
+  workflows: '워크플로우', agents: '에이전트', components: '컴포넌트', systems: '시스템',
+  dsh: 'DSH 프리셋 편집', studio: '역할·실험 기능',
+  title: 'DSH 프리셋 편집',
+  description: '기본 설정 화면은 그대로 두고, 프로필의 에이전트 프리셋 선언을 직접 재정의합니다.',
+  studioDescription: 'Studio에서 제공하는 기존 고정 역할 설정과 실험 기능을 관리합니다.',
 };
 const en: typeof ko = {
-  navigation: 'Studio settings sections', dsh: 'DSH settings', studio: 'Studio features',
-  intro: 'Manage DSH settings separately from Studio-specific features.',
-  title: 'DSH settings overrides',
-  description: 'Override selected DSH settings here while keeping the built-in settings screen unchanged.',
-  preset: 'Agent presets', presetDescription: 'A dedicated space for preset instructions, tools, and plugin options.',
-  pending: 'Editing coming later', note: 'This is a layout preview. It does not read or change DSH settings.',
-  studioDescription: 'Manage role settings and experimental features provided by Studio.',
+  navigation: 'Studio sections', design: 'Design', mock: 'Mock', legacy: 'Existing features',
+  workflows: 'Workflows', agents: 'Agents', components: 'Components', systems: 'Systems',
+  dsh: 'DSH preset editing', studio: 'Roles and experiments',
+  title: 'DSH preset editing',
+  description: 'Override the profile’s agent preset declarations while keeping the built-in settings screen unchanged.',
+  studioDescription: 'Manage the existing fixed role settings and experimental features provided by Studio.',
 };
 const zh: typeof ko = {
-  navigation: 'Studio 设置区域', dsh: 'DSH 设置', studio: 'Studio 功能',
-  intro: '分别管理 DSH 设置与 Studio 专属功能', title: 'DSH 设置覆盖',
-  description: '在此覆盖所需的 DSH 设置，同时保留内置设置界面',
-  preset: '智能体预设', presetDescription: '用于编辑预设指令、工具组合和插件选项的专属区域',
-  pending: '编辑功能尚未开放', note: '目前仅展示界面布局，不会读取或修改 DSH 设置',
-  studioDescription: '管理 Studio 提供的角色设置和实验功能',
+  navigation: 'Studio 区域', design: '设计', mock: '模拟', legacy: '现有功能',
+  workflows: '工作流', agents: '智能体', components: '组件', systems: '系统',
+  dsh: 'DSH 预设编辑', studio: '角色与实验功能',
+  title: 'DSH 预设编辑',
+  description: '保留内置设置界面，直接覆盖配置文件中的智能体预设声明',
+  studioDescription: '管理 Studio 提供的现有固定角色设置和实验功能',
 };
 
-/** Separate native settings overrides from Studio features without changing their operations.
- * @param props Active locale and existing Studio feature controls.
- * @returns Local navigation and two independently labelled sections.
+const DESIGN = ['workflows', 'agents', 'components', 'systems'] as const;
+const LEGACY = ['dsh', 'studio'] as const;
+
+/** Left navigation over Studio sections with a separate content scroller.
+ * @param props Active locale, optional controlled section, existing Studio features as children, the preset editor, and mock design pages.
+ * @returns Navigation and one visible section; every section stays mounted.
  */
-export function SettingsLayout({ locale, children, presets }: React.PropsWithChildren<{ locale: string; presets?: React.ReactNode }>) {
+export function SettingsLayout({ locale, children, presets, pages = {}, section: controlled, onSectionChange }: React.PropsWithChildren<{
+  locale: string; presets?: React.ReactNode; pages?: DesignPages; section?: StudioSection; onSectionChange?: (section: StudioSection) => void;
+}>) {
   const t = locale.startsWith('ko') ? ko : locale.startsWith('zh') ? zh : en;
-  const [section, setSection] = React.useState<'dsh' | 'studio'>('studio');
+  const [local, setLocal] = React.useState<StudioSection>('workflows');
+  const section = controlled ?? local;
+  const select = (next: StudioSection) => { setLocal(next); onSectionChange?.(next); };
   const id = React.useId();
-  return <>
-    <p className="studio-muted">{t.intro}</p>
-    <nav className="studio-section-nav" aria-label={t.navigation}>
-      <Button aria-pressed={section === 'dsh'} aria-controls={`${id}-dsh`} onClick={() => setSection('dsh')}>{t.dsh}</Button>
-      <Button aria-pressed={section === 'studio'} aria-controls={`${id}-studio`} onClick={() => setSection('studio')}>{t.studio}</Button>
+  const scroller = React.useRef<HTMLDivElement>(null);
+  // A different page starts at its top; staying on a page keeps its scroll position.
+  React.useLayoutEffect(() => { if (scroller.current) scroller.current.scrollTop = 0; }, [section]);
+  const item = (value: StudioSection) => <button key={value} type="button" className="studio-nav-item" aria-current={section === value ? 'page' : undefined}
+    aria-controls={`${id}-${value}`} onClick={() => select(value)}>{t[value]}</button>;
+  return <div className="studio-layout">
+    <nav className="studio-nav" aria-label={t.navigation}>
+      <strong className="studio-nav-title">DSH Studio</strong>
+      <span className="studio-nav-group">{t.design}<span className="studio-nav-badge">{t.mock}</span></span>
+      {DESIGN.map(item)}
+      <span className="studio-nav-group">{t.legacy}</span>
+      {LEGACY.map(item)}
     </nav>
-    <section id={`${id}-dsh`} aria-label={t.dsh} hidden={section !== 'dsh'}>
-      <header><h2>{t.title}</h2><p className="studio-muted">{t.description}</p></header>
-      {presets}
-    </section>
-    <section id={`${id}-studio`} aria-label={t.studio} hidden={section !== 'studio'}>
-      <header><h2>{t.studio}</h2><p className="studio-muted">{t.studioDescription}</p></header>
-      <div className="studio-feature-stack">{children}</div>
-    </section>
-  </>;
+    <div className="studio-scroller" ref={scroller} data-studio-scroller="">
+      <div className="studio-content">
+        {DESIGN.map(value => <section key={value} id={`${id}-${value}`} aria-label={t[value]} hidden={section !== value}>{pages[value]}</section>)}
+        <section id={`${id}-dsh`} aria-label={t.dsh} hidden={section !== 'dsh'}>
+          <header className="studio-page-head"><h2>{t.title}</h2><p className="studio-muted">{t.description}</p></header>
+          {presets}
+        </section>
+        <section id={`${id}-studio`} aria-label={t.studio} hidden={section !== 'studio'}>
+          <header className="studio-page-head"><h2>{t.studio}</h2><p className="studio-muted">{t.studioDescription}</p></header>
+          <div className="studio-feature-stack">{children}</div>
+        </section>
+      </div>
+    </div>
+  </div>;
 }
