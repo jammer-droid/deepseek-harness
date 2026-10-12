@@ -71,7 +71,7 @@ export class ComponentRegistry {
     const result = validateWorkflow(document, catalog);
     const contributions = [...this.validators.entries()];
     for (const [definition, validator] of contributions) {
-      const instances = definition.scope === 'role' ? document.mainRole.components : document.systems;
+      const instances = definition.scope === 'role' ? document.roles.flatMap(role => role.components) : document.systems;
       for (const instance of instances) {
         if (instance.id === definition.id && instance.version === definition.version) result.diagnostics.push(...structuredClone(validator(structuredClone(instance), structuredClone(document), structuredClone(catalog))));
       }

@@ -6,16 +6,28 @@ const component = { id: 'writer', version: 1, scope: 'role', fields: [{ key: 'te
 const system = { id: 'sink', version: 1, scope: 'workflow', fields: [], ports: [port('in', 'input')], executionLocations: ['dsh', 'remote'] };
 function fixture() {
   const registry = new ComponentRegistry(); registry.register(component); registry.registerSystem(system);
-  const document = { documentVersion: 2, name: 'A', mainRole: { name: 'Main', components: [{ instanceId: 'c', id: 'writer', version: 1, scope: 'role', config: { text: 'Hello' } }] }, systems: [{ instanceId: 's', id: 'sink', version: 1, scope: 'workflow', executionLocation: 'dsh', config: {} }], connections: [{ id: 'wire', from: { kind: 'component', instanceId: 'c', portId: 'out' }, to: { kind: 'system', instanceId: 's', portId: 'in' } }] };
+  const document = { documentVersion: 3, name: 'A', mainRoleId: 'main', roles: [{ id: 'main', name: 'Main', components: [{ instanceId: 'c', id: 'writer', version: 1, scope: 'role', config: { text: 'Hello' } }] }], systems: [{ instanceId: 's', id: 'sink', version: 1, scope: 'workflow', executionLocation: 'dsh', config: {} }], connections: [{ id: 'wire', from: { kind: 'component', instanceId: 'c', portId: 'out' }, to: { kind: 'system', instanceId: 's', portId: 'in' } }] };
   return { registry, document };
 }
+test('All roles receive component checks and deleting the main role preserves missing references', () => {
+  const { registry, document } = fixture();
+  document.roles.push({ id: 'reviewer', name: 'Reviewer', components: [{ instanceId: 'review', id: 'writer', version: 1, scope: 'role', config: {} }] });
+  assert.ok(registry.validate(document).diagnostics.some(item => item.code === 'required-field' && item.target.instanceId === 'review'));
+  document.roles.shift();
+  const before = structuredClone(document);
+  const result = registry.validate(document);
+  assert.ok(result.diagnostics.some(item => item.code === 'missing-main-role'));
+  assert.ok(result.diagnostics.some(item => item.code === 'missing-instance' && item.target.connectionId === 'wire'));
+  assert.deepEqual(document, before);
+});
+
 test('Registration, configuration, scope and location errors identify the preserved instance', () => {
   for (const [mutate, expected] of [
-    [d => { d.mainRole.components[0].id = 'absent'; }, 'missing-registration'],
-    [d => { d.mainRole.components[0].version = 2; }, 'version-mismatch'],
-    [d => { delete d.mainRole.components[0].config.text; }, 'required-field'],
-    [d => { d.mainRole.components[0].config.text = 42; }, 'field-type'],
-    [d => { d.mainRole.components[0].scope = 'workflow'; }, 'invalid-scope'],
+    [d => { d.roles[0].components[0].id = 'absent'; }, 'missing-registration'],
+    [d => { d.roles[0].components[0].version = 2; }, 'version-mismatch'],
+    [d => { delete d.roles[0].components[0].config.text; }, 'required-field'],
+    [d => { d.roles[0].components[0].config.text = 42; }, 'field-type'],
+    [d => { d.roles[0].components[0].scope = 'workflow'; }, 'invalid-scope'],
     [d => { d.systems[0].executionLocation = 'remote'; }, 'unsupported-location'],
   ]) {
     const { registry, document } = fixture(); mutate(document);
@@ -62,7 +74,7 @@ test('Host-only semantic validators cannot mutate caller documents or serialized
   });
   registry.registerSystem(system);
   assert.equal(registry.validate(document).diagnostics[0].code, 'semantic');
-  assert.equal(document.name, 'A'); assert.equal(document.mainRole.components[0].config.text, 'Hello');
+  assert.equal(document.name, 'A'); assert.equal(document.roles[0].components[0].config.text, 'Hello');
   assert.equal(registry.catalog().components.length, 1);
   assert.doesNotThrow(() => structuredClone(registry.catalog()));
 });

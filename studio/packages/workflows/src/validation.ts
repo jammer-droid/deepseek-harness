@@ -4,8 +4,9 @@ import type { WorkflowDocument, WorkflowDiagnostic, ValidationResult, WorkflowEn
 /** @param document Editable document. @param catalog Detached registration snapshot. @returns Ordered configuration diagnostics. */
 export function validateWorkflow(document: WorkflowDocument, catalog: CatalogSnapshot): ValidationResult {
   const diagnostics: WorkflowDiagnostic[] = [];
+  if (!document.roles.some(role => role.id === document.mainRoleId)) diagnostics.push({ code: 'missing-main-role', target: { kind: 'document', fieldPath: 'mainRoleId' }, relatedIds: [document.mainRoleId], details: {} });
   for (const kind of ['component', 'system'] as const) {
-    const instances = kind === 'component' ? document.mainRole.components : document.systems;
+    const instances = kind === 'component' ? document.roles.flatMap(role => role.components) : document.systems;
     const definitions = kind === 'component' ? catalog.components : catalog.systems;
     for (const instance of instances) {
       const target = { kind, instanceId: instance.instanceId };
@@ -22,7 +23,7 @@ export function validateWorkflow(document: WorkflowDocument, catalog: CatalogSna
       }
     }
   }
-  for (const instance of document.mainRole.components) {
+  for (const instance of document.roles.flatMap(role => role.components)) {
     const definition = catalog.components.find(item => item.id === instance.id && item.version === instance.version);
     for (const required of definition?.requiredSystems ?? []) {
       if (!catalog.systems.some(item => item.id === required.id && item.version === required.version)
@@ -32,7 +33,7 @@ export function validateWorkflow(document: WorkflowDocument, catalog: CatalogSna
     }
   }
   const resolve = (endpoint: WorkflowEndpoint) => {
-    const instances = endpoint.kind === 'component' ? document.mainRole.components : document.systems;
+    const instances = endpoint.kind === 'component' ? document.roles.flatMap(role => role.components) : document.systems;
     const definitions = endpoint.kind === 'component' ? catalog.components : catalog.systems;
     const instance = instances.find(item => item.instanceId === endpoint.instanceId);
     const definition = instance && definitions.find(item => item.id === instance.id && item.version === instance.version);
@@ -59,7 +60,7 @@ export function validateWorkflow(document: WorkflowDocument, catalog: CatalogSna
     }
   }
   for (const kind of ['component', 'system'] as const) {
-    const instances = kind === 'component' ? document.mainRole.components : document.systems;
+    const instances = kind === 'component' ? document.roles.flatMap(role => role.components) : document.systems;
     const definitions = kind === 'component' ? catalog.components : catalog.systems;
     for (const instance of instances) {
       const definition = definitions.find(item => item.id === instance.id && item.version === instance.version);

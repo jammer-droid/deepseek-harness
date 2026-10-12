@@ -36,10 +36,12 @@ test('Legacy reads normalize deterministically without changing persisted revisi
   assert.deepEqual(first.store.list()[0], normalized);
   assert.equal(pool.failNextWrites, 1);
   pool.failNextWrites = 0;
-  assert.equal(normalized.document.documentVersion, 2);
+  assert.equal(normalized.document.documentVersion, 3);
+  assert.equal(normalized.document.mainRoleId, normalized.document.roles[0].id);
+  assert.equal(normalized.document.roles[0].model, undefined);
   assert.deepEqual(normalized.document.systems, []);
   assert.equal(normalized.revision, 7);
-  assert.notEqual(normalized.document.mainRole.components[0].instanceId, normalized.document.mainRole.components[1].instanceId);
+  assert.notEqual(normalized.document.roles[0].components[0].instanceId, normalized.document.roles[0].components[1].instanceId);
   await first.close();
   const inspectionContext = new Context(); await inspectionContext.plugin(Storage);
   inspectionContext.storage.backend.register('memory', new MemoryStorageBackend(pool));
@@ -50,11 +52,45 @@ test('Legacy reads normalize deterministically without changing persisted revisi
   const second = await fixture(pool);
   try {
     assert.deepEqual(second.store.list()[0], normalized);
-    normalized.document.mainRole.components.reverse();
+    normalized.document.roles[0].components.reverse();
     const saved = await second.store.save({ id, expectedRevision: 7, document: normalized.document });
     assert.equal(saved.revision, 8);
     assert.deepEqual(saved.document, normalized.document);
   } finally { await second.close(); }
+});
+
+test('Version two reads preserve stable instances and configuration until explicit save', async () => {
+  const pool = new MemoryMediaPool(); const ctx = new Context(); await ctx.plugin(Storage);
+  ctx.storage.backend.register('memory', new MemoryStorageBackend(pool));
+  const facility = new DomainFacility(ctx, { backend: 'memory', routes: {} });
+  const raw = await facility.open(defineDomain({ name: 'studio_workflow_drafts', version: 1, tables: { profiles: domainTable(z.json()) } }));
+  const document = { documentVersion: 2, name: 'Preserved', mainRole: { name: 'Author', components: [{ instanceId: 'stable', id: 'unknown', version: 8, scope: 'custom', config: { nested: [true, null] } }] }, systems: [], connections: [{ id: 'stale', from: { kind: 'component', instanceId: 'stable', portId: 'out' }, to: { kind: 'system', instanceId: 'deleted', portId: 'in' } }] };
+  const id = '550e8400-e29b-41d4-a716-446655440000';
+  await raw.table('profiles').put('web', { drafts: [{ id, revision: 4, document }] });
+  await raw.close(); await ctx.fiber.dispose();
+  const f = await fixture(pool);
+  try {
+    const migrated = f.store.list()[0];
+    assert.deepEqual(migrated.document.roles, [{ id: `legacy:${id}:role:main`, ...document.mainRole }]);
+    assert.equal(migrated.document.initialModel, undefined);
+    assert.deepEqual(migrated.document.connections, document.connections);
+    const saved = await f.store.save({ id, expectedRevision: 4, document: migrated.document });
+    assert.equal(saved.revision, 5); assert.equal(saved.document.documentVersion, 3);
+  } finally { await f.close(); }
+});
+
+test('Duplicate role and cross-role component identities cannot overwrite saved content', async () => {
+  const f = await fixture();
+  try {
+    const candidate = request('Kept'); const saved = await f.store.save(candidate);
+    for (const duplicateRole of [true, false]) {
+      const document = structuredClone(candidate.document); const role = structuredClone(document.roles[0]);
+      if (!duplicateRole) role.id = 'another'; else role.components = [];
+      document.roles.push(role);
+      await assert.rejects(f.store.save({ ...candidate, expectedRevision: 1, document }), error => error.reason === 'invalid-document');
+      assert.deepEqual(f.store.list(), [saved]);
+    }
+  } finally { await f.close(); }
 });
 
 test('Malformed durable documents fail opening instead of becoming empty drafts', async () => {
@@ -72,7 +108,7 @@ test('Malformed wire documents and duplicate stable identities cannot overwrite 
   const f = await fixture();
   try {
     const candidate = request('Kept'); const saved = await f.store.save(candidate);
-    for (const mutate of [d => { delete d.documentVersion; }, d => { d.mainRole.components.push({ ...d.mainRole.components[0] }); }, d => { d.connections = [{ id: 'c', from: { kind: 'alien', instanceId: 'x', portId: 'p' }, to: { kind: 'system', instanceId: 's', portId: 'p' } }]; }, d => { d.unrecognized = true; }]) {
+    for (const mutate of [d => { delete d.documentVersion; }, d => { d.roles[0].components.push({ ...d.roles[0].components[0] }); }, d => { d.connections = [{ id: 'c', from: { kind: 'alien', instanceId: 'x', portId: 'p' }, to: { kind: 'system', instanceId: 's', portId: 'p' } }]; }, d => { d.unrecognized = true; }]) {
       const document = structuredClone(candidate.document); mutate(document);
       await assert.rejects(f.store.save({ ...candidate, expectedRevision: 1, document }), error => error.reason === 'invalid-document');
       assert.deepEqual(f.store.list(), [saved]);
@@ -89,11 +125,11 @@ test('Recovery reads observe admitted saves and optional fields may be absent', 
   try {
     f.registry.register({ id: 'optional', version: 1, scope: 'role', fields: [{ key: 'note', kind: 'text', required: false }] });
     const candidate = request('Optional');
-    candidate.document.mainRole.components.push({ instanceId: 'optional-1', id: 'optional', version: 1, scope: 'role', config: {} });
+    candidate.document.roles[0].components.push({ instanceId: 'optional-1', id: 'optional', version: 1, scope: 'role', config: {} });
     const saving = f.store.save(candidate);
     assert.deepEqual(await f.store.read(), [await saving]);
-    candidate.document.mainRole.components[1].config.note = 42;
-    assert.equal((await f.store.save({ ...candidate, expectedRevision: 1 })).document.mainRole.components[1].config.note, 42);
+    candidate.document.roles[0].components[1].config.note = 42;
+    assert.equal((await f.store.save({ ...candidate, expectedRevision: 1 })).document.roles[0].components[1].config.note, 42);
   } finally { await f.close(); }
 });
 
@@ -124,9 +160,9 @@ test('Closing drains accepted writes and rejects later saves', async () => {
 test('Unknown versions and nested JSON survive saving and reopening', async () => {
   const f = await fixture();
   const candidate = request('Unknown');
-  candidate.document.mainRole.components.push({ instanceId: 'future-1', id: 'future.component', scope: 'role', version: 42, config: { nested: [null, true, 3, { key: 'value' }] } });
+  candidate.document.roles[0].components.push({ instanceId: 'future-1', id: 'future.component', scope: 'role', version: 42, config: { nested: [null, true, 3, { key: 'value' }] } });
   const saved = await f.store.save(candidate);
-  saved.document.mainRole.components[1].config.nested[3].key = 'mutated return';
+  saved.document.roles[0].components[1].config.nested[3].key = 'mutated return';
   assert.deepEqual(f.store.list()[0].document, candidate.document);
   await f.close();
   const reopened = await fixture(f.pool);
@@ -134,7 +170,7 @@ test('Unknown versions and nested JSON survive saving and reopening', async () =
   finally { await reopened.close(); }
 });
 
-function request(name) { return { id: randomUUID(), expectedRevision: 0, document: { documentVersion: 2, systems: [], connections: [], name, mainRole: { name: 'Main', components: [{ ...instructionsDefinition, instanceId: randomUUID(), fields: undefined, config: { text: name } }].map(({ fields, ...instance }) => instance) } } }; }
+function request(name) { return { id: randomUUID(), expectedRevision: 0, document: { documentVersion: 3, systems: [], connections: [], name, mainRoleId: 'main', roles: [{ id: 'main', name: 'Main', components: [{ ...instructionsDefinition, instanceId: randomUUID(), fields: undefined, config: { text: name } }].map(({ fields, ...instance }) => instance) }] } }; }
 
 test('Multiple drafts survive reopening and stay isolated from another profile', async () => {
   const first = await fixture();

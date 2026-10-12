@@ -1,18 +1,23 @@
 /** Declaration-driven configuration forms preserve unknown instances and dangling connections. */
 import React from 'react';
-import type { CatalogSnapshot, WorkflowDocument, WorkflowDiagnostic, InstanceId, ConnectionId, WorkflowEndpoint, PortDefinition, ConfigValue } from '@local/dsh-studio-workflows/types';
+import type { CatalogSnapshot, WorkflowDocument, WorkflowDiagnostic, InstanceId, ConnectionId, WorkflowEndpoint, PortDefinition, ConfigValue, RoleId, WorkflowRole, ModelCatalog, ModelSelection } from '@local/dsh-studio-workflows/types';
 import { workflowText } from './workflow-locales.ts';
+import { WorkflowModelForm } from './workflow-model-form.tsx';
 import { Button } from './ui.tsx';
 
 /** @param props Current document, available declarations and Host diagnostics. @returns Editable systems, components and connections. */
-export function WorkflowForms({ document, catalog, enabled, diagnostics, locale, onChange }: {
-  document: WorkflowDocument; catalog: CatalogSnapshot; enabled: boolean; diagnostics: WorkflowDiagnostic[]; locale: string; onChange: (document: WorkflowDocument) => void;
+export function WorkflowForms({ document, catalog, models, enabled, diagnostics, locale, onChange }: {
+  document: WorkflowDocument; catalog: CatalogSnapshot; models: ModelCatalog; enabled: boolean; diagnostics: WorkflowDiagnostic[]; locale: string; onChange: (document: WorkflowDocument) => void;
 }) {
   const t = workflowText(locale);
+  const [selectedId, setSelectedId] = React.useState<RoleId | null>(document.roles[0]?.id ?? null);
+  const [initialChoice, setInitialChoice] = React.useState<ModelSelection>();
+  const role = document.roles.find(item => item.id === selectedId);
+  const updateRole = (next: WorkflowRole) => onChange({ ...document, roles: document.roles.map(item => item.id === next.id ? next : item) });
   const textValue = (value: ConfigValue | undefined): string => typeof value === 'string' ? value : '';
   const endpoints: { endpoint: WorkflowEndpoint; port: PortDefinition; registration: string; label: string }[] = [];
   for (const kind of ['component', 'system'] as const) {
-    const instances = kind === 'component' ? document.mainRole.components : document.systems;
+    const instances = kind === 'component' ? document.roles.flatMap(role => role.components) : document.systems;
     for (const instance of instances) {
       const definition = (kind === 'component' ? catalog.components : catalog.systems).find(item => item.id === instance.id && item.version === instance.version);
       for (const port of definition?.ports ?? []) endpoints.push({ endpoint: { kind, instanceId: instance.instanceId, portId: port.id }, port, registration: instance.id, label: `${instance.id} · ${instance.instanceId} · ${port.id}` });
@@ -26,23 +31,38 @@ export function WorkflowForms({ document, catalog, enabled, diagnostics, locale,
   const pair = pairs[0];
   const pairKey = (pair: { from: WorkflowEndpoint; to: WorkflowEndpoint }) => `${key(pair.from)}>${key(pair.to)}`;
   function notices(kind: WorkflowDiagnostic['target']['kind'], id?: string) {
-    return diagnostics.filter(item => item.target.kind === kind && (kind === 'connection' ? item.target.connectionId === id : item.target.instanceId === id)).map((item, index) => <p role="alert" key={index}>{t.diagnostics[item.code]} {item.target.fieldPath} {item.relatedIds.join(', ')} {Object.values(item.details).join(', ')}</p>);
+    return diagnostics.filter(item => item.target.kind === kind && (kind === 'connection' ? item.target.connectionId === id : kind === 'role' ? item.target.roleId === id : item.target.instanceId === id)).map((item, index) => <p role="alert" key={index}>{t.diagnostics[item.code]} {item.target.fieldPath} {item.relatedIds.join(', ')} {Object.values(item.details).join(', ')}</p>);
   }
   function components(): React.ReactNode {
-    return <fieldset><legend>{t.mainRole}</legend>
-      <label>{t.name}<input value={document.mainRole.name} onChange={event => onChange({ ...document, mainRole: { ...document.mainRole, name: event.target.value } })} /></label>
-      {document.mainRole.components.map(instance => {
+    if (!role) return null;
+    return <fieldset><legend>{t.role}</legend>
+      <WorkflowModelForm value={role.model} catalog={models} enabled={enabled} locale={locale} label={t.roleModel} onChange={model => updateRole({ ...role, model })} />
+      {notices('role', role.id)}
+      <label>{t.name}<input value={role.name} onChange={event => updateRole({ ...role, name: event.target.value })} /></label>
+      {role.components.map(instance => {
         const definition = catalog.components.find(item => item.id === instance.id && item.version === instance.version);
         return <fieldset key={instance.instanceId}><legend>{instance.id} · {instance.instanceId}</legend>
-          {!definition ? <p>{t.unknown}</p> : definition.fields.map(field => <label key={field.key}>{instance.id === 'studio.instructions' ? t.instructions : field.key}<textarea aria-label={instance.id === 'studio.instructions' ? t.instructions : field.key} disabled={!enabled} value={textValue(instance.config[field.key])} onChange={event => onChange({ ...document, mainRole: { ...document.mainRole, components: document.mainRole.components.map(item => item.instanceId === instance.instanceId ? { ...item, config: { ...item.config, [field.key]: event.target.value } } : item) } })} /></label>)}
+          {!definition ? <p>{t.unknown}</p> : definition.fields.map(field => <label key={field.key}>{instance.id === 'studio.instructions' ? t.instructions : field.key}<textarea aria-label={instance.id === 'studio.instructions' ? t.instructions : field.key} disabled={!enabled} value={textValue(instance.config[field.key])} onChange={event => updateRole({ ...role, components: role.components.map(item => item.instanceId === instance.instanceId ? { ...item, config: { ...item.config, [field.key]: event.target.value } } : item) })} /></label>)}
           {notices('component', instance.instanceId)}
-          <Button onClick={() => onChange({ ...document, mainRole: { ...document.mainRole, components: document.mainRole.components.filter(item => item.instanceId !== instance.instanceId) } })}>{t.removeComponent}: {instance.id}</Button>
+          <Button onClick={() => updateRole({ ...role, components: role.components.filter(item => item.instanceId !== instance.instanceId) })}>{t.removeComponent}: {instance.id}</Button>
         </fieldset>;
       })}
-      {catalog.components.filter(item => item.scope === 'role').map(definition => <Button key={definition.id} disabled={!enabled} onClick={() => onChange({ ...document, mainRole: { ...document.mainRole, components: [...document.mainRole.components, { instanceId: crypto.randomUUID() as InstanceId, id: definition.id, version: definition.version, scope: 'role', config: Object.fromEntries(definition.fields.map(field => [field.key, ''])) }] } })}>{definition.id === 'studio.instructions' ? t.add : `${t.addComponent}: ${definition.id}`}</Button>)}
+      {catalog.components.filter(item => item.scope === 'role').map(definition => <Button key={definition.id} disabled={!enabled} onClick={() => updateRole({ ...role, components: [...role.components, { instanceId: crypto.randomUUID() as InstanceId, id: definition.id, version: definition.version, scope: 'role', config: Object.fromEntries(definition.fields.map(field => [field.key, ''])) }] })}>{definition.id === 'studio.instructions' ? t.add : `${t.addComponent}: ${definition.id}`}</Button>)}
     </fieldset>;
   }
-  return <>{notices('document')}{components()}
+  return <>{notices('document')}
+    {!document.initialModel && <><WorkflowModelForm value={initialChoice} catalog={models} enabled={enabled} locale={locale} label={t.initialModel} onChange={setInitialChoice} />
+      <Button disabled={!enabled || !initialChoice || !models.providers.some(provider => provider.id === initialChoice.provider && provider.status !== 'failed' && provider.models.some(model => model.id === initialChoice.model && model.status === 'available' && (!initialChoice.reasoningEffort || model.reasoning?.efforts.some(effort => effort.id === initialChoice.reasoningEffort))))} onClick={() => { if (initialChoice) onChange({ ...document, initialModel: { ...initialChoice }, roles: document.roles.map(item => ({ ...item, model: { ...initialChoice } })) }); }}>{t.applyInitial}</Button></>}
+    <p>{t.modelCopy}</p>
+    {models.status !== 'available' && <p role="alert">{models.failure?.code === 'service-unavailable' ? t.modelsServiceUnavailable : t.modelsPartial}</p>}
+    <label>{t.mainRole}<select aria-label={t.mainRole} value={document.mainRoleId} onChange={event => onChange({ ...document, mainRoleId: event.target.value as RoleId })}>
+      {!document.roles.some(item => item.id === document.mainRoleId) && <option value={document.mainRoleId}>{document.mainRoleId} — {t.unavailableValue}</option>}
+      {document.roles.map(item => <option key={item.id} value={item.id}>{item.name || item.id}</option>)}
+    </select></label>
+    <label>{t.selectRole}<select aria-label={t.selectRole} value={role?.id ?? ''} onChange={event => setSelectedId(event.target.value as RoleId)}><option value="" disabled>{t.selectRole}</option>{document.roles.map(item => <option key={item.id} value={item.id}>{item.name || item.id}</option>)}</select></label>
+    <Button onClick={() => { const id = crypto.randomUUID() as RoleId; onChange({ ...document, roles: [...document.roles, { id, name: '', components: [], ...(document.initialModel ? { model: { ...document.initialModel } } : {}) }] }); setSelectedId(id); }}>{t.addRole}</Button>
+    <Button disabled={!role} onClick={() => { onChange({ ...document, roles: document.roles.filter(item => item.id !== selectedId) }); setSelectedId(null); }}>{t.deleteRole}</Button>
+    {components()}
     <fieldset><legend>{t.systems}</legend>
       {document.systems.map(instance => {
         const definition = catalog.systems.find(item => item.id === instance.id && item.version === instance.version);

@@ -34,6 +34,15 @@ it('saves two independent drafts and restores their contents after page reload',
         await editor.getByRole('button', { name: 'New draft', exact: true }).click();
         await editor.getByLabel('Draft name', { exact: true }).fill(name);
         await editor.getByLabel('Role name', { exact: true }).fill('Main');
+        const initialModel = editor.getByLabel('Initial model', { exact: true });
+        await expect.poll(() => initialModel.locator('option:not([disabled])').count()).toBeGreaterThan(0);
+        await initialModel.selectOption(await initialModel.locator('option:not([disabled])').first().getAttribute('value') ?? '');
+        await editor.getByRole('button', { name: 'Copy initial model to roles', exact: true }).click();
+        const copiedModel = await editor.getByLabel('Role model', { exact: true }).inputValue();
+        await editor.getByRole('button', { name: 'Add role', exact: true }).click();
+        await editor.getByLabel('Role name', { exact: true }).fill('Helper');
+        expect(await editor.getByLabel('Role model', { exact: true }).inputValue()).toBe(copiedModel);
+        await editor.getByLabel('Select role', { exact: true }).selectOption({ label: 'Main' });
         await editor.getByRole('button', { name: 'Add instructions', exact: true }).click();
         await editor.getByLabel('Instructions', { exact: true }).fill(`${name} instructions`);
         await page.getByRole('button', { name: 'Design preview', exact: true }).click();

@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { brandString } from '@deepseek-ai/dsh-brand';
 import { defineDomain, domainTable, type Domain, type DomainFacility } from '@deepseek-ai/dsh-storage-domain';
 import type { ComponentId } from './component-registry.ts';
-import type { DraftId, DraftFailure, SaveDraftRequest, SavedDraft, InstanceId, ConnectionId, SystemId, WorkflowDocument } from './workflow-types.ts';
+import type { DraftId, DraftFailure, SaveDraftRequest, SavedDraft, InstanceId, ConnectionId, SystemId, WorkflowDocument, RoleId } from './workflow-types.ts';
 
 const component = z.object({
   id: z.string().min(1).transform(value => brandString<ComponentId>(value)),
@@ -12,7 +12,7 @@ const component = z.object({
 const legacyDocument = z.object({ name: z.string(), mainRole: z.object({ name: z.string(), components: z.array(component) }).strict() }).strict();
 const instanceId = z.string().min(1).transform(value => brandString<InstanceId>(value));
 const endpoint = z.object({ kind: z.enum(['component', 'system']), instanceId, portId: z.string().min(1) }).strict();
-const currentDocument = z.object({
+const v2Document = z.object({
   documentVersion: z.literal(2), name: z.string(),
   mainRole: z.object({ name: z.string(), components: z.array(component.extend({ instanceId, scope: z.string() })) }).strict(),
   systems: z.array(z.object({ instanceId, id: z.string().min(1).transform(value => brandString<SystemId>(value)), version: z.number().int().positive(), scope: z.string(), executionLocation: z.string(), config: z.record(z.string(), z.json()) }).strict()),
@@ -21,10 +21,22 @@ const currentDocument = z.object({
   const ids = [...value.mainRole.components, ...value.systems].map(item => item.instanceId);
   if (new Set(ids).size !== ids.length || new Set(value.connections.map(item => item.id)).size !== value.connections.length) ctx.addIssue({ code: 'custom', message: 'Duplicate document identity' });
 });
-const document = z.union([legacyDocument, currentDocument]);
+const roleId = z.string().min(1).transform(value => brandString<RoleId>(value));
+const model = z.object({ provider: z.string().min(1), model: z.string().min(1), reasoningEffort: z.string().min(1).optional() }).strict();
+const currentDocument = z.object({
+  documentVersion: z.literal(3), name: z.string(), mainRoleId: roleId,
+  roles: z.array(z.object({ id: roleId, name: z.string(), components: z.array(component.extend({ instanceId, scope: z.string() })), model: model.optional() }).strict()),
+  initialModel: model.optional(), systems: v2Document.shape.systems, connections: v2Document.shape.connections,
+}).strict().superRefine((value, ctx) => {
+  const ids = [...value.roles.flatMap(role => role.components), ...value.systems].map(item => item.instanceId);
+  if (new Set(ids).size !== ids.length || new Set(value.roles.map(role => role.id)).size !== value.roles.length || new Set(value.connections.map(item => item.id)).size !== value.connections.length) ctx.addIssue({ code: 'custom', message: 'Duplicate document identity' });
+});
+const document = z.union([legacyDocument, v2Document, currentDocument]);
 function normalize(value: z.infer<typeof document>, draftId: DraftId): WorkflowDocument {
-  if ('documentVersion' in value) return value;
-  return { ...value, documentVersion: 2, mainRole: { ...value.mainRole, components: value.mainRole.components.map((item, index) => ({ ...item, instanceId: brandString<InstanceId>(`legacy:${draftId}:component:${index}`) })) }, systems: [], connections: [] };
+  if ('documentVersion' in value && value.documentVersion === 3) return value;
+  const id = brandString<RoleId>(`legacy:${draftId}:role:main`);
+  const previous = 'documentVersion' in value ? value : { ...value, documentVersion: 2, mainRole: { ...value.mainRole, components: value.mainRole.components.map((item, index) => ({ ...item, instanceId: brandString<InstanceId>(`legacy:${draftId}:component:${index}`) })) }, systems: [], connections: [] };
+  return { documentVersion: 3, name: previous.name, mainRoleId: id, roles: [{ ...previous.mainRole, id }], systems: previous.systems, connections: previous.connections };
 }
 /** Validate new-format wire input without applying semantic policy.
  * @param value Untrusted Remote document. @returns Parsed detached document.

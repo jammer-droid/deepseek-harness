@@ -5,6 +5,8 @@ import { ComponentRegistry, instructionsDefinition, type ComponentDefinition, ty
 
 import type {} from '@deepseek-ai/dsh-app-boot';
 import type {} from '@deepseek-ai/dsh-api-remotes';
+import { WorkflowModels, type ModelCatalog } from './models.ts';
+import type {} from '@deepseek-ai/dsh-llm';
 import { DraftStore, DraftError, parseDocument } from './drafts.ts';
 import type { DraftFailure, SavedDraft, SaveDraftRequest, WorkflowDocument, ValidationResult, SemanticValidator } from './workflow-types.ts';
 
@@ -18,7 +20,7 @@ declare module '@deepseek-ai/cordis' {
 
 /** Public declaration lookup with effect-owned Host registration. */
 export class WorkflowRemote extends TypertRemoteService {
-  constructor(ctx: Context, private readonly options: { registry: ComponentRegistry; store: DraftStore }) { super(ctx, 'studioWorkflows'); }
+  constructor(ctx: Context, private readonly options: { registry: ComponentRegistry; store: DraftStore; models: () => WorkflowModels; revision: () => number }) { super(ctx, 'studioWorkflows'); }
 
   /** @returns Confirmed drafts for the current profile, without activation. */
   @Remote
@@ -45,12 +47,29 @@ export class WorkflowRemote extends TypertRemoteService {
 
   /** @returns Detached catalog at the reported revision. */
   @Remote
-  catalog(): CatalogSnapshot { return this.options.registry.catalog(); }
+  catalog(): CatalogSnapshot { return { ...this.options.registry.catalog(), revision: this.options.revision() }; }
+
+  /** @returns Current DSH routes and reasoning metadata, including lookup failures. */
+  @Remote
+  models(): Promise<ModelCatalog> { return this.options.models().catalog(); }
 
   /** @param document New-format wire document. @returns Configuration decision against current registrations. */
   @Remote
-  validate(document: WorkflowDocument): ValidationResult {
-    try { return this.options.registry.validate(parseDocument(document)); }
+  async validate(document: WorkflowDocument): Promise<ValidationResult> {
+    try {
+      const parsed = parseDocument(document);
+      const revision = this.options.revision();
+      const result = this.options.registry.validate(parsed);
+      result.catalogRevision = revision;
+      const models = this.options.models();
+      for (const role of parsed.roles) {
+        const checked = await models.validate(role.model);
+        for (const issue of checked.issues) result.diagnostics.push({ code: issue.code, target: { kind: 'role', roleId: role.id, fieldPath: issue.field }, relatedIds: [], details: issue.failure ? { operation: issue.failure.operation, failureCode: issue.failure.code } : {} });
+      }
+      if (revision !== this.options.revision()) result.diagnostics.push({ code: 'model-lookup-failed', target: { kind: 'document' }, relatedIds: [], details: {} });
+      result.valid = result.diagnostics.length === 0;
+      return result;
+    }
     catch (error) { throw this.refusal(error); }
   }
 
@@ -70,12 +89,15 @@ export class WorkflowRemote extends TypertRemoteService {
  */
 export async function apply(ctx: Context): Promise<void> {
   ctx.effect(() => ctx.remoteEventContributions.register('studio-workflows/catalog-changed'));
-  const registry = new ComponentRegistry(revision => ctx.emit('studio-workflows/catalog-changed', revision));
+  let revision = 0;
+  const changed = () => ctx.emit('studio-workflows/catalog-changed', ++revision);
+  const registry = new ComponentRegistry(changed);
+  ctx.on('llm/adapters-updated', changed);
   ctx.effect(() => registry.register(instructionsDefinition));
   const store = await DraftStore.open(ctx.storageDomain, ctx.profileContext.name);
   ctx.effect(() => () => store.close());
-  ctx.plugin(WorkflowRemote, { registry, store });
+  ctx.plugin(WorkflowRemote, { registry, store, models: () => new WorkflowModels(ctx.get('llm')), revision: () => revision });
 }
 
-/** Document storage, profile identity and event forwarding; no model or execution services. */
+/** Document storage, profile identity and event forwarding; model lookup is optional and never required to save drafts. */
 export const inject = ['storageDomain', 'profileContext', 'remoteEventContributions'];

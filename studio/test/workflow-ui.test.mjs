@@ -10,13 +10,14 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 const { createRoot } = await import('react-dom/client');
 const { WorkflowEditor: Editor } = await import('../src/workflow-editor.tsx');
 function WorkflowEditor(props) {
-  const api = React.useMemo(() => ({ catalog: async () => ({ revision: 1, components: props.components, systems: [] }), validate: async () => ({ catalogRevision: 1, valid: true, diagnostics: [] }), subscribeCatalog: () => () => {}, subscribeConnection: () => () => {}, ...props.api }), [props.api]);
-  return React.createElement(Editor, { ...props, api, initialDrafts: props.initialDrafts.map(draft => ({ ...draft, document: { documentVersion: 2, systems: [], connections: [], ...draft.document, mainRole: { ...draft.document.mainRole, components: draft.document.mainRole.components.map((item, index) => ({ instanceId: `instance-${index}`, ...item })) } } })) });
+  const api = React.useMemo(() => ({ models: async () => ({ status: 'available', providers: [] }), catalog: async () => ({ revision: 1, components: props.components, systems: [] }), validate: async () => ({ catalogRevision: 1, valid: true, diagnostics: [] }), subscribeCatalog: () => () => {}, subscribeConnection: () => () => {}, ...props.api }), [props.api]);
+  return React.createElement(Editor, { ...props, api, initialDrafts: props.initialDrafts.map(draft => ({ ...draft, document: { documentVersion: 3, systems: [], connections: [], ...draft.document, mainRoleId: draft.document.mainRoleId, roles: draft.document.roles.map(role => ({ ...role, components: role.components.map((item, index) => ({ instanceId: `instance-${index}`, ...item })) })) } })) });
 }
 test('Unavailable configuration and empty connection providers match user-visible output', async () => {
   const { renderToStaticMarkup } = await import('react-dom/server');
-  const { readFile } = await import('node:fs/promises');
-  const output = renderToStaticMarkup(React.createElement(WorkflowEditor, { locale: 'en', components: [], initialDrafts: [{ id: 'snapshot-draft', revision: 1, document: { documentVersion: 2, name: 'Unavailable provider', mainRole: { name: 'Main', components: [{ instanceId: 'retained-component', id: 'offline.provider', version: 1, scope: 'role', config: { text: 'Retained' } }] }, systems: [], connections: [] } }], api: { drafts: async () => [], save: async () => { throw new Error('not called'); } } }));
+  const { readFile, writeFile } = await import('node:fs/promises');
+  const output = renderToStaticMarkup(React.createElement(WorkflowEditor, { locale: 'en', components: [], initialDrafts: [{ id: 'snapshot-draft', revision: 1, document: { documentVersion: 3, name: 'Unavailable provider', mainRoleId: 'main', roles: [{ id: 'main', name: 'Main', components: [{ instanceId: 'retained-component', id: 'offline.provider', version: 1, scope: 'role', config: { text: 'Retained' } }] }], systems: [], connections: [] } }], api: { drafts: async () => [], save: async () => { throw new Error('not called'); } } }));
+  if (process.env.UPDATE_SNAPSHOTS) await writeFile(new URL('./workflow-ui.expected.html', import.meta.url), output + '\n');
   assert.equal(output + '\n', await readFile(new URL('./workflow-ui.expected.html', import.meta.url), 'utf8'));
 });
 after(() => dom.window.close());
@@ -111,7 +112,7 @@ test('Localized field diagnostics allow draft saving and ignore older validation
     await act(async () => older({ catalogRevision: 2, valid: true, diagnostics: [] }));
     assert.match(document.body.textContent, /필드 값을 입력해 주세요/);
     assert.equal(button('초안 저장').disabled, false); await click('초안 저장');
-    assert.equal(saved.document.mainRole.components[0].config.text, 'B');
+    assert.equal(saved.document.roles[0].components[0].config.text, 'B');
   } finally { await act(async () => root.unmount()); }
 });
 test('Validation transport failures retain edits, remain distinct from configuration errors, and release subscriptions', async () => {
@@ -143,7 +144,7 @@ test('Revision mismatches visibly stop additions instead of leaving validation p
 });
 test('Conflict reports retain edits and require explicit replacement with the saved version', async () => {
   const root = createRoot(document.getElementById('root'));
-  const original = { id: '9b8208b1-54c8-4e0e-9a89-549939f8a816', revision: 1, document: { documentVersion: 2, systems: [], connections: [], name: 'Original', mainRole: { name: 'Main', components: [] } } };
+  const original = { id: '9b8208b1-54c8-4e0e-9a89-549939f8a816', revision: 1, document: { documentVersion: 3, systems: [], connections: [], name: 'Original', mainRoleId: 'main', roles: [{ id: 'main', name: 'Main', components: [] }] } };
   const latest = { ...original, revision: 2, document: { ...original.document, name: 'Other editor' } };
   const api = { async drafts() { return [latest]; }, async save() { throw { code: 'studio-workflows/rejected', details: { reason: 'revision-conflict' } }; } };
   try {
@@ -232,7 +233,7 @@ test('Create, edit and save drafts; confirm before discarding local changes', as
     assert.equal(stored.length, 0);
     await click('Save draft');
     assert.equal(stored.length, 1);
-    assert.equal(stored[0].document.mainRole.components[0].config.text, 'Follow repository instructions.');
+    assert.equal(stored[0].document.roles[0].components[0].config.text, 'Follow repository instructions.');
     assert.equal(document.querySelector('[role=status]').textContent, 'Saved');
     await input(document.querySelector('textarea'), 'Local edits');
     await click('New draft');
@@ -254,4 +255,72 @@ test('Create, edit and save drafts; confirm before discarding local changes', as
     assert.equal(document.querySelector('input').value, 'First draft');
     assert.equal(document.querySelector('textarea').value, 'Follow repository instructions.');
   } finally { await act(async () => root.unmount());  }
+});
+
+const modelCatalog = { status: 'available', providers: [{ id: 'p', name: 'Provider', status: 'available', models: [
+  { provider: 'p', id: 'a', name: 'Alpha', status: 'available', reasoning: { efforts: [{ id: 'high', name: 'High' }] } },
+  { provider: 'p', id: 'b', name: 'Beta', status: 'available' },
+] }] };
+async function choose(label, value) {
+  await act(async () => { const select = document.querySelector(`select[aria-label="${label}"]`); select.value = value; select.dispatchEvent(new dom.window.Event('change', { bubbles: true })); });
+}
+test('Initial route and effort copy independently; deleting main keeps its ID and dangling connections', async () => {
+  const root = createRoot(document.getElementById('root')); let saved;
+  const api = { models: async () => modelCatalog, drafts: async () => [], save: async request => (saved = { ...request, revision: 1 }) };
+  try {
+    await act(async () => root.render(React.createElement(WorkflowEditor, { locale: 'en', components: [], initialDrafts: [], api })));
+    await click('New draft'); await click('Add role');
+    await choose('Initial model', JSON.stringify(['p', 'a'])); await choose('Initial model: Reasoning effort', 'high'); await click('Copy initial model to roles'); await click('Save draft');
+    const first = saved.document.roles[0].id;
+    assert.deepEqual(saved.document.roles.map(role => role.model), [saved.document.initialModel, saved.document.initialModel]);
+    assert.notEqual(saved.document.roles[0].model, saved.document.roles[1].model);
+    await choose('Role model', JSON.stringify(['p', 'b']));
+    assert.match(document.querySelector('select[aria-label="Role model: Reasoning effort"]').selectedOptions[0].textContent, /high.*Unavailable/);
+    await click('Add role'); await click('Save draft');
+    assert.deepEqual(saved.document.roles[2].model, saved.document.initialModel);
+    assert.equal(saved.document.roles[1].model.model, 'b');
+    assert.equal(saved.document.roles[1].model.reasoningEffort, 'high');
+    await choose('Select role', first); await click('Delete role'); await click('Save draft');
+    assert.equal(saved.document.mainRoleId, first); assert.equal(saved.document.roles.length, 2);
+    assert.match(document.querySelector('select[aria-label="Main role"]').selectedOptions[0].textContent, /Unavailable/);
+  } finally { await act(async () => root.unmount()); }
+});
+test('Missing model route and effort remain visible and saved; stale model catalogs cannot replace newer choices', async () => {
+  const root = createRoot(document.getElementById('root')); let saved; let listener; const requests = [];
+  const draft = { id: 'draft', revision: 1, document: { documentVersion: 3, name: 'Kept', mainRoleId: 'role', roles: [{ id: 'role', name: '', components: [], model: { provider: 'gone', model: 'offline', reasoningEffort: 'custom' } }], systems: [], connections: [{ id: 'dangling', from: { kind: 'component', instanceId: 'deleted', portId: 'out' }, to: { kind: 'system', instanceId: 'missing', portId: 'in' } }] } };
+  const api = { models: () => new Promise(resolve => requests.push(resolve)), subscribeCatalog: callback => { listener = callback; return () => {}; }, drafts: async () => [], save: async request => (saved = { ...request, revision: 2 }) };
+  try {
+    await act(async () => root.render(React.createElement(WorkflowEditor, { locale: 'en', components: [], initialDrafts: [draft], api })));
+    await act(async () => listener(1));
+    await act(async () => requests[1](modelCatalog));
+    await act(async () => requests[0]({ status: 'unavailable', providers: [] }));
+    assert.match(document.querySelector('select[aria-label="Role model"]').textContent, /Alpha/);
+    assert.match(document.querySelector('select[aria-label="Role model"]').selectedOptions[0].textContent, /gone.*offline.*Unavailable/);
+    assert.match(document.querySelector('select[aria-label="Role model: Reasoning effort"]').selectedOptions[0].textContent, /custom.*Unavailable/);
+    await click('Add role'); await click('Save draft');
+    assert.deepEqual(saved.document.roles[0].model, draft.document.roles[0].model);
+    await choose('Select role', 'role'); await click('Delete role'); await click('Save draft');
+    assert.deepEqual(saved.document.connections, draft.document.connections);
+  } finally { await act(async () => root.unmount()); }
+});
+
+test('Model service absence is distinct from lookup failure and refresh blocks stale choices', async () => {
+  const root = createRoot(document.getElementById('root')); let listener; let connected;
+  let current = modelCatalog;
+  const api = { models: async () => current, subscribeCatalog: callback => { listener = callback; return () => {}; }, subscribeConnection: callback => { connected = callback; return () => {}; }, drafts: async () => [], save: async request => ({ ...request, revision: 1 }) };
+  try {
+    await act(async () => root.render(React.createElement(WorkflowEditor, { locale: 'en', components: [], initialDrafts: [], api })));
+    await click('New draft'); await choose('Initial model', JSON.stringify(['p', 'a']));
+    await act(async () => connected(false));
+    assert.equal(document.querySelector('select[aria-label="Initial model"]').disabled, true);
+    assert.equal([...document.querySelectorAll('button')].find(item => item.textContent === 'Copy initial model to roles').disabled, true);
+    current = { status: 'unavailable', providers: [], failure: { code: 'service-unavailable', operation: 'providers', message: 'missing' } };
+    await act(async () => connected(true));
+    assert.match(document.body.textContent, /model service is disabled/);
+    assert.equal([...document.querySelectorAll('button')].find(item => item.textContent === 'Copy initial model to roles').disabled, true);
+    current = { status: 'unavailable', providers: [], failure: { code: 'lookup-failed', operation: 'providers', message: 'offline' } };
+    await act(async () => listener(1));
+    assert.doesNotMatch(document.body.textContent, /model service is disabled/);
+    assert.match(document.body.textContent, /Could not verify some model choices/);
+  } finally { await act(async () => root.unmount()); }
 });

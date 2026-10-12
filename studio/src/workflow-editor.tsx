@@ -1,7 +1,7 @@
 /** Draft selection and explicit persistence; never invokes preset application. */
 import React from 'react';
 import { WorkflowForms } from './workflow-forms.tsx';
-import type { CatalogSnapshot, ValidationResult, DraftId, SavedDraft, SaveDraftRequest, WorkflowDocument } from '@local/dsh-studio-workflows/types';
+import type { CatalogSnapshot, ValidationResult, DraftId, SavedDraft, SaveDraftRequest, WorkflowDocument, RoleId, ModelCatalog } from '@local/dsh-studio-workflows/types';
 import { workflowText } from './workflow-locales.ts';
 import { Button } from './ui.tsx';
 import { workflowFailure, type WorkflowFailure } from './workflow-failures.ts';
@@ -10,6 +10,7 @@ import { workflowFailure, type WorkflowFailure } from './workflow-failures.ts';
 export interface WorkflowApi {
   drafts(): Promise<SavedDraft[]>;
   save(request: SaveDraftRequest): Promise<SavedDraft>;
+  models(): Promise<ModelCatalog>;
   catalog(): Promise<CatalogSnapshot>;
   validate(document: WorkflowDocument): Promise<ValidationResult>;
   subscribeCatalog(listener: (revision: number) => void): () => void;
@@ -38,7 +39,8 @@ export function WorkflowEditor({ locale, initialDrafts, api }: {
     if (dirty || failure !== null) setPending({ action, reload }); else action();
   }
   function create() {
-    change(() => select({ id: crypto.randomUUID() as DraftId, revision: 0, document: { documentVersion: 2, name: '', mainRole: { name: '', components: [] }, systems: [], connections: [] } }));
+    const roleId = crypto.randomUUID() as RoleId;
+    change(() => select({ id: crypto.randomUUID() as DraftId, revision: 0, document: { documentVersion: 3, name: '', mainRoleId: roleId, roles: [{ id: roleId, name: '', components: [] }], systems: [], connections: [] } }));
   }
   async function save() {
     if (!selected || !document) return;
@@ -73,6 +75,7 @@ export function WorkflowEditor({ locale, initialDrafts, api }: {
     } catch (error) { if (active.current) setFailure(previous => previous ?? (workflowFailure(error) === 'unknown-outcome' ? 'read-failed' : workflowFailure(error))); }
     finally { if (active.current) setBusy(false); }
   }
+  const [models, setModels] = React.useState<ModelCatalog>({ status: 'unavailable', providers: [] });
   const [catalog, setCatalog] = React.useState<CatalogSnapshot>({ revision: 0, components: [], systems: [] });
   const [availability, setAvailability] = React.useState<'checking' | 'ready' | 'unknown'>('checking');
   const [refresh, setRefresh] = React.useState(0);
@@ -90,11 +93,11 @@ export function WorkflowEditor({ locale, initialDrafts, api }: {
       ++validationEpoch.current;
       setAvailability('checking'); setValidation(null);
       try {
-        const next = await api.catalog();
+        const [next, nextModels] = await Promise.all([api.catalog(), api.models()]);
         if (!mounted || epoch !== catalogEpoch.current) return;
         if (next.revision < minimumRevision.current) { setAvailability('unknown'); return; }
         minimumRevision.current = next.revision;
-        setCatalog(next); setAvailability('ready');
+        setCatalog(next); setModels(nextModels); setAvailability('ready');
       } catch (error) { if (mounted && epoch === catalogEpoch.current) setAvailability('unknown'); }
     }
     const stopCatalog = api.subscribeCatalog(revision => { minimumRevision.current = Math.max(minimumRevision.current, revision); void load(); });
@@ -129,7 +132,7 @@ export function WorkflowEditor({ locale, initialDrafts, api }: {
       <Button disabled={failure !== null} onClick={create}>{t.create}</Button>
       {document && selected ? <>
         <label>{t.draftName}<input value={document.name} onChange={event => setDocument({ ...document, name: event.target.value })} /></label>
-        <WorkflowForms document={document} catalog={catalog} enabled={availability === 'ready'} diagnostics={validation?.diagnostics ?? []} locale={locale} onChange={setDocument} />
+        <WorkflowForms key={selected.id} document={document} catalog={catalog} models={models} enabled={availability === 'ready'} diagnostics={validation?.diagnostics ?? []} locale={locale} onChange={setDocument} />
         <p aria-live="polite">{availability !== 'ready' ? availability === 'checking' ? t.checking : t.availabilityUnknown : validationFailed ? t.validationFailed : validation ? validation.valid ? t.valid : t.invalidConfiguration : t.checking}</p>
         <Button onClick={() => setRefresh(value => value + 1)}>{t.refresh}</Button>
         <Button primary disabled={!dirty || (failure !== null && failure !== 'invalid-document')} onClick={() => void save()}>{t.save}</Button>

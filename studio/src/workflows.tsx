@@ -19,6 +19,7 @@ export async function apply(ctx: Context): Promise<void> {
   ctx.inject(['remote.studioWorkflows'], ctx => {
     const connection = ctx.get('connection') as ConnectionHandle;
     const api: WorkflowApi = {
+      async models() { const result = await ctx.remote.studioWorkflows.models(); if (!result.ok) throw result.error; return result.value; },
       async catalog() { const result = await ctx.remote.studioWorkflows.catalog(); if (!result.ok) throw result.error; return result.value; },
       async validate(document) { const result = await ctx.remote.studioWorkflows.validate(document); if (!result.ok) throw result.error; return result.value; },
       subscribeCatalog(listener) { return ctx.remote.$on('studio-workflows/catalog-changed', listener); },

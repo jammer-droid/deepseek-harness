@@ -1,0 +1,16 @@
+# Bilingual-pair consistency record for guide.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write docs/upgrade-guide/v0.2.1-alpha.2/studio-workflow-roles/guide.md
+/:
+  en: 05922fe5c4c6bc89
+  zh: 2f9c5bc7ead6eda9
+/studio-workflow-roles:
+  en: b3011c867501a2bb
+  zh: 3414ff630955f2ea
+/studio-workflow-roles/change:
+  en: 8b2bfdfe93fcd551
+  zh: af388bebd1fbf01f
+/studio-workflow-roles/migration:
+  en: 141b4f64ee26c060
+  zh: d1177d022c97ed4e

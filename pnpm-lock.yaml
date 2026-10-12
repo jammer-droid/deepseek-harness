@@ -15803,6 +15803,9 @@ importers:
       '@deepseek-ai/dsh-brand':
         specifier: workspace:*
         version: link:../../../packages/util/brand
+      '@deepseek-ai/dsh-llm':
+        specifier: workspace:*
+        version: link:../../../packages/llm/llm
       '@deepseek-ai/dsh-storage-domain':
         specifier: workspace:*
         version: link:../../../packages/storage/storage-domain
