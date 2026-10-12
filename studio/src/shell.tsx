@@ -1,5 +1,4 @@
 import { StudioSurface } from './ui.tsx';
-import { catalogSettingsTitle } from './catalog-toggle.tsx';
 import React from "react";
 import { resolveSlotLabel } from '@deepseek-ai/dsh-client-ui-slots';
 import type { PropsRenderSlots } from '@deepseek-ai/dsh-client-ui-slots';
@@ -39,10 +38,8 @@ export function apply(ctx: StudioContext) {
         const locale = React.useSyncExternalStore(listener => ctx.locale.subscribe(listener), () => ctx.locale.getLocale().active);
         const t = experimentText(locale);
         const [selected, select] = React.useState('agent-optimizations');
-        const details = catalogSettingsTitle(locale);
         return <DetailLayout title={serviceText(locale).experiments} navigation={t.title}
-            pages={[{ id: 'agent-optimizations', label: t.title, content: renderSlot('local.dsh-studio.features', {}, { only: 'agent-optimizations' }) },
-                { id: 'role-catalog-toggle', label: details, content: renderSlot('local.dsh-studio.features', {}, { only: 'role-catalog-toggle' }) }]}
+            pages={[{ id: 'agent-optimizations', label: t.title, content: renderSlot('local.dsh-studio.features', {}, { only: 'agent-optimizations' }) }]}
             selected={selected} onSelect={select} />;
     }
     function DesignPreview() {

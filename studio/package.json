@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "typecheck": "node generate-roles.mjs && node generate-roles.mjs general && node generate-roles.mjs workflows && node generate-roles.mjs experiments && node generate-roles.mjs sub-agent-catalog && tsc -p packages/sub-agent-catalog/tsconfig.host.json && tsc -p packages/experiments/tsconfig.host.json && tsc -p packages/workflows/tsconfig.host.json && tsc -p tsconfig.host.json && tsc -p tsconfig.client.json",
+    "typecheck": "node generate-roles.mjs && node generate-roles.mjs general && node generate-roles.mjs workflows && node generate-roles.mjs experiments && tsc -p packages/experiments/tsconfig.host.json && tsc -p packages/workflows/tsconfig.host.json && tsc -p tsconfig.host.json && tsc -p tsconfig.client.json",
     "build": "npm run typecheck && node build.mjs",
     "build:desktop": "node build-desktop.mjs",
     "test": "npm run build && node --import tsx --test test/*.test.mjs",

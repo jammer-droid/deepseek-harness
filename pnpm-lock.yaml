@@ -15632,9 +15632,6 @@ importers:
       '@deepseek-ai/dsh-tool-todo':
         specifier: workspace:*
         version: link:../../../packages/todo/tool-todo
-      '@local/dsh-studio-sub-agent-catalog':
-        specifier: workspace:*
-        version: link:../sub-agent-catalog
       '@local/dsh-studio-experiments':
         specifier: workspace:*
         version: link:../experiments

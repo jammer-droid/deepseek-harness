@@ -7,25 +7,8 @@
       name: '@local/dsh-studio-experiments'
     - id: local-dsh-studio-workflows
       name: '@local/dsh-studio-workflows'
-    - id: local-dsh-studio-catalog
-      name: '@local/dsh-studio-sub-agent-catalog'
-      disabled: true
     - id: local-dsh-studio-roles
       name: '@local/dsh-studio-roles'
-    - id: preset-studio-composed-roles
-      name: '@deepseek-ai/dsh-agent-preset'
-      config:
-        id: studio-composed-roles
-        name: Studio Roles
-        description: Saved role composition; enable the Studio role catalog experiment first.
-        plugins:
-          - name: '@local/dsh-studio-sub-agent-catalog/tool'
-          - name: '@deepseek-ai/dsh-tool-fs'
-          - name: '@deepseek-ai/dsh-tool-fs-search'
-            config:
-              sampleOverCapGlobResults: false
-          - name: '@deepseek-ai/dsh-tool-bash'
-          - name: '@deepseek-ai/dsh-tool-ask-user'
     - id: local-dsh-studio-managed-preset
       name: '@deepseek-ai/dsh-agent-preset'
       config:

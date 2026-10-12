@@ -12,7 +12,12 @@ import GoalService from '../../packages/goal/goal/lib/index.js';
 import * as GoalRoundDriver from '../../packages/goal/goal-round-driver/lib/index.js';
 import { LlmAdapter } from '@deepseek-ai/dsh-llm';
 import { installTasks } from '../packages/experiments/src/runtime-tasks.ts';
-import { createScope } from '../../packages/core/scope/lib/index.js';
+// Use the same module instance as services: lib/src copies own different scope symbols.
+import { createScope } from '@deepseek-ai/dsh-scope';
+import Storage from '@deepseek-ai/dsh-storage';
+import { DomainFacility } from '@deepseek-ai/dsh-storage-domain';
+import { MemoryStorageBackend, MemoryMediaPool } from '../../packages/storage/storage-domain/tests/helpers/memory-backend.ts';
+import { ExperimentStore } from '../packages/experiments/src/store.ts';
 import SystemPrompt from '../../packages/core/system-prompt/lib/index.js';
 import ToolRuntime from '../../packages/core/tools/lib/index.js';
 import assert from 'node:assert/strict';
@@ -67,6 +72,46 @@ test('optimization context survives complete override, stays scoped and disposes
     restore(); dispose();
     assert.equal((await ctx.systemPrompt.assemble({ scope })).contexts.some(context => context.name === 'studio:prompt-optimization'), false);
   } finally { await ctx.fiber.dispose(); }
+});
+
+test('committed settings apply to every subsequent main/sub agent without changing earlier snapshots', async () => {
+  const ctx = new Context(); let owner;
+  try {
+    await ctx.plugin(Storage);
+    ctx.storage.backend.register('memory', new MemoryStorageBackend(new MemoryMediaPool()));
+    owner = await ExperimentStore.open(new DomainFacility(ctx, { backend: 'memory', routes: {} }), 'web');
+    await ctx.plugin(SystemPrompt, {}); await ctx.plugin(ToolRuntime);
+    ctx.provide('goals', { disarm() {} });
+    for (const name of ['create_goal', 'get_goal', 'update_goal', 'todo_write']) ctx.tools.register({ name, description: name, parameters: { type: 'object', properties: {} }, output: { schema: { type: 'string' }, render: (_args, value) => [{ type: 'text', text: value }] }, async execute() { return 'ran'; } });
+    installPolicies(ctx, () => owner.capture());
+    let sequence = 0;
+    async function create(depth) {
+      const id = `snapshot-${++sequence}`;
+      const agent = { id, options: {}, session: { header: { id, delegationDepth: depth } } };
+      await ctx.plugin(Object.assign(inner => { agent.ctx = createScope(inner, agent).ctx; }, { inject: ['tools', 'systemPrompt'] }));
+      await ctx.serial('agent/created', { agent }); return agent;
+    }
+    async function check(agent, enabled) {
+      for (const name of ['create_goal', 'get_goal', 'update_goal', 'todo_write']) {
+        assert.equal(ctx.tools.schemas(agent).some(tool => tool.name === name), !enabled);
+        const result = await ctx.tools.execute({ name, arguments: {}, callId: `${agent.id}-${name}`, agent, signal: new AbortController().signal });
+        assert.equal(result.isError, enabled);
+      }
+      const prompt = await ctx.systemPrompt.assemble({ scope: agent });
+      assert.equal(prompt.contexts.some(context => context.name === 'studio:prompt-optimization'), enabled);
+    }
+    const before = await create(0);
+    const enabled = structuredClone(initialSettings);
+    enabled.targets.goals = 'both'; enabled.targets.headless = 'both';
+    await owner.apply({ expectedRevision: owner.describe().revision, settings: enabled });
+    const after = [];
+    for (const depth of [0, 1, 0, 2]) { const agent = await create(depth); after.push(agent); await check(agent, true); }
+    await check(before, false);
+    await owner.apply({ expectedRevision: owner.describe().revision, settings: initialSettings });
+    for (const depth of [0, 1]) await check(await create(depth), false);
+    for (const agent of after) await check(agent, true);
+    assert.equal((await ctx.systemPrompt.assemble()).contexts.some(context => context.name === 'studio:prompt-optimization'), false);
+  } finally { await ctx.fiber.dispose(); await owner?.close(); }
 });
 
 test('tasks gate failure and success, cancellation drains work without cancelling predecessors', async () => {
