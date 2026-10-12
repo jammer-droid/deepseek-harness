@@ -1,6 +1,18 @@
-# Studio 역할 카탈로그
+# Studio sub-agent-catalog
 
 이 패키지는 기본적으로 꺼진 실험이다. Studio > 실험의 역할 카탈로그 카드에서 활성화 상태를 읽고 명시적으로 변경한다. 활성화하면 대화 헤더의 `subagent-catalog` 셀만 우선순위 `-1`로 교체한다. 기본 DSH 자식 목록을 기준으로 Studio 생성 스냅샷을 결합하며, 역할 정보가 없는 자식도 남긴다. 자식 실행과 대화 사이드바는 DSH가 소유한다. 비활성화하면 기본 카탈로그 셀이 다시 선택된다.
+
+## 작업자 참고: 호출 기능의 소유 위치 확인 필요
+
+**역할 구성과 서브에이전트 호출은 워크플로 제작·실행 쪽의 책임이다. 카탈로그는 기존 자식의 목록·추가 정보 표시와 대화 탐색을 담당한다.** 현재 패키지에는 이 구분에 맞춰 정리되지 않은 호출 기능이 포함되어 있다. 아래 항목은 확정된 카탈로그 기능으로 간주하지 말고, 워크플로 담당자가 이동·통합 또는 제거 여부를 확인해야 한다.
+
+- [모델 도구](src/tool.ts): `studio_role`의 `roles` / `launch` 동작. 배포 진입점은 `@local/dsh-studio-sub-agent-catalog/tool`이며 `tool.js`는 빌드 시 생성된다.
+- [Host 서비스](src/index.ts): `studioCatalog.roles`, `launch`, `launchForAgent`와 역할 구성요소 등록. [구성 해석](src/resolve.ts)은 저장된 워크플로의 `mainRole`을 읽어 native DSH 호출 옵션으로 변환한다.
+- [카탈로그 UI](../../src/catalog.tsx): 역할 선택 및 호출 모달. 추가 정보 표시 기능과 별개로 호출 UI의 소유 위치를 검토한다.
+- [번들 구성](../bundle/cordis.patch.yml): `studio-composed-roles` / `Studio Roles` 프리셋과 도구 등록.
+- [생성 정보 저장](src/store.ts): 스냅샷은 현재 이 패키지의 호출 경로에서만 기록된다. 호출 기능을 분리할 때 기록 책임도 함께 옮기거나 공통 실행 기록에 연결해야 한다. 일반 DSH 호출의 역할·모델·도구 설정을 모두 수집하는 구현은 아직 없다.
+
+이 참고사항은 동작을 변경하지 않는다. 호출 경로 변경 시 관련 Host·도구·UI 테스트와 패키징을 함께 갱신하고, 기존 자식 목록 및 대화·사이드바 탐색은 유지한다. 아래 사용 설명은 현재 구현 동작을 설명하며 최종 책임 분리를 뜻하지 않는다.
 
 ## 역할 작성과 호출
 
@@ -14,7 +26,7 @@
 
 ## 모델 호출
 
-실험을 켠 뒤 새 세션에서 번들에 포함된 `Studio Roles` 프리셋을 선택하면 `studio_role` 도구를 제공한다. 사용자 프리셋에는 `@local/dsh-studio-catalog/tool`을 명시적으로 넣을 수 있다. Host의 catalog 플러그인도 활성화되어 있어야 한다. `action: roles`로 역할 ID와 리비전을 확인한 뒤 `action: launch`에 `roleId`, `revision`, `task`, `context`를 전달한다. 결과는 기본 DSH 자식 알림으로 도착한다. 기존 Studio 관리 프리셋이나 기본 에이전트 도구는 자동 변경하지 않는다.
+실험을 켠 뒤 새 세션에서 번들에 포함된 `Studio Roles` 프리셋을 선택하면 `studio_role` 도구를 제공한다. 사용자 프리셋에는 `@local/dsh-studio-sub-agent-catalog/tool`을 명시적으로 넣을 수 있다. Host의 catalog 플러그인도 활성화되어 있어야 한다. `action: roles`로 역할 ID와 리비전을 확인한 뒤 `action: launch`에 `roleId`, `revision`, `task`, `context`를 전달한다. 결과는 기본 DSH 자식 알림으로 도착한다. 기존 Studio 관리 프리셋이나 기본 에이전트 도구는 자동 변경하지 않는다.
 
 ## 저장과 실패
 

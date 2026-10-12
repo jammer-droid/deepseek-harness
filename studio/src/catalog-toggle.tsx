@@ -18,7 +18,7 @@ export function CatalogToggle({ locale, api }: { locale: string; api: PluginMana
   React.useEffect(() => { alive.current = true; return () => { alive.current = false; }; }, []);
   const load = React.useCallback(async () => {
     setBusy(true); setStatus(undefined);
-    try { const rows = await api.listPlugins(); if (alive.current) setRow(rows.find(item => item.moduleName === '@local/dsh-studio-catalog')); }
+    try { const rows = await api.listPlugins(); if (alive.current) setRow(rows.find(item => item.moduleName === '@local/dsh-studio-sub-agent-catalog')); }
     catch { if (alive.current) setStatus('failed'); }
     finally { if (alive.current) setBusy(false); }
   }, [api]);

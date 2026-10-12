@@ -1,4 +1,5 @@
 /** Localized illustrative comparison; never reads or launches real agents. */
+import React from 'react';
 const en = {
   title: 'Panel comparison', example: 'Illustrative example — not a running agent.', off: 'OFF · Default list', on: 'ON · Additional information',
   agent: 'Research assistant', summary: 'Running · 1,240 tokens · 12 s', navigation: 'Open conversation · Open in sidebar',
@@ -21,7 +22,7 @@ const zh: typeof en = {
   note: '两种模式均保留普通子智能体和会话导航。仅显示有记录的附加信息。目前角色快照仅适用于通过 Studio 启动的子会话，不会为普通子会话应用 Studio 角色或新设置',
 };
 /** @param locale Active language. @returns Non-interactive examples of the same child in both modes. */
-export function CatalogPreview({ locale }: { locale: string }) {
+export function CatalogPreview({ locale }: { locale: string }): React.ReactElement {
   const t = locale.startsWith('ko') ? ko : locale.startsWith('zh') ? zh : en;
   const samples = [
     { title: 'Prepare isolated worktree tooling', task: 'New worktree /Users/example/project', tokens: '825K tok', time: '4m 47s' },

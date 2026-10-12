@@ -1,5 +1,5 @@
 /** Joins DSH child discovery with optional Studio creation-time role information. */
-import type { CatalogAssignment } from '@local/dsh-studio-catalog/types';
+import type { CatalogAssignment } from '@local/dsh-studio-sub-agent-catalog/types';
 import type {} from '@deepseek-ai/dsh-subagent/client';
 import type { SessionId } from '@deepseek-ai/dsh-session/types';
 import type { SessionProjectionMap } from '@deepseek-ai/dsh-api-session-controller/client';

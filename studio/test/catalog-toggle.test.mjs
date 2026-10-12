@@ -15,7 +15,7 @@ test('Enable uses discovered identity and disable remains available after confir
   const root = createRoot(document.getElementById('root'));
   let enabled = false; const changes = [];
   const api = {
-    async listPlugins() { return [{ entryId: 'discovered-id', moduleName: '@local/dsh-studio-catalog', enabled, patchId: 'patch' }]; },
+    async listPlugins() { return [{ entryId: 'discovered-id', moduleName: '@local/dsh-studio-sub-agent-catalog', enabled, patchId: 'patch' }]; },
     async setPluginEnabled(id, value) { changes.push([id, value]); enabled = value; return { application: 'applied' }; },
   };
   try {
@@ -30,7 +30,7 @@ test('Enable uses discovered identity and disable remains available after confir
 test('Unknown change cannot be repeated until an explicit read', async () => {
   const root = createRoot(document.getElementById('root'));
   const api = {
-    async listPlugins() { return [{ entryId: 'id', moduleName: '@local/dsh-studio-catalog', enabled: false, patchId: 'patch' }]; },
+    async listPlugins() { return [{ entryId: 'id', moduleName: '@local/dsh-studio-sub-agent-catalog', enabled: false, patchId: 'patch' }]; },
     async setPluginEnabled() { throw new Error('lost response'); },
   };
   try {

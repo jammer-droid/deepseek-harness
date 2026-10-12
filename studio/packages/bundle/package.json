@@ -19,7 +19,7 @@
     "@deepseek-ai/dsh-tool-bash": "workspace:*",
     "@deepseek-ai/dsh-tool-todo": "workspace:*",
     "@deepseek-ai/dsh-tool-ask-user": "workspace:*",
-    "@local/dsh-studio-catalog": "workspace:*"
+    "@local/dsh-studio-sub-agent-catalog": "workspace:*"
   },
   "peerDependencies": {
     "@deepseek-ai/dsh": "0.2.1-alpha.2"

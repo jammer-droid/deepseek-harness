@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { Context } from '@deepseek-ai/cordis';
 import yaml from 'js-yaml';
-import { TYPERT } from '../packages/catalog/lib/typert.host.js';
-import * as Tool from '../packages/catalog/tool.js';
+import { TYPERT } from '../packages/sub-agent-catalog/lib/typert.host.js';
+import * as Tool from '../packages/sub-agent-catalog/tool.js';
 test('built reflection loads and model tool selects explicit role revision and task', async () => {
   const ctx = new Context();
   const roleId = 'ee506b61-c19b-4467-9ffd-a26422a1a83b';
@@ -26,8 +26,8 @@ test('built reflection loads and model tool selects explicit role revision and t
 });
 test('bundle keeps catalog opt-in and offers an arbitrary-role model preset', async () => {
   const entries = yaml.load(await readFile(new URL('../packages/bundle/cordis.patch.yml', import.meta.url), 'utf8'))[0].insert;
-  assert.equal(entries.find(entry => entry.name === '@local/dsh-studio-catalog').disabled, true);
+  assert.equal(entries.find(entry => entry.name === '@local/dsh-studio-sub-agent-catalog').disabled, true);
   const preset = entries.find(entry => entry.config?.id === 'studio-composed-roles');
-  assert.ok(preset.config.plugins.some(plugin => plugin.name === '@local/dsh-studio-catalog/tool'));
+  assert.ok(preset.config.plugins.some(plugin => plugin.name === '@local/dsh-studio-sub-agent-catalog/tool'));
   assert.ok(!preset.config.plugins.some(plugin => plugin.name === '@local/dsh-studio-roles/delegation-tool'));
 });

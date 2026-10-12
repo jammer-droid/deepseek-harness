@@ -5,8 +5,8 @@ import { Context } from '@deepseek-ai/cordis';
 import Storage from '@deepseek-ai/dsh-storage';
 import { DomainFacility } from '@deepseek-ai/dsh-storage-domain';
 import { MemoryStorageBackend, MemoryMediaPool } from '../../packages/storage/storage-domain/tests/helpers/memory-backend.ts';
-import { catalogSpec } from '../packages/catalog/src/store.ts';
-import { CatalogRemote } from '../packages/catalog/src/index.ts';
+import { catalogSpec } from '../packages/sub-agent-catalog/src/store.ts';
+import { CatalogRemote } from '../packages/sub-agent-catalog/src/index.ts';
 async function fixture(pool = new MemoryMediaPool(), start = async () => ({})) {
   const ctx = new Context();
   await ctx.plugin(Storage);

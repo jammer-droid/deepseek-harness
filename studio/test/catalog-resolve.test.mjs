@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { resolveRole } from '../packages/catalog/src/resolve.ts';
+import { resolveRole } from '../packages/sub-agent-catalog/src/resolve.ts';
 const request = { parentId: 'parent', roleId: 'role', revision: 2, task: 'Inspect validation', context: 'fresh' };
 const component = (id, config) => ({ id, version: 1, scope: 'role', config });
 const draft = components => ({ id: 'role', revision: 2, document: { name: 'Validation', mainRole: { name: 'Custom investigator', components } } });

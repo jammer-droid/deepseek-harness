@@ -1,5 +1,5 @@
 {
-  "name": "@local/dsh-studio-catalog",
+  "name": "@local/dsh-studio-sub-agent-catalog",
   "version": "0.1.1",
   "type": "module",
   "exports": {

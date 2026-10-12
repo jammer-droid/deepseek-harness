@@ -15563,9 +15563,9 @@ importers:
       '@deepseek-ai/dsh-typert-protocol':
         specifier: workspace:*
         version: link:../packages/typert/protocol
-      '@local/dsh-studio-catalog':
+      '@local/dsh-studio-sub-agent-catalog':
         specifier: workspace:*
-        version: link:packages/catalog
+        version: link:packages/sub-agent-catalog
       '@local/dsh-studio-experiments':
         specifier: workspace:*
         version: link:packages/experiments
@@ -15626,9 +15626,9 @@ importers:
       '@deepseek-ai/dsh-tool-todo':
         specifier: workspace:*
         version: link:../../../packages/todo/tool-todo
-      '@local/dsh-studio-catalog':
+      '@local/dsh-studio-sub-agent-catalog':
         specifier: workspace:*
-        version: link:../catalog
+        version: link:../sub-agent-catalog
       '@local/dsh-studio-experiments':
         specifier: workspace:*
         version: link:../experiments
@@ -15649,7 +15649,7 @@ importers:
         specifier: workspace:*
         version: link:../../../apps/cli
 
-  studio/packages/catalog:
+  studio/packages/sub-agent-catalog:
     devDependencies:
       '@deepseek-ai/cordis':
         specifier: workspace:~
