@@ -6,12 +6,15 @@ import type { RoleSettings } from './roles.ts';
 import type { SessionId } from '@deepseek-ai/dsh-session';
 import type { DelegationRecord } from './delegation-store.ts';
 import type {} from './delegation.ts';
+import { PresetSettingsOwner } from './preset-settings.ts';
+import type { PresetSettings, PresetChange } from './preset-types.ts';
 
 declare module '@deepseek-ai/cordis' {
   interface Context { studioRoles: RoleSettingsRemote }
 }
 declare module '@deepseek-ai/dsh-typert-protocol' {
   interface RemoteErrorDetailsMap {
+    'studio-presets/rejected': { reason: 'save-or-read-failed' };
     'studio-agents/unavailable': { reason: 'service-unavailable' };
     'studio-roles/rejected': { reason: 'revision-conflict' | 'roles-closed' | 'validation-or-save-failed' };
   }
@@ -19,6 +22,18 @@ declare module '@deepseek-ai/dsh-typert-protocol' {
 /** Exposes read and explicit Apply; capture stays Host-only. */
 export class RoleSettingsRemote extends TypertRemoteService {
   constructor(ctx: Context, private readonly owner: RoleSettings) { super(ctx, 'studioRoles'); }
+  /** @returns Profile-owned declarations available to the user-only editor. */
+  @Remote
+  async presets(): Promise<PresetSettings[]> { return new PresetSettingsOwner(this.ctx).describe(); }
+  /** Persist an explicit user edit; conditional enablement stays unchanged.
+   * @param request Observed declaration and structured literal edits.
+   * @returns Saved preset declarations.
+   */
+  @Remote
+  async applyPreset(request: PresetChange): Promise<PresetSettings[]> {
+    try { return await new PresetSettingsOwner(this.ctx).apply(request); }
+    catch (error) { throw new RemoteError('studio-presets/rejected', 'save-or-read-failed', { reason: 'save-or-read-failed' }, { cause: error }); }
+  }
   /** @returns Confirmed saved and applied settings. */
   @Remote
   describe(): RoleState { return this.owner.describe(); }

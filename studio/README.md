@@ -15,6 +15,10 @@ pnpm --dir studio run watch
 
 `prepare:types` builds official Host artifacts, generated Remote declarations, and referenced Client declarations. Repeat it after upstream API changes. Host and Client use separate strict artifact-plane checks with official compiler bases, cleared source aliases, and public package declarations; the prerequisite artifacts must exist before checking Studio. `watch` rebuilds Studio JavaScript only; run `pnpm --dir studio run typecheck` separately.
 
+## Web deployment
+
+Run `npm --prefix studio run deploy:web -- --home /absolute/DSH_HOME --dry-run` from the repository root to preview deployment. Remove `--dry-run` to build, pack, and install into that home's fixed `web` profile using this checkout's DSH CLI. Desktop is excluded. The target server must use the same runtime checkout and home; the script does not restart the server or verify live browser application. See the [Web deployment guide](development.ko.md#web-플러그인-업데이트-자동화) for prerequisites and refresh instructions.
+
 ## Packages
 
 - `packages/shell`: sidebar page and profile enablement switch.
@@ -23,6 +27,16 @@ pnpm --dir studio run watch
 - `packages/bundle`: workspace bundle; demo disabled by default.
 
 Edit `src/`, not generated JavaScript. Native Plugin Manager persists enablement; timer state belongs to each Client instance. Framework types come from official Cordis and DSH packages.
+
+## Settings navigation
+
+The Studio page separates DSH settings overrides from Studio features. Studio features is selected initially and contains the existing timer controls and role settings. Section switching hides content without unmounting it, preserving unsaved drafts. The DSH settings section edits profile-owned agent preset declarations through the public `configEditor` service; the built-in Settings screen remains unchanged.
+
+### Preset overrides
+
+Select a preset, change existing text/number/boolean configuration fields or plugin enablement, confirm the tools-and-policies warning, and apply explicitly. Nested groups are supported; arrays and executable expressions are retained without editing. Cancel restores the loaded draft, reload reads saved settings, and restore removes the profile configuration override in favor of its inherited definition. Changes are user-only and are not exposed as agent tools.
+
+Apply checks the observed configuration revision inside the configuration editor's serialized write. Concurrent changes reject the edit rather than silently overwriting it. The entire child list becomes a profile override, so subsequent bundle list changes do not merge automatically. Existing Agents retain their revision; new Agents use the current definition. Persistence and preset activation are distinct: a saved definition can be broken, which the editor reports separately and can repair by editing or restoring inherited settings. A failed or disconnected request disables further edits until reload resolves the saved state. Only unique, addressable profile rows are listed; higher-priority overlays may reject writes. This editor does not add plugins, edit schemas or arrays, or validate every child option before persistence.
 
 ## Fixed role settings
 

@@ -10,6 +10,8 @@
     "test:desktop": "node test/desktop/run.mjs",
     "test:browser": "vitest run --config test/vitest.browser.config.ts",
     "pack:bundle": "node pack.mjs",
+    "deploy:web": "node deploy-web.mjs",
+    "deploy:desktop": "node deploy-desktop.mjs",
     "prepare:types": "pnpm --dir .. run build:lib:host && pnpm --dir .. exec tsc -b packages/client/ui-workspace packages/client/ui-renderer packages/client/ui-sidebar packages/client/locale",
     "watch": "node build.mjs --watch"
   },

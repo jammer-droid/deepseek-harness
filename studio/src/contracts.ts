@@ -17,11 +17,12 @@ export interface PluginManager {
   setPluginEnabled(id: PluginEntryId, enabled: boolean): Promise<ChangeResult>;
 }
 export interface StudioProps {
-  renderSlot(name: 'local.dsh-studio.features', props: Record<string, never>): ReactNode;
+  renderSlot(name: 'local.dsh-studio.features' | 'local.dsh-studio.presets', props: Record<string, never>): ReactNode;
 }
 export interface IconProps { size?: number; active?: boolean }
 declare module '@deepseek-ai/dsh-client-ui-slots' {
   interface SlotMap {
+    'local.dsh-studio.presets': { kind: 'list'; props: Record<string, never> };
     'local.dsh-studio.features': { kind: 'list'; props: Record<string, never> };
   }
 }

@@ -9,7 +9,7 @@ const root = fileURLToPath(new URL('.', import.meta.url));
 const version = '0.2.0-rc.2';
 const workspace = process.env.STUDIO_DESKTOP_BUILD_ROOT ?? await mkdtemp(join(tmpdir(), 'studio-desktop-build-'));
 const stage = join(workspace, 'studio');
-const dist = join(root, 'dist', `desktop-${version}`);
+const dist = process.env.STUDIO_DESKTOP_PACK_DIST ?? join(root, 'dist', `desktop-${version}`);
 const dependencies = {};
 for (const file of ['package.json', 'packages/roles/package.json']) {
   const manifest = JSON.parse(await readFile(join(root, file), 'utf8'));

@@ -1,9 +1,11 @@
 import { Button, StudioSurface } from './ui.tsx';
 import React from "react";
+import type {} from '@deepseek-ai/dsh-client-locale/client';
+import { SettingsLayout } from './settings-layout.tsx';
 import type { StudioContext, StudioProps, IconProps } from "./contracts.js";
 import { createController, remoteManager } from "./controller.js";
 
-export const inject = ["slots", "remote", "remote.pluginManager"];
+export const inject = ["slots", "remote", "remote.pluginManager", "locale"];
 const panel = "local-dsh-studio";
 export function apply(ctx: StudioContext) {
     const controller = createController(
@@ -25,6 +27,10 @@ export function apply(ctx: StudioContext) {
             controller.subscribe,
             controller.getSnapshot,
         );
+        const locale = React.useSyncExternalStore(
+            listener => ctx.locale.subscribe(listener),
+            () => ctx.locale.getLocale().active,
+        );
         const row = state.row;
         return (
             <StudioSurface className="studio-shell"><main className="studio-page"
@@ -36,10 +42,7 @@ export function apply(ctx: StudioContext) {
                     <h1>
                         DSH Studio
                     </h1>
-                    <p className="studio-muted">
-                        기능을 켜고 끄며 실행 환경을 구성합니다. 설정은 현재
-                        프로필 전체에 적용됩니다.
-                    </p>
+                    <SettingsLayout locale={locale} presets={renderSlot('local.dsh-studio.presets', {})}>
                     <section className="studio-card" aria-label="Studio 기능">
                         <div className="studio-row">
                             <div>
@@ -115,6 +118,7 @@ export function apply(ctx: StudioContext) {
                         </p>
                         {renderSlot("local.dsh-studio.features", {})}
                     </section>
+                    </SettingsLayout>
                 </div>
             </main></StudioSurface>
         );
@@ -143,6 +147,7 @@ export function apply(ctx: StudioContext) {
                 name: "main",
                 key: panel,
                 children: {
+                    'local.dsh-studio.presets': { kind: 'list', scope: 'root' },
                     "local.dsh-studio.features": {
                         kind: "list",
                         scope: "root",

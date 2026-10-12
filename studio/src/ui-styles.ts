@@ -28,6 +28,12 @@ export const studioStyles = `/* Only this adapter references host tokens. Studio
 .studio-ui .studio-page { background: var(--studio-bg); padding: clamp(16px, 4vw, 48px); min-height: 100%; }
 .studio-ui.studio-shell { height: 100%; overflow: auto; }
 .studio-ui .studio-content { max-width: 1000px; margin: auto; display: grid; gap: 24px; }
+.studio-ui .studio-feature-stack { display: grid; gap: 24px; }
+.studio-ui nav.studio-section-nav { margin-top: 0; padding-bottom: 12px; border-bottom: .5px solid var(--studio-line); }
+.studio-ui .studio-section-nav [aria-pressed=true] { color: var(--studio-accent); border-color: var(--studio-accent); background: var(--studio-inset); }
+.studio-ui h3.studio-section-title { margin: 0; font-size: 18px; }
+.studio-ui .studio-status-label { padding: 4px 12px; border-radius: var(--studio-radius); background: var(--studio-inset); color: var(--studio-muted); }
+.studio-ui .studio-preview-note { border-top: .5px solid var(--studio-line); padding-top: 16px; color: var(--studio-muted); }
 .studio-ui .studio-eyebrow { color: var(--studio-accent); font-size: 12px; line-height: 1.5; letter-spacing: 1px; }
 .studio-ui .studio-card, .studio-ui article { padding: 20px; border: .5px solid var(--studio-line); border-radius: var(--studio-radius); background: var(--studio-surface); min-width: 0; }
 .studio-ui article + article { margin-top: var(--studio-gap); }

@@ -15482,39 +15482,30 @@ importers:
 
   studio:
     devDependencies:
-      '@deepseek-ai/dsh-compaction':
-        specifier: workspace:*
-        version: link:../packages/compaction/compaction
-      '@deepseek-ai/dsh-client-connection':
-        specifier: workspace:*
-        version: link:../packages/client/connection
-      '@deepseek-ai/dsh-api-session-controller':
-        specifier: workspace:*
-        version: link:../packages/api/session-controller
-      '@deepseek-ai/dsh-client-ui-conversation':
-        specifier: workspace:*
-        version: link:../packages/client/ui-conversation
-      '@deepseek-ai/dsh-subagent':
-        specifier: workspace:*
-        version: link:../packages/subagent/subagent
-      '@deepseek-ai/dsh-session':
-        specifier: workspace:*
-        version: link:../packages/core/session
       '@deepseek-ai/cordis':
         specifier: workspace:~
         version: link:../vendor/cordis
       '@deepseek-ai/dsh-api-remotes':
         specifier: workspace:*
         version: link:../packages/api/remotes
+      '@deepseek-ai/dsh-api-session-controller':
+        specifier: workspace:*
+        version: link:../packages/api/session-controller
       '@deepseek-ai/dsh-app-boot':
         specifier: workspace:*
         version: link:../packages/boot/app-boot
       '@deepseek-ai/dsh-brand':
         specifier: workspace:*
         version: link:../packages/util/brand
+      '@deepseek-ai/dsh-client-connection':
+        specifier: workspace:*
+        version: link:../packages/client/connection
       '@deepseek-ai/dsh-client-locale':
         specifier: workspace:*
         version: link:../packages/client/locale
+      '@deepseek-ai/dsh-client-ui-conversation':
+        specifier: workspace:*
+        version: link:../packages/client/ui-conversation
       '@deepseek-ai/dsh-client-ui-renderer':
         specifier: workspace:*
         version: link:../packages/client/ui-renderer
@@ -15527,12 +15518,18 @@ importers:
       '@deepseek-ai/dsh-client-ui-workspace':
         specifier: workspace:*
         version: link:../packages/client/ui-workspace
+      '@deepseek-ai/dsh-compaction':
+        specifier: workspace:*
+        version: link:../packages/compaction/compaction
       '@deepseek-ai/dsh-llm':
         specifier: workspace:*
         version: link:../packages/llm/llm
       '@deepseek-ai/dsh-plugin-manager':
         specifier: workspace:*
         version: link:../packages/boot/plugin-manager
+      '@deepseek-ai/dsh-session':
+        specifier: workspace:*
+        version: link:../packages/core/session
       '@deepseek-ai/dsh-storage':
         specifier: workspace:*
         version: link:../packages/storage/storage
@@ -15542,6 +15539,9 @@ importers:
       '@deepseek-ai/dsh-storage-json':
         specifier: workspace:*
         version: link:../packages/storage/storage-json
+      '@deepseek-ai/dsh-subagent':
+        specifier: workspace:*
+        version: link:../packages/subagent/subagent
       '@deepseek-ai/dsh-typert-generator':
         specifier: workspace:*
         version: link:../packages/typert/generator
@@ -15625,12 +15625,6 @@ importers:
         specifier: ^4.4.3
         version: 4.4.3
     devDependencies:
-      '@deepseek-ai/dsh-session-persistence':
-        specifier: workspace:*
-        version: link:../../../packages/session/session-persistence
-      '@deepseek-ai/dsh-session-query':
-        specifier: workspace:*
-        version: link:../../../packages/session-query/session-query
       '@deepseek-ai/cordis':
         specifier: workspace:~
         version: link:../../../vendor/cordis
@@ -15661,12 +15655,21 @@ importers:
       '@deepseek-ai/dsh-client-ui-workspace':
         specifier: workspace:*
         version: link:../../../packages/client/ui-workspace
+      '@deepseek-ai/dsh-config-editor':
+        specifier: workspace:*
+        version: link:../../../packages/boot/config-editor
       '@deepseek-ai/dsh-llm':
         specifier: workspace:*
         version: link:../../../packages/llm/llm
       '@deepseek-ai/dsh-session':
         specifier: workspace:*
         version: link:../../../packages/core/session
+      '@deepseek-ai/dsh-session-persistence':
+        specifier: workspace:*
+        version: link:../../../packages/session/session-persistence
+      '@deepseek-ai/dsh-session-query':
+        specifier: workspace:*
+        version: link:../../../packages/session-query/session-query
       '@deepseek-ai/dsh-storage-domain':
         specifier: workspace:*
         version: link:../../../packages/storage/storage-domain

@@ -40,6 +40,29 @@ Host와 Client는 별도 TypeScript 프로그램이다. 공식 compiler base와 
 
 수정할 소스는 `src/`이며 `packages/*/index.js`, `client.js`는 생성 파일이다. ON/OFF는 native Plugin Manager가 profile에 저장한다. 타이머는 React mount가 아닌 Client 플러그인/Slot 생명주기에 속하며 페이지 간에 공유하지 않는다.
 
+## Web 플러그인 업데이트 자동화
+
+저장소 루트에서 다음 명령으로 실행 계획을 확인한다. `--home`에는 **업데이트할 Web 서버가 사용하는 DSH_HOME의 절대 경로**를 지정한다. 현재 세션의 환경변수를 자동으로 선택하지 않는다.
+
+```sh
+npm --prefix studio run deploy:web -- --help
+npm --prefix studio run deploy:web -- --home "$PWD/studio/.dsh-home" --dry-run
+```
+
+실제 빌드·패키징·설치는 `--dry-run`을 빼고 실행한다. 아래 경로는 별도 개발 Web용 예시이며, 다른 DSH_HOME으로 실행 중인 서버에는 반영되지 않는다.
+
+```sh
+npm --prefix studio run deploy:web -- --home "$PWD/studio/.dsh-home"
+```
+
+스크립트는 Studio 타입 검사와 빌드 → 고유 배포 디렉터리에 패키징 → 이 checkout의 공식 DSH CLI로 `web` 프로필에 설치 순서로 실행한다. 실패하면 이후 단계는 실행하지 않고 비정상 종료한다. 초기 환경에는 위의 최초 준비와 Web 런타임 빌드가 필요하다. PATH의 설치형 `dsh`는 사용하지 않으며, 대상 Web도 이 checkout과 같은 런타임을 사용해야 한다. 호환성 예외나 설치 스크립트 실행 권한은 자동 승인하지 않는다.
+
+대상 프로필은 `web`으로 고정되며 Desktop 배포는 지원하지 않는다. 설치는 해당 Web 프로필을 사용하는 모든 세션에 영향을 줄 수 있다. 실행 중인 서버를 시작·종료하거나 다른 서버로 교체하지 않는다. CLI 설치 성공은 현재 브라우저의 라이브 적용 확인이 아니므로, 설치 경고를 확인하고 필요하면 기존 Web 서버를 같은 실행 명령으로 재시작한 뒤 해당 페이지를 새로고침한다. 기본 DSH Web 셸은 빌드하지 않는다.
+
+배포 파일은 `studio/dist/web/deploy-*`에 남는다. 같은 버전의 재배포가 이전 tarball 경로를 재사용하지 않도록 매번 별도 디렉터리를 만들며, 설치 번들이 참조하므로 임의로 삭제하지 않는다. 실패한 설치를 자동으로 롤백하지 않으며 CLI 진단을 확인한 뒤 재실행한다.
+
+검증 범위: 인자 검사, 단계 순서, 실패 시 중단, dry-run 무변경을 자동 테스트한다. 실제 프로필 설치와 실행 중인 브라우저 반영은 이 스크립트 추가 과정에서 실행하지 않았으며, 위 실배포 명령은 사용자 실행 절차다.
+
 ## Web/설치 테스트
 
 먼저 레포 루트에서 `pnpm run build`로 Web 실행에 필요한 공식 전체 산출물을 준비한다. 이 작업과 서버 실행은 Studio 단위 테스트와 별개다. 현재 Desktop profile 대신 별도의 DSH_HOME을 사용한다.
@@ -85,6 +108,20 @@ DSH_HOME="$PWD/apps/desktop/.desktop-build/development/home" pnpm run start:desk
 Desktop의 **DSH Studio → Role settings**에서 구현자·리뷰어의 지침과 사용 가능한 모델을 입력하고 **Apply**한다. **Settings → Agent presets**에서 **Studio**를 새 작업 기본값으로 선택한 뒤 새 작업을 만든다. 설치된 tarball은 Studio 소스의 `watch` 결과를 자동으로 반영하지 않으므로 수정 후에는 재빌드·재패키징·재설치한다.
 
 이 Desktop 기동·설치 경로는 수동 검증 절차다. 실행하는 개발자가 시작 로그의 bundle 로딩, 역할 설정 Apply, Studio preset으로 만든 새 작업을 확인한다. 자동화된 격리 Web 검증을 Desktop 설치 검증으로 간주하지 않는다. 런처와 저장소 위치의 상세는 [Desktop 개발 문서](../apps/desktop/README.md#develop)를 따른다.
+
+### 설치형 Desktop에 자동 배포(macOS)
+
+대상은 `/Applications/DeepSeek Harness.app`, 기본 `~/.dsh`의 `desktop` 프로필, 설치형 `dsh` 버전 `0.2.0-rc.2`다. 사용자 지정 DSH_HOME을 쓰는 앱에는 이 명령을 사용하지 않는다.
+
+```sh
+# 대상 및 실행 계획 확인 (설치하지 않음)
+npm --prefix studio run deploy:desktop -- --dry-run
+
+# 작업을 저장하고 Desktop을 Cmd+Q로 완전히 종료한 뒤 외부 터미널에서 실행
+npm --prefix studio run deploy:desktop
+```
+
+호환 버전으로 빌드·패키징한 뒤 공식 CLI로 설치하고 앱을 연다. 설치형 런타임 버전이 다르거나 앱이 실행 중이면 중단한다. 강제 종료, 버전 예외 승인, 설치 실패 롤백은 하지 않는다. 빌드 중 앱을 다시 열지 않는다. 출력된 고유 배포 디렉터리는 설치 번들이 참조하므로 보존한다. 설치 성공과 앱 열기 요청은 화면 정상 로딩을 보장하지 않으므로 DSH Studio 화면을 확인한다. 도움말과 dry-run만 검증했으며 실제 앱 종료·설치는 사용자 실행 단계다.
 
 ### 기존 설치 앱 실행(macOS)
 
