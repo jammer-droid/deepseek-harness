@@ -28,6 +28,14 @@ Studio 작업에는 이 지침과 [Studio 작업 지침](studio/AGENTS.md)을 �
 - 본체 소스 수정이나 재빌드가 필요하면 독립 배포 조건을 만족하지 못한 것이다. 설치 검증을 하지 못했다면 구현·단위 테스트 결과와 분리하여 미검증으로 보고한다.
 - 설치된 사용자 앱·프로필은 승인 없이 수정하지 않는다. 로컬 Studio 빌드가 현재 실행 중인 GUI에 반영됐다고 가정하지 않는다.
 
+## 커밋 범위 검사
+
+Git 커밋과 merge 커밋 훅은 `node studio/scripts/check-staged-scope.mjs`로 staged 경로를 검사한다. `studio/` 밖의 추가·수정·삭제 및 rename의 원래 경로를 차단한다. 훅 설치는 `node scripts/install-lefthook.mjs`로 수행한다.
+
+사용자가 승인한 범위 밖 변경에만 `STUDIO_APPROVED_PATHS`에 정확한 저장소 상대 경로의 JSON 배열을, `STUDIO_APPROVAL_REASON`에 승인 사유를 넣어 커밋한다. 디렉터리·와일드카드 일괄 허용은 없다. 에이전트가 스스로 승인하거나 `--no-verify`, `LEFTHOOK=0` 등으로 우회하지 않는다. 이 로컬 훅은 실수 방지 장치이며 사용자 승인 진위나 훅 비활성화를 강제하는 보안 장치는 아니다.
+
+저장소 로컬 `.agents/skills`는 사용하지 않는다. 사용자 전역 스킬과 현재 세션에 이미 로드된 지침은 저장소 파일 삭제로 제거되지 않는다.
+
 ## 문서와 완료 보고
 
 Studio 기능 문서와 마이그레이션 안내는 `studio/` 안에 작성한다. 새 문서는 한국어로 작성하며, DSH 본체용 업그레이드 가이드나 중국어 번역·페어링 파일을 자동 생성하지 않는다. 제품 UI의 locale 규칙은 [Studio 작업 지침](studio/AGENTS.md)의 별도 규칙을 따른다.
