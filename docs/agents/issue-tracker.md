@@ -1,23 +1,20 @@
 # Issue tracker: GitHub
 
-English | [中文](issue-tracker.zh.md)
+Track issues in `jammer-droid/deepseek-harness`. Always pass `--repo jammer-droid/deepseek-harness` to `gh`; do not infer the tracker from the upstream remote.
 
-Track work in GitHub Issues on `jammer-droid/deepseek-harness`. Use the `gh` CLI with an explicit `--repo jammer-droid/deepseek-harness` argument; do not infer the tracker from the upstream remote.
+## Operations
 
-## Skill operations
+- Read: `gh issue view <number> --repo jammer-droid/deepseek-harness`
+- List: `gh issue list --repo jammer-droid/deepseek-harness`
+- Create: `gh issue create --repo jammer-droid/deepseek-harness --title "..." --body "..."`
+- Close: `gh issue close <number> --repo jammer-droid/deepseek-harness`
 
-When a skill asks to publish a ticket, create an issue in this repository. When it asks to fetch a ticket, read its title, body, labels, and comments. Preserve repository-qualified references when linking issues from another repository.
-
-Use GitHub sub-issues for parent-child relationships and native issue dependencies for blockers when available. Otherwise, record parent and blocker references explicitly in the issue bodies.
-
-Publishing issues, comments, or other tracker changes requires authorization from the current task; this configuration alone does not authorize those operations.
-
-## Triage
-
-Use the role mapping in [triage labels](triage-labels.md).
-
-**PRs as a request surface: no.**
+Reading and drafting do not authorize tracker mutation. Create, edit, comment, or close only within the user's authorization. Issue updates do not authorize pushing code.
 
 ## Implementation specs
 
-Follow the invoked skill's publication rules. In particular, `refine-issue` keeps its implementation spec repository-local and does not mutate the tracker.
+Follow the [Studio issue workflow](../../studio/docs/design-workflow.md). Keep implementation specs under [Studio issues](../../studio/docs/issues/README.md). `refine-issue` does not mutate the tracker.
+
+## Request sources
+
+PRs as a request surface: no.

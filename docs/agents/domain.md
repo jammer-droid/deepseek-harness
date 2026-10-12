@@ -1,29 +1,17 @@
 # Domain docs
 
-English | [中文](domain.zh.md)
-
-Use one shared domain context for this repository. Existing documentation owns terminology and decisions; do not create a parallel glossary or ADR tree.
+Use a single Studio domain context. The DSH checkout is reference material, not a second development target.
 
 ## Before exploring
 
-For Studio work, read the [product goals and scope](../../studio/goals.ko.md) and [development guide](../../studio/development.ko.md). Product goals are not shipped behavior; implementation candidates remain proposals until approved.
+Read the [Studio instructions](../../studio/AGENTS.md). For issue work, follow the [Studio issue workflow](../../studio/docs/design-workflow.md) and locate the relevant spec in the [issue index](../../studio/docs/issues/README.md).
 
-Read the [shared glossary](../glossary.md), then relevant active Agent Notes under `.agents/notes/`. Use the [Agent Note guide](../../.agents/notes/README.md) to locate records by lifecycle and class.
+Read the [Studio product goals](../../studio/goals.ko.md) and [development guide](../../studio/development.ko.md) when relevant. Distinguish product goals and proposals from shipped behavior.
 
-Implemented notes describe shipped decisions. Proposed notes are not adopted decisions. Rejected notes preserve reasons not to take an approach. Archived notes are frozen historical records, not current authority.
+Consult DSH terminology, API documentation, or decision records only when needed to understand a public API consumed by Studio. Do not import core maintenance procedures into Studio work.
 
-If an optional domain document is absent, continue without requesting that it be created merely to satisfy a skill's default layout.
+## Terminology and decisions
 
-## Terminology
+Use the terminology in the owning Studio document. Keep new Studio terminology and decision documentation under `studio/`. Do not create a root glossary, glossary map, or ADR tree merely to satisfy a skill's default layout.
 
-Use the glossary's canonical terms in issues, proposals, tests, and explanations. When a needed concept is missing, distinguish a genuine terminology gap from an unnecessary synonym.
-
-## Decision conflicts
-
-Explicitly identify any proposal that contradicts an active decision record. Link the record and explain why reopening the decision is warranted; do not silently override it.
-
-## Writing domain docs
-
-Update the existing glossary rather than adding a root `GLOSSARY.md` or `GLOSSARY-MAP.md`. Record durable decision rationale through the existing Agent Note process rather than creating `docs/adr/`.
-
-Follow the repository's documentation, bilingual pairing, and Agent Note creation rules.
+Identify conflicts with existing Studio decisions explicitly. Missing optional domain documents do not block work.

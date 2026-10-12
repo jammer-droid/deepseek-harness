@@ -36,6 +36,16 @@ Git 커밋과 merge 커밋 훅은 `node studio/scripts/check-staged-scope.mjs`�
 
 저장소 로컬 `.agents/skills`는 사용하지 않는다. 사용자 전역 스킬과 현재 세션에 이미 로드된 지침은 저장소 파일 삭제로 제거되지 않는다.
 
+## Agent skills
+
+### Issue tracker
+
+이슈는 GitHub의 `jammer-droid/deepseek-harness`에서 관리한다. 모든 `gh` 명령은 저장소를 명시한다. [설정](docs/agents/issue-tracker.md)을 따른다.
+
+### Domain docs
+
+Studio 단일 컨텍스트를 사용한다. 용어·결정 문서의 읽기 및 작성 범위는 [설정](docs/agents/domain.md)을 따른다.
+
 ## 문서와 완료 보고
 
 Studio 기능 문서와 마이그레이션 안내는 `studio/` 안에 작성한다. 새 문서는 한국어로 작성하며, DSH 본체용 업그레이드 가이드나 중국어 번역·페어링 파일을 자동 생성하지 않는다. 제품 UI의 locale 규칙은 [Studio 작업 지침](studio/AGENTS.md)의 별도 규칙을 따른다.
