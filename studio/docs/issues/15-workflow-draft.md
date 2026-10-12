@@ -7,7 +7,7 @@ description: "Studio 이슈 15의 지침 컴포넌트 초안 편집·저장 구�
 
 ## 요약
 
-대상은 [GitHub #15](https://github.com/jammer-droid/deepseek-harness/issues/15)이다. 구현 상태는 `completed`이며 S1–S4의 등록·편집·다중 초안 저장·실패 복구·수용 검증을 완료하고 `studio-general`에 로컬 통합했다. 선행 이슈는 없다. [구조 검토](../workflow-architecture-review.md)와 [작업 절차](../issue-workflow.md)를 따른다.
+대상은 [GitHub #15](https://github.com/jammer-droid/deepseek-harness/issues/15)이다. 구현 상태는 `completed`이며 S1–S4의 등록·편집·다중 초안 저장·실패 복구·수용 검증을 완료하고 `studio-general`에 로컬 통합했다. 선행 이슈는 없다. [구조 검토](../workflow-architecture-review.md)와 [작업 절차](../design-workflow.md)를 따른다.
 
 작업 브랜치는 `studio/workflow-15-draft`, 통합 대상은 `studio-general`이다. 분기점은 워크플로우 기획 문서를 추가한 커밋이며 작업 절차 설정도 이 브랜치에 포함한다. 이슈 완료·검증 후 로컬 통합은 승인되었고 푸시는 승인 범위에 포함하지 않는다. 원래 worktree의 디자인 변경은 보존한다.
 

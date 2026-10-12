@@ -21,7 +21,7 @@ description: "Studio 컴포넌트 기반 워크플로우의 기획·명세·조�
 
 ## 이슈 개발
 
-구현 작업은 [Studio 이슈 작업 절차](issue-workflow.md)를 따르고, 결정·단계·검증 기록은 [이슈별 명세](issues/README.md)에서 찾는다.
+구현 작업은 [Studio 이슈 작업 절차](design-workflow.md)를 따르고, 결정·단계·검증 기록은 [이슈별 명세](issues/README.md)에서 찾는다.
 
 ## 핵심 결론
 

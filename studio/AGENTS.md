@@ -2,7 +2,7 @@
 
 ## 이슈 개발
 
-Studio 이슈를 설계·구현·재개하거나 완료 후 통합할 때 [이슈 작업 절차](docs/issue-workflow.md)를 읽고 [명세 색인](docs/issues/README.md)에서 해당 이슈 문서를 찾는다. 이 절차는 Studio 전용이며 전역 개발 설정을 만들지 않는다.
+Studio 이슈를 설계·구현·재개하거나 완료 후 통합할 때 [이슈 작업 절차](docs/design-workflow.md)를 읽고 [명세 색인](docs/issues/README.md)에서 해당 이슈 문서를 찾는다. 이 절차는 Studio 전용이며 전역 개발 설정을 만들지 않는다.
 
 ## 문서 언어
 
