@@ -108,4 +108,17 @@ D1·D2는 결정됐고 S2–S5에 남은 사용자 결정은 없다. S1에서 B1
 | 양성·음성·Loader·출력·UI 및 replay/라이브 구분 | S1–S5 |
 | 제품 문서·실패·제한과 독립 배포 결과 | S5 |
 
-이번 준비의 변경은 이 명세, 후속 이슈 명세와 [색인](README.md)뿐이다. 구현, 테스트·빌드, 설치, 커밋·푸시, GitHub 라벨·댓글·상태 변경은 수행하지 않는다.
+## S1 구현 기록
+
+현재 단계: **S1 부분 완료**. S2–S5는 시작하지 않았다. 공개 등록·갱신의 Loader 적합성은 통과했지만 전체 앱의 새 대화 경로 및 Studio 패키지 설치 검증은 남아 있어 준비 상태는 `blocked`를 유지한다.
+
+[공개 API 적합성 테스트](../../test/desktop/preset-compat.mjs)는 실제 Loader, preset registry, Agent와 systemPrompt를 사용한다. 테스트에서 DSH 내부 구현이나 profile 파일을 변경하지 않는다. 테스트 전용 지침 플러그인만 Loader builtin으로 등록한다. 기존 공개 기능을 관측하는 capability probe이므로 생산 코드의 red → green 변경은 없다.
+
+- 미수정 npm 배포 의존성: `/tmp/studio-s3-runtime-rdYxsm/runtime`, registry `0.2.0-rc.2`. `STUDIO_PRESET_RUNTIME=/tmp/studio-s3-runtime-rdYxsm/runtime STUDIO_PRESET_EXPECT_VERSION=0.2.0-rc.2 node --test studio/test/desktop/preset-compat.mjs` 통과.
+- workspace 회귀: `STUDIO_PRESET_RUNTIME="$PWD/packages/preset/agent-preset-registry" node --test studio/test/desktop/preset-compat.mjs` 통과. registry `0.2.1-alpha.2`. 저장소 루트를 runtime 기준으로 사용한 첫 시도는 루트에 Cordis 의존성이 없어 실패했고 registry 패키지를 기준으로 수정했다. 코어 재빌드는 수행하지 않았다.
+- 확인: 새 ID, `studio-workflow:` 접두사, 중복 ID 거절, disposer 이후 `not-found`, 같은 ID 재등록, 새 Agent의 새 지침, 기존 Agent의 이전 지침 유지, 다른 프리셋 문서·지침 불변, 활성화 실패 진단과 mount 거절, 실패 후 재등록.
+- 실패 보장: 새 등록이 broken이면 신규 mount는 거절되며 이전 정상 등록으로 자동 복구되지 않는다. 이미 묶인 Agent만 이전 지침을 유지한다. 등록을 해제해도 기존 Agent는 유지된다.
+- `npm test`(Studio): 타입 검사·빌드 통과, 테스트 112개 중 110개 통과·2개 실패. 기존 experiments runtime 테스트의 `@deepseek-ai/dsh-scope` 모듈 해석 실패와 preset persistence 테스트의 `unknown`/`available` 불일치다. 후자는 단독 실행에서도 `@deepseek-ai/dsh-agent-preset` import 실패로 재현됐다. 이번 변경은 해당 생산 코드를 수정하지 않는다. 전체 저장소 검사는 실행하지 않았다.
+- 제한: Agent setup/mount와 prompt assembly 검증이며 전체 앱 부팅·sessionController 새 대화·실제 모델 요청/로그·UI·라이브 모델 검증이 아니다. 패키징한 Studio 독립 설치 증거도 아니다. 사용자 프로필, 설치 앱, GitHub 상태는 변경하지 않았다.
+
+다음 최소 작업은 S1의 전체 앱 새 대화 경로 검증이다. B1 해소 여부를 확정한 뒤 S2에 진입한다.
