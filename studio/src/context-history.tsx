@@ -1,3 +1,4 @@
+import { Button } from './ui.tsx';
 /** Read-only child Session evidence. Each expanded view owns and releases one Client reference. */
 import React from 'react';
 import type {} from '@deepseek-ai/dsh-compaction/types';
@@ -37,8 +38,8 @@ function EventContent({ entry, row, initialSeq, finalResponse, t }: { entry: Ses
       : event.type === 'assistant/message' ? (finalResponse ? 'historyFinal' : 'historyResponse') : event.type.startsWith('compaction/') ? 'historyCompacted' : 'historyEvent';
   return <li data-context-event={event.seq}>
     <p>{inherited ? `${t('historyInherited')} · ` : ''}{t(inherited && event.type === 'user/message' ? 'historyEvent' : category)} · {event.type} · {event.seq}</p>
-    <button aria-expanded={showContent} onClick={() => setShowContent(!showContent)}>{t(showContent ? 'historyHideContent' : 'historyShowContent')}</button>
-    {showContent && <pre style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{eventContent(entry)}</pre>}
+    <Button aria-expanded={showContent} onClick={() => setShowContent(!showContent)}>{t(showContent ? 'historyHideContent' : 'historyShowContent')}</Button>
+    {showContent && <pre className="studio-history-content">{eventContent(entry)}</pre>}
   </li>;
 }
 function isFinalResponse(entry: SessionEventLikeEntry, entries: readonly SessionEventLikeEntry[]): boolean {
@@ -77,9 +78,9 @@ function LoadedHistory({ binding, row, t }: { binding: SessionBinding; row: Dele
     {entries.length === 0 && session.openState === 'open' && <p>{t('historyEmpty')}</p>}
     <ol>{visible.map(entry => <EventContent key={entry.event.seq} entry={entry} row={row} initialSeq={initialSeq} finalResponse={isFinalResponse(entry, entries)} t={t} />)}</ol>
     <nav aria-label={t('historyPages')}>
-      <button disabled={session.loadingOlder || (start === 0 && !events.hasMore)} onClick={() => void previous()}>{t('historyOlder')}</button>
-      <button disabled={endIndex >= entries.length} onClick={() => setEndSeq(entries[Math.min(entries.length, endIndex + 1) - 1]!.event.seq)}>{t('historyNewer')}</button>
-      <button disabled={endSeq === Infinity} onClick={() => setEndSeq(Infinity)}>{t('historyLatest')}</button>
+      <Button disabled={session.loadingOlder || (start === 0 && !events.hasMore)} onClick={() => void previous()}>{t('historyOlder')}</Button>
+      <Button disabled={endIndex >= entries.length} onClick={() => setEndSeq(entries[Math.min(entries.length, endIndex + 1) - 1]!.event.seq)}>{t('historyNewer')}</Button>
+      <Button disabled={endSeq === Infinity} onClick={() => setEndSeq(Infinity)}>{t('historyLatest')}</Button>
     </nav>
   </>;
 }
@@ -105,7 +106,7 @@ function RetainedHistory({ client, row, t }: { client: HistoryClient; row: Deleg
     {connection !== 'connected' && <p role="status">{t('historyDisconnected')}</p>}
     {failed && <p role="alert">{t('historyUnavailable')}</p>}
     {binding ? <LoadedHistory key={`${row.childId}:${revision}`} binding={binding} row={row} t={t} /> : !failed && <p role="status">{t('historyLoading')}</p>}
-    <button onClick={retry}>{t('historyRetry')}</button>
+    <Button onClick={retry}>{t('historyRetry')}</Button>
   </section>;
 }
 /** Expand evidence on demand; collapsing releases history without waking a child.
@@ -114,7 +115,7 @@ function RetainedHistory({ client, row, t }: { client: HistoryClient; row: Deleg
  */
 export function ContextHistory(props: { client: HistoryClient; row: DelegationRecord } & Locale) {
   const [expanded, setExpanded] = React.useState(false);
-  return <div><button aria-expanded={expanded} onClick={() => setExpanded(!expanded)}>{props.t(expanded ? 'historyHide' : 'historyShow')}</button>
+  return <div><Button aria-expanded={expanded} onClick={() => setExpanded(!expanded)}>{props.t(expanded ? 'historyHide' : 'historyShow')}</Button>
     {expanded && <RetainedHistory {...props} />}
   </div>;
 }

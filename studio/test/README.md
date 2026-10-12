@@ -1,7 +1,5 @@
 # Studio browser acceptance
 
-English | [中文](README.zh.md)
-
 The browser lane drives the actual Studio sidebar with Playwright through the existing Web test scaffold. The scaffold runs an isolated profile and ephemeral port; it never replaces an existing GUI. Its source test helpers compose built Host/Client packages and Studio package exports through the real Loader, including automatic `./typert` discovery. The editor’s header-only fixture supplies a call-free replay provider catalog. Delegation fixtures contain complete V4 parent/child calls: real tool execution reaches the public activation service and replay adapter, without credentials or a live provider.
 
 Build Studio and the selected runtime's Host packages, Client bundles, and Web distribution first. Install the repository's declared browser test dependencies through its ordinary setup; this test does not install dependencies or browsers. A cached Playwright Chromium is the default; `DSH_TEST_BROWSER_CHANNEL=chrome` uses an already-installed Chrome. Run from the repository root:

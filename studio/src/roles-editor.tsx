@@ -1,3 +1,4 @@
+import { Button, StudioSurface } from './ui.tsx';
 /** Explicit draft/Apply editor; edits never mutate active Host configuration. */
 import React from 'react';
 import type { RolePair, RoleState, RoleApplyRequest } from '../packages/roles/src/roles-types.ts';
@@ -27,22 +28,22 @@ export function RoleEditor({ locale, state, onApply, onReload }: RoleEditorProps
     catch (_error) { setFailed(true); } // Parent classifies Remote refusal; preserve the draft for correction.
     finally { setPending(false); }
   }
-  return <section aria-label={t.title}>
+  return <StudioSurface><section aria-label={t.title}>
     <h2>{t.title}</h2><p>{t.guidance}</p>
     <p role="status">{t[state.status]}</p>
     <dl><dt>{t.saved}</dt><dd>{state.snapshotId ?? t.none}</dd><dt>{t.active}</dt><dd>{state.appliedSnapshotId ?? t.none}</dd><dt>{t.revision}</dt><dd>{state.revision}</dd></dl>
-    {(['implementer', 'reviewer'] as const).map(role => <fieldset key={role} disabled={pending}><legend>{t[role]}</legend>
-      {(['instructions', 'provider', 'model', 'reasoningEffort'] as const).map(field => <label key={field} style={{ display: 'block' }}>{t[field]}
+    <div className="studio-role-grid">{(['implementer', 'reviewer'] as const).map(role => <fieldset key={role} disabled={pending}><legend>{t[role]}</legend>
+      {(['instructions', 'provider', 'model', 'reasoningEffort'] as const).map(field => <label key={field} >{t[field]}
         {field === 'instructions' ? <textarea aria-label={`${t[role]} ${t[field]}`} value={draft[role][field]} onChange={event => setDraft(previous => ({ ...previous, [role]: { ...previous[role], [field]: event.target.value } }))} /> : <input aria-label={`${t[role]} ${t[field]}`} value={draft[role][field] ?? ''} onChange={event => setDraft(previous => {
           const setting = { ...previous[role], [field]: event.target.value };
           if (field === 'reasoningEffort' && event.target.value === '') delete setting.reasoningEffort;
           return { ...previous, [role]: setting };
         })} />}
       </label>)}
-    </fieldset>)}
+    </fieldset>)}</div>
     <p role="status">{dirty ? t.dirty : t.clean}</p>
     {failed && <p role="alert">{t.rejected}</p>}
-    <button disabled={pending} onClick={() => void apply()}>{pending ? t.pending : t.apply}</button>
-    <button disabled={pending} onClick={() => void onReload()}>{t.reload}</button>
-  </section>;
+    <Button primary disabled={pending} onClick={() => void apply()}>{pending ? t.pending : t.apply}</Button>
+    <Button disabled={pending} onClick={() => void onReload()}>{t.reload}</Button>
+  </section></StudioSurface>;
 }

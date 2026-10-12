@@ -1,3 +1,4 @@
+import { Button, StudioSurface } from './ui.tsx';
 /** Read-only Agents view. Cycle guidance uses the implementer record and current review operation; absent legacy policy stays unknown. Loading and navigation never admit child work. */
 import React from 'react';
 import type { ConnectionHandle } from '@deepseek-ai/dsh-client-connection/client';
@@ -63,7 +64,7 @@ function RecoveryStatus({ row, t }: { row: DelegationRecord } & PropsLocale<'stu
 }
 function CapturedDetails({ row, t }: { row: DelegationRecord } & PropsLocale<'studio.agents'>) {
   const [expanded, setExpanded] = React.useState(false);
-  return <div><button aria-expanded={expanded} onClick={() => setExpanded(!expanded)}>{t(expanded ? 'capturedHide' : 'capturedShow')}</button>
+  return <div><Button aria-expanded={expanded} onClick={() => setExpanded(!expanded)}>{t(expanded ? 'capturedHide' : 'capturedShow')}</Button>
     {expanded && <>
       <p>{t('capturedSettings')}</p>
       <dl>
@@ -91,8 +92,8 @@ function AgentsView({ selectedId, load, open, historyClient, t }: ConvViewProps 
     void load().then(value => { if (active) { setLoaded({ id: selectedId, rows: value }); setLoading(false); } }, () => { if (active) { setLoaded(undefined); setFailed(selectedId); setLoading(false); } });
     return () => { active = false; };
   }, [selectedId, load, revision]);
-  return <section aria-label={t('title')}>
-    <p>{t('shared')}</p><button onClick={reload}>{t('reload')}</button>
+  return <StudioSurface><section className="studio-agents" aria-label={t('title')}>
+    <p>{t('shared')}</p><Button onClick={reload}>{t('reload')}</Button>
     {failed === selectedId ? <p role="alert">{t('unavailable')}</p> : loading || loaded?.id !== selectedId ? <p role="status">{t('loading')}</p> : rows.length === 0 ? <p>{t('empty')}</p> : rows.map(row => <article key={row.childId}>
       <h2>{t(row.role)}</h2><p>{t(row.context)}</p><p>{row.settings.provider} / {row.settings.model}</p>
       <dl><dt>{t('activation')}</dt><dd>{t(row.state)}</dd></dl>
@@ -104,12 +105,12 @@ function AgentsView({ selectedId, load, open, historyClient, t }: ConvViewProps 
           {row.judgment.additionalVerification.length > 0 && <><h3>{t('verification')}</h3><ul>{row.judgment.additionalVerification.map((item, index) => <li key={index}>{item}</li>)}</ul></>}
         </>}
       </section>}
-      <button onClick={() => open(row.parentId)}>{t('parent')}</button> <button onClick={() => open({ parentSessionId: row.parentId, childSessionId: row.childId, mode: 'continuable' })}>{t(row.role === 'reviewer' ? 'reviewChild' : 'child')}</button>
+      <Button onClick={() => open(row.parentId)}>{t('parent')}</Button> <Button onClick={() => open({ parentSessionId: row.parentId, childSessionId: row.childId, mode: 'continuable' })}>{t(row.role === 'reviewer' ? 'reviewChild' : 'child')}</Button>
       <CapturedDetails row={row} t={t} />
       <ContextHistory client={historyClient} row={row} t={t} />
       <RecoveryStatus row={row} t={t} />
     </article>)}
-  </section>;
+  </section></StudioSurface>;
 }
 /** Register a Conversation View beside Trajectory, never a sidebar replacement.
  * @param ctx Ready roles Remote and conversation/navigation Client context.

@@ -80,6 +80,29 @@ it('edits only two roles, applies explicitly, and reloads the saved snapshot in 
       await expect.poll(() => page.getByRole('alert').filter({ hasText: 'Settings could not be read.' }).count()).toBe(0)
       await expect.poll(() => editor.locator('dd').allTextContents()).toEqual(saved)
       expect(await editor.getByRole('button', { name: 'Apply', exact: true }).isEnabled()).toBe(true)
+      for (const colorScheme of ['light', 'dark'] as const) {
+        await page.emulateMedia({ colorScheme, reducedMotion: 'reduce' })
+        // Keep the host sidebar visible while testing a narrow Studio content column.
+        await page.setViewportSize({ width: 720, height: 844 })
+        const appearance = await editor.evaluate(element => {
+          const surface = element.closest('.studio-ui')!
+          const style = getComputedStyle(surface)
+          return {
+            ink: style.getPropertyValue('--studio-ink').trim(),
+            hostInk: style.getPropertyValue('--dsw-alias-label-primary').trim(),
+            width: element.clientWidth,
+            scroll: element.scrollWidth,
+          }
+        })
+        expect(appearance.ink).not.toBe('')
+        expect(appearance.ink).toBe(appearance.hostInk)
+        expect(appearance.scroll).toBeLessThanOrEqual(appearance.width + 1)
+        const apply = editor.getByRole('button', { name: 'Apply', exact: true })
+        await editor.getByRole('textbox', { name: 'Reviewer Reasoning effort (empty = provider default)', exact: true }).focus()
+        await page.keyboard.press('Tab')
+        expect(await apply.evaluate(element => element === document.activeElement)).toBe(true)
+        expect(await apply.evaluate(element => getComputedStyle(element).outlineStyle)).toBe('solid')
+      }
       if (process.env.DSH_TEST_SCREENSHOT) await page.screenshot({ path: process.env.DSH_TEST_SCREENSHOT, fullPage: true })
     } finally {
       await scaffold.close()

@@ -1,3 +1,4 @@
+import { Button, StudioSurface } from './ui.tsx';
 /** Studio roles Client; Host settings remain active without this page. */
 import React from 'react';
 import type { Context } from '@deepseek-ai/cordis';
@@ -13,7 +14,7 @@ export const inject = ['remote', 'slots', 'locale'];
 function Settings({ store }: { store: RoleStore }) {
   const view = React.useSyncExternalStore(store.subscribe, store.getSnapshot);
   const t = roleCopy(view.locale);
-  return <>{view.unavailable && <><p role="alert">{t.unavailable}</p><button onClick={() => void store.reload()}>{t.reload}</button></>}{view.state ? <fieldset disabled={view.unavailable}><RoleEditor key={view.generation} locale={view.locale} state={view.state} onApply={store.apply} onReload={store.reload} /></fieldset> : <button onClick={() => void store.reload()}>{t.reload}</button>}</>;
+  return <StudioSurface>{view.unavailable && <><p role="alert">{t.unavailable}</p><Button onClick={() => void store.reload()}>{t.reload}</Button></>}{view.state ? <fieldset disabled={view.unavailable}><RoleEditor key={view.generation} locale={view.locale} state={view.state} onApply={store.apply} onReload={store.reload} /></fieldset> : <Button onClick={() => void store.reload()}>{t.reload}</Button>}</StudioSurface>;
 }
 /** Register locale-owned role editor through the Studio feature Slot.
  * @param ctx Owning Client context.

@@ -1,3 +1,4 @@
+import { StudioSurface } from './ui.tsx';
 import React from "react";
 import type { FeatureContext, Dispose } from "./contracts.js";
 import { createTimer } from "./timer.js";
@@ -11,28 +12,13 @@ export function apply(ctx: FeatureContext) {
                 timer.getSnapshot,
             );
             return (
-                <div
-                    role="status"
-                    style={{
-                        padding: 20,
-                        borderRadius: 8,
-                        background: "var(--dsw-alias-bg-layer-2)",
-                    }}
-                >
-                    <strong
-                        style={{
-                            fontSize: 32,
-                            fontVariantNumeric: "tabular-nums",
-                        }}
-                    >
-                        {elapsed}
-                        <span style={{ fontSize: 14 }}> 초</span>
-                    </strong>
+                <StudioSurface><div role="status" className="studio-timer">
+                    <strong>{elapsed}<span> 초</span></strong>
                     <p>
                         이 페이지의 Client 플러그인이 실행 중입니다. 화면을
                         이동해도 유지되며 OFF 시 정리됩니다.
                     </p>
-                </div>
+                </div></StudioSurface>
             );
         }
         let unregister: Dispose;

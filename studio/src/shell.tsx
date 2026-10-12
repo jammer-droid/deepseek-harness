@@ -1,20 +1,10 @@
+import { Button, StudioSurface } from './ui.tsx';
 import React from "react";
 import type { StudioContext, StudioProps, IconProps } from "./contracts.js";
 import { createController, remoteManager } from "./controller.js";
 
 export const inject = ["slots", "remote", "remote.pluginManager"];
 const panel = "local-dsh-studio";
-const colors = {
-    background: "var(--dsw-alias-bg-base)",
-    color: "var(--dsw-alias-label-primary)",
-};
-const card = {
-    padding: 24,
-    border: "1px solid var(--dsw-alias-border-l1)",
-    borderRadius: 12,
-    background: "var(--dsw-alias-bg-layer-1)",
-};
-
 export function apply(ctx: StudioContext) {
     const controller = createController(
         remoteManager(ctx.remote.pluginManager),
@@ -37,56 +27,31 @@ export function apply(ctx: StudioContext) {
         );
         const row = state.row;
         return (
-            <main
-                style={{
-                    ...colors,
-                    height: "100%",
-                    overflow: "auto",
-                    padding: "40px clamp(20px, 5vw, 72px)",
-                    boxSizing: "border-box",
-                }}
+            <StudioSurface className="studio-shell"><main className="studio-page"
             >
-                <div style={{ maxWidth: 1000, margin: "0 auto" }}>
-                    <div
-                        style={{
-                            color: "var(--dsw-alias-brand-primary)",
-                            fontSize: 12,
-                            letterSpacing: 3,
-                        }}
-                    >
+                <div className="studio-content">
+                    <div className="studio-eyebrow">
                         HARNESS ENGINEERING LAB
                     </div>
-                    <h1 style={{ fontSize: 34, marginBottom: 8 }}>
+                    <h1>
                         DSH Studio
                     </h1>
-                    <p
-                        style={{
-                            color: "var(--dsw-alias-label-secondary)",
-                            marginBottom: 32,
-                        }}
-                    >
+                    <p className="studio-muted">
                         기능을 켜고 끄며 실행 환경을 구성합니다. 설정은 현재
                         프로필 전체에 적용됩니다.
                     </p>
-                    <section style={card} aria-label="Studio 기능">
-                        <div
-                            style={{
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "space-between",
-                                gap: 20,
-                            }}
-                        >
+                    <section className="studio-card" aria-label="Studio 기능">
+                        <div className="studio-row">
                             <div>
-                                <h2 style={{ margin: "0 0 8px", fontSize: 20 }}>
+                                <h2>
                                     데모 타이머
                                 </h2>
-                                <p style={{ margin: 0 }}>
+                                <p className="studio-muted">
                                     플러그인의 활성화와 자원 정리를 확인하는
                                     작은 실험입니다.
                                 </p>
                             </div>
-                            <button
+                            <Button
                                 type="button"
                                 role="switch"
                                 aria-label="데모 타이머"
@@ -97,16 +62,6 @@ export function apply(ctx: StudioContext) {
                                     Boolean(row.readOnlyReason)
                                 }
                                 onClick={() => void controller.toggle()}
-                                style={{
-                                    padding: "10px 22px",
-                                    borderRadius: 24,
-                                    border: "1px solid var(--dsw-alias-border-l2)",
-                                    background: row?.enabled
-                                        ? "var(--dsw-alias-brand-primary)"
-                                        : "var(--dsw-alias-bg-layer-2)",
-                                    color: "var(--dsw-alias-label-primary)",
-                                    cursor: "pointer",
-                                }}
                             >
                                 {state.busy
                                     ? "적용 중…"
@@ -115,14 +70,9 @@ export function apply(ctx: StudioContext) {
                                       : row.enabled
                                         ? "ON"
                                         : "OFF"}
-                            </button>
+                            </Button>
                         </div>
-                        <p
-                            style={{
-                                fontSize: 13,
-                                color: "var(--dsw-alias-label-secondary)",
-                            }}
-                        >
+                        <p className="studio-muted">
                             설정:{" "}
                             {state.loading
                                 ? "조회 중"
@@ -143,39 +93,30 @@ export function apply(ctx: StudioContext) {
                         {state.error && (
                             <p
                                 role="alert"
-                                style={{
-                                    color: "var(--dsw-alias-state-error-primary)",
-                                }}
                             >
                                 {state.error}
                             </p>
                         )}
                         {state.notice && <p role="status">{state.notice}</p>}
-                        <button
+                        <Button
                             type="button"
                             onClick={() => void controller.refresh()}
                         >
                             상태 새로고침
-                        </button>
+                        </Button>
                     </section>
-                    <section
-                        style={{ ...card, marginTop: 20 }}
+                    <section className="studio-card"
                         aria-label="실행 중인 기능"
                     >
-                        <h2 style={{ fontSize: 18 }}>Client 실행 영역</h2>
-                        <p
-                            style={{
-                                fontSize: 13,
-                                color: "var(--dsw-alias-label-secondary)",
-                            }}
-                        >
+                        <h2>Client 실행 영역</h2>
+                        <p className="studio-muted">
                             실제로 로드된 기능만 아래에 표시됩니다. OFF이면
                             타이머와 화면 등록이 모두 해제됩니다.
                         </p>
                         {renderSlot("local.dsh-studio.features", {})}
                     </section>
                 </div>
-            </main>
+            </main></StudioSurface>
         );
     }
     function Icon({ size = 20 }: IconProps) {

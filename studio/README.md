@@ -1,7 +1,5 @@
 # DSH Studio
 
-English | [中文](README.zh.md)
-
 Studio is a fork-local workspace with a sidebar page and an independently enabled demo timer. See the [Korean development guide](development.ko.md) for detailed local instructions.
 
 ## Development
@@ -65,6 +63,10 @@ Storage reservations and native execution acceptance are separate operations. A 
 ### Direct child input limitation
 
 The public conversation blocker stores one value per session and has no owner-specific registration or release. A second writer with the same reason is not observable; a writer with a different reason replaces the first. Studio therefore cannot disable managed-child input while preserving independent blockers, and does not install an unsafe blocker. Child browsing and ordinary input remain available. A composable public blocker API is required to meet that input restriction; GUI blocking would still not reject Host Service/Remote calls or make the entire Session read-only.
+
+## Design system
+
+Studio owns its [token adapter and scoped styles](src/ui-styles.ts) and [shared controls](src/ui.tsx). Host color tokens flow through `--studio-*` aliases; typography, spacing, borders, focus, disabled states, and narrow layouts are Studio-owned. Shell, demo, role settings, and the independent Agents view carry their styles inside their Client JavaScript. Each mounted surface owns a stylesheet, removed with that surface; no external CSS asset or internal Harness UI import is required. Controls retain native semantics and accept caller-owned localized copy. Renamed or removed DSH tokens require adapter updates and runtime compatibility checks; token value changes flow through automatically. There are no animations, including under reduced-motion preferences.
 
 ## Installation
 
