@@ -16,6 +16,7 @@ import { experimentText } from './experiment-locales.ts';
 export const inject = ["slots", "remote", "remote.pluginManager", "locale"];
 const panel = "local-dsh-studio";
 export function apply(ctx: StudioContext) {
+    ctx.effect(() => ctx.locale.addLanguage({ id: 'ko', label: '한국어', fallback: 'en' }));
     const serviceListeners = new Set<() => void>();
     let services: readonly StudioServiceItem[] = [];
     const syncServices = () => {

@@ -37,10 +37,22 @@ it('persists per-feature populations and budgets across reload in light, dark an
       expect(await page.getByLabel('Large text output offload', { exact: true }).inputValue()).toBe('both');
       expect(await page.getByLabel('Disable Goal/Todo and automatic goal continuation', { exact: true }).inputValue()).toBe('sub');
       expect(await page.getByLabel('Inline text budget (characters, ≥1024)', { exact: true }).inputValue()).toBe('16384');
+      await page.getByRole('button', { name: 'Settings', exact: true }).click();
+      const settings = page.getByRole('dialog', { name: 'Settings', exact: true });
+      await settings.getByRole('button', { name: 'English', exact: true }).click();
+      await page.getByRole('menuitem', { name: '한국어', exact: true }).click();
+      await settings.getByRole('button', { name: '한국어', exact: true }).waitFor();
+      await page.keyboard.press('Escape');
+      await page.getByLabel('대용량 텍스트 출력 축소', { exact: true }).waitFor();
+      await page.reload();
+      await page.getByRole('button', { name: 'DSH Studio', exact: true }).click();
+      await page.getByRole('button', { name: '실험 기능', exact: true }).click();
+      await page.getByLabel('대용량 텍스트 출력 축소', { exact: true }).waitFor();
+      expect(await page.getByLabel('대용량 텍스트 출력 축소', { exact: true }).inputValue()).toBe('both');
       for (const colorScheme of ['light', 'dark'] as const) {
         await page.emulateMedia({ colorScheme });
         await page.setViewportSize({ width: 480, height: 844 });
-        const select = page.getByLabel('Large text output offload', { exact: true });
+        const select = page.getByLabel('대용량 텍스트 출력 축소', { exact: true });
         expect(await select.isVisible()).toBe(true);
         expect(await select.evaluate(node => node.getBoundingClientRect().right <= window.innerWidth)).toBe(true);
       }

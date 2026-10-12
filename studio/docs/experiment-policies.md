@@ -43,4 +43,6 @@ description: "Studio Experiments의 에이전트별 최적화 설정, 적용 시
 
 ## UI와 호환성
 
+일괄 읽기 도구 이름은 `read_batch`다. 이전 Studio의 `test_batch_read`를 지정한 프롬프트나 자동 호출은 `read_batch`로 수정하고 새 에이전트에서 확인한다. 이전 이름의 별칭은 제공하지 않는다. 기존 test-plugin 충돌 검사는 해당 플러그인이 제공하는 `test_batch_read` 이름을 그대로 검사한다.
+
 ko/en/zh 모두 최적화 프롬프트 조립으로 표시하며 저장 키 `headless`와 끄기·메인·서브·둘 다 값은 유지한다. 데이터 삭제나 파괴적 마이그레이션은 없다. Experiments는 Preset Builder와 같은 DetailLayout 내비게이션·독립 스크롤 콘텐츠를 사용한다. 테스트 타이머와 데모 Client 패키지·번들 기여는 제거하고 실제 Studio 서비스와 Experiments는 유지한다.

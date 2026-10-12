@@ -2,6 +2,8 @@
 
 Studio is a fork-local workspace with independently registered sidebar services. See the [Korean development guide](development.ko.md) for detailed local instructions.
 
+Select **Settings → General → Language → 한국어** to use Studio's Korean UI. The preference persists across reloads; Harness screens without Korean translations use English.
+
 ## Development
 
 Run from the repository root using its Node and pnpm versions:

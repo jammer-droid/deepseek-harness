@@ -177,6 +177,7 @@ test('batch prevalidates all reads and stops after a policy denial', async () =>
   let tool; const seen = []; const contexts = [];
   const ctx = { get() { return { register(definition) { tool = definition; return () => {}; }, async execute(call) { seen.push(call); return { isError: true, content: [{ type: 'text', text: 'denied' }], additionalContexts: ['notice'] }; } }; } };
   const life = createLifetime(); installBatch(ctx, life, true, 8, 200);
+  assert.equal(tool.name, 'read_batch');
   const exec = { signal: new AbortController().signal, callId: 'root', rootCallId: 'root', token: {}, deferContext(context) { contexts.push(context); } };
   await assert.rejects(tool.execute({ calls: [{ name: 'glob', arguments: {} }, { name: 'read', arguments: {} }] }, exec)); assert.equal(seen.length, 0);
   const result = await tool.execute({ calls: [{ name: 'glob', arguments: {} }, { name: 'grep', arguments: {} }] }, exec);

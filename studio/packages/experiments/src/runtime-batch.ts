@@ -12,7 +12,7 @@ export function installBatch(ctx: Context, life: Lifetime, goalsDisabled: boolea
   const names = goalsDisabled ? ['read', 'grep', 'glob'] : ['read', 'grep', 'glob', 'get_goal'];
   const input = z.object({ calls: z.array(z.object({ name: z.string().refine(name => names.includes(name)), arguments: z.record(z.string(), z.unknown()) }).strict()).min(1).max(maxCalls) }).strict();
   return tools.register({
-    name: 'test_batch_read', description: `Run 1–${maxCalls} read-only ${names.join('/')} operations in one call, in order. read requires limit 1–${maxLines}. Stops on the first error. Never use for mutations or polling running jobs.`,
+    name: 'read_batch', description: `Run 1–${maxCalls} read-only ${names.join('/')} operations in one call, in order. read requires limit 1–${maxLines}. Stops on the first error. Never use for mutations or polling running jobs.`,
     parameters: { type: 'object', required: ['calls'], additionalProperties: false, properties: { calls: { type: 'array', minItems: 1, maxItems: maxCalls, items: { type: 'object', required: ['name', 'arguments'], additionalProperties: false, properties: { name: { type: 'string', enum: names }, arguments: { type: 'object', additionalProperties: true } } } } } },
     output: { schema: { type: 'array', items: { type: 'object' } }, render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }] },
     async execute(raw, exec) {
