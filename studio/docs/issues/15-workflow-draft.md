@@ -7,7 +7,7 @@ description: "Studio 이슈 15의 지침 컴포넌트 초안 편집·저장 구�
 
 ## 요약
 
-대상은 [GitHub #15](https://github.com/jammer-droid/deepseek-harness/issues/15)이다. 준비 상태는 `ready`이며 S1의 등록·조회·기본 편집 및 Loader 검증을 완료했다. S2의 다중 초안 저장·선택과 S3의 실패 복구 검증도 완료했으며 현재 단계는 S4이다. 선행 이슈는 없다. [구조 검토](../workflow-architecture-review.md)와 [작업 절차](../issue-workflow.md)를 따른다.
+대상은 [GitHub #15](https://github.com/jammer-droid/deepseek-harness/issues/15)이다. 구현 상태는 `completed`이며 S1–S4의 등록·편집·다중 초안 저장·실패 복구·수용 검증을 완료하고 `studio-general`에 로컬 통합했다. 선행 이슈는 없다. [구조 검토](../workflow-architecture-review.md)와 [작업 절차](../issue-workflow.md)를 따른다.
 
 작업 브랜치는 `studio/workflow-15-draft`, 통합 대상은 `studio-general`이다. 분기점은 워크플로우 기획 문서를 추가한 커밋이며 작업 절차 설정도 이 브랜치에 포함한다. 이슈 완료·검증 후 로컬 통합은 승인되었고 푸시는 승인 범위에 포함하지 않는다. 원래 worktree의 디자인 변경은 보존한다.
 
@@ -21,7 +21,7 @@ description: "Studio 이슈 15의 지침 컴포넌트 초안 편집·저장 구�
 
 [역할 설정 소유자](../../packages/roles/src/roles.ts)는 프로필 키의 storage domain, 직렬화된 쓰기, 관찰된 리비전 검사와 자식 설정 캡처를 제공한다. 그러나 저장이 활성화와 결합되어 있고 모델 검증 및 고정 역할 쌍에 의존하므로 초안 저장 API로 재사용하지 않는다. 저장·충돌 처리의 패턴만 참고하고 새 초안의 상태 소유권을 분리한다.
 
-[Studio 개발 안내](../../development.ko.md)에 따라 Host 상태는 공개 서비스와 Remote를 통해 접근하고 UI 문구는 locale 소유다. 작업 디렉터리의 디자인 목업은 본 브랜치에 없으며 의존하지 않는다.
+[Studio 개발 안내](../../development.ko.md)에 따라 Host 상태는 공개 서비스와 Remote를 통해 접근하고 UI 문구는 locale 소유다. 디자인 목업과 공존하며 실제 초안 편집기는 기존 features Slot을 통해 ‘역할·실험 기능’에서 제공한다. 목업은 실행 기능으로 대체하지 않는다.
 
 ## 확정된 조건
 
@@ -35,7 +35,7 @@ description: "Studio 이슈 15의 지침 컴포넌트 초안 편집·저장 구�
 
 프로필별 여러 워크플로우 초안을 안정적인 ID로 보관하고 최소 목록·생성·선택을 제공한다. 역할은 초안마다 메인 하나로 제한한다. 초안 삭제·복제·이름 있는 설정 템플릿은 후속으로 미룬다. 선택 전환 시 미저장 편집을 조용히 잃지 않도록 확인하며, 생성 실패나 응답 유실을 성공으로 표시하지 않는다.
 
-## 구현 단계 초안
+## 완료한 구현 단계
 
 | ID | 결과 | 선행 | 수용 및 검증 |
 |---|---|---|---|
@@ -55,3 +55,5 @@ S3는 저장 충돌·유효하지 않은 요청·서비스 종료와 저장 결�
 ## 검증 기록
 
 격리 worktree에서 `pnpm install --frozen-lockfile`과 `pnpm --dir studio run prepare:types`가 종료 코드 0으로 완료되었다. `node --import tsx --test studio/test/workflow-registry.test.mjs`의 두 테스트가 통과했다. 등록 중복·잘못된 정의·분리된 조회 결과·해제 후 재등록의 소유권을 확인했다. S1에서 Studio build(Host·Client 타입 검사 포함) 및 등록·실제 Loader/Gateway·UI 집중 테스트 4개가 통과했다. Loader 테스트는 역할·모델·프리셋 서비스 없이 등록 조회와 해제 후 unavailable을 확인한다. UI 테스트는 하나의 메인 역할과 등록된 지침 편집, locale 변경 시 입력 보존, 등록 부재 안내를 확인한다. S2·S3에서는 실제 domain의 프로필 격리·재열기·리비전 충돌, 저장 장애 이후 대기 쓰기 차단과 재시작 복구, 해제 시 쓰기 drain, 미해석 JSON 보존을 검증했다(저장소 테스트 5개). UI의 생성·저장·선택·폐기 확인, 충돌 시 편집 유지와 명시적 재조회, 생성 응답 유실 이후 동일 ID 확인, 출력 스냅샷을 검증했다(UI 테스트 4개). 최종 검토에서 접수된 쓰기 이후의 재조회와 선택 입력 필드 검증을 보완했다. 결과 불명의 저장은 부재·이전 revision만으로 성공이나 미저장을 확정하지 않는다. 보완 후 집중 테스트 14개가 통과했다. Studio build·타입 검사 및 번들 pack이 성공했다. Chrome 격리 scaffold 브라우저 테스트는 두 초안의 생성·지침 저장·페이지 새로고침·각 초안 재선택과 지침 복원을 통과했다. 저장된 텍스트가 접근성 이름에 섞이지 않도록 선택기와 지침 입력에 명시적 locale 이름을 부여했다. 설치된 사용자 프로필은 변경하지 않았으며 설치된 제품 GUI 검증과 구버전 Desktop 호환 빌드는 수행하지 않았다. 기준 브랜치에 추가된 디자인 커밋을 보존하는 로컬 merge 방식은 사용자가 별도로 승인했다.
+
+구현 커밋은 `b7e123dab9`, 로컬 통합은 `4a6f99243f`, 통합 보정은 `3f5e44be47`이다. 디자인 커밋 `858ee26308`과 `88d88d8f50`을 모두 보존했다. 통합 후 frozen-lockfile 설치와 Studio build·타입 검사가 통과했다. Studio Node 회귀 62개 중 공용 Button 출력 변경에 따른 스냅샷 1개만 실패했으며, 실제 공용 출력으로 갱신한 뒤 해당 UI 테스트 5개가 통과했다. 통합된 셸의 ‘역할·실험 기능’ 메뉴를 통한 Chrome 저장·재열기 수용 검증도 통과했다. 격리 worktree의 문서 검사 43개가 통과했다. 푸시와 설치된 사용자 프로필 배포는 수행하지 않았다.
