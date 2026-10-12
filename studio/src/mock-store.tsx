@@ -1,6 +1,6 @@
 /** Page-local state shared by the Studio design mock pages; nothing is persisted or sent to the Host. */
 import React from 'react';
-import { Toast } from '@deepseek-ai/dsh-client-ui-primitives';
+import { Toast } from './ui-host.tsx';
 import type { StudioSection } from './settings-layout.tsx';
 import { initialData, type MockData } from './mock-data.ts';
 import { mockCopy, type MockCopy } from './mock-locales.ts';

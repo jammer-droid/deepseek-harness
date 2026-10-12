@@ -69,7 +69,7 @@ export function PresetEditor({ locale, api }: { locale: string; api: PresetApi }
           <summary>{plugin.name}{removed(plugin.path) ? ` — ${t.removed}` : ''}</summary>
           <Button onClick={() => { setRemove(current => removed(plugin.path) ? current.filter(path => !path.every((part, i) => plugin.path[i] === part)) : [...current, plugin.path]); setConfirmed(false); setSaved(false); }}>{removed(plugin.path) ? t.undo : t.remove}</Button>
           <label><input type="checkbox" disabled={plugin.disabled === null} checked={plugin.disabled === false} onChange={event => update(next => { next.plugins[index]!.disabled = !event.target.checked; })} />{plugin.disabled === null ? t.conditional : t.enabled}</label>
-          {plugin.fields.map((field, fieldIndex) => <label key={field.path.join('.')} style={{ display: 'block' }}>
+          {plugin.fields.map((field, fieldIndex) => <label key={field.path.join('.')} className="studio-inline-label">
             {field.path.join('.') || 'config'}
             {typeof field.value === 'boolean' ? <input type="checkbox" checked={field.value} onChange={event => update(next => { next.plugins[index]!.fields[fieldIndex]!.value = event.target.checked; })} />
               : typeof field.value === 'number' ? <input type="number" step="any" value={field.value} onChange={event => { const value = event.target.valueAsNumber; if (Number.isFinite(value)) update(next => { next.plugins[index]!.fields[fieldIndex]!.value = value; }); }} />

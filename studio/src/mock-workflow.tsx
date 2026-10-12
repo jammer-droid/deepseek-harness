@@ -1,18 +1,22 @@
 /** Workflow editor mock: an overview plus one tab per role; values stay in the page. */
 import React from 'react';
-import { Checkbox, Modal, StateDot, Tag, type StateDotState } from '@deepseek-ai/dsh-client-ui-primitives';
-import { Button } from './ui.tsx';
+import { Checkbox, DialogBody, DialogFooter, Modal, StateDot, SUPPORT_DOT, Tag, type StateDotState } from './ui-host.tsx';
+import { Button, Notice, Note, PageHead, PickOption, SectionHead, TabBar, TabPanel, Tile, type TabItem } from './ui.tsx';
 import { COMPONENTS, KINDS, SYSTEMS, agentName, defaultValue, type Agent, type ComponentKind, type SystemId, type TemplateKind } from './mock-data.ts';
-import { AgentComponents, SupportTag } from './mock-parts.tsx';
-import { mockId, useMock } from './mock-store.tsx';
+import { AgentComponents, SupportBadge } from './mock-parts.tsx';
+import { mockId, useMock, type WorkflowTab } from './mock-store.tsx';
 
 type Outcome = 'success' | 'activation' | 'unknown' | 'conflict';
-const STATE_DOT: Record<'supported' | 'conditional' | 'unsupported' | 'missing', StateDotState> = { supported: 'done', conditional: 'warning', unsupported: 'idle', missing: 'error' };
 
 /** @param agent Agent definition. @returns Count of components that differ from the default DSH agent. */
 function changeCount(agent: Agent): number {
   const c = agent.components;
   return [c.instructions?.blocks.length, c.tools, c.delegate && Object.values(c.delegate.targets).some(link => link.allowed), c.model?.effort].filter(Boolean).length;
+}
+
+/** @param agent Source agent. @param id New entity id. @returns Deep copy whose delegation targets are cleared, since targets name roles of one workflow. */
+function copyAgent(agent: Agent, id: string): Agent {
+  return { ...structuredClone(agent), id, components: { ...structuredClone(agent.components), ...(agent.components.delegate ? { delegate: { targets: {} } } : {}) } };
 }
 
 /** @returns The workflow editor mock page. */
@@ -24,65 +28,41 @@ export function MockWorkflow() {
   const [notice, setNotice] = React.useState<Outcome>();
   const [applying, setApplying] = React.useState(false);
   const [addingRole, setAddingRole] = React.useState(false);
-  const sentinel = React.useRef<HTMLDivElement>(null);
   const role = tab.kind === 'role' ? data.roles.find(item => item.id === tab.id) : undefined;
-
-  // Switching tabs keeps the tab bar in view instead of jumping to the page top.
-  const select = (next: typeof tab) => {
-    setTab(next);
-    const marker = sentinel.current;
-    let scroller = marker?.closest<HTMLElement>('[data-studio-scroller]');
-    // Narrow layouts scroll the whole Studio surface instead of the content column.
-    if (scroller && getComputedStyle(scroller).overflowY === 'visible') scroller = scroller.closest<HTMLElement>('.studio-page');
-    if (!marker || !scroller) return;
-    const offset = marker.getBoundingClientRect().top - scroller.getBoundingClientRect().top;
-    if (offset < 0) scroller.scrollTop += offset;
-  };
   React.useEffect(() => { if (tab.kind === 'role' && !role) setTab({ kind: 'overview' }); }, [tab, role, setTab]);
 
   const statusDot: StateDotState = status === 'active' ? 'done' : status === 'activation' ? 'error' : 'warning';
   const statusText = status === 'active' ? w.active : status === 'activation' ? w.activationFailed : w.unknown;
   const usedSystems = [...new Set(data.roles.flatMap(item => KINDS.filter(kind => item.components[kind]).flatMap(kind => COMPONENTS[kind].systems)))];
+  const tabs: TabItem<string>[] = [
+    { value: 'overview', label: w.overview },
+    ...data.roles.map(item => ({ value: `role:${item.id}`, label: <>{agentName(item, t)}{item.id === data.mainId && <Tag tone="outline">{w.mainTag}</Tag>}</> })),
+  ];
 
   return <div className="studio-page-stack">
-    <p className="studio-mock-notice" role="note">{t.mockNotice}</p>
-    <header className="studio-page-head studio-page-head-actions">
-      <div>
-        <h2>{w.name}</h2>
-        <p className="studio-muted">{w.description}</p>
-        <p className="studio-status-line">
-          <span>{w.draft} r{revision.draft}</span><span aria-hidden="true">·</span>
-          <span>{w.applied} r{revision.applied}</span><span aria-hidden="true">·</span>
-          <span className="studio-inline-state"><StateDot state={statusDot} />{statusText}</span>
-          <span className="studio-muted">— {w.keepsApplied}</span>
-        </p>
-      </div>
-      <div className="studio-inline-actions">
-        <Button onClick={() => { setRevision(previous => ({ ...previous, draft: previous.draft + 1 })); toast(t.toasts.saved); }}>{w.saveDraft}</Button>
-        <Button primary disabled={status === 'unknown'} onClick={() => setApplying(true)}>{w.applyEllipsis}</Button>
-      </div>
-    </header>
-    {notice === 'activation' && <p role="alert">{w.activationNotice}</p>}
-    {notice === 'unknown' && <div role="alert" className="studio-notice-row"><span>{w.unknownNotice}</span>
-      <Button small onClick={() => { setRevision(previous => ({ ...previous, applied: previous.draft })); setStatus('active'); setNotice(undefined); }}>{w.requery}</Button></div>}
-    {notice === 'conflict' && <div role="alert" className="studio-notice-row"><span>{w.conflictNotice}</span>
-      <Button small onClick={() => setNotice(undefined)}>{w.loadLatest}</Button></div>}
+    <Note>{t.mockNotice}</Note>
+    <PageHead title={w.name} description={w.description} actions={<>
+      <Button onClick={() => { setRevision(previous => ({ ...previous, draft: previous.draft + 1 })); toast(t.toasts.saved); }}>{w.saveDraft}</Button>
+      <Button primary disabled={status === 'unknown'} onClick={() => setApplying(true)}>{w.applyEllipsis}</Button>
+    </>}>
+      <p className="studio-status-line">
+        <span>{w.draft} r{revision.draft}</span><span aria-hidden="true">·</span>
+        <span>{w.applied} r{revision.applied}</span><span aria-hidden="true">·</span>
+        <span className="studio-inline-state"><StateDot state={statusDot} />{statusText}</span>
+        <span className="studio-muted">— {w.keepsApplied}</span>
+      </p>
+    </PageHead>
+    {notice === 'activation' && <Notice>{w.activationNotice}</Notice>}
+    {notice === 'unknown' && <Notice action={<Button small onClick={() => { setRevision(previous => ({ ...previous, applied: previous.draft })); setStatus('active'); setNotice(undefined); }}>{w.requery}</Button>}>{w.unknownNotice}</Notice>}
+    {notice === 'conflict' && <Notice action={<Button small onClick={() => setNotice(undefined)}>{w.loadLatest}</Button>}>{w.conflictNotice}</Notice>}
 
-    <div ref={sentinel} />
-    <div className="studio-tabs" role="tablist" aria-label={w.tabs}>
-      <button type="button" role="tab" className="studio-tab" aria-selected={tab.kind === 'overview'} onClick={() => select({ kind: 'overview' })}>{w.overview}</button>
-      {data.roles.map(item => <button key={item.id} type="button" role="tab" className="studio-tab" aria-selected={tab.kind === 'role' && tab.id === item.id}
-        onClick={() => select({ kind: 'role', id: item.id })}>
-        {agentName(item, t)}{item.id === data.mainId && <Tag tone="outline">{w.mainTag}</Tag>}
-      </button>)}
-      <button type="button" className="studio-tab studio-tab-add" onClick={() => setAddingRole(true)}>+ {w.addRole}</button>
-    </div>
-
-    {/* A minimum height lets the sticky tab bar stay in place when a shorter tab replaces a longer one. */}
-    <div role="tabpanel" className="studio-tab-panel">
-      {tab.kind === 'overview' && <Overview usedSystems={usedSystems} open={next => select(next)} />}
+    <TabBar label={w.tabs} items={tabs} value={tab.kind === 'overview' ? 'overview' : `role:${tab.id}`}
+      onChange={value => setTab(value === 'overview' ? { kind: 'overview' } : { kind: 'role', id: value.slice('role:'.length) })}
+      trailing={{ label: `+ ${w.addRole}`, onClick: () => setAddingRole(true) }} />
+    <TabPanel>
+      {tab.kind === 'overview' && <Overview usedSystems={usedSystems} open={setTab} />}
       {role && <RolePanel key={role.id} role={role} initialOpen={tab.kind === 'role' ? tab.open : undefined} />}
-    </div>
+    </TabPanel>
 
     <ApplyDialog open={applying} onClose={() => setApplying(false)} onConfirm={outcome => {
       setApplying(false);
@@ -94,42 +74,36 @@ export function MockWorkflow() {
       if (outcome === 'success') toast(t.toasts.applied);
     }} hasUnknown={data.roles.some(item => item.unknown.length > 0)} />
     <Modal open={addingRole} onClose={() => setAddingRole(false)} title={w.addRoleTitle} description={w.addRoleDescription} closeLabel={t.common.close}>
-      <div className="studio-ui">
+      <DialogBody>
         <ul className="studio-pick-list">
           {[...data.agents, undefined].map(source => <li key={source?.id ?? 'empty'}>
-            <button type="button" className="studio-pick" onClick={() => {
-              const id = mockId('role');
-              update(next => {
-                next.roles.push(source
-                  ? { ...structuredClone(source), id, components: { ...structuredClone(source.components), ...(source.components.delegate ? { delegate: { targets: {} } } : {}) } }
-                  : { id, label: { custom: w.emptyRoleName }, unknown: [], components: { model: defaultValue('model') } });
-              });
-              setAddingRole(false);
-              setTab({ kind: 'role', id });
-            }}>
-              <strong>{source ? agentName(source, t) : w.emptyRole}</strong>
-              <span className="studio-muted">{source ? w.roleCard(KINDS.filter(kind => source.components[kind]).length, source.components.tools?.tools.length ?? 0) : t.kinds.model.title}</span>
-            </button>
+            <PickOption title={<strong>{source ? agentName(source, t) : w.emptyRole}</strong>}
+              description={source ? w.roleCard(KINDS.filter(kind => source.components[kind]).length, source.components.tools?.tools.length ?? 0) : t.kinds.model.title}
+              onClick={() => {
+                const id = mockId('role');
+                update(next => { next.roles.push(source ? copyAgent(source, id) : { id, label: { custom: w.emptyRoleName }, unknown: [], components: { model: defaultValue('model') } }); });
+                setAddingRole(false);
+                setTab({ kind: 'role', id });
+              }} />
           </li>)}
         </ul>
         <p className="studio-muted studio-hint">{w.copyNote}</p>
-      </div>
+      </DialogBody>
     </Modal>
   </div>;
 }
 
-function Overview({ usedSystems, open }: { usedSystems: SystemId[]; open: (tab: { kind: 'role'; id: string; open?: string }) => void }) {
+function Overview({ usedSystems, open }: { usedSystems: SystemId[]; open: (tab: WorkflowTab) => void }) {
   const { t, data, go } = useMock();
   const w = t.workflow;
   return <div className="studio-page-stack">
     <section className="studio-block-section">
       <h3>{w.rolesHeading}</h3>
       <div className="studio-tile-grid">
-        {data.roles.map(role => <button key={role.id} type="button" className="studio-tile" onClick={() => open({ kind: 'role', id: role.id })}>
-          <span className="studio-tile-title">{agentName(role, t)}{role.id === data.mainId && <Tag tone="outline">{w.mainTag}</Tag>}</span>
+        {data.roles.map(role => <Tile key={role.id} title={<>{agentName(role, t)}{role.id === data.mainId && <Tag tone="outline">{w.mainTag}</Tag>}</>} onClick={() => open({ kind: 'role', id: role.id })}>
           <span className="studio-muted">{role.components.model?.model ?? t.common.none}</span>
           <span className="studio-muted">{w.roleCard(KINDS.filter(kind => role.components[kind]).length, role.components.tools?.tools.length ?? 0)}</span>
-        </button>)}
+        </Tile>)}
       </div>
     </section>
     <section className="studio-block-section">
@@ -155,14 +129,14 @@ function Overview({ usedSystems, open }: { usedSystems: SystemId[]; open: (tab: 
       </div>
     </section>
     <section className="studio-block-section">
-      <div className="studio-section-head"><h3>{w.systemsHeading}</h3><Button small onClick={() => go('systems')}>{w.openSystems}</Button></div>
+      <SectionHead title={w.systemsHeading} actions={<Button small onClick={() => go('systems')}>{w.openSystems}</Button>} />
       <p className="studio-muted">{w.systemsIntro}</p>
       <ul className="studio-plain-list">
         {usedSystems.map(id => <li key={id} className="studio-list-row">
-          <StateDot state={STATE_DOT[SYSTEMS[id].state]} />
+          <StateDot state={SUPPORT_DOT[SYSTEMS[id].state]} />
           <span>{t.systems.names[id]}</span>
           <span className="studio-muted studio-grow">{t.systems.states[SYSTEMS[id].state]}</span>
-          <SupportTag support={SYSTEMS[id].state} t={t} />
+          <SupportBadge support={SYSTEMS[id].state} t={t} />
         </li>)}
       </ul>
     </section>
@@ -177,20 +151,14 @@ function RolePanel({ role, initialOpen }: { role: Agent; initialOpen: string | u
   const edit = (change: (agent: Agent) => void) => update(next => { const target = next.roles.find(item => item.id === role.id); if (target) change(target); });
   const isMain = role.id === data.mainId;
   return <div className="studio-page-stack">
-    <div className="studio-section-head">
-      <div>
-        <h3 className="studio-panel-title">{agentName(role, t)}{isMain && <Tag tone="outline">{w.mainTag}</Tag>}</h3>
-        <p className="studio-muted">{w.changes(changeCount(role))}</p>
-      </div>
-      <div className="studio-inline-actions">
-        <Button small onClick={() => { update(next => { next.agents.push({ ...structuredClone(role), id: mockId('agent'), components: { ...structuredClone(role.components), ...(role.components.delegate ? { delegate: { targets: {} } } : {}) } }); }); toast(t.toasts.agentSaved); }}>{w.saveToLibrary}</Button>
-        {!isMain && <Button small onClick={() => update(next => { next.mainId = role.id; })}>{w.makeMain}</Button>}
-        {!isMain && <Button small onClick={() => update(next => {
-          next.roles = next.roles.filter(item => item.id !== role.id);
-          for (const item of next.roles) delete item.components.delegate?.targets[role.id];
-        })}>{w.removeRole}</Button>}
-      </div>
-    </div>
+    <SectionHead title={<>{agentName(role, t)}{isMain && <Tag tone="outline">{w.mainTag}</Tag>}</>} description={w.changes(changeCount(role))} actions={<>
+      <Button small onClick={() => { update(next => { next.agents.push(copyAgent(role, mockId('agent'))); }); toast(t.toasts.agentSaved); }}>{w.saveToLibrary}</Button>
+      {!isMain && <Button small onClick={() => update(next => { next.mainId = role.id; })}>{w.makeMain}</Button>}
+      {!isMain && <Button small onClick={() => update(next => {
+        next.roles = next.roles.filter(item => item.id !== role.id);
+        for (const item of next.roles) delete item.components.delegate?.targets[role.id];
+      })}>{w.removeRole}</Button>}
+    </>} />
     <EditableComponents agent={role} edit={edit} roles={data.roles} open={open} setOpen={(key, value) => setOpenState(previous => ({ ...previous, [key]: value }))} />
   </div>;
 }
@@ -217,7 +185,7 @@ export function EditableComponents({ agent, edit, roles, open, setOpen }: {
     <AgentComponents agent={agent} edit={edit} roles={roles} open={open} setOpen={setOpen} t={t}
       actions={{ saveTemplate, remove: kind => edit(next => { delete next.components[kind]; }) }} />
     <div><Button onClick={() => setPicking(true)}>+ {t.workflow.addComponent}</Button></div>
-    <ComponentPicker open={picking} role={agent} onClose={() => setPicking(false)} onAdd={(kind, templateId) => {
+    <ComponentPicker open={picking} agent={agent} onClose={() => setPicking(false)} onAdd={(kind, templateId) => {
       edit(next => {
         const template = data.templates.find(item => item.id === templateId && item.kind === kind);
         Object.assign(next.components, { [kind]: template ? structuredClone(template.value) : defaultValue(kind) });
@@ -228,27 +196,25 @@ export function EditableComponents({ agent, edit, roles, open, setOpen }: {
   </>;
 }
 
-function ComponentPicker({ open, role, onClose, onAdd }: { open: boolean; role: Agent; onClose: () => void; onAdd: (kind: ComponentKind, templateId?: string) => void }) {
+function ComponentPicker({ open, agent, onClose, onAdd }: { open: boolean; agent: Agent; onClose: () => void; onAdd: (kind: ComponentKind, templateId?: string) => void }) {
   const { t, data } = useMock();
   const w = t.workflow;
-  const missing = KINDS.filter(kind => !role.components[kind]);
+  const missing = KINDS.filter(kind => !agent.components[kind]);
   const [kind, setKind] = React.useState<ComponentKind>();
   const [source, setSource] = React.useState('');
   const selected = kind && missing.includes(kind) ? kind : missing[0];
   const templates = data.templates.filter(item => item.kind === selected);
   return <Modal open={open} onClose={onClose} title={w.pickerTitle} description={w.pickerDescription} closeLabel={t.common.close}
-    footer={<div className="studio-ui studio-modal-footer">
+    footer={<DialogFooter>
       <Button onClick={onClose}>{t.common.cancel}</Button>
       <Button primary disabled={!selected} onClick={() => selected && onAdd(selected, source || undefined)}>{t.common.add}</Button>
-    </div>}>
-    <div className="studio-ui">
+    </DialogFooter>}>
+    <DialogBody>
       {missing.length === 0 ? <p className="studio-muted">{w.allAdded}</p> : <>
         <ul className="studio-pick-list" role="radiogroup" aria-label={w.pickerTitle}>
           {missing.map(item => <li key={item}>
-            <button type="button" role="radio" aria-checked={item === selected} className="studio-pick" onClick={() => { setKind(item); setSource(''); }}>
-              <span className="studio-pick-title"><strong>{t.kinds[item].title}</strong><SupportTag support={COMPONENTS[item].support} t={t} /></span>
-              <span className="studio-muted">{t.kinds[item].description}</span>
-            </button>
+            <PickOption checked={item === selected} title={<><strong>{t.kinds[item].title}</strong><SupportBadge support={COMPONENTS[item].support} t={t} /></>}
+              description={t.kinds[item].description} onClick={() => { setKind(item); setSource(''); }} />
           </li>)}
         </ul>
         {templates.length > 0 && <label>{w.source}
@@ -258,7 +224,7 @@ function ComponentPicker({ open, role, onClose, onAdd }: { open: boolean; role: 
           </select>
         </label>}
       </>}
-    </div>
+    </DialogBody>
   </Modal>;
 }
 
@@ -269,12 +235,11 @@ function ApplyDialog({ open, onClose, onConfirm, hasUnknown }: { open: boolean; 
   const [outcome, setOutcome] = React.useState<Outcome>('success');
   React.useEffect(() => { if (open) setAcknowledged(false); }, [open]);
   return <Modal open={open} onClose={onClose} title={w.applyTitle} description={w.applyDescription} closeLabel={t.common.close}
-    footer={<div className="studio-ui studio-modal-footer">
+    footer={<DialogFooter>
       <Button onClick={onClose}>{t.common.cancel}</Button>
       <Button primary disabled={!acknowledged} onClick={() => onConfirm(outcome)}>{w.confirmApply}</Button>
-    </div>}>
-    {/* Modal portals to body, so its content re-enters the Studio style scope. */}
-    <div className="studio-ui">
+    </DialogFooter>}>
+    <DialogBody>
       <ul className="studio-checklist">
         {(['references', 'models', 'systems', 'placement', 'links', 'enforcement'] as const).map(check => <li key={check}>
           <StateDot state={check === 'systems' ? 'warning' : 'done'} />
@@ -289,6 +254,6 @@ function ApplyDialog({ open, onClose, onConfirm, hasUnknown }: { open: boolean; 
           {(['success', 'activation', 'unknown', 'conflict'] as const).map(value => <option key={value} value={value}>{w.outcomes[value]}</option>)}
         </select>
       </label>
-    </div>
+    </DialogBody>
   </Modal>;
 }

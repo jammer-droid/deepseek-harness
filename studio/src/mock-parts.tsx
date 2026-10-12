@@ -1,40 +1,16 @@
 /** Component cards and value editors shared by the workflow, agent, and template mock pages. */
 import React from 'react';
-import { Checkbox, SegmentedControl, Tag, type TagTone } from '@deepseek-ai/dsh-client-ui-primitives';
+import { Checkbox, ComponentCard, SegmentedControl, SupportTag, type SupportState } from './ui-host.tsx';
 import { Button } from './ui.tsx';
 import {
   ALL_TOOLS, CATALOG, COMPONENTS, KINDS, TOOL_GROUPS, agentName,
-  type Agent, type ComponentKind, type ComponentValues, type ContextMode, type Effort, type Support, type TemplateKind,
+  type Agent, type ComponentKind, type ComponentValues, type ContextMode, type Effort, type TemplateKind,
 } from './mock-data.ts';
 import type { MockCopy } from './mock-locales.ts';
 
-const SUPPORT_TONE: Record<Exclude<Support, 'supported'>, TagTone> = { conditional: 'info', unsupported: 'neutral', missing: 'warning' };
-
-/** @param props Support state and copy. @returns A tag for non-supported states, otherwise nothing. */
-export function SupportTag({ support, t }: { support: Support; t: MockCopy }) {
-  return support === 'supported' ? null : <Tag tone={SUPPORT_TONE[support]}>{t.support[support]}</Tag>;
-}
-
-/** @param props Card heading, state, model-visible effect, actions, and body. @returns Collapsible component card. */
-export function ComponentCard({ title, summary, support, reason, effect, open, onToggle, actions, t, children }: React.PropsWithChildren<{
-  title: string; summary: string; support: Support; reason?: string | undefined; effect?: string; open: boolean; onToggle: () => void;
-  actions?: React.ReactNode; t: MockCopy;
-}>) {
-  const bodyId = React.useId();
-  return <section className="studio-component">
-    <button type="button" className="studio-component-head" aria-expanded={open} aria-controls={bodyId} onClick={onToggle}>
-      <span className="studio-component-title">{title}</span>
-      <span className="studio-component-summary">{summary}</span>
-      <SupportTag support={support} t={t} />
-      <svg className="studio-chevron" data-open={open} width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" /></svg>
-    </button>
-    {open && <div id={bodyId} className="studio-component-body">
-      {reason && <p className="studio-reason">{reason}</p>}
-      {children}
-      {effect && <div className="studio-effect"><span>{t.modelVisible}</span><p>{effect}</p></div>}
-      {actions && <div className="studio-card-actions">{actions}</div>}
-    </div>}
-  </section>;
+/** @param props Support state and copy. @returns The shared support tag with the mock's localized label. */
+export function SupportBadge({ support, t }: { support: SupportState; t: MockCopy }) {
+  return <SupportTag support={support} label={t.support[support]} />;
 }
 
 /** @param props Model value, change callback, copy, and an id seed. @returns Provider, model, and effort controls. */
@@ -171,7 +147,7 @@ export function AgentComponents({ agent, edit, roles, open, setOpen, actions, t 
       {meta.template && actions.saveTemplate && <Button small onClick={() => actions.saveTemplate?.(kind as TemplateKind)}>{t.common.saveAsTemplate}</Button>}
       {!meta.required && actions.remove && <Button small onClick={() => actions.remove?.(kind)}>{t.common.remove}</Button>}
     </>;
-    return <ComponentCard key={kind} t={t} title={copy.title} summary={componentSummary(kind, agent, roles, t)} support={meta.support}
+    return <ComponentCard key={kind} supportLabel={t.support[meta.support]} effectLabel={t.modelVisible} title={copy.title} summary={componentSummary(kind, agent, roles, t)} support={meta.support}
       reason={meta.support === 'supported' ? undefined : copy.limit} effect={copy.effect} open={!!open[kind]} onToggle={() => setOpen(kind, !open[kind])} actions={cardActions}>
       {body}
     </ComponentCard>;
@@ -193,7 +169,7 @@ export function AgentComponents({ agent, edit, roles, open, setOpen, actions, t 
         default: return assertNever(kind);
       }
     })}
-    {agent.unknown.map(name => <ComponentCard key={name} t={t} title={t.editors.unknownTitle} summary={`${name} · ${t.editors.unknownSummary}`} support="missing"
+    {agent.unknown.map(name => <ComponentCard key={name} supportLabel={t.support.missing} title={t.editors.unknownTitle} summary={`${name} · ${t.editors.unknownSummary}`} support="missing"
       open={!!open[name]} onToggle={() => setOpen(name, !open[name])}>
       <p className="studio-reason">{t.editors.unknownBody}</p>
     </ComponentCard>)}

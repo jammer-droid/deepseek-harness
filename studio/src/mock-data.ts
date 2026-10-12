@@ -1,10 +1,11 @@
 /** Static catalog, system registry, and initial drafts for the Studio design mock. Nothing here reaches the Host. */
 import type { MockCopy } from './mock-locales.ts';
+import type { SupportState } from './ui-host.tsx';
 
 /** Component kinds the first implementation plans to register. */
 export type ComponentKind = 'model' | 'instructions' | 'tools' | 'delegate' | 'access' | 'context';
 /** Support state shared by component and system displays. */
-export type Support = 'supported' | 'conditional' | 'unsupported' | 'missing';
+export type Support = SupportState;
 /** Kinds whose values can be saved as named templates. */
 export type TemplateKind = 'model' | 'instructions' | 'tools';
 /** Reasoning effort; the empty string keeps the provider default. */

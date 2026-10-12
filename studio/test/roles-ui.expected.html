@@ -61,7 +61,7 @@
 .studio-ui section &gt; .studio-page-head { margin-bottom: var(--studio-gap); }
 .studio-ui .studio-page-head-actions { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: var(--studio-gap); }
 .studio-ui .studio-status-line { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 8px 0 0; }
-.studio-ui .studio-mock-notice { margin: 0; padding: 6px 12px; border-radius: var(--studio-control-radius); background: var(--studio-hover); color: var(--studio-muted); font-size: 12px; }
+.studio-ui .studio-note { margin: 0; padding: 6px 12px; border-radius: var(--studio-control-radius); background: var(--studio-hover); color: var(--studio-muted); font-size: 12px; }
 .studio-ui .studio-section-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
 .studio-ui .studio-section-head :is(h3, h4, p) { margin: 0; }
 .studio-ui .studio-section-head p { margin-top: 2px; }
@@ -100,6 +100,8 @@
 .studio-ui .studio-role-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: var(--studio-gap); }
 .studio-ui label:not(:has(&gt; input[type=checkbox])) { display: grid; gap: 6px; margin: 12px 0; }
 .studio-ui label:not([class]):has(&gt; input[type=checkbox]) { display: flex; align-items: center; gap: 8px; margin: 8px 0; }
+/* A preset field label wraps its control inline; the fieldset ancestor outranks the grid label rule above. */
+.studio-ui fieldset label.studio-inline-label { display: block; }
 .studio-ui input:not([type=checkbox]), .studio-ui textarea, .studio-ui select { width: 100%; min-width: 0; padding: 6px 10px; border: .5px solid var(--studio-control-line); border-radius: var(--studio-control-radius); background: var(--studio-bg); color: var(--studio-ink); font: inherit; }
 .studio-ui input:not([type=checkbox]), .studio-ui select { min-height: 32px; }
 .studio-ui textarea { min-height: 144px; resize: vertical; }
