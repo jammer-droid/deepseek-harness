@@ -16,6 +16,7 @@ description: "Studio 컴포넌트 기반 워크플로우의 기획·명세·조�
 3. [구성·프리셋 조사](workflow-composition-research.md): 현재 편집기·역할 정책·프리셋 생성 및 등록 모델의 차이.
 4. [런타임 조사](workflow-runtime-research.md): 모델, 컨텍스트, 위임, 권한, 재개 기능의 소스 근거.
 5. [구조 검토와 작업 기준](workflow-architecture-review.md): 등록·구성·검증·DSH 연결의 책임, 실행 구성 고정, 8개 수직 작업의 순서와 검증 기준.
+6. [DSH 재사용 구현 조사](dsh-reuse-investigation.md): 명세 전체를 기존 서비스·플러그인 및 Studio 연결 작업에 매핑한 구현 목록, 공개 API 제약과 수용 기준별 검증 항목.
 
 화면 구현 규칙은 [디자인 시스템](design-system.md)에 있다.
 
