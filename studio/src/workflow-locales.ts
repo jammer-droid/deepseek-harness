@@ -33,5 +33,22 @@ const ko: typeof en = {
   loadFailed: '워크플로 컴포넌트를 불러오지 못했습니다. 다시 읽어 주세요.', retry: '다시 읽기',
   unavailable: '지침 컴포넌트를 사용할 수 없습니다. 플러그인을 켠 뒤 다시 읽어 주세요.',
 };
+const zh: typeof en = {
+  select: '选择草稿', create: '新建草稿', draftName: '草稿名称', save: '保存草稿', saved: '已保存', saving: '正在保存',
+  discard: '放弃未保存的更改？', confirm: '放弃并继续', cancel: '继续编辑',
+  saveFailed: '未能确认保存结果。编辑内容已保留。请重新读取；在确认更新的已保存版本之前，保存和切换将保持禁用。',
+  restart: '存储无法确认保存状态，写入已停止。请重启工作流插件后重新读取。',
+  invalid: '草稿包含无效的组件设置。请修改后再保存。',
+  closed: '工作流服务已停止。请重新启用后读取已保存的草稿。',
+  readFailed: '无法读取已保存的草稿。编辑内容已保留，请重新读取。',
+  conflict: '此草稿已在其他位置更改。请先读取已保存的版本。',
+  reloadConfirm: '用已保存的版本替换编辑内容？', empty: '尚无已保存的草稿。',
+  add: '添加指令', unknown: '不可用组件的配置会被保留。',
+  title: '工作流草稿', mainRole: '主角色', name: '角色名称', instructions: '指令',
+  draftOnly: '编辑草稿不会更改正在运行的智能体或预设。',
+  unsaved: '未保存的草稿', loading: '正在加载工作流组件',
+  loadFailed: '无法加载工作流组件，请重新读取。', retry: '重新读取',
+  unavailable: '指令组件不可用。请启用其插件后重新读取。',
+};
 /** @param locale Active application locale. @returns Localized editor copy. */
-export function workflowText(locale: string): typeof en { return locale.startsWith('ko') ? ko : en; }
+export function workflowText(locale: string): typeof en { return locale.startsWith('ko') ? ko : locale.startsWith('zh') ? zh : en; }

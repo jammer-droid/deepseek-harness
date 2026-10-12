@@ -17,6 +17,7 @@ it('saves two independent drafts and restores their contents after page reload',
       const page = await browser.newPage({ locale: 'en-US', viewport: { width: 1440, height: 1200 } });
       await page.goto(scaffold.authenticatedUrl);
       await page.getByRole('button', { name: 'DSH Studio', exact: true }).click();
+      await page.getByRole('button', { name: 'Roles and experiments', exact: true }).click();
       const editor = page.getByRole('heading', { name: 'Workflow drafts', exact: true }).locator('..');
       await editor.getByRole('button', { name: 'New draft', exact: true }).waitFor({ timeout: 30_000 });
       for (const name of ['First draft', 'Second draft']) {
@@ -31,6 +32,7 @@ it('saves two independent drafts and restores their contents after page reload',
       await page.reload();
       await page.getByRole('button', { name: 'DSH Studio', exact: true }).waitFor();
       await page.getByRole('button', { name: 'DSH Studio', exact: true }).click();
+      await page.getByRole('button', { name: 'Roles and experiments', exact: true }).click();
       await editor.getByRole('combobox').waitFor();
       for (const name of ['First draft', 'Second draft']) {
         await editor.getByRole('combobox').selectOption({ label: name });
