@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "typecheck": "node generate-roles.mjs && node generate-roles.mjs general && tsc -p tsconfig.host.json && tsc -p tsconfig.client.json",
+    "typecheck": "node generate-roles.mjs && node generate-roles.mjs general && node generate-roles.mjs workflows && tsc -p packages/workflows/tsconfig.host.json && tsc -p tsconfig.host.json && tsc -p tsconfig.client.json",
     "build": "npm run typecheck && node build.mjs",
     "build:desktop": "node build-desktop.mjs",
     "test": "npm run build && node --import tsx --test test/*.test.mjs",
@@ -28,6 +28,7 @@
     "@deepseek-ai/dsh-app-boot": "workspace:*",
     "@local/dsh-studio-roles": "workspace:*",
     "@local/dsh-studio-general": "workspace:*",
+    "@local/dsh-studio-workflows": "workspace:*",
     "zod": "4.4.3",
     "react": "18.3.1",
     "react-dom": "18.3.1",

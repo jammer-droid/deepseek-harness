@@ -3,6 +3,8 @@
       name: '@local/dsh-studio-shell'
     - id: local-dsh-studio-general
       name: '@local/dsh-studio-general'
+    - id: local-dsh-studio-workflows
+      name: '@local/dsh-studio-workflows'
     - id: local-dsh-studio-roles
       name: '@local/dsh-studio-roles'
     - id: local-dsh-studio-managed-preset
