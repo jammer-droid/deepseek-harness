@@ -14,7 +14,7 @@ import { WorkspaceAnalyzer, FaceModelEmitter } from '@deepseek-ai/dsh-typert-gen
 
 const root = fileURLToPath(new URL('.', import.meta.url));
 const part = process.argv[2] ?? 'roles';
-if (!['roles', 'general'].includes(part)) throw new Error('Unknown Studio package');
+if (!['roles', 'general', 'workflows'].includes(part)) throw new Error('Unknown Studio package');
 const packageRoot = new URL(`./packages/${part}/`, import.meta.url);
 const manifest = JSON.parse(await readFile(new URL('package.json', packageRoot), 'utf8'));
 const outputs = [

@@ -15557,6 +15557,9 @@ importers:
       '@local/dsh-studio-roles':
         specifier: workspace:*
         version: link:packages/roles
+      '@local/dsh-studio-workflows':
+        specifier: workspace:*
+        version: link:packages/workflows
       '@types/node':
         specifier: 22.19.0
         version: 22.19.0
@@ -15617,6 +15620,9 @@ importers:
       '@local/dsh-studio-shell':
         specifier: workspace:*
         version: link:../shell
+      '@local/dsh-studio-workflows':
+        specifier: workspace:*
+        version: link:../workflows
     devDependencies:
       '@deepseek-ai/dsh':
         specifier: workspace:*
@@ -15715,6 +15721,31 @@ importers:
       '@deepseek-ai/dsh':
         specifier: workspace:*
         version: link:../../../apps/cli
+
+  studio/packages/workflows:
+    dependencies:
+      zod:
+        specifier: ^4.4.3
+        version: 4.4.3
+    devDependencies:
+      '@deepseek-ai/cordis':
+        specifier: workspace:~
+        version: link:../../../vendor/cordis
+      '@deepseek-ai/dsh':
+        specifier: workspace:*
+        version: link:../../../apps/cli
+      '@deepseek-ai/dsh-app-boot':
+        specifier: workspace:*
+        version: link:../../../packages/boot/app-boot
+      '@deepseek-ai/dsh-brand':
+        specifier: workspace:*
+        version: link:../../../packages/util/brand
+      '@deepseek-ai/dsh-storage-domain':
+        specifier: workspace:*
+        version: link:../../../packages/storage/storage-domain
+      '@deepseek-ai/dsh-typert-protocol':
+        specifier: workspace:*
+        version: link:../../../packages/typert/protocol
 
   vendor/cordis:
     dependencies:
