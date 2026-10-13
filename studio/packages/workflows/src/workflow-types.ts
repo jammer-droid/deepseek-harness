@@ -50,3 +50,4 @@ export type DraftFailure = 'revision-conflict' | 'invalid-document' | 'closed' |
 
 /** Model catalog projection supplied by the Host adapter. */
 export type { ModelCatalog } from './models.ts';
+export type { ApplyRequest, AppliedWorkflow, ApplicationState, ApplyFailure } from './apply-types.ts';

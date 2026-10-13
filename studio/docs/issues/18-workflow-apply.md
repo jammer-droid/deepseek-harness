@@ -1,7 +1,7 @@
 ---
 kind: reference
 description: "Studio 소유 적용본과 프리셋 등록, 메인 역할 모델·지침 실행의 구현 명세."
-status: blocked
+status: ready
 ---
 
 # #18 Studio 소유 프리셋 적용과 모델·지침 실행
@@ -12,7 +12,7 @@ status: blocked
 - 기준 브랜치: `studio/feat/workflow`. 조사 시작 HEAD: `2f929c3d154bbb5b181c31c3eab39661822283ed`.
 - GitHub 선행 관계: [#17](https://github.com/jammer-droid/deepseek-harness/issues/17)은 closed다. 후속 [#19](https://github.com/jammer-droid/deepseek-harness/issues/19)가 #18을 기다린다. #18 본문 외 별도 댓글은 없으며 공통 구조 계약은 [#15 구조 검토 댓글](https://github.com/jammer-droid/deepseek-harness/issues/15)과 [구조 검토](../workflow-architecture-review.md)를 따른다.
 - 대상: 수정하지 않은 Desktop DSH `0.2.0-rc.2`의 공개 API를 개발 기준으로 삼는다. Web은 위 HEAD의 저장소 버전 `0.2.1-alpha.2`에서 같은 Studio 구현의 호환성을 검증한다. Web 전용 API로 Desktop 제약을 우회하지 않는다.
-- 준비 상태: `blocked`. 사용자 범위·소유권 결정은 확정됐지만 Desktop 공개 API의 생성·갱신·기존 실행 보존 가능성이 아직 입증되지 않았다(B1). 검토에서 확인한 메인 모델 적용 공백(B3)은 사용자 결정 D1-a로 범위를 줄여 해소했다. GitHub의 `ready-for-agent` 라벨은 이 확인을 대신하지 않는다.
+- 준비 상태: `ready`. B1은 공개 Loader 및 전체 앱의 실제 요청 검증으로 해소됐다. S1–S5 구현과 독립 패키지 검증 기록은 아래에 구분한다. 메인 모델 강제 적용은 D1-a에 따라 제외하며 라이브 외부 모델 호출은 미검증이다. GitHub 상태는 변경하지 않는다.
 - 첫 단계: **S1 공개 API·실제 Loader 적합성 확인**만 먼저 진행할 수 있다. S1 실패 시 S2 이후로 진행하지 않는다. 구현·검사 실행은 별도 구현 요청에서 수행한다.
 
 ## 목적과 지원 범위
@@ -110,7 +110,7 @@ D1·D2는 결정됐고 S2–S5에 남은 사용자 결정은 없다. S1에서 B1
 
 ## S1 구현 기록
 
-현재 단계: **S1 부분 완료**. S2–S5는 시작하지 않았다. 공개 등록·갱신의 Loader 적합성은 통과했지만 전체 앱의 새 대화 경로 및 Studio 패키지 설치 검증은 남아 있어 준비 상태는 `blocked`를 유지한다.
+아래는 첫 커밋 시점의 S1 기록이다. 이후 전체 앱 검증 및 S2–S5 작업은 다음 절에 기록한다.
 
 [공개 API 적합성 테스트](../../test/desktop/preset-compat.mjs)는 실제 Loader, preset registry, Agent와 systemPrompt를 사용한다. 테스트에서 DSH 내부 구현이나 profile 파일을 변경하지 않는다. 테스트 전용 지침 플러그인만 Loader builtin으로 등록한다. 기존 공개 기능을 관측하는 capability probe이므로 생산 코드의 red → green 변경은 없다.
 
@@ -121,4 +121,34 @@ D1·D2는 결정됐고 S2–S5에 남은 사용자 결정은 없다. S1에서 B1
 - `npm test`(Studio): 타입 검사·빌드 통과, 테스트 112개 중 110개 통과·2개 실패. 기존 experiments runtime 테스트의 `@deepseek-ai/dsh-scope` 모듈 해석 실패와 preset persistence 테스트의 `unknown`/`available` 불일치다. 후자는 단독 실행에서도 `@deepseek-ai/dsh-agent-preset` import 실패로 재현됐다. 이번 변경은 해당 생산 코드를 수정하지 않는다. 전체 저장소 검사는 실행하지 않았다.
 - 제한: Agent setup/mount와 prompt assembly 검증이며 전체 앱 부팅·sessionController 새 대화·실제 모델 요청/로그·UI·라이브 모델 검증이 아니다. 패키징한 Studio 독립 설치 증거도 아니다. 사용자 프로필, 설치 앱, GitHub 상태는 변경하지 않았다.
 
-다음 최소 작업은 S1의 전체 앱 새 대화 경로 검증이다. B1 해소 여부를 확정한 뒤 S2에 진입한다.
+## S1–S5 구현 및 검증 기록
+
+- **S1**: [전체 앱 probe](../../test/desktop/workflow-app-smoke.mjs)는 공개 sessionController의 create/prompt와 실제 결정적 LLM adapter를 사용해 v1 요청 대기 중 v2 등록, 새 대화 v2, 기존 대화 v1 유지까지 확인했다. rc.2 격리 home에서 통과했다.
+- **S2**: 별도 `studio_workflow_applied` 도메인에 원본 문서, 역할별 컴파일 결과, 초안/적용 리비전, 적용 시점 experiments 대상 여부를 저장한다. `applyDraft({id,draftRevision,expectedRevision})`는 저장된 초안만 검증·커밋하고 `applications()`는 쓰기 없이 적용본과 현재 등록 상태를 읽는다. CAS 충돌, 저장 불명 동결, 재시작 읽기, 활성화 실패 이후 저장본 보존을 테스트했다. Host compiler의 명시적 컴포넌트 adapter는 선언 등록과 실행 지원을 분리한다.
+- **S3**: `studio-workflow:<draft-id>`를 Studio만 소유한다. 공개 register disposer로 교체하며 기존 Agent는 이전 generation을 유지한다. 메인 지침 section만 추가하고 persona·권한·전역 모델은 변경하지 않는다. 모든 역할 모델은 WorkflowModels로 검증한다. 비활성 구성은 보존·실행 제외, 활성 미지원 컴포넌트/시스템은 거절한다. 실제 request/header를 revision/session별로 관측하며 명시하지 않은 reasoning은 adapter 기본값을 허용한다.
+- **S4**: 저장된 버전 적용 전 확인, 새 대화에서 프리셋 선택, 다른 역할 미실행, experiments, 요청/실제 모델 불일치 안내를 ko/en/zh로 제공한다. 미저장 입력은 유지하고 응답 유실 후 적용을 잠그며 재조회 후에만 확정 상태를 표시한다. Portal 확인창은 공유 DialogBody/DialogFooter를 사용한다.
+- **S5**: [패키지 전체 앱 probe](../../test/desktop/workflow-applied-smoke.mjs)와 [실행기](../../test/desktop/workflow-app-run.mjs)는 미수정 npm DSH `0.2.0-rc.2`에 Studio tarball만 설치한다. 실제 새 대화 지침/persona, 재적용 후 두 루트 격리, 모델 match/mismatch, 잘못된 모델 거절을 검증한다. [브라우저 검사](../../test/desktop/workflow-browser.mjs)는 실행기가 출력한 정확한 URL에서 Chrome으로 상태 재조회·불일치 경고·확인창 및 라이트/다크·1280/600 폭을 확인한다. 서버는 검사 후 종료한다.
+
+### 재현 명령과 증거 경계
+
+```sh
+cd studio
+npm run build
+node --import tsx --test test/workflow*.test.mjs
+node build-desktop.mjs
+# 저장소 루트에서:
+STUDIO_PRESET_RUNTIME=/tmp/studio-s3-runtime-rdYxsm/runtime \
+STUDIO_WORKFLOW_BUNDLE=studio/dist/desktop-0.2.0-rc.2/local-dsh-studio-0.1.1.tgz \
+STUDIO_WORKFLOW_BROWSER_TOOLS=/tmp/studio-workflow-browser-tools \
+node studio/test/desktop/workflow-app-run.mjs
+```
+
+- Workflow 회귀 **58/58 통과**. Studio 타입 검사·빌드 및 rc.2 독립 패키지 빌드 통과.
+- 실제 Web 라이트/다크·좁은 폭 캡처를 직접 확인했다. 초기 성공 증거: 격리 home `studio-workflow-app-wbbNFE`; 재적용·확인창 추가 성공: `studio-workflow-app-IXeOhL` (이 실행의 뒤이은 재시작 검사는 실패했으므로 전체 통과로 세지 않음).
+- 최종 rc.2 통합 실행 **통과**: 격리 home `studio-workflow-app-OHivpC`, 애니메이션 종료 후 확인창 캡처까지 재확인한 `studio-workflow-app-bGyA12`. 재적용·두 세션 격리·실제 route match/mismatch·잘못된 모델 거절·Web 화면 검사에 이어 프로세스를 종료·재시작하고 적용 revision 2 복원 및 실제 새 요청의 지침/route까지 확인했다. 초안의 잘못된 후속 모델은 적용본을 덮어쓰지 않았다.
+- 재시작 검사에서 테스트 플러그인 재마운트로 중복 실행되는 문제를 발견해 one-shot guard를 추가했다. 이어 발견한 LLM adapter가 늦게 도착하면 복구되지 않는 문제는 공개 adapters-updated 이벤트에서 적용본을 재검증·복원하도록 수정했다.
+- workspace 전체 앱 실행 추가 시도는 registry 패키지 경로에 `.bin/dsh`가 없어 ENOENT로 중단됐다. 해당 경로의 공개 Loader compatibility probe 통과와 전체 앱 실행 증거는 구분한다. 이를 위해 코어를 빌드하지 않았다.
+- 설치 시 peer dependency 경고가 출력된다. 경고를 숨기지 않으며 실제 공개 Loader 실행 성공과 별개로 기록한다.
+- **키 없는 결정적 adapter의 실제 앱 요청** 증거다. 외부 유료 모델 라이브 호출·응답 품질은 검증하지 않았다. D1-a에 따라 메인 모델 자동 선택 조건은 충족하지 않는다. 고정 workspace Web의 전체 패키지 재시작/HMR 자동 감지까지 입증한 것은 아니다.
+- **Standards 리뷰**: 공유 확인창 wrapper/버튼 순서 1건을 수정했다. **Spec 리뷰**: stale 성공 표시와 메인-only/새 대화 안내 2건을 수정하고 match/unsupported system/재적용 격리/잘못된 모델 테스트를 추가했다. 실제 Studio HMR teardown의 전용 종단간 자동화는 남은 제한이다.
+- 변경은 Studio 안으로 제한했다. 코어·기존 사용자 프로필·설치 앱·현재 사용자 GUI·GitHub 상태는 변경하지 않았다. push/merge/배포/이슈 종료는 수행하지 않는다.

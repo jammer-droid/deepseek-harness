@@ -1,13 +1,14 @@
 /** Draft selection and explicit persistence; never invokes preset application. */
 import React from 'react';
 import { WorkflowForms } from './workflow-forms.tsx';
+import type { ApplicationApi } from './workflow-apply.tsx';
 import type { CatalogSnapshot, ValidationResult, DraftId, SavedDraft, SaveDraftRequest, WorkflowDocument, RoleId, ModelCatalog } from '@local/dsh-studio-workflows/types';
 import { workflowText } from './workflow-locales.ts';
 import { Button } from './ui.tsx';
 import { workflowFailure, type WorkflowFailure } from './workflow-failures.ts';
 
 /** User operations projected from the generated workflow Remote. */
-export interface WorkflowApi {
+export interface WorkflowApi extends Partial<Pick<ApplicationApi, 'applyDraft' | 'applications'>> {
   drafts(): Promise<SavedDraft[]>;
   save(request: SaveDraftRequest): Promise<SavedDraft>;
   models(): Promise<ModelCatalog>;
@@ -19,8 +20,9 @@ export interface WorkflowApi {
 /** @param props Initial confirmed drafts and declarations with explicit persistence operations.
  * @returns Multiple-draft editor retaining local edits until save or confirmed discard.
  */
-export function WorkflowEditor({ locale, initialDrafts, api, visible = true }: {
+export function WorkflowEditor({ locale, initialDrafts, api, visible = true, renderApplication }: {
   locale: string; initialDrafts: SavedDraft[]; api: WorkflowApi; visible?: boolean;
+  renderApplication?: (saved: SavedDraft, dirty: boolean, disabled: boolean) => React.ReactNode;
 }) {
   const t = workflowText(locale);
   const [drafts, setDrafts] = React.useState(initialDrafts);
@@ -139,6 +141,7 @@ export function WorkflowEditor({ locale, initialDrafts, api, visible = true }: {
       <Button onClick={() => setRefresh(value => value + 1)}>{t.refresh}</Button>
       <Button onClick={() => change(() => { void reload(); }, true)}>{t.retry}</Button>
     </fieldset>
+    {selected && renderApplication?.(selected, dirty, busy || failure !== null || pending !== null)}
     {failure && <p role="alert">{{ 'revision-conflict': t.conflict, 'storage-uncertain': t.restart, closed: t.closed, 'invalid-document': t.invalid, 'unknown-outcome': t.saveFailed, 'read-failed': t.readFailed }[failure]}</p>}
     {pending && <div role="alert"><p>{pending.reload ? t.reloadConfirm : t.discard}</p>
       <Button onClick={() => { const action = pending.action; setPending(null); action(); }}>{t.confirm}</Button>
