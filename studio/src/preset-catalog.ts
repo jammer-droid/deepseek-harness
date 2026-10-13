@@ -1,4 +1,5 @@
-export interface CatalogTool { name: string; description: string; parameters?: Record<string, unknown> }
+import { toolPromptSections } from './tool-prompt-sections.ts';
+export interface CatalogTool { name: string; description: string; parameters?: Record<string, unknown>; promptSections?: CatalogSection[] }
 export interface CatalogSection { name: string; text: string }
 export interface CatalogPreset { promptProviders?: import('./prompt-composition.ts').PromptProvider[]; id: string; name?: string | undefined; sections: CatalogSection[]; tools: CatalogTool[]; declaration?: string; error?: string }
 export interface PresetCatalog { presets: CatalogPreset[]; tools: CatalogTool[] }
@@ -28,7 +29,8 @@ export async function readPresetCatalog(services: CatalogServices): Promise<Pres
       presets.push({ id: preset.id, name: preset.name, sections: [], tools: [], error: String(error) });
     } finally { await lease?.[Symbol.asyncDispose](); }
   }
-  return { presets, tools: [...all.values()].sort((a, b) => a.name.localeCompare(b.name)) };
+  const sections = new Map(presets.flatMap(preset => preset.sections).map(section => [section.name, section]));
+  return { presets, tools: [...all.values()].map(tool => ({ ...tool, promptSections: (toolPromptSections[tool.name] ?? []).flatMap(name => sections.has(name) ? [sections.get(name)!] : []) })).sort((a, b) => a.name.localeCompare(b.name)) };
 }
 export function mergePresetTools(manual: string[], presets: CatalogPreset[], active: string[], excluded: string[] = []): string[] {
   return [...new Set([...manual, ...presets.filter(p => active.includes(p.id)).flatMap(p => p.tools.map(t => t.name))])].filter(name => !excluded.includes(name));

@@ -33,10 +33,14 @@ export const studioStyles = `/* Only this adapter references host tokens. Studio
 .studio-ui .studio-tool-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 12px; }
 .studio-ui .studio-tool-card { display: flex; flex-direction: column; gap: 8px; padding: 14px; border: 1px solid var(--studio-line); border-radius: var(--studio-radius); cursor: pointer; min-width: 0; }
 .studio-ui .studio-tool-card[data-selected="true"] { background: var(--studio-hover); border-color: var(--studio-ink); }
-.studio-ui .studio-transfer-items .studio-tool-card { height: 148px; box-sizing: border-box; padding: 10px; }
+.studio-ui .studio-transfer-items .studio-tool-card { height: 148px; box-sizing: border-box; padding: 10px; flex-direction: row; align-items: start; }
+.studio-ui .studio-transfer-items .studio-tool-card > button:last-child { flex: 0 0 32px; width: 32px; height: 32px; padding: 6px; }
+.studio-ui .studio-transfer-items .studio-tool-card > button:first-child { height: 100%; }
 .studio-ui .studio-transfer-items .studio-tool-card > button:first-child { display: flex; flex-direction: column; align-items: start; text-align: start; white-space: normal; flex: 1; min-height: 0; overflow: hidden; }
 .studio-ui .studio-card-excerpt { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; font-weight: 400; color: var(--studio-muted); }
 .studio-ui .studio-tool-card strong { overflow-wrap: anywhere; }
+.studio-ui .studio-detail-dialog { width: min(760px, calc(100vw - 32px)); max-height: calc(100dvh - 48px); overflow: auto; padding: 0; color: var(--studio-ink); background: var(--studio-bg); border: 1px solid var(--studio-line); border-radius: var(--studio-radius); }
+.studio-ui .studio-detail-dialog::backdrop { background: var(--studio-muted); opacity: 0.45; }
 .studio-ui .studio-selection-detail { padding: 16px; margin-top: 12px; border: 1px solid var(--studio-line); border-radius: var(--studio-radius); }
 .studio-ui .studio-schema-tool { margin-top: 12px; padding: 10px; border: 1px solid var(--studio-line); border-radius: var(--studio-small-radius); }
 .studio-ui .studio-schema-tool summary { cursor: pointer; overflow-wrap: anywhere; }
@@ -167,7 +171,11 @@ export const studioStyles = `/* Only this adapter references host tokens. Studio
 .studio-ui .studio-prompt-workbench { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 20px; align-items: start; text-align: start; }
 .studio-ui ol.studio-prompt-stages { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; }
 .studio-ui .studio-prompt-document { max-height: 680px; overflow-y: auto; border: .5px solid var(--studio-line); border-radius: var(--studio-radius); background: var(--studio-surface); }
-.studio-ui .studio-prompt-section { padding: 18px; border-bottom: .5px solid var(--studio-line); border-inline-start: 3px solid transparent; scroll-margin: 8px; }
+.studio-ui .studio-prompt-section { display: grid; grid-template-columns: minmax(130px, 1fr) minmax(0, 3fr); gap: 18px; padding: 18px; border-bottom: .5px solid var(--studio-line); border-inline-start: 3px solid transparent; scroll-margin: 8px; }
+.studio-ui .studio-prompt-section h3 { overflow-wrap: anywhere; }
+.studio-ui .studio-prompt-section > p { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.studio-ui .studio-prompt-tools { padding: 18px; }
+@media (max-width: 600px) { .studio-ui .studio-prompt-section { grid-template-columns: 1fr; gap: 8px; } }
 .studio-ui .studio-prompt-section[data-selected=true] { border-inline-start-color: var(--studio-ink); background: var(--studio-hover); }
 .studio-ui .studio-prompt-section h3 { margin: 0; font-size: 14px; font-weight: 500; }
 .studio-ui .studio-prompt-section textarea, .studio-ui .studio-prompt-section .studio-history-content { margin-top: 12px; }

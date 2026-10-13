@@ -1,9 +1,14 @@
+import { providerFields, type ProviderField } from './provider-fields.ts';
 export const promptProviderModules = [
   '@deepseek-ai/dsh-persona',
   '@deepseek-ai/dsh-agent-instructions',
   '@deepseek-ai/dsh-time-context',
+  '@deepseek-ai/dsh-skill-filesystem',
+  '@deepseek-ai/dsh-compaction-basic',
+  '@deepseek-ai/dsh-compaction-tool-result-pruner',
+  '@deepseek-ai/dsh-agent-tool-presentation',
 ] as const;
-export interface PromptProvider { name: string; description: string }
+export interface PromptProvider { name: string; description: string; fields?: ProviderField[] }
 export interface ToolOverride { description?: string; parameters?: Record<string, string> }
 export interface PreviewRequest { preset: string; providers: string[]; tools: string[]; prompt: string; model: string; persona?: string; toolOverrides?: Record<string, ToolOverride>; sections?: Record<string, string>; providerConfigs?: Record<string, Record<string, unknown>> }
 export interface PresetBundle { files: Record<string, string> }
@@ -35,7 +40,10 @@ export function promptProviders(rows: CompositionRow[]): PromptProvider[] {
   for (const row of rows) {
     if (row.disabled === true) continue;
     if (row.group && Array.isArray(row.config)) found.push(...promptProviders(row.config));
-    else if ((promptProviderModules as readonly string[]).includes(row.name)) found.push({ name: row.name, description: JSON.stringify(row.config ?? {}, null, 2) });
+    else if ((promptProviderModules as readonly string[]).includes(row.name)) {
+      const config = (row.config ?? {}) as Record<string, unknown>;
+      found.push({ name: row.name, description: row.name.replace('@deepseek-ai/dsh-', ''), fields: (providerFields[row.name] ?? []).map(field => ({ ...field, ...(Object.hasOwn(config, field.key) ? { value: config[field.key] } : {}) })) });
+    }
   }
   return [...new Map(found.map(item => [item.name, item])).values()];
 }
@@ -44,6 +52,7 @@ export function selectPromptProviders(rows: CompositionRow[], selected: string[]
   const available = new Set(promptProviders(rows).map(item => item.name));
   if (selected.some(name => !available.has(name))) throw new Error('Unknown prompt provider selection');
   const visit = (entries: CompositionRow[]): CompositionRow[] => entries.flatMap(row => {
+    if (row.name === '@deepseek-ai/dsh-command-compact' && !selected.includes('@deepseek-ai/dsh-compaction-basic')) return [];
     if ((promptProviderModules as readonly string[]).includes(row.name) && !selected.includes(row.name)) return [];
     return [{ ...row, ...(row.group && Array.isArray(row.config) ? { config: visit(row.config) } : {}) }];
   });

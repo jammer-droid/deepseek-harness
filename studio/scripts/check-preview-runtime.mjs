@@ -15,6 +15,16 @@ async function rpc(method, args) {
 }
 const request = { preset: 'standard', providers: [], tools: ['read', 'grep', 'glob'], prompt: 'STUDIO_PREVIEW_SENTINEL', model: 'Preview Model' };
 const before = await rpc('agentPresets/list', {});
+const catalog = await rpc('studioCatalog/read', {});
+assert.equal(catalog.ok, true);
+const providers = new Map(catalog.value.presets.filter(p => ['minimal','standard','ptc','cordis'].includes(p.id)).flatMap(p => p.promptProviders ?? []).map(p => [p.name,p]));
+console.log('Installed builtin contributors:', [...providers.keys()]);
+assert.ok(providers.size >= 6);
+for (const name of providers.keys()) {
+  const result = await rpc('studioCatalog/preview', { request: { ...request, providers: [name], tools: [], ...(name.endsWith('agent-tool-presentation') ? { providerConfigs: { [name]: { mode: 'native' } } } : {}) } });
+  assert.equal(result.ok, true, `${name}: ${JSON.stringify(result)}`);
+}
+
 const failed = await rpc('studioCatalog/preview', { request: { ...request, model: '' } });
 assert.equal(failed.ok, false);
 assert.match(failed.error.message, /model/);
@@ -37,17 +47,5 @@ assert.equal(read.description, 'STUDIO_READ_DESCRIPTION');
 assert.equal(read.parameters.properties.file_path.description, 'STUDIO_PATH_DESCRIPTION');
 const original = await rpc('studioCatalog/preview', { request });
 assert.notEqual(original.value.tools.find(t => t.name === 'read').description, read.description);
-const exported = await rpc('studioCatalog/exportPreset', { request: edited });
-assert.equal(exported.ok, true, JSON.stringify(exported));
-assert.ok(exported.value.files['cordis.patch.yml'].includes('@local/dsh-studio-shell/policy'));
-assert.equal(JSON.parse(exported.value.files['package.json']).dsh.bundle.patch, './cordis.patch.yml');
-if (process.argv[3]) {
-  const { mkdir, writeFile } = await import('node:fs/promises');
-  const path = await import('node:path');
-  const directory = path.resolve(process.argv[3]);
-  assert.ok(directory.startsWith(path.resolve('dist') + path.sep), 'Export verification output must stay in Studio dist');
-  await mkdir(directory, { recursive: true });
-  for (const [name, content] of Object.entries(exported.value.files)) { assert.equal(path.basename(name), name); await writeFile(path.join(directory, name), content); }
-}
 assert.deepEqual(await rpc('agentPresets/list', {}), before);
-console.log('Packaged runtime passed: preview, persona, description/parameter/section overlays, original restoration, exact selection, export and cleanup.');
+console.log('Packaged runtime passed: preview, persona, description/parameter/section overlays, original restoration, exact selection and cleanup.');

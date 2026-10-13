@@ -5,6 +5,24 @@ status: implemented-with-limitations
 
 # #24 minimal 기반 프리셋 구성과 선택적 덮어쓰기
 
+## 최신 UI 수정 계약 (기존 S1–S5 내보내기/단일열 결정을 대체)
+
+- 기본 4개 프리셋의 비도구 기여자는 7종: persona, agent-instructions, time-context, skill-filesystem, compaction-basic, compaction-tool-result-pruner, agent-tool-presentation.
+- 공개 설정은 상세에서 속성별 편집한다. persona 및 jobs 독립 편집기를 제거하고 도구 설명·중첩 인자 설명·관련 지침을 상세에 통합한다.
+- 기본 선택 도구 없음, 모델 testLLM 고정, 내보내기 UI와 RPC 제거. 과거 export 구현/검증 기록은 현재 기능 약속이 아니다.
+- 좌측 섹션명/우측 본문, 아래 도구 스키마. 실제 assemble override 사용. 선택 해제한 항목의 override는 전송하지 않는다.
+- 정적 미리보기에서 pre-step 메시지/압축은 실행하지 않는다. 압축 modelPolicies 표, 도구 타입/필수 여부 변경, 모든 동적 지침 교체는 미지원이다.
+- 기존 roles-ui.expected.html은 현재 트리에 존재하지 않아 재생성할 수 없다. 현재 디자인 테스트와 UI 회귀 테스트로 검사한다.
+
+### 최신 검증 결과
+
+- Studio 타입 검사·빌드·23개 테스트 및 diff 공백 검사 통과.
+- 수정하지 않은 DSH 0.2.0-rc.2 격리 프로필에 재설치하여 실제 RPC의 provider 단독 mount, persona/도구/인자/섹션 override, 원본 복귀, 정확한 도구 선택, 임시 프리셋 정리를 확인했다.
+- rc.2의 기본 프리셋에는 time-context가 없어 실제 목록은 6종이다. checkout의 7종과 구분하고 설치되지 않은 플러그인은 추가하지 않는다.
+- PTC 모드는 run_code를 자동 생성해 정확한 선택 정책에서 거부된다. native 설정은 검증했다. UI에 제한을 표시한다.
+- 최초 실환경 검사에서 compaction 제거 후 command-compact 의존성이 남는 오류를 발견해 종속 command도 함께 제거하도록 수정했다.
+- 설치 중 peer dependency 경고가 있었고 실제 RPC는 통과했다. 시각 검증과 라이브 모델 호출은 수행하지 않았다.
+
 ## 작업 기준
 
 - 이슈: [#24](https://github.com/jammer-droid/deepseek-harness/issues/24), OPEN. 명시적 선행 이슈 없음.

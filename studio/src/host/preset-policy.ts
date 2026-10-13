@@ -16,6 +16,7 @@ export const POLICY_SECTION_ORDERS: Readonly<Record<string, PromptSectionOrderNa
   'tool:jobs': 'TOOL_JOBS', 'tool:bash': 'TOOL_BASH', 'tool:pwsh': 'TOOL_PWSH',
   'tool:read': 'TOOL_READ', 'tool:write': 'TOOL_WRITE', 'tool:edit': 'TOOL_EDIT',
   'tool:glob': 'TOOL_GLOB', 'tool:grep': 'TOOL_GREP',
+  'tool:web_fetch': 'TOOL_WEB_FETCH', 'tool:web_search': 'TOOL_WEB_SEARCH', 'tool:goal': 'TOOL_GOAL',
 });
 const own = (object: object, key: string) => Object.prototype.hasOwnProperty.call(object, key);
 const record = (value: unknown): value is Record<string, unknown> => !!value && typeof value === 'object' && !Array.isArray(value);
