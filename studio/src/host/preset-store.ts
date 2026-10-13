@@ -26,6 +26,8 @@ interface StoredPreset extends StudioPreset { applied?: { name: string; descript
 const owned = (id: string) => id === OPTIMIZED_PRESET_ID || /^studio-user-[a-f0-9-]{36}$/.test(id);
 const warning = 'Work convenience settings are saved but not applied yet. Legacy role overrides are stored only; roles apply only their supported settings.';
 
+import { validateRoleModel } from './role-validation.ts';
+
 /** Profile-local Studio data, never a Loader patch or profile package mutation. */
 export function studioStorePath(env: NodeJS.ProcessEnv = process.env, profile?: { readonly dir: string }): string {
   const directory = profile?.dir ?? env.DSH_PROFILE_DIR;
@@ -116,6 +118,7 @@ export class PresetStore {
     const old = this.find(id);
     const { request, plugins } = await compositionPlan(this.ctx, old.request);
     const roles = executableRoles(parseRoles(old.agents));
+    for (const role of roles) await validateRoleModel(this.ctx.get('llm'), role);
     const tools = roles.length ? [...request.tools.filter(name => !genericDelegation.has(name)), 'studio_role'] : request.tools;
     const keep = <T>(entries: Record<string, T>) => Object.fromEntries(Object.entries(entries).filter(([name]) => tools.includes(name)));
     const rolePlugins: CompositionRow[] = roles.length ? [{ id: 'studio-roles', name: '@local/dsh-studio-shell/roles', config: { roles } }] : [];

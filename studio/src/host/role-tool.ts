@@ -1,3 +1,4 @@
+import { validateRoleModel } from './role-validation.ts';
 import type { Context } from '@deepseek-ai/cordis';
 import { defineTool } from '@deepseek-ai/dsh-tools';
 
@@ -6,7 +7,7 @@ import type {} from '@deepseek-ai/dsh-subagent';
 import { executableRoles, parseRoles, type StudioRole } from '../role-settings.ts';
 
 export const name = 'studio-role';
-export const inject = ['tools', 'subagents'];
+export const inject = ['tools', 'subagents', 'llm'];
 export interface Config { roles: StudioRole[] }
 export function apply(ctx: Context, config: Config): void {
   const roles = executableRoles(parseRoles(config.roles));
@@ -31,6 +32,7 @@ export function apply(ctx: Context, config: Config): void {
       if (typeof args.task !== 'string' || !args.task.trim()) throw new Error('Role call requires a task');
       if (!exec.agent) throw new Error('Studio role call requires a calling agent');
       exec.signal.throwIfAborted();
+      await validateRoleModel(ctx.llm, role, exec.signal);
       const agentOptions: NonNullable<Parameters<typeof ctx.subagents.startActivation>[0]['request']['agentOptions']> = {};
       if (role.model !== 'inherit') {
         const slash = role.model.indexOf('/');

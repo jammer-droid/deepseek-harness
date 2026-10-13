@@ -7,7 +7,7 @@ import { PresetStore, studioStorePath } from '../src/host/preset-store.ts';
 const request = {preset:'minimal',providers:['@deepseek-ai/dsh-persona'],tools:[],prompt:'Studio instruction',model:'test'};
 function runtime() {
   const registrations = new Map(); let broken = false;
-  const ctx = {agentPresets:{
+  const ctx = {get:()=>({listProviders:()=>[],resolveCallConfig:async config=>config}),agentPresets:{
     list:async()=>[{id:'minimal'},...registrations.values()],
     readDocument:async()=>({content:'- name: "@deepseek-ai/dsh-persona"\n  config: {complete: true}\n'}),
     register:async definition=> {if(registrations.has(definition.id))throw Error('duplicate');registrations.set(definition.id,definition);return async()=>{registrations.delete(definition.id);};},
@@ -53,6 +53,14 @@ test('roles persist legacy overrides but apply only supported settings and repla
   assert.deepEqual(plugins.at(-1).config.tools,['studio_role']);
   await assert.rejects(store.save(JSON.stringify({...draft,agents:[role,role]})),/unique/);
   await store.dispose();
+});
+test('invalid role can be saved but apply preserves the last working snapshot', async()=>{
+  const file=join(await mkdtemp(join(tmpdir(),'studio-model-')),'presets.json');const r=runtime();const store=new PresetStore(r.ctx,file);
+  const draft=await store.save(JSON.stringify({name:'Valid',description:'',request}));await store.apply(draft.id);
+  const before=r.registrations.get(draft.id);
+  await store.save(JSON.stringify({...draft,agents:[{name:'Worker',role:'worker',model:'missing/model',reasoning:'inherit',spawn:'fresh',persona:''}]}));
+  await assert.rejects(store.apply(draft.id),/not registered/);
+  assert.equal(r.registrations.get(draft.id),before);assert.equal((await store.list())[0].status,'modified');await store.dispose();
 });
 test('activation failure is not reported applied and concurrent saves retain both rows',async()=>{
   const file=join(await mkdtemp(join(tmpdir(),'studio-presets-')),'presets.json');const r=runtime();const store=new PresetStore(r.ctx,file);

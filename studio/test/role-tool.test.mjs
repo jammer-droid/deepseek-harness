@@ -12,7 +12,7 @@ test('roles validate and project only supported executable settings',()=>{
 });
 for(const api of ['startActivation','startContinuable']) test(`role delegates through native ${api}`,async()=>{
   let definition; const starts=[];
-  const ctx={tools:{register:d=>{definition=d;}},subagents:{resolveMaxDepth:()=>2,[api]:async spec=>{starts.push(spec);return {childId:'child-1'};}}};
+  const ctx={llm:{listProviders:()=>[{id:'route'}],resolveCallConfig:async config=>config},tools:{register:d=>{definition=d;}},subagents:{resolveMaxDepth:()=>2,[api]:async spec=>{starts.push(spec);return {childId:'child-1'};}}};
   apply(ctx,{roles:[role]});
   const signal=new AbortController().signal;const parent={};const exec={signal,agent:parent};
   const listed=JSON.parse((await definition.execute({action:'list'},exec)).result);
