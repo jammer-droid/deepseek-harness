@@ -8,7 +8,7 @@ import { PresetList, type PresetActions } from './preset-manager.tsx';
 import type { PreviewRequest } from './prompt-composition.ts';
 import { PromptToolsPrototype, defaultProvidedTools } from './prompt-tools-prototype.tsx';
 import { DetailLayout } from './detail-layout.tsx';
-import { Button, Note, PageHead } from './ui.tsx';
+import { Button, Note, Notice, PageHead } from './ui.tsx';
 
 type Settings = { prompt: string; tools: string; spill: string; wait: string };
 type Agent = { name: string; role: string; model: string; reasoning: string; spawn: 'fresh' | 'fork'; persona: string };
@@ -36,10 +36,10 @@ export function OptimizationPrototype({ locale, catalog, catalogError, onPreview
   const [saving, setSaving] = React.useState(false);
   const [saveError, setSaveError] = React.useState('');
   const save = async () => {
-    if (!presetActions || !request || !name.trim()) return;
+    if (saving || !presetActions || !request || !name.trim()) return;
     setSaving(true); setSaveError('');
     try { await presetActions.save(JSON.stringify({ ...(editing?.id ? { id: editing.id } : {}), name: name.trim(), description, request: { ...request, configOverrides }, conveniences: { spill: common.spill }, agents })); setRevision(n => n + 1); setPage('list'); setName(''); setDescription(''); setConfigDraft(undefined); setCommon({ ...initial }); setProvided([]); setAgents(seeds.map(a => ({ ...a }))); setEditing(undefined); setTab('tools'); setDraftKey(n => n + 1); }
-    catch (error) { setSaveError(String(error)); } finally { setSaving(false); }
+    catch (error) { setSaveError(error instanceof Error ? error.message : String(error)); } finally { setSaving(false); }
   };
   const field = (label: string, child: React.ReactNode) => <label className="studio-field"><span>{label}</span>{child}</label>;
   const editPreset = (item: import('./preset-manager.tsx').SavedPreset, copy = false) => {
@@ -59,7 +59,7 @@ export function OptimizationPrototype({ locale, catalog, catalogError, onPreview
   return <DetailLayout title="Studio" navigation={t('프리셋 메뉴', 'Preset navigation', '预设导航')} group="" selected={page} onSelect={next => { if (next === 'create' && editing) { setEditing(undefined); setName(''); setDescription(''); setCommon({ ...initial }); setProvided([]); setConfigDraft(undefined); setAgents(seeds.map(role => ({ ...role }))); setDraftKey(n => n + 1); } setPage(next); }} pages={[
     { id: 'list', label: t('프리셋 목록', 'Preset list', '预设列表'), content: <PresetList locale={locale} api={presetActions} revision={revision} onEdit={item => editPreset(item)} onCopy={item => editPreset(item, true)} /> },
     { id: 'create', label: t('프리셋 생성', 'Create preset', '创建预设'), content: <><PageHead title={editing ? t('프리셋 편집', 'Edit preset', '编辑预设') : t('프리셋 생성', 'Create preset', '创建预设')} actions={<Button primary disabled={saving || !presetActions || !request || !name.trim()} onClick={() => void save()}>{saving ? t('저장 중…', 'Saving…', '保存中…') : t('프리셋 저장', 'Save preset', '保存预设')}</Button>} />
-      {saveError && <Note>{saveError}</Note>}
+      {saveError && <Notice>{t(`프리셋을 저장하지 못했습니다. 편집 내용은 이 화면에 그대로 남아 있습니다. (${saveError})`, `Could not save the preset. Your edits remain on this screen. (${saveError})`, `无法保存预设，编辑内容仍保留在此页面（${saveError}）`)}</Notice>}
       <div className="studio-field-grid">{field(t('프리셋 이름', 'Preset name', '预设名称'), <input value={name} onChange={e => setName(e.target.value)} />)}{field(t('설명', 'Description', '描述'), <input value={description} onChange={e => setDescription(e.target.value)} />)}</div>
       <div className="studio-tabs" role="tablist" aria-label={t('프리셋 구성', 'Preset configuration', '预设配置')}>{tabs.map((item, index) => <button type="button" role="tab" id={`${tabId}-${item.id}-tab`} aria-controls={`${tabId}-${item.id}`} aria-selected={tab === item.id} tabIndex={tab === item.id ? 0 : -1} key={item.id} onClick={() => setTab(item.id)} onKeyDown={e => { const next = e.key === 'ArrowRight' ? (index + 1) % tabs.length : e.key === 'ArrowLeft' ? (index + tabs.length - 1) % tabs.length : e.key === 'Home' ? 0 : e.key === 'End' ? tabs.length - 1 : -1; if (next < 0) return; e.preventDefault(); setTab(tabs[next]!.id); document.getElementById(`${tabId}-${tabs[next]!.id}-tab`)?.focus(); }}>{item.label}</button>)}</div>
       {tabs.map(item => <section role="tabpanel" id={`${tabId}-${item.id}`} aria-labelledby={`${tabId}-${item.id}-tab`} key={item.id} hidden={tab !== item.id}>{item.content}</section>)}
