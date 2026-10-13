@@ -20,6 +20,13 @@ export function Button({ primary = false, small = false, className = '', type = 
   return <button {...props} type={type} className={`studio-button ${primary ? 'studio-primary' : ''} ${small ? 'studio-small' : ''} ${className}`} />;
 }
 
+/** Mark a user override that differs from its inherited value. */
+export function ChangeIndicator({ locale }: { locale: string }) {
+  const labels = { ko: '수정됨', en: 'Modified', zh: '已修改' };
+  const text = labels[locale.startsWith('ko') ? 'ko' : locale.startsWith('zh') ? 'zh' : 'en'];
+  return <strong className="studio-schema-meta" data-studio-modified="true">{text}</strong>;
+}
+
 /** Page title block; at most one per section.
  * @param props Title, optional description, optional right-aligned actions, and extra lines such as a status line.
  * @returns Page header.

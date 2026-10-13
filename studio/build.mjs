@@ -11,6 +11,13 @@ await compile({
   absWorkingDir: root, tsconfig: 'tsconfig.host.json', entryPoints: ['src/host/preset-policy.ts'], outfile: 'packages/shell/policy.js',
   bundle: true, platform: 'node', format: 'esm', target: 'node22', packages: 'external', external: ['@deepseek-ai/*'],
 });
+await compile({
+  absWorkingDir: root, tsconfig: 'tsconfig.host.json', entryPoints: ['src/host/role-tool.ts'], outfile: 'packages/shell/roles.js',
+  bundle: true, platform: 'node', format: 'esm', target: 'node22', packages: 'external', external: ['@deepseek-ai/*'],
+});
+for (const [entry, output] of [['batch-tool', 'batch'], ['task-tool', 'tasks']]) {
+  await compile({ absWorkingDir: root, tsconfig: 'tsconfig.host.json', entryPoints: [`src/host/${entry}.ts`], outfile: `packages/shell/${output}.js`, bundle: true, platform: 'node', format: 'esm', target: 'node22', external: ['@deepseek-ai/*'] });
+}
 for (const part of ['shell']) {
   await compile({
     absWorkingDir: root, tsconfig: 'tsconfig.host.json', entryPoints: [`src/host/${part}.ts`], outfile: `packages/${part}/index.js`,

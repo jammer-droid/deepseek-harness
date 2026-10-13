@@ -1,3 +1,5 @@
+import { ChangeIndicator } from './change-indicator.tsx';
+import { BUILTIN_TOOL_PRESETS } from './optimized-preset.ts';
 import React from 'react';
 import { SelectionTransfer } from './selection-transfer.tsx';
 import { Button, Note, PageHead, SectionHead } from './ui.tsx';
@@ -5,18 +7,19 @@ import { mergePresetTools, type PresetCatalog } from './preset-catalog.ts';
 import type { PreviewAction, PreviewResult } from './prompt-composition.ts';
 
 export const defaultProvidedTools: string[] = [];
-export function PromptToolsPrototype({ locale, prompt, onPromptChange, provided, onProvidedChange, catalog, catalogError, onPreview, onRequestChange }: {
+export function PromptToolsPrototype({ locale, prompt, onPromptChange, provided, onProvidedChange, catalog, catalogError, onPreview, onRequestChange, initialRequest }: {
+  initialRequest?: import('./prompt-composition.ts').PreviewRequest | undefined;
   onRequestChange?: ((request: import('./prompt-composition.ts').PreviewRequest) => void) | undefined;
   catalog?: PresetCatalog | undefined; catalogError?: string | undefined; onPreview?: PreviewAction | undefined;
   locale: string; prompt: string; onPromptChange: (value: string) => void;
   provided: string[]; onProvidedChange: (value: string[]) => void;
 }) {
   const t = (ko: string, en: string, zh: string) => locale.startsWith('ko') ? ko : locale.startsWith('zh') ? zh : en;
-  const base = 'studio-master';
-  const [toolOverrides, setToolOverrides] = React.useState<Record<string, { description?: string; parameters?: Record<string, string> }>>({});
-  const [sections, setSections] = React.useState<Record<string, string>>({});
-  const providers = ['@deepseek-ai/dsh-persona'];
-  const [providerConfigs, setProviderConfigs] = React.useState<Record<string, Record<string, unknown>>>({});
+  const base = initialRequest?.preset ?? 'studio-master';
+  const [toolOverrides, setToolOverrides] = React.useState<Record<string, { description?: string; parameters?: Record<string, string> }>>(initialRequest?.toolOverrides ?? {});
+  const [sections, setSections] = React.useState<Record<string, string>>(initialRequest?.sections ?? {});
+  const providers = initialRequest?.providers ?? ['@deepseek-ai/dsh-persona'];
+  const [providerConfigs, setProviderConfigs] = React.useState<Record<string, Record<string, unknown>>>(initialRequest?.providerConfigs ?? {});
   const [query, setQuery] = React.useState('');
   const [toolPresets, setToolPresets] = React.useState<string[]>([]);
   const [manual, setManual] = React.useState(provided);
@@ -30,10 +33,11 @@ export function PromptToolsPrototype({ locale, prompt, onPromptChange, provided,
   const closePreview = () => { previewDialog.current?.close(); previewTrigger.current?.focus(); };
   const [busy, setBusy] = React.useState(false);
   const presets = catalog?.presets ?? [];
+  const toolSources = BUILTIN_TOOL_PRESETS.map(id => presets.find(p => p.id === id) ?? { id, name: id, tools: [], sections: [], error: 'Preset unavailable' });
   const tools = catalog?.tools ?? [];
   const current = presets.find(preset => preset.id === base);
   const selectedSections = new Set(tools.filter(tool => provided.includes(tool.name)).flatMap(tool => tool.promptSections?.map(section => section.name) ?? []));
-  const request = { preset: base, providers, tools: provided, prompt, model: 'testLLM',
+  const request = { ...initialRequest, preset: base, providers, tools: provided, prompt, model: initialRequest?.model ?? 'testLLM',
     toolOverrides: Object.fromEntries(Object.entries(toolOverrides).filter(([name]) => provided.includes(name))),
     sections: Object.fromEntries(Object.entries(sections).filter(([name]) => selectedSections.has(name))),
     providerConfigs: Object.fromEntries(Object.entries(providerConfigs).filter(([name]) => providers.includes(name))),
@@ -41,7 +45,7 @@ export function PromptToolsPrototype({ locale, prompt, onPromptChange, provided,
   const personaFields = current?.promptProviders?.find(provider => provider.name === providers[0])?.fields ?? [];
   const requestKey = JSON.stringify(request);
   React.useEffect(() => { onRequestChange?.(request); }, [requestKey, onRequestChange]);
-  const labels = { available: t('사용 가능', 'Available', '可用'), selected: t('선택됨', 'Selected', '已选'), add: t('추가 →', 'Add →', '添加 →'), remove: t('← 제외', '← Remove', '← 移除'), empty: t('항목 없음', 'No items', '无项目'), details: t('상세', 'Details', '详情'), close: t('닫기', 'Close', '关闭') };
+  const labels = { available: t('사용 가능', 'Available', '可用'), selected: t('선택됨', 'Selected', '已选'), add: t('추가', 'Add', '添加'), remove: t('제외', 'Remove', '移除'), empty: t('항목 없음', 'No items', '无项目'), details: t('상세', 'Details', '详情'), close: t('닫기', 'Close', '关闭') };
   const togglePreset = (presetId: string) => {
     const active = toolPresets.includes(presetId) ? toolPresets.filter(p => p !== presetId) : [...toolPresets, presetId];
     const nextExcluded = excluded.filter(name => !presets.find(p => p.id === presetId)?.tools.some(tool => tool.name === name));
@@ -77,9 +81,17 @@ export function PromptToolsPrototype({ locale, prompt, onPromptChange, provided,
     })}
     <label className="studio-field"><span>{t('Studio 추가 지침', 'Additional Studio instructions', 'Studio 附加指令')}</span><textarea rows={8} value={prompt} onChange={e => onPromptChange(e.target.value)} /></label>
     <SectionHead title={t('제공 도구', 'Provided tools', '提供的工具')} description={t('상세에서 설명을 편집합니다. 원본 사용으로 돌아갈 수 있으며 실행 구현은 변경하지 않습니다.', 'Edit descriptions in Details. Reset to the original at any time; execution implementations are unchanged.', '在详情中编辑描述，可恢复原始值；执行实现保持不变。')} />
-    <div className="studio-row">{presets.filter(p => ['studio-master'].includes(p.id)).map(p => <Button key={p.id} disabled={!!p.error} aria-pressed={toolPresets.includes(p.id)} onClick={() => togglePreset(p.id)}>{p.id === 'cordis' ? 'creator (cordis)' : p.id}</Button>)}</div>
+    <div className="studio-row">{toolSources.map(p => <Button key={p.id} disabled={!!p.error} aria-pressed={toolPresets.includes(p.id)} onClick={() => togglePreset(p.id)}>{p.id === 'cordis' ? 'creator (cordis)' : p.id}</Button>)}</div>
     <label className="studio-field"><span>{t('도구 검색', 'Search tools', '搜索工具')}</span><input value={query} onChange={e => setQuery(e.target.value)} /></label>
-    <SelectionTransfer items={[...tools, ...provided.filter(name => !tools.some(tool => tool.name === name)).map(name => ({ name, description: t('현재 카탈로그에 없음', 'Absent from current catalog', '不在当前目录中') }))].filter(tool => `${tool.name}\n${tool.description}`.toLowerCase().includes(query.toLowerCase()))} selected={provided} onChange={changeTools} labels={labels} renderDetails={name => {
+    <SelectionTransfer query={query} items={[...tools.map(tool => ({ ...tool, searchText: JSON.stringify(tool.parameters) })), ...provided.filter(name => !tools.some(tool => tool.name === name)).map(name => ({ name, description: t('현재 카탈로그에 없음', 'Absent from current catalog', '不在当前目录中') }))]} selected={provided} onChange={changeTools} labels={{ ...labels, noResults: t('검색 결과가 없습니다.', 'No matching results.', '没有匹配结果。') }} renderIndicator={name => {
+      const tool = tools.find(item => item.name === name);
+      const override = toolOverrides[name];
+      const parameters = parameterFields(tool?.parameters);
+      const changed = (override?.description !== undefined && override.description !== tool?.description)
+        || Object.entries(override?.parameters ?? {}).some(([path, text]) => text !== parameters.find(p => p.path === path)?.description)
+        || tool?.promptSections?.some(section => sections[section.name] !== undefined && sections[section.name] !== section.text);
+      return changed ? <ChangeIndicator locale={locale} /> : null;
+    }} renderDetails={name => {
       const tool = tools.find(tool => tool.name === name);
       const parameters = parameterFields(tool?.parameters);
       const override = toolOverrides[name];

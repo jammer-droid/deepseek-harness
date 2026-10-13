@@ -19,9 +19,9 @@ export async function apply(ctx: StudioContext) {
         id: '@local/dsh-studio-shell#studioCatalog/preview', service: 'studioCatalog', namespace: 'studioCatalog', method: 'preview',
         invocation: { kind: 'direct' }, parameters: [{ name: 'request', wire: 'request', source: 'json', codec: { mode: 'strict', typeSymbol: 'PreviewRequest', create: () => ({ parse: parsePreviewRequest }) } }], result: { mode: 'src-json' },
 
-    }, ...['listPresets', 'savePreset', 'applyPreset', 'deletePreset', 'readExtensions', 'saveExtensions'].map(method => ({
+    }, ...['listPresets', 'savePreset', 'applyPreset', 'unapplyPreset', 'roleModels', 'deletePreset', 'readExtensions', 'saveExtensions'].map(method => ({
         id: `@local/dsh-studio-shell#studioCatalog/${method}`, service: 'studioCatalog', namespace: 'studioCatalog', method,
-        invocation: { kind: 'direct' }, parameters: ['listPresets', 'readExtensions'].includes(method) ? [] : [{ name: ['savePreset', 'saveExtensions'].includes(method) ? 'payload' : 'id', wire: ['savePreset', 'saveExtensions'].includes(method) ? 'payload' : 'id', source: 'json', codec: { mode: 'strict', typeSymbol: 'string', create: () => ({ parse: (value: unknown) => { if (typeof value !== 'string') throw new TypeError('Expected a string'); return value; } }) } }], result: { mode: 'src-json' },
+        invocation: { kind: 'direct' }, parameters: ['listPresets', 'readExtensions', 'roleModels'].includes(method) ? [] : [{ name: ['savePreset', 'saveExtensions'].includes(method) ? 'payload' : 'id', wire: ['savePreset', 'saveExtensions'].includes(method) ? 'payload' : 'id', source: 'json', codec: { mode: 'strict', typeSymbol: 'string', create: () => ({ parse: (value: unknown) => { if (typeof value !== 'string') throw new TypeError('Expected a string'); return value; } }) } }], result: { mode: 'src-json' },
     }))] });
     ctx.effect(() => ctx.locale.addLanguage({ id: 'ko', label: '한국어', fallback: 'en' }));
     const serviceListeners = new Set<() => void>();
@@ -93,6 +93,8 @@ export async function apply(ctx: StudioContext) {
                 list: () => call('listPresets') as Promise<import('./preset-manager.tsx').SavedPreset[]>,
                 save: (payload: string) => call('savePreset', payload) as Promise<import('./preset-manager.tsx').SavedPreset>,
                 apply: (id: string) => call('applyPreset', id) as Promise<import('./preset-manager.tsx').SavedPreset>,
+                models: () => call('roleModels') as Promise<import('./role-editor.tsx').RoleModelCatalog>,
+                unapply: (id: string) => call('unapplyPreset', id),
                 delete: (id: string) => call('deletePreset', id),
             };
         }, []);

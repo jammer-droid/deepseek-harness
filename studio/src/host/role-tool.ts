@@ -1,0 +1,62 @@
+import type { Context } from '@deepseek-ai/cordis';
+import { defineTool } from '@deepseek-ai/dsh-tools';
+
+import { ReasoningEffortId } from '@deepseek-ai/dsh-llm';
+import type {} from '@deepseek-ai/dsh-subagent';
+import { executableRoles, parseRoles, type StudioRole } from '../role-settings.ts';
+
+export const name = 'studio-role';
+export const inject = ['tools', 'subagents'];
+export interface Config { roles: StudioRole[] }
+export function apply(ctx: Context, config: Config): void {
+  const roles = executableRoles(parseRoles(config.roles));
+  ctx.tools.register(defineTool({
+    name: 'studio_role',
+    description: 'Discover saved specialist roles or delegate a task to one. Calls return a native child agent id; the child reports back through normal subagent delivery.',
+    parameters: {
+      action: { type: 'string', enum: ['list', 'call'], required: true, description: 'list discovers role identifiers and settings; call delegates a task.' },
+      role: { type: 'string', description: 'Saved role identifier, required for call.' },
+      task: { type: 'string', description: 'Self-contained task for the specialist, required for call. Fork roles also inherit the conversation.' },
+    },
+    output: {
+      schema: { type: 'object', additionalProperties: false, properties: { result: { type: 'string', required: true } } },
+      render: (_args, value) => [{ type: 'text', text: value.result }],
+    },
+    isConcurrencySafe: () => true,
+    async execute(args, exec) {
+      if (args.action === 'list') return { result: JSON.stringify({ roles: roles.map(({ persona: _persona, ...role }) => role) }) };
+      if (args.action !== 'call') throw new Error('Unknown Studio role action');
+      const role = roles.find(role => role.role === args.role);
+      if (!role) throw new Error('Unknown Studio role; use action=list to discover roles');
+      if (typeof args.task !== 'string' || !args.task.trim()) throw new Error('Role call requires a task');
+      if (!exec.agent) throw new Error('Studio role call requires a calling agent');
+      exec.signal.throwIfAborted();
+      const agentOptions: NonNullable<Parameters<typeof ctx.subagents.startActivation>[0]['request']['agentOptions']> = {};
+      if (role.model !== 'inherit') {
+        const slash = role.model.indexOf('/');
+        agentOptions.provider = role.model.slice(0, slash);
+        agentOptions.model = role.model.slice(slash + 1);
+      }
+      if (role.reasoning !== 'inherit') agentOptions.reasoningEffort = ReasoningEffortId(role.reasoning);
+      const maxDepth = ctx.subagents.resolveMaxDepth();
+      const spec = {
+        provider: role.spawn === 'fork' ? 'fork' : 'spawn', label: role.name,
+        request: { parent: exec.agent, prompt: [{ type: 'text' as const, text: args.task }],
+          ...(Object.keys(agentOptions).length ? { agentOptions } : {}),
+          ...(role.persona ? { persona: role.persona } : {}),
+          ...(maxDepth === undefined ? {} : { maxDepth }),
+        },
+        signal: exec.signal,
+      };
+      // Both methods are public native APIs. rc.2 predates activation unification.
+      const native = ctx.subagents as typeof ctx.subagents & {
+        startContinuable?: (input: typeof spec) => Promise<{ childId: string }>;
+      };
+      const started = typeof native.startActivation === 'function'
+        ? await native.startActivation({ ...spec, delivery: 'parent' })
+        : native.startContinuable ? await native.startContinuable(spec)
+          : (() => { throw new Error('This DSH runtime lacks a native child start API'); })();
+      return { result: JSON.stringify({ kind: 'activation', subagentId: started.childId, role: role.role }) };
+    },
+  }));
+}

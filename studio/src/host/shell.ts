@@ -1,3 +1,4 @@
+import { BUILTIN_TOOL_PRESETS, OPTIMIZED_PRESET_ID } from '../optimized-preset.ts';
 import type { Context } from '@deepseek-ai/cordis';
 import { createConfigProjector, isNativeConfigSchema, LOADER_EXPRESSION_SCHEMA } from '@deepseek-ai/dsh-app-boot';
 import type { PluginCatalogEntry } from '../plugin-catalog.ts';
@@ -40,11 +41,19 @@ export default class StudioCatalog extends TypertRemoteService {
     });
   }
   @Remote
-  async listPresets() { const catalog = await this.snapshot; return [{ id: MASTER_PRESET_ID, name: MASTER_PRESET_NAME, description: 'Studio Master · read-only', readOnly: true, status: 'applied' as const, agents: [], request: { preset: MASTER_PRESET_ID, providers: [], tools: catalog.tools.map(tool => tool.name), prompt: '', model: 'testLLM' } }, ...await this.store.list()]; }
+  async listPresets() { const catalog = await this.snapshot; return [{ id: MASTER_PRESET_ID, name: MASTER_PRESET_NAME, description: 'Studio Master · read-only', readOnly: true, status: 'applied' as const, agents: [], request: { preset: MASTER_PRESET_ID, providers: [], tools: catalog.tools.map(tool => tool.name), prompt: '', model: 'testLLM' } }, ...(await this.store.list()).sort((a, b) => Number(b.id === OPTIMIZED_PRESET_ID) - Number(a.id === OPTIMIZED_PRESET_ID))]; }
   @Remote
   async savePreset(payload: string) { return this.store.save(payload); }
   @Remote
   async applyPreset(id: string) { await this.snapshot; return this.store.apply(id); }
+  @Remote
+  async unapplyPreset(id: string) { return this.store.unapply(id); }
+  @Remote
+  async roleModels() {
+    const service = this.ctx.get('sessionController');
+    if (!service) throw new Error('Model catalog API unavailable');
+    return service.modelCatalog();
+  }
   @Remote
   async deletePreset(id: string) { return this.store.delete(id); }
   @Remote
@@ -111,7 +120,7 @@ export default class StudioCatalog extends TypertRemoteService {
     if (master.broken) throw new Error(`Studio Master: ${master.broken}`);
     const registry = this.ctx.get('agentPresets') as unknown as CatalogServices['agentPresets'];
     const catalog = await readPresetCatalog({
-      agentPresets: { list: async () => [{ id: MASTER_PRESET_ID, name: MASTER_PRESET_NAME }], readDocument: id => registry.readDocument(id), acquireScope: id => registry.acquireScope(id) },
+      agentPresets: { list: async () => [{ id: MASTER_PRESET_ID, name: MASTER_PRESET_NAME }, ...(await registry.list()).filter(p => BUILTIN_TOOL_PRESETS.includes(p.id as typeof BUILTIN_TOOL_PRESETS[number]))], readDocument: id => registry.readDocument(id), acquireScope: id => registry.acquireScope(id) },
       systemPrompt: this.ctx.get('systemPrompt') as unknown as CatalogServices['systemPrompt'],
       tools: this.ctx.get('tools') as unknown as CatalogServices['tools'],
     });
@@ -119,6 +128,8 @@ export default class StudioCatalog extends TypertRemoteService {
     for (const preset of catalog.presets) {
       if (preset.declaration) preset.promptProviders = promptProviders(parseComposition(preset.declaration));
     }
+    const baseline = catalog.presets.find(p => p.id === MASTER_PRESET_ID)!;
+    await this.store.ensureOptimized(baseline.tools.map(t => t.name), composition);
     catalog.plugins = plugins;
     catalog.execution = executionCapabilities(catalog.tools);
     return catalog;

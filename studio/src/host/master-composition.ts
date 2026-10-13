@@ -7,6 +7,8 @@ export function masterComposition(): CompositionRow[] {
     plugin('agent-instructions', { maxBytes: 65536 }), plugin('time-context'),
     plugin(process.platform === 'win32' ? 'tool-pwsh' : 'tool-bash'),
     plugin('spill-policy'),
+    { id: 'studio-batch', name: '@local/dsh-studio-shell/batch' },
+    ...(process.platform === 'win32' ? [] : [{ id: 'studio-tasks', name: '@local/dsh-studio-shell/tasks' }]),
     plugin('tool-fs'), plugin('tool-fs-search', { sampleOverCapGlobResults: false }),
     plugin('tool-jobs'), plugin('skill-filesystem'), plugin('tool-skill'),
     plugin('command-goal'), plugin('tool-goal'),

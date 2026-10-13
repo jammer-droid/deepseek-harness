@@ -74,12 +74,27 @@ test('selection, recursive inputs and reset preserve inheritance and immutable f
     assert.equal(calls, 0);
     assert.ok(control('Available Configs')); assert.ok(control('Selected Configs'));
     assert.match(control('Selected Configs').textContent, /Schema unavailable/);
+    const search = document.querySelector('input[type=search]');
+    await act(async () => Simulate.change(search, { target: { value: 'nested' } }));
+    assert.ok(control('Add: plugin'), 'nested schema fields are discoverable');
     await click('Add: plugin');
     assert.deepEqual(latest, { other: { retained: true }, plugin: {} });
     assert.equal(control('plugin: count').value, '7');
     assert.equal(control('plugin: absent').value, 'Do not save');
     assert.equal(control('plugin: nested.limit').value, '9');
     assert.equal(control('plugin: readonly').disabled, true);
+    const card = control('Remove: plugin').closest('.studio-card');
+    assert.equal(card.querySelector('[data-studio-modified]'), null);
+    await change('plugin: count', '8');
+    assert.equal(card.querySelector('[data-studio-modified]').textContent, 'Modified');
+    await act(async () => Simulate.change(search, { target: { value: 'no-such-setting' } }));
+    assert.match(control('Available Configs').textContent, /No matching results/);
+    assert.equal(control('plugin: count').value, '8', 'search retains selected draft edits');
+    await act(async () => Simulate.change(search, { target: { value: '' } }));
+    await change('plugin: count', '7');
+    assert.equal(card.querySelector('[data-studio-modified]'), null, 'same as original is not modified');
+    await click('Reset override: plugin: count');
+    assert.equal(card.querySelector('[data-studio-modified]'), null);
     const selected = latest;
     await change('plugin: count', '0');
     await change('plugin: enabled', 'false');
@@ -116,7 +131,7 @@ test('selection, recursive inputs and reset preserve inheritance and immutable f
     await act(async () => root.render(React.createElement(Harness, { entries: errors })));
     assert.equal(control('Add: broken').disabled, true);
     assert.equal(control('Add: missing').disabled, true);
-    assert.equal(document.querySelectorAll('input, select, textarea').length, 0);
+    assert.equal(document.querySelectorAll('input:not([type=search]), select, textarea').length, 0);
     assert.ok(control('Remove: plugin'));
     for (const [locale, available, selected] of [['ko-KR', '사용 가능한 Config', '선택한 Config'], ['zh-CN', '可用 Config', '已选 Config']]) {
       await act(async () => root.render(React.createElement(Harness, { entries: errors, locale })));

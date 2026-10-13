@@ -1,4 +1,5 @@
 import React from 'react';
+import { ChangeIndicator, hasChangedOverride } from './change-indicator.tsx';
 import { Button, SectionHead } from './ui.tsx';
 
 export interface ConfigEditorProps {
@@ -114,18 +115,35 @@ function Field({ schema: raw, root, path, base, override, change, labels, entryI
   </div>;
 }
 
+function comparisonBase(raw: Schema | undefined, root: Schema | undefined, base: unknown, depth = 0): unknown {
+  if (!raw || !root || depth > 16) return base;
+  let schema = resolve(raw, root);
+  if (Array.isArray(schema.anyOf)) {
+    const literal = schema.anyOf.filter(branch => !isObject(branch) || branch.$ref !== '#/$defs/loaderExpression');
+    if (literal.length === 1 && literal.length < schema.anyOf.length && isObject(literal[0])) schema = resolve(literal[0], root);
+  }
+  const value = base === undefined ? schema.default : base;
+  if (isObject(schema.properties) && (value === undefined || isObject(value))) {
+    return { ...(isObject(value) ? value : {}), ...Object.fromEntries(Object.entries(schema.properties).filter(([, child]) => isObject(child)).map(([key, child]) => [key, comparisonBase(child as Schema, root, isObject(value) ? value[key] : undefined, depth + 1)])) };
+  }
+  return value;
+}
+
 /** Config selection is key presence; an empty override intentionally keeps a Config selected. */
 export function ConfigEditor({ entries, value, onChange, locale }: ConfigEditorProps) {
   const labels = copy[locale.startsWith('ko') ? 'ko' : locale.startsWith('zh') ? 'zh' : 'en'];
-  const available = entries.filter(entry => !own(value, entry.id));
+  const [query, setQuery] = React.useState('');
+  const text = locale.startsWith('ko') ? { search: '실행 설정 검색', hint: '플러그인 이름, 설정 필드 또는 설명으로 검색', empty: '검색 결과가 없습니다.' } : locale.startsWith('zh') ? { search: '搜索执行设置', hint: '按插件名称、配置字段或描述搜索', empty: '没有匹配结果。' } : { search: 'Search execution settings', hint: 'Search plugin names, config fields or descriptions', empty: 'No matching results.' };
+  const available = entries.filter(entry => !own(value, entry.id) && `${entry.id}\n${entry.name}\n${JSON.stringify(entry.schema ?? {})}`.toLowerCase().includes(query.trim().toLowerCase()));
   const selected = Object.keys(value).map(id => entries.find(entry => entry.id === id) ?? { id, name: id });
   const remove = (id: string) => { const next = { ...value }; delete next[id]; onChange(next); };
   return <div>
     <p className="studio-muted">{labels.hint}</p>
+    <label className="studio-field"><span>{text.search}</span><input type="search" value={query} placeholder={text.hint} onChange={event => setQuery(event.target.value)} /></label>
     <div className="studio-comparison-grid">
       <section className="studio-transfer-column" aria-label={labels.available}>
         <SectionHead title={labels.available} />
-        <div className="studio-transfer-items">{!available.length && <p className="studio-muted">{labels.empty}</p>}{available.map(entry => <div className="studio-card" key={entry.id}>
+        <div className="studio-transfer-items">{!available.length && <p className="studio-muted" role="status">{query.trim() ? text.empty : labels.empty}</p>}{available.map(entry => <div className="studio-card" key={entry.id}>
           <SectionHead title={entry.name} description={entry.id} actions={<Button small disabled={!!entry.error || !entry.schema} aria-label={`${labels.add}: ${entry.id}`} onClick={() => onChange({ ...value, [entry.id]: {} })}>{labels.add}</Button>} />
           {(entry.error || !entry.schema) && <p className="studio-muted">{entry.error || labels.unavailable}</p>}
         </div>)}</div>
@@ -134,7 +152,7 @@ export function ConfigEditor({ entries, value, onChange, locale }: ConfigEditorP
         <SectionHead title={labels.selected} />
         {!selected.length && <p className="studio-muted">{labels.empty}</p>}
         {selected.map(entry => <div className="studio-card" key={entry.id}>
-          <SectionHead title={entry.name} description={entry.id} actions={<Button small aria-label={`${labels.remove}: ${entry.id}`} onClick={() => remove(entry.id)}>{labels.remove}</Button>} />
+          <SectionHead title={entry.name} description={entry.id} actions={<>{hasChangedOverride(comparisonBase(entry.schema, entry.schema, entry.config), value[entry.id]) && <ChangeIndicator locale={locale} />}<Button small aria-label={`${labels.remove}: ${entry.id}`} onClick={() => remove(entry.id)}>{labels.remove}</Button></>} />
           {entry.error || !entry.schema ? <p role="status" className="studio-muted">{entry.error || labels.unavailable}</p> : <Field schema={entry.schema} root={entry.schema} path={[]} base={entry.config} override={value[entry.id]!} entryId={entry.id} labels={labels} change={(path, next, reset) => onChange({ ...value, [entry.id]: update(value[entry.id]!, path, next, reset) })} />}
         </div>)}
       </section>

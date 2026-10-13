@@ -5,18 +5,27 @@
   "exports": {
     ".": "./index.js",
     "./client": "./client.js",
-    "./policy": "./policy.js"
+    "./policy": "./policy.js",
+    "./roles": "./roles.js",
+    "./batch": "./batch.js",
+    "./tasks": "./tasks.js"
   },
   "files": [
     "index.js",
     "client.js",
-    "policy.js"
+    "policy.js",
+    "roles.js",
+    "batch.js",
+    "tasks.js"
   ],
   "dependencies": { "js-yaml": "^4.3.2" },
   "peerDependencies": {
     "@deepseek-ai/dsh": "0.2.0-rc.2 || 0.2.1-alpha.2",
     "@deepseek-ai/dsh-scope": "0.2.0-rc.2 || 0.2.1-alpha.2",
     "@deepseek-ai/dsh-system-prompt": "0.2.0-rc.2 || 0.2.1-alpha.2",
+    "@deepseek-ai/dsh-tools": "0.2.0-rc.2 || 0.2.1-alpha.2",
+    "@deepseek-ai/dsh-jobs": "0.2.0-rc.2 || 0.2.1-alpha.2",
+    "@deepseek-ai/dsh-llm": "0.2.0-rc.2 || 0.2.1-alpha.2",
     "@deepseek-ai/cordis-plugin-include": "*"
   },
   "peerDependenciesMeta": {
