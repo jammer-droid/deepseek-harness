@@ -24,7 +24,7 @@ test('two-column selection keeps prompt on top and uses authoritative assembly o
   const tools = ['read', 'grep', 'glob', 'read_batch'].map(name => ({ name, description: `${name}: full model-facing description\nincluding usage constraints` }));
   tools[3].parameters = { type: 'object', required: ['options'], properties: { options: { type: 'object', description: 'Options', required: ['limit'], properties: { limit: { type: 'number', description: 'Maximum results' } } } } };
   tools[3].promptSections = [{ name: 'tool:jobs', text: 'Original jobs guidance' }];
-  const catalog = { tools, presets: [{ id: 'minimal', sections: [], tools, promptProviders: [{ name: '@deepseek-ai/dsh-persona', description: 'Base persona instructions', fields: [{ key: 'prefix', type: 'string', value: 'Original persona' }, { key: 'suffix', type: 'string', value: '' }, { key: 'includeRuntimeContext', type: 'boolean', value: false }, { key: 'limit', type: 'number', value: 10, minimum: 1 }, { key: 'files', type: 'string[]', value: ['AGENTS.md'] }] }] }] };
+  const catalog = { tools, presets: [{ id: 'studio-master', sections: [], tools, promptProviders: [{ name: '@deepseek-ai/dsh-persona', description: 'Base persona instructions', fields: [{ key: 'prefix', type: 'string', value: 'Original persona' }, { key: 'suffix', type: 'string', value: '' }, { key: 'includeRuntimeContext', type: 'boolean', value: false }, { key: 'limit', type: 'number', value: 10, minimum: 1 }, { key: 'files', type: 'string[]', value: ['AGENTS.md'] }] }] }] };
   let request;
   function Harness() {
     const [provided, onProvidedChange] = React.useState(defaultProvidedTools);
@@ -80,7 +80,7 @@ test('two-column selection keeps prompt on top and uses authoritative assembly o
     assert.equal(document.querySelectorAll('.studio-prompt-document pre').length, 0);
     assert.match(document.querySelector('.studio-schema-tool').textContent, /minLength/);
     assert.equal(document.querySelector('.studio-schema-tool').open, false);
-    assert.equal(request.preset, 'minimal');
+    assert.equal(request.preset, 'studio-master');
     assert.equal(Object.hasOwn(request, 'persona'), false);
     const { Simulate } = await import('react-dom/test-utils');
     assert.equal(request.model, 'testLLM');

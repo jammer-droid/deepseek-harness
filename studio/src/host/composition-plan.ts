@@ -1,3 +1,4 @@
+import { MASTER_PRESET_ID } from '../master-preset.ts';
 import { providerFields } from '../provider-fields.ts';
 import type { Context } from '@deepseek-ai/cordis';
 import type {} from '@deepseek-ai/dsh-agent-preset-registry';
@@ -18,11 +19,12 @@ function findProviders(rows: CompositionRow[]): CompositionRow[] {
 /** Server-owned declarations only; client input never supplies module names or executable YAML. */
 export async function compositionPlan(ctx: Context, input: PreviewRequest) {
   const request = parsePreviewRequest(input);
-  const minimal = parseComposition((await ctx.agentPresets.readDocument('minimal')).content);
+  const base = request.preset === MASTER_PRESET_ID ? MASTER_PRESET_ID : 'minimal';
+  const minimal = parseComposition((await ctx.agentPresets.readDocument(base)).content);
   const available = new Map(findProviders(minimal).map(row => [row.name, row]));
   const presets = await ctx.agentPresets.list();
   for (const preset of presets) {
-    if (!['minimal', 'standard', 'ptc', 'cordis'].includes(preset.id)) continue;
+    if (base === MASTER_PRESET_ID || !['minimal', 'standard', 'ptc', 'cordis'].includes(preset.id)) continue;
     try {
       for (const row of findProviders(parseComposition((await ctx.agentPresets.readDocument(preset.id)).content))) {
         if (!available.has(row.name)) available.set(row.name, row);
@@ -62,14 +64,14 @@ export async function compositionPlan(ctx: Context, input: PreviewRequest) {
     // Keep provider closures and dependency realms together; never transplant live definitions
     // from a different preset scope. Prefer minimal, otherwise one compatible source composition.
     let source: CompositionRow[] | undefined;
-    const candidates = ['minimal', ...presets.map(p => p.id).filter(id => id !== 'minimal' && !id.startsWith('studio-'))];
+    const candidates = base === MASTER_PRESET_ID ? [MASTER_PRESET_ID] : ['minimal', ...presets.map(p => p.id).filter(id => id !== 'minimal' && !id.startsWith('studio-'))];
     for (const id of candidates) {
       let lease: Awaited<ReturnType<typeof ctx.agentPresets.acquireScope>> | undefined;
       try {
         lease = await ctx.agentPresets.acquireScope(id);
         const names = new Set(ctx.tools.schemas(lease.key).map(tool => tool.name));
         if (missing.every(name => names.has(name))) {
-          source = id === 'minimal' ? minimal : parseComposition((await ctx.agentPresets.readDocument(id)).content);
+          source = id === base ? minimal : parseComposition((await ctx.agentPresets.readDocument(id)).content);
           break;
         }
       } catch { /* Try another registered composition. */ }

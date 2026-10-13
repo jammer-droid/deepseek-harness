@@ -1,4 +1,5 @@
 import { providerFields, type ProviderField } from './provider-fields.ts';
+import { validateExecutionDefaults, type ExecutionDefaults } from './execution-defaults.ts';
 export const promptProviderModules = [
   '@deepseek-ai/dsh-persona',
   '@deepseek-ai/dsh-agent-instructions',
@@ -10,7 +11,7 @@ export const promptProviderModules = [
 ] as const;
 export interface PromptProvider { name: string; description: string; fields?: ProviderField[] }
 export interface ToolOverride { description?: string; parameters?: Record<string, string> }
-export interface PreviewRequest { preset: string; providers: string[]; tools: string[]; prompt: string; model: string; persona?: string; toolOverrides?: Record<string, ToolOverride>; sections?: Record<string, string>; providerConfigs?: Record<string, Record<string, unknown>> }
+export interface PreviewRequest { preset: string; providers: string[]; tools: string[]; prompt: string; model: string; persona?: string; toolOverrides?: Record<string, ToolOverride>; sections?: Record<string, string>; providerConfigs?: Record<string, Record<string, unknown>>; execution?: ExecutionDefaults }
 export interface PresetBundle { files: Record<string, string> }
 export type ExportAction = (request: PreviewRequest) => Promise<PresetBundle>;
 /** Runtime schema used by the public Remote input codec. */
@@ -24,7 +25,8 @@ export function parsePreviewRequest(value: unknown): PreviewRequest {
   if (row.sections !== undefined && (!record(row.sections) || Object.values(row.sections).some(v => typeof v !== 'string'))) throw new Error('Invalid section overrides');
   if (row.toolOverrides !== undefined && (!record(row.toolOverrides) || Object.values(row.toolOverrides).some(v => !record(v) || Object.keys(v).some(k => !['description', 'parameters'].includes(k)) || (v.description !== undefined && typeof v.description !== 'string') || (v.parameters !== undefined && (!record(v.parameters) || Object.values(v.parameters).some(p => typeof p !== 'string')))))) throw new Error('Invalid tool overrides');
   if (row.providerConfigs !== undefined && (!record(row.providerConfigs) || Object.values(row.providerConfigs).some(v => !record(v)))) throw new Error('Invalid provider configs');
-  return { preset: row.preset, providers: [...row.providers], tools: [...row.tools], prompt: row.prompt, model: row.model,
+  if (row.execution !== undefined) validateExecutionDefaults(row.execution);
+  return { ...(row.execution !== undefined ? { execution: row.execution } : {}), preset: row.preset, providers: [...row.providers], tools: [...row.tools], prompt: row.prompt, model: row.model,
     ...(row.persona !== undefined ? { persona: row.persona as string } : {}),
     ...(row.sections !== undefined ? { sections: row.sections as Record<string,string> } : {}),
     ...(row.toolOverrides !== undefined ? { toolOverrides: row.toolOverrides as Record<string,ToolOverride> } : {}),

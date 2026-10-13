@@ -25,11 +25,11 @@ export function ServiceLayout({ locale, services, renderSlot }: PropsRenderSlots
   }, [selection, services]);
   const id = React.useId();
   return <div className="studio-services">
-    <nav className="studio-service-nav" aria-label={t.navigation}>
+    {services.length > 1 && <nav className="studio-service-nav" aria-label={t.navigation}>
       {services.map(service => <button key={service.id} type="button" className="studio-nav-item"
         aria-current={service.id === active ? 'page' : undefined} aria-controls={`${id}-${service.id}`}
         onClick={() => setSelection(service.id)}>{service.label}</button>)}
-    </nav>
+    </nav>}
     {!services.length && <p role="status" className="studio-muted">{t.empty}</p>}
     {services.map(service => <section className="studio-service-panel" key={service.id}
       id={`${id}-${service.id}`} hidden={service.id !== active}>{renderSlot('local.dsh-studio.services', { active: service.id === active }, { only: service.id })}</section>)}

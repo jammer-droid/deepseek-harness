@@ -2,7 +2,7 @@ import { toolPromptSections } from './tool-prompt-sections.ts';
 export interface CatalogTool { name: string; description: string; parameters?: Record<string, unknown>; promptSections?: CatalogSection[] }
 export interface CatalogSection { name: string; text: string }
 export interface CatalogPreset { promptProviders?: import('./prompt-composition.ts').PromptProvider[]; id: string; name?: string | undefined; sections: CatalogSection[]; tools: CatalogTool[]; declaration?: string; error?: string }
-export interface PresetCatalog { presets: CatalogPreset[]; tools: CatalogTool[] }
+export interface PresetCatalog { plugins?: import('./plugin-catalog.ts').PluginCatalogEntry[]; presets: CatalogPreset[]; tools: CatalogTool[]; execution?: import('./execution-capabilities.ts').ExecutionCapabilities }
 export interface CatalogServices {
   agentPresets: {
     list(): Promise<{ id: string; name?: string }[]>;
@@ -12,6 +12,21 @@ export interface CatalogServices {
   systemPrompt: { assemble(context: { scope: object }): Promise<{ sections: CatalogSection[]; tools: CatalogTool[] }> };
   tools: { schemas(scope?: object): CatalogTool[] };
 }
+/** Startup snapshot: never mounts presets or executes prompt contributors. */
+export async function readStartupCatalog(services: Pick<CatalogServices, 'agentPresets' | 'tools'>): Promise<PresetCatalog> {
+  const tools = structuredClone(services.tools.schemas());
+  const presets: CatalogPreset[] = [];
+  for (const preset of await services.agentPresets.list()) {
+    try {
+      const declaration = (await services.agentPresets.readDocument(preset.id)).content;
+      presets.push({ ...preset, declaration, sections: [], tools: [] });
+    } catch (error) {
+      presets.push({ ...preset, sections: [], tools: [], error: String(error) });
+    }
+  }
+  return { presets, tools: tools.sort((a, b) => a.name.localeCompare(b.name)) };
+}
+
 /** Read registered contributions, not plugin-name guesses or source-file snapshots. */
 export async function readPresetCatalog(services: CatalogServices): Promise<PresetCatalog> {
   const all = new Map(services.tools.schemas().map(tool => [tool.name, { name: tool.name, description: tool.description, ...(tool.parameters ? { parameters: tool.parameters } : {}) }]));

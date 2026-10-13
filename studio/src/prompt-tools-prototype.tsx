@@ -5,13 +5,14 @@ import { mergePresetTools, type PresetCatalog } from './preset-catalog.ts';
 import type { PreviewAction, PreviewResult } from './prompt-composition.ts';
 
 export const defaultProvidedTools: string[] = [];
-export function PromptToolsPrototype({ locale, prompt, onPromptChange, provided, onProvidedChange, catalog, catalogError, onPreview }: {
+export function PromptToolsPrototype({ locale, prompt, onPromptChange, provided, onProvidedChange, catalog, catalogError, onPreview, onRequestChange }: {
+  onRequestChange?: ((request: import('./prompt-composition.ts').PreviewRequest) => void) | undefined;
   catalog?: PresetCatalog | undefined; catalogError?: string | undefined; onPreview?: PreviewAction | undefined;
   locale: string; prompt: string; onPromptChange: (value: string) => void;
   provided: string[]; onProvidedChange: (value: string[]) => void;
 }) {
   const t = (ko: string, en: string, zh: string) => locale.startsWith('ko') ? ko : locale.startsWith('zh') ? zh : en;
-  const base = 'minimal';
+  const base = 'studio-master';
   const [toolOverrides, setToolOverrides] = React.useState<Record<string, { description?: string; parameters?: Record<string, string> }>>({});
   const [sections, setSections] = React.useState<Record<string, string>>({});
   const providers = ['@deepseek-ai/dsh-persona'];
@@ -39,6 +40,7 @@ export function PromptToolsPrototype({ locale, prompt, onPromptChange, provided,
   };
   const personaFields = current?.promptProviders?.find(provider => provider.name === providers[0])?.fields ?? [];
   const requestKey = JSON.stringify(request);
+  React.useEffect(() => { onRequestChange?.(request); }, [requestKey, onRequestChange]);
   const labels = { available: t('사용 가능', 'Available', '可用'), selected: t('선택됨', 'Selected', '已选'), add: t('추가 →', 'Add →', '添加 →'), remove: t('← 제외', '← Remove', '← 移除'), empty: t('항목 없음', 'No items', '无项目'), details: t('상세', 'Details', '详情'), close: t('닫기', 'Close', '关闭') };
   const togglePreset = (presetId: string) => {
     const active = toolPresets.includes(presetId) ? toolPresets.filter(p => p !== presetId) : [...toolPresets, presetId];
@@ -75,7 +77,7 @@ export function PromptToolsPrototype({ locale, prompt, onPromptChange, provided,
     })}
     <label className="studio-field"><span>{t('Studio 추가 지침', 'Additional Studio instructions', 'Studio 附加指令')}</span><textarea rows={8} value={prompt} onChange={e => onPromptChange(e.target.value)} /></label>
     <SectionHead title={t('제공 도구', 'Provided tools', '提供的工具')} description={t('상세에서 설명을 편집합니다. 원본 사용으로 돌아갈 수 있으며 실행 구현은 변경하지 않습니다.', 'Edit descriptions in Details. Reset to the original at any time; execution implementations are unchanged.', '在详情中编辑描述，可恢复原始值；执行实现保持不变。')} />
-    <div className="studio-row">{presets.filter(p => ['standard', 'ptc', 'minimal', 'cordis', 'creator'].includes(p.id)).map(p => <Button key={p.id} disabled={!!p.error} aria-pressed={toolPresets.includes(p.id)} onClick={() => togglePreset(p.id)}>{p.id === 'cordis' ? 'creator (cordis)' : p.id}</Button>)}</div>
+    <div className="studio-row">{presets.filter(p => ['studio-master'].includes(p.id)).map(p => <Button key={p.id} disabled={!!p.error} aria-pressed={toolPresets.includes(p.id)} onClick={() => togglePreset(p.id)}>{p.id === 'cordis' ? 'creator (cordis)' : p.id}</Button>)}</div>
     <label className="studio-field"><span>{t('도구 검색', 'Search tools', '搜索工具')}</span><input value={query} onChange={e => setQuery(e.target.value)} /></label>
     <SelectionTransfer items={[...tools, ...provided.filter(name => !tools.some(tool => tool.name === name)).map(name => ({ name, description: t('현재 카탈로그에 없음', 'Absent from current catalog', '不在当前目录中') }))].filter(tool => `${tool.name}\n${tool.description}`.toLowerCase().includes(query.toLowerCase()))} selected={provided} onChange={changeTools} labels={labels} renderDetails={name => {
       const tool = tools.find(tool => tool.name === name);

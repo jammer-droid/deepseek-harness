@@ -1,4 +1,5 @@
 import type { Context } from '@deepseek-ai/cordis';
+import { applyExecutionDefaults, validateBatchLimit, validateExecutionDefault, validateExecutionDefaults, type ExecutionDefaults } from '../execution-defaults.ts';
 import { scopeOf } from '@deepseek-ai/dsh-scope';
 import type { PromptSectionOrderName } from '@deepseek-ai/dsh-system-prompt';
 import type {} from '@deepseek-ai/dsh-tools';
@@ -9,6 +10,7 @@ export interface PresetPolicyConfig {
   toolOverrides: Record<string, { description?: string; parameters?: Record<string, string> }>;
   sections: Record<string, string>;
   prompt: string;
+  execution?: ExecutionDefaults;
 }
 
 /** Explicit supported section placements; never infer a plugin from its section name. */
@@ -24,6 +26,11 @@ const record = (value: unknown): value is Record<string, unknown> => !!value && 
 export function validatePolicy(config: PresetPolicyConfig): void {
   if (!record(config) || !Array.isArray(config.tools) || config.tools.some(name => typeof name !== 'string' || !name)
     || new Set(config.tools).size !== config.tools.length || !record(config.toolOverrides) || !record(config.sections) || typeof config.prompt !== 'string') throw new Error('Invalid Studio policy');
+  if (config.execution !== undefined) {
+    validateExecutionDefaults(config.execution);
+    for (const name of Object.keys(config.execution.defaults)) if (!config.tools.includes(name)) throw new Error(`Execution default requires selected tool: ${name}`);
+    if (config.execution.batch && !config.tools.includes(config.execution.batch.tool)) throw new Error('Batch limit requires selected tool');
+  }
   for (const [name, override] of Object.entries(config.toolOverrides)) {
     if (!config.tools.includes(name)) throw new Error(`Override requires selected tool: ${name}`);
     if (!record(override) || Object.keys(override).some(key => !['description', 'parameters'].includes(key)) || (override.description !== undefined && typeof override.description !== 'string')
@@ -54,10 +61,29 @@ export function installPolicy(ctx: Context, scopeKey: object, config: PresetPoli
     const definition = ctx.tools.get(name, scopeKey);
     if (!definition) throw new Error(`Unavailable selected tool: ${name}`);
     const override = config.toolOverrides[name];
-    if (!override) return undefined;
+    const defaults = config.execution?.defaults[name];
+    const batch = config.execution?.batch?.tool === name ? config.execution.batch : undefined;
+    if (!override && !defaults && !batch) return undefined;
     const parameters = structuredClone(definition.parameters);
-    for (const [path, description] of Object.entries(override.parameters ?? {})) patchParameter(parameters, path, description);
-    return { ...definition, parameters, ...(override.description === undefined ? {} : { description: override.description }) };
+    for (const [path, description] of Object.entries(override?.parameters ?? {})) patchParameter(parameters, path, description);
+    for (const [field, value] of Object.entries(defaults ?? {})) {
+      validateExecutionDefault(parameters, field, value);
+      ((parameters.properties as Record<string, Record<string, unknown>>)[field]!).default = value;
+    }
+    if (batch) {
+      validateBatchLimit(parameters, batch);
+      ((parameters.properties as Record<string, Record<string, unknown>>)[batch.parameter]!).maxItems = batch.maxItems;
+    }
+    const stableDefaults = { ...defaults };
+    const stableBatch = batch && { ...batch };
+    return { ...definition, parameters, ...(override?.description === undefined ? {} : { description: override.description }),
+      ...(defaults || batch ? { execute(args: unknown, exec: Parameters<typeof definition.execute>[1]) {
+        const effective = applyExecutionDefaults(args, stableDefaults);
+        if (stableBatch && record(effective) && Array.isArray(effective[stableBatch.parameter]) && (effective[stableBatch.parameter] as unknown[]).length > stableBatch.maxItems) throw new Error(`Studio batch limit exceeded: ${stableBatch.maxItems}`);
+        // Stay inside the registry's existing execution pipeline; never recursively dispatch.
+        return definition.execute.call(definition, effective, exec);
+      } } : {}),
+    };
   }).filter(definition => definition !== undefined);
   const disposers: Array<() => void> = [];
   const dispose = () => { for (const release of disposers.splice(0).reverse()) release(); };

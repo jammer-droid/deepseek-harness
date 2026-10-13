@@ -19,7 +19,10 @@ export async function apply(ctx: StudioContext) {
         id: '@local/dsh-studio-shell#studioCatalog/preview', service: 'studioCatalog', namespace: 'studioCatalog', method: 'preview',
         invocation: { kind: 'direct' }, parameters: [{ name: 'request', wire: 'request', source: 'json', codec: { mode: 'strict', typeSymbol: 'PreviewRequest', create: () => ({ parse: parsePreviewRequest }) } }], result: { mode: 'src-json' },
 
-    }] });
+    }, ...['listPresets', 'savePreset', 'applyPreset', 'deletePreset'].map(method => ({
+        id: `@local/dsh-studio-shell#studioCatalog/${method}`, service: 'studioCatalog', namespace: 'studioCatalog', method,
+        invocation: { kind: 'direct' }, parameters: method === 'listPresets' ? [] : [{ name: method === 'savePreset' ? 'payload' : 'id', wire: method === 'savePreset' ? 'payload' : 'id', source: 'json', codec: { mode: 'strict', typeSymbol: 'string', create: () => ({ parse: (value: unknown) => { if (typeof value !== 'string') throw new TypeError('Expected a string'); return value; } }) } }], result: { mode: 'src-json' },
+    }))] });
     ctx.effect(() => ctx.locale.addLanguage({ id: 'ko', label: '한국어', fallback: 'en' }));
     const serviceListeners = new Set<() => void>();
     let services: readonly StudioServiceItem[] = [];
@@ -79,7 +82,21 @@ export async function apply(ctx: StudioContext) {
             remote.read().then(result => { if (!active) return; if (result.ok) setCatalog(result.value); else setCatalogError(result.error?.message ?? 'Catalog request failed'); }, error => { if (active) setCatalogError(String(error)); });
             return () => { active = false; };
         }, []);
-        return <OptimizationPrototype locale={locale} catalog={catalog} catalogError={catalogError} onPreview={async request => {
+        const presetActions = React.useMemo(() => {
+            const call = async (method: string, ...args: unknown[]) => {
+                const service = ctx.get('remote.studioCatalog' as never) as unknown as Record<string, (...args: unknown[]) => Promise<{ ok: boolean; value: unknown; error?: { message: string } }>>;
+                const result = await service[method]!(...args);
+                if (!result.ok) throw new Error(result.error?.message ?? 'Preset request failed');
+                return result.value;
+            };
+            return {
+                list: () => call('listPresets') as Promise<import('./preset-manager.tsx').SavedPreset[]>,
+                save: (payload: string) => call('savePreset', payload) as Promise<import('./preset-manager.tsx').SavedPreset>,
+                apply: (id: string) => call('applyPreset', id) as Promise<import('./preset-manager.tsx').SavedPreset>,
+                delete: (id: string) => call('deletePreset', id),
+            };
+        }, []);
+        return <OptimizationPrototype presetActions={presetActions} locale={locale} catalog={catalog} catalogError={catalogError} onPreview={async request => {
             const service = ctx.get('remote.studioCatalog' as never) as unknown as { preview(request: import('./prompt-composition.ts').PreviewRequest): Promise<{ ok: boolean; value: import('./prompt-composition.ts').PreviewResult; error?: { message: string } }> };
             const response = await service.preview(request);
             if (!response.ok) throw new Error(response.error?.message ?? 'Preview failed');
@@ -88,7 +105,7 @@ export async function apply(ctx: StudioContext) {
     }
     ctx.slots.inject('local.dsh-studio.services', () => ctx.slots.register({
         name: 'local.dsh-studio.services', id: 'optimization-prototype', order: 0,
-        label: () => ({ ko: '최적화', en: 'Optimization', zh: '优化' }[ctx.locale.getLocale().active] ?? 'Optimization'),
+        label: () => ({ ko: '프리셋', en: 'Presets', zh: '预设' }[ctx.locale.getLocale().active] ?? 'Presets'),
     }, OptimizationPage));
     syncServices();
     ctx.slots.inject("sidebar.panellist", () =>

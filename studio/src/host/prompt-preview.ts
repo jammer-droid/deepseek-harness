@@ -19,7 +19,7 @@ export async function assemblePreview(ctx: Context, input: PreviewRequest): Prom
       const key = {};
       const child = createScope(ctx, key, { parent: lease.key });
       try {
-        installPolicy(child.ctx, key, { tools: request.tools, toolOverrides: request.toolOverrides ?? {}, sections: request.sections ?? {}, prompt: request.prompt });
+        installPolicy(child.ctx, key, { tools: request.tools, toolOverrides: request.toolOverrides ?? {}, sections: request.sections ?? {}, prompt: request.prompt, ...(request.execution ? { execution: request.execution } : {}) });
         child.ctx.systemPrompt.variable('cwd', () => process.cwd());
         if (request.model.trim()) child.ctx.systemPrompt.variable('model', () => request.model.trim());
         const assembly = await ctx.systemPrompt.assemble({ scope: key });

@@ -9,7 +9,7 @@ test('bundle contains only the shell and no managed preset', () => {
   assert.deepEqual(Object.keys(manifest.dependencies), ['@local/dsh-studio-shell']);
   assert.equal(read('../packages/bundle/cordis.patch.yml'), "- insert:\n    - id: local-dsh-studio-shell\n      name: '@local/dsh-studio-shell'\n");
   const sources = readdirSync(new URL('../src/', import.meta.url));
-  assert.ok(!sources.filter(name => !['preset-catalog.ts', 'preset-diagnostics.tsx', 'preset-export.ts'].includes(name)).some(name => /^(mock|roles|workflow|preset|catalog|experiments|general)/.test(name)));
+  assert.ok(!sources.filter(name => !['preset-catalog.ts', 'preset-diagnostics.tsx', 'preset-export.ts', 'preset-manager.tsx'].includes(name)).some(name => /^(mock|roles|workflow|preset|catalog|experiments|general)/.test(name)));
 });
 
 test('built client mounts read-only catalog and registers Studio optimization', async () => {

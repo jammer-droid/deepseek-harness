@@ -30,7 +30,8 @@ test('registered services retain edits across selection and disappear on removal
     assert.equal(draft.value, 'unsaved instruction');
     await act(async () => buttons()[1].click());
     await render([services[0]]);
-    assert.equal(buttons()[0].getAttribute('aria-current'), 'page');
+    assert.equal(document.querySelector('nav'), null);
+    assert.equal(document.querySelector('.studio-service-panel').hidden, false);
     await render(services);
     assert.equal(buttons()[0].getAttribute('aria-current'), 'page');
     for (const [locale, label] of [['ko', 'Studio 서비스'], ['zh', 'Studio 服务']]) {
