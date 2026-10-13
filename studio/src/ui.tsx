@@ -22,7 +22,7 @@ export function Button({ primary = false, small = false, className = '', type = 
 
 /** Mark a user override that differs from its inherited value. */
 export function ChangeIndicator({ locale }: { locale: string }) {
-  const labels = { ko: '수정됨', en: 'Modified', zh: '已修改' };
+  const labels = { ko: '변경됨', en: 'Modified', zh: '已修改' };
   const text = labels[locale.startsWith('ko') ? 'ko' : locale.startsWith('zh') ? 'zh' : 'en'];
   return <strong className="studio-schema-meta" data-studio-modified="true">{text}</strong>;
 }
@@ -140,6 +140,92 @@ export function ListGroup({ children }: React.PropsWithChildren) {
  */
 export function Tile({ title, onClick, children }: React.PropsWithChildren<{ title: React.ReactNode; onClick: () => void }>) {
   return <button type="button" className="studio-tile" onClick={onClick}><span className="studio-tile-title">{title}</span>{children}</button>;
+}
+
+/** Tone of a {@link Badge}; mirrors the DSH Tag status tones. */
+export type BadgeTone = 'neutral' | 'success' | 'warning' | 'info' | 'outline';
+
+/** Status capsule matching the DSH Tag geometry; usable from Node-tested modules.
+ * @param props Tone and localized label.
+ * @returns Inline badge.
+ */
+export function Badge({ tone = 'neutral', children }: React.PropsWithChildren<{ tone?: BadgeTone }>) {
+  return <span className="studio-badge" data-tone={tone}>{children}</span>;
+}
+
+/** Collapsible advanced block styled as a component card.
+ * @param props Title, optional one-line description, and body.
+ * @returns Native details element.
+ */
+export function Disclosure({ title, description, children }: React.PropsWithChildren<{ title: React.ReactNode; description?: React.ReactNode }>) {
+  return <details className="studio-disclosure">
+    <summary><span className="studio-disclosure-summary"><span>{title}</span>{description && <span className="studio-muted">{description}</span>}</span></summary>
+    <div className="studio-disclosure-body">{children}</div>
+  </details>;
+}
+
+/** One secondary action in a {@link SplitButton} menu. */
+export interface MenuAction { label: string; onSelect: () => void; disabled?: boolean }
+
+/** One control: the main action plus a caret menu for related secondary actions.
+ * @param props Main label and callback, emphasis, disabled state, menu actions, and the caret's accessible label.
+ * @returns Joined button pair with a dismissible menu.
+ */
+export function SplitButton({ label, onClick, primary = false, disabled = false, actions = [], menuLabel }: {
+  label: string; onClick: () => void; primary?: boolean; disabled?: boolean; actions?: readonly MenuAction[]; menuLabel: string;
+}) {
+  const [open, setOpen] = React.useState(false);
+  const root = React.useRef<HTMLSpanElement>(null);
+  const menuId = React.useId();
+  React.useEffect(() => {
+    if (!open) return;
+    const close = (event: Event) => { if (!root.current?.contains(event.target as Node)) setOpen(false); };
+    const escape = (event: KeyboardEvent) => { if (event.key === 'Escape') setOpen(false); };
+    document.addEventListener('pointerdown', close);
+    document.addEventListener('keydown', escape);
+    return () => { document.removeEventListener('pointerdown', close); document.removeEventListener('keydown', escape); };
+  }, [open]);
+  const menu = actions.length > 0;
+  return <span ref={root} className="studio-split" data-menu={menu}>
+    <Button small primary={primary} disabled={disabled} onClick={onClick}>{label}</Button>
+    {menu && <Button small primary={primary} className="studio-split-caret" disabled={disabled} aria-label={menuLabel} aria-haspopup="menu" aria-expanded={open} aria-controls={open ? menuId : undefined} onClick={() => setOpen(value => !value)}>
+      <svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+    </Button>}
+    {menu && open && <span id={menuId} role="menu" className="studio-split-menu">
+      {actions.map(action => <button key={action.label} type="button" role="menuitem" disabled={action.disabled} onClick={() => { setOpen(false); action.onSelect(); }}>{action.label}</button>)}
+    </span>}
+  </span>;
+}
+
+/** Native modal dialog for editing one item without growing the page layout.
+ * The element stays inside the Studio surface, so scoped styles apply in the top layer.
+ * @param props Open state, title, optional subtitle, close callback with optional header close label, body, and footer actions.
+ * @returns Dialog that restores focus to its opener when it closes.
+ */
+export function DetailDialog({ open, title, subtitle, onClose, closeLabel, footer, wide = false, children }: React.PropsWithChildren<{
+  open: boolean; wide?: boolean; title: React.ReactNode; subtitle?: React.ReactNode; onClose: () => void; closeLabel?: string; footer?: React.ReactNode;
+}>) {
+  const ref = React.useRef<HTMLDialogElement>(null);
+  const opener = React.useRef<HTMLElement | null>(null);
+  const titleId = React.useId();
+  React.useEffect(() => {
+    const node = ref.current;
+    if (!node) return;
+    if (open && !node.open) {
+      opener.current = document.activeElement as HTMLElement | null;
+      if (typeof node.showModal === 'function') node.showModal(); else node.setAttribute('open', '');
+    } else if (!open && node.open) {
+      if (typeof node.close === 'function') node.close(); else node.removeAttribute('open');
+      opener.current?.focus?.();
+    }
+  }, [open]);
+  return <dialog ref={ref} className={`studio-detail-dialog ${wide ? 'studio-dialog-wide' : ''}`} aria-labelledby={titleId} onCancel={event => { event.preventDefault(); onClose(); }}>
+    <div className="studio-dialog">
+      <header><div><h2 id={titleId}>{title}</h2>{subtitle && <p className="studio-muted">{subtitle}</p>}</div>{closeLabel && <Button small onClick={onClose}>{closeLabel}</Button>}</header>
+      <div className="studio-dialog-body studio-selection-detail">{children}</div>
+      {footer && <footer>{footer}</footer>}
+    </div>
+  </dialog>;
 }
 
 /** One choice in a picker list inside a dialog.
