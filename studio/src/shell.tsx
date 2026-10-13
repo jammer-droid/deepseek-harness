@@ -1,3 +1,4 @@
+import { parsePreviewRequest } from './prompt-composition.ts';
 import { StudioSurface } from './ui.tsx';
 import { OptimizationPrototype } from './optimization-prototype.tsx';
 import React from "react";
@@ -7,9 +8,17 @@ import { ServiceLayout, type StudioServiceItem } from './service-layout.tsx';
 import type {} from '@deepseek-ai/dsh-client-locale/client';
 import type { StudioContext, IconProps } from "./contracts.js";
 
-export const inject = ["slots", "locale"];
+export const inject = ["slots", "locale", "remote"];
 const panel = "local-dsh-studio";
-export function apply(ctx: StudioContext) {
+export async function apply(ctx: StudioContext) {
+    const remote = ctx.get('remote' as never) as unknown as { $mount(contribution: unknown): Promise<() => void> };
+    await remote.$mount({ package: '@local/dsh-studio-shell', descriptors: [{
+        id: '@local/dsh-studio-shell#studioCatalog/read', service: 'studioCatalog', namespace: 'studioCatalog', method: 'read',
+        invocation: { kind: 'direct' }, parameters: [], result: { mode: 'src-json' },
+    }, {
+        id: '@local/dsh-studio-shell#studioCatalog/preview', service: 'studioCatalog', namespace: 'studioCatalog', method: 'preview',
+        invocation: { kind: 'direct' }, parameters: [{ name: 'request', wire: 'request', source: 'json', codec: { mode: 'strict', typeSymbol: 'PreviewRequest', create: () => ({ parse: parsePreviewRequest }) } }], result: { mode: 'src-json' },
+    }] });
     ctx.effect(() => ctx.locale.addLanguage({ id: 'ko', label: '한국어', fallback: 'en' }));
     const serviceListeners = new Set<() => void>();
     let services: readonly StudioServiceItem[] = [];
@@ -60,7 +69,21 @@ export function apply(ctx: StudioContext) {
     );
     function OptimizationPage() {
         const locale = React.useSyncExternalStore(listener => ctx.locale.subscribe(listener), () => ctx.locale.getLocale().active);
-        return <OptimizationPrototype locale={locale} />;
+        const [catalog, setCatalog] = React.useState<import('./preset-catalog.ts').PresetCatalog>();
+        const [catalogError, setCatalogError] = React.useState('');
+        React.useEffect(() => {
+            let active = true;
+            const remote = ctx.get('remote.studioCatalog' as never) as unknown as { read(): Promise<{ ok: boolean; value: import('./preset-catalog.ts').PresetCatalog; error?: { message: string } }> } | undefined;
+            if (!remote) { setCatalogError('Studio catalog API unavailable'); return; }
+            remote.read().then(result => { if (!active) return; if (result.ok) setCatalog(result.value); else setCatalogError(result.error?.message ?? 'Catalog request failed'); }, error => { if (active) setCatalogError(String(error)); });
+            return () => { active = false; };
+        }, []);
+        return <OptimizationPrototype locale={locale} catalog={catalog} catalogError={catalogError} onPreview={async request => {
+            const service = ctx.get('remote.studioCatalog' as never) as unknown as { preview(request: import('./prompt-composition.ts').PreviewRequest): Promise<{ ok: boolean; value: import('./prompt-composition.ts').PreviewResult; error?: { message: string } }> };
+            const response = await service.preview(request);
+            if (!response.ok) throw new Error(response.error?.message ?? 'Preview failed');
+            return response.value;
+        }} />;
     }
     ctx.slots.inject('local.dsh-studio.services', () => ctx.slots.register({
         name: 'local.dsh-studio.services', id: 'optimization-prototype', order: 0,

@@ -30,6 +30,11 @@ export const studioStyles = `/* Only this adapter references host tokens. Studio
   overflow-wrap: anywhere;
 }
 .studio-ui *, .studio-ui *::before, .studio-ui *::after { box-sizing: border-box; }
+.studio-ui .studio-tool-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 12px; }
+.studio-ui .studio-tool-card { display: flex; flex-direction: column; gap: 8px; padding: 14px; border: 1px solid var(--studio-line); border-radius: var(--studio-radius); cursor: pointer; min-width: 0; }
+.studio-ui .studio-tool-card[data-selected="true"] { outline: 1px solid currentColor; }
+.studio-ui .studio-tool-description { white-space: pre-wrap; overflow-wrap: anywhere; }
+.studio-ui .studio-tool-card strong { font-weight: 500; }
 .studio-ui .studio-comparison { margin-top: 24px; }
 .studio-ui .studio-comparison-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: var(--studio-gap); align-items: start; }
 .studio-ui .studio-comparison-grid > section { min-width: 0; }
@@ -143,6 +148,33 @@ export const studioStyles = `/* Only this adapter references host tokens. Studio
 .studio-ui textarea { min-height: 144px; resize: vertical; }
 .studio-ui .studio-field { display: grid; gap: 6px; margin: 12px 0; }
 .studio-ui .studio-field-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: 0 var(--studio-gap); }
+
+/* Prompt assembly map and native multi-select transfer lists. */
+.studio-ui .studio-prompt-workbench { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 20px; align-items: start; text-align: start; }
+.studio-ui ol.studio-prompt-stages { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; }
+.studio-ui .studio-prompt-document { max-height: 680px; overflow-y: auto; border: .5px solid var(--studio-line); border-radius: var(--studio-radius); background: var(--studio-surface); }
+.studio-ui .studio-prompt-section { padding: 18px; border-bottom: .5px solid var(--studio-line); border-inline-start: 3px solid transparent; scroll-margin: 8px; }
+.studio-ui .studio-prompt-section[data-selected=true] { border-inline-start-color: var(--studio-ink); background: var(--studio-hover); }
+.studio-ui .studio-prompt-section h3 { margin: 0; font-size: 14px; font-weight: 500; }
+.studio-ui .studio-prompt-section textarea, .studio-ui .studio-prompt-section .studio-history-content { margin-top: 12px; }
+@media (max-width: 800px) {
+  .studio-ui .studio-prompt-workbench { grid-template-columns: minmax(0, 1fr); }
+  .studio-ui ol.studio-prompt-stages { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+.studio-ui .studio-prompt-stages .studio-pick { width: 100%; height: 100%; display: grid; gap: 6px; text-align: start; }
+.studio-ui .studio-prompt-stages [aria-current=step] { border-color: var(--studio-ink); background: var(--studio-hover); }
+.studio-ui .studio-tool-transfer { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 16px; }
+.studio-ui .studio-transfer-column { min-width: 0; border: 1px solid var(--studio-line); border-radius: var(--studio-radius); }
+.studio-ui .studio-transfer-items { display: grid; gap: 10px; max-height: 460px; overflow-y: auto; padding: 8px; }
+.studio-ui .studio-transfer-actions { display: flex; flex-direction: column; justify-content: center; gap: 10px; }
+.studio-ui .studio-prompt-stages { display: grid; gap: 6px; }
+.studio-ui .studio-tool-transfer select { min-height: 260px; }
+.studio-ui .studio-tool-transfer option { padding: 6px; }
+.studio-ui .studio-transfer-actions { display: flex; flex-direction: column; justify-content: center; gap: 8px; }
+@media (max-width: 640px) {
+  .studio-ui .studio-tool-transfer { grid-template-columns: minmax(0, 1fr); }
+  .studio-ui .studio-transfer-actions { flex-direction: row; }
+}
 
 /* Existing Studio surfaces. */
 .studio-ui .studio-card, .studio-ui article { padding: 20px; border: .5px solid var(--studio-line); border-radius: var(--studio-radius); background: var(--studio-surface); min-width: 0; }

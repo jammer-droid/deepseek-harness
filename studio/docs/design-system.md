@@ -67,6 +67,7 @@ primitives는 CSS 모듈을 함께 불러오므로 Node 단위 테스트에서 �
 | 부품 | 쓰는 곳 |
 | --- | --- |
 | `StudioSurface` | 마운트된 Studio 화면의 최상위. 스타일시트를 함께 넣고 마운트 해제 시 제거한다 |
+| `SelectionTransfer` | 프롬프트 제공자·도구의 사용 가능/선택됨 투 컬럼. 전체 설명을 읽기 전용 카드로 표시하고 체크한 항목을 추가·제외 |
 | `Button` | 모든 버튼 동작. 기본은 DSH outline, `primary`는 채운 주 버튼, `small`은 카드·행 안의 보조 동작 |
 | `PageHead` | 섹션당 하나의 제목·설명·우측 동작. 상태줄은 children으로 넣는다 |
 | `SectionHead` | 페이지 안의 제목 행과 우측 동작. 입력 필드를 담을 때 `field` |

@@ -11,6 +11,13 @@
     "web": "npm run build && node start-web.mjs"
   },
   "devDependencies": {
+    "@deepseek-ai/dsh-scope": "workspace:*",
+    "@deepseek-ai/dsh-system-prompt": "workspace:*",
+    "@deepseek-ai/dsh-agent-preset-registry": "workspace:*",
+    "@deepseek-ai/dsh-tools": "workspace:*",
+    "@deepseek-ai/cordis-plugin-include": "workspace:~",
+    "js-yaml": "^4.3.2",
+    "@types/js-yaml": "^4.0.9",
     "@types/node": "22.19.0",
     "@deepseek-ai/dsh-client-locale": "workspace:*",
     "react": "18.3.1",

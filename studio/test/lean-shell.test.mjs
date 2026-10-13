@@ -9,10 +9,10 @@ test('bundle contains only the shell and no managed preset', () => {
   assert.deepEqual(Object.keys(manifest.dependencies), ['@local/dsh-studio-shell']);
   assert.equal(read('../packages/bundle/cordis.patch.yml'), "- insert:\n    - id: local-dsh-studio-shell\n      name: '@local/dsh-studio-shell'\n");
   const sources = readdirSync(new URL('../src/', import.meta.url));
-  assert.ok(!sources.some(name => /^(mock|roles|workflow|preset|catalog|experiments|general)/.test(name)));
+  assert.ok(!sources.filter(name => !['preset-catalog.ts', 'preset-diagnostics.tsx'].includes(name)).some(name => /^(mock|roles|workflow|preset|catalog|experiments|general)/.test(name)));
 });
 
-test('built client registers Studio and optimization prototype without remote effects', () => {
+test('built client mounts read-only catalog and registers Studio optimization', async () => {
   let plugin;
   vm.runInNewContext(read('../packages/shell/client.js'), {
     window: { __ModuleLoader__: { load({ factory }) {
@@ -23,10 +23,18 @@ test('built client registers Studio and optimization prototype without remote ef
       });
     } } },
   });
-  assert.deepEqual(Array.from(plugin.inject), ['slots', 'locale']);
+  assert.deepEqual(Array.from(plugin.inject), ['slots', 'locale', 'remote']);
   const registrations = [];
   const subscriptions = [];
   const ctx = {
+    get: () => ({ async $mount(contract) { assert.equal(contract.descriptors[0].method, 'read');
+      const parameter = contract.descriptors.find(item => item.method === 'preview').parameters[0];
+      assert.equal(parameter.codec.mode, 'strict', 'Remote input requires a strict codec at activation');
+      const schema = parameter.codec.create();
+      const request = { preset: 'standard', providers: [], tools: ['read'], prompt: 'literal', model: '' };
+      assert.equal(schema.parse(request).prompt, 'literal');
+      for (const invalid of [null, {}, { ...request, providers: [1] }, { ...request, tools: 'read' }, { ...request, model: null }]) assert.throws(() => schema.parse(invalid));
+      return () => {}; } }),
     effect: fn => fn(),
     locale: { addLanguage() {}, subscribe() { return () => {}; } },
     slots: {
@@ -36,7 +44,7 @@ test('built client registers Studio and optimization prototype without remote ef
       register: options => { registrations.push(options); return () => {}; },
     },
   };
-  plugin.apply(ctx);
+  await plugin.apply(ctx);
   assert.deepEqual(registrations.map(item => item.name), ['main', 'local.dsh-studio.services', 'sidebar.panellist']);
   assert.equal(registrations[0].key, 'local-dsh-studio');
   assert.equal(registrations[1].id, 'optimization-prototype');

@@ -1,21 +1,23 @@
 // UI prototype only: memory state, no runtime configuration or agent calls.
 import React from 'react';
+import { PromptToolsPrototype, defaultProvidedTools } from './prompt-tools-prototype.tsx';
 import { DetailLayout } from './detail-layout.tsx';
 import { Button, Note, PageHead, SectionHead } from './ui.tsx';
 
 type Settings = { prompt: string; tools: string; spill: string; wait: string };
 type Agent = { name: string; role: string; model: string; reasoning: string; spawn: string; persona: string; overrides: Partial<Settings> };
-const initial: Settings = { prompt: 'Report evidence, uncertainty and remaining work.', tools: 'read', spill: '2048', wait: '60000' };
+const initial: Settings = { prompt: 'Report evidence, uncertainty and remaining work.', tools: 'read / grep / glob', spill: '2048', wait: '60000' };
 const seeds: Agent[] = [
   { name: 'Researcher', role: 'research', model: 'inherit', reasoning: 'inherit', spawn: 'fresh', persona: 'Investigate primary sources and cite the evidence.', overrides: {} },
-  { name: 'Reviewer', role: 'review', model: 'inherit', reasoning: 'high', spawn: 'fork', persona: 'Review correctness and identify concrete risks.', overrides: { tools: 'read', spill: '4096' } },
+  { name: 'Reviewer', role: 'review', model: 'inherit', reasoning: 'high', spawn: 'fork', persona: 'Review correctness and identify concrete risks.', overrides: { tools: 'read / grep / glob', spill: '4096' } },
 ];
-export function OptimizationPrototype({ locale }: { locale: string }) {
+export function OptimizationPrototype({ locale, catalog, catalogError, onPreview }: { onPreview?: import('./prompt-composition.ts').PreviewAction | undefined; locale: string; catalog?: import('./preset-catalog.ts').PresetCatalog | undefined; catalogError?: string | undefined }) {
   const t = (ko: string, en: string, zh: string) => locale.startsWith('ko') ? ko : locale.startsWith('zh') ? zh : en;
   const [page, setPage] = React.useState('agents');
   const [common, setCommon] = React.useState<Settings>({ ...initial });
   const [agents, setAgents] = React.useState<Agent[]>(() => seeds.map(a => ({ ...a, overrides: { ...a.overrides } })));
   const [selected, setSelected] = React.useState(0);
+  const [provided, setProvided] = React.useState<string[]>(defaultProvidedTools);
   const [batch, setBatch] = React.useState('8');
   const agent = agents[selected]!;
   const update = (patch: Partial<Agent>) => setAgents(items => items.map((a, i) => i === selected ? { ...a, ...patch } : a));
@@ -30,10 +32,10 @@ export function OptimizationPrototype({ locale }: { locale: string }) {
   const select = (value: string, options: [string, string][], change: (v: string) => void) => <select value={value} onChange={e => change(e.target.value)}>{options.map(([v, label]) => <option key={v} value={v}>{label}</option>)}</select>;
   const editor = (key: keyof Settings, value: string, change: (v: string) => void) => key === 'prompt'
     ? <textarea rows={4} value={value} onChange={e => change(e.target.value)} />
-    : key === 'tools' ? select(value, [['read', t('읽기 도구만 · 예시', 'Read tools only · sample', '仅读取工具 · 示例')], ['edit', t('읽기 + 편집 · 예시', 'Read + edit · sample', '读取 + 编辑 · 示例')]], change)
+    : key === 'tools' ? select(value, [...(!['read', 'edit'].includes(value) ? [[value, value || t('없음', 'None', '无')] as [string, string]] : []), ['read', t('읽기 도구만 · 예시', 'Read tools only · sample', '仅读取工具 · 示例')], ['edit', t('읽기 + 편집 · 예시', 'Read + edit · sample', '读取 + 编辑 · 示例')]], change)
     : key === 'spill' ? select(value, [['off', t('사용 안 함', 'Off', '关闭')], ['2048', '2,048'], ['4096', '4,096'], ['12500', '12,500']], change)
     : select(value, [['10000', '10 s'], ['60000', '60 s'], ['120000', '120 s']], change);
-  const display = (key: keyof Settings, value: string) => key === 'tools' ? value === 'read' ? 'read / grep / glob' : 'read / grep / glob / edit / write' : key === 'wait' ? `${Number(value) / 1000} s` : value === 'off' ? t('사용 안 함', 'Off', '关闭') : value;
+  const display = (key: keyof Settings, value: string) => key === 'tools' ? value === 'read' ? 'read / grep / glob' : value === 'edit' ? 'read / grep / glob / edit / write' : value || t('없음', 'None', '无') : key === 'wait' ? `${Number(value) / 1000} s` : value === 'off' ? t('사용 안 함', 'Off', '关闭') : value;
   const mockNote = <Note>{t('UI 목업 · 변경은 이 화면에만 유지됩니다. 실제 호출·권한 제한·DSH 설정 변경은 수행하지 않습니다.', 'UI prototype · Changes stay in memory. No agent calls, permission enforcement or DSH configuration changes.', 'UI 原型 · 修改仅保留在内存中，不调用代理、不限制权限、不修改 DSH 配置。')}</Note>;
   const sharedCard = (key: keyof Settings) => <section className="studio-component" key={key}><div className="studio-component-body"><SectionHead title={labels[key]} />{field(t('공통 기본값', 'Shared default', '公共默认值'), editor(key, common[key], value => setCommon(c => ({ ...c, [key]: value }))))}<p className="studio-muted">{t('상속 중인 서브에이전트에 반영됩니다. 현재 DSH 프로필에는 적용되지 않습니다.', 'Inherited by subagents without an override. Does not modify the current DSH profile.', '由未覆盖此设置的子代理继承，不修改当前 DSH 配置。')}</p></div></section>;
   const agentPage = <>
@@ -52,8 +54,8 @@ export function OptimizationPrototype({ locale }: { locale: string }) {
   </>;
   return <DetailLayout title={t('최적화', 'Optimization', '优化')} navigation={t('최적화 메뉴', 'Optimization navigation', '优化导航')} group={t('설정 초안', 'Configuration draft', '配置草案')} selected={page} onSelect={setPage} pages={[
     { id: 'agents', label: t('서브에이전트 설정', 'Subagent settings', '子代理设置'), content: agentPage },
-    { id: 'prompt', label: t('프롬프트·도구', 'Prompts & tools', '提示词与工具'), content: <><PageHead title={t('프롬프트·도구', 'Prompts & tools', '提示词与工具')} description={t('서브에이전트가 상속할 공통 최적화 기본값입니다.', 'Shared optimization defaults for subagents.', '供子代理继承的公共优化默认值。')} />{mockNote}{sharedCard('prompt')}{sharedCard('tools')}<Note>{t('도구 숨김과 실제 실행 제한은 구현 시 별도로 검증합니다. 시스템 지침과 페르소나는 구분합니다.', 'Tool visibility and execution enforcement require separate validation. System instructions are distinct from persona.', '工具可见性与执行限制需分别验证。系统指令与人设分开。')}</Note></> },
+    { id: 'prompt', label: t('프롬프트·도구', 'Prompts & tools', '提示词与工具'), content: <PromptToolsPrototype onPreview={onPreview} locale={locale} catalog={catalog} catalogError={catalogError} prompt={common.prompt} onPromptChange={prompt => setCommon(c => ({ ...c, prompt }))} provided={provided} onProvidedChange={tools => { setProvided(tools); setCommon(c => ({ ...c, tools: tools.join(' / ') })); }} /> },
     { id: 'convenience', label: t('작업 편의', 'Task utilities', '任务辅助'), content: <><PageHead title={t('작업 편의', 'Task utilities', '任务辅助')} description={t('기존 DSH 기능을 재사용하는 공통 옵션입니다.', 'Shared options that reuse existing DSH capabilities.', '复用现有 DSH 功能的公共选项。')} />{mockNote}{sharedCard('spill')}{sharedCard('wait')}<section className="studio-component"><div className="studio-component-body"><SectionHead title={t('읽기 전용 batch', 'Read-only batch', '只读批量操作')} />{field(t('최대 항목 수 · 목업', 'Maximum items · mock', '最大项数 · 原型'), select(batch, [['4', '4'], ['8', '8']], setBatch))}<p className="studio-muted">read / grep / glob</p></div></section><Note>{t('Spill은 추정 토큰 예산이며 hard cap이 아닙니다. batch 항목 수는 목업 값이며 실제 제한이 아닙니다.', 'Spill uses an estimated token budget, not a hard cap. Batch limits are mock values, not enforcement.', 'Spill 使用估算 token 预算，而非硬上限。批量限制仅为原型值。')}</Note></> },
-    { id: 'export', label: t('프리셋 내보내기', 'Export preset', '导出预设'), content: <><PageHead title={t('프리셋 내보내기', 'Export preset', '导出预设')} description={t('공통 옵션과 서브에이전트 구성을 DSH에 전달하는 단계입니다.', 'Package shared options and subagent configurations for DSH.', '将公共选项与子代理配置打包供 DSH 使用。')} />{mockNote}<SectionHead title={t('현재 초안 미리보기', 'Current draft preview', '当前草案预览')} /><pre className="studio-effect">{JSON.stringify({ prototype: true, common, batch: { maxItems: Number(batch) }, agents }, null, 2)}</pre><Button disabled primary>{t('프리셋 내보내기 · 미연결', 'Export preset · not connected', '导出预设 · 尚未连接')}</Button><Note>{t('이 JSON은 상태 확인용이며 설치 가능한 DSH 프리셋이 아닙니다. 기존 프로필을 자동 변경하지 않습니다.', 'This JSON displays draft state; it is not an installable DSH preset. Existing profiles are never modified.', '此 JSON 仅用于查看草案状态，不是可安装的 DSH 预设。不自动修改现有配置。')}</Note></> },
+    { id: 'export', label: t('프리셋 내보내기', 'Export preset', '导出预设'), content: <><PageHead title={t('프리셋 내보내기', 'Export preset', '导出预设')} description={t('공통 옵션과 서브에이전트 구성을 DSH에 전달하는 단계입니다.', 'Package shared options and subagent configurations for DSH.', '将公共选项与子代理配置打包供 DSH 使用。')} />{mockNote}<SectionHead title={t('현재 초안 미리보기', 'Current draft preview', '当前草案预览')} /><pre className="studio-effect">{JSON.stringify({ prototype: true, common, providedTools: provided, batch: { maxItems: Number(batch) }, agents }, null, 2)}</pre><Button disabled primary>{t('프리셋 내보내기 · 미연결', 'Export preset · not connected', '导出预设 · 尚未连接')}</Button><Note>{t('이 JSON은 상태 확인용이며 설치 가능한 DSH 프리셋이 아닙니다. 기존 프로필을 자동 변경하지 않습니다.', 'This JSON displays draft state; it is not an installable DSH preset. Existing profiles are never modified.', '此 JSON 仅用于查看草案状态，不是可安装的 DSH 预设。不自动修改现有配置。')}</Note></> },
   ]} />;
 }

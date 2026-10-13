@@ -1,5 +1,5 @@
 import { spawnSync, spawn } from 'node:child_process';
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
@@ -10,13 +10,25 @@ if (version.error || version.status !== 0) throw version.error || new Error(vers
 if (!['0.2.0-rc.2', '0.2.1-alpha.2'].includes(version.stdout.trim())) {
   throw new Error(`Unsupported preview runtime: ${version.stdout.trim()}`);
 }
-mkdirSync(path.join(root, 'dist'), { recursive: true });
-const patch = path.join(root, 'dist', 'web-preview.patch.yml');
-writeFileSync(patch, `- insert:\n    - id: local-dsh-studio-shell\n      name: ${JSON.stringify(path.join(root, 'packages/shell/index.js'))}\n`);
+// Install the packed bundle so DSH resolves runtime peers from its own installation.
+// Loading an absolute development entry instead captures workspace scope singletons.
+const env = { ...process.env, DSH_HOME: path.join(root, '.dsh-home') };
+function run(command, args) {
+  const result = spawnSync(command, args, { cwd: root, stdio: 'inherit', env });
+  if (result.error || result.status !== 0) throw result.error || new Error(`${command} failed (${result.status})`);
+}
+if (!existsSync(path.join(root, '.dsh-home/profiles/lean-agent-web/package.json'))) {
+  run(runtime, ['--profile', 'lean-agent-web', '--from-default-profile', 'web', '--dump-config']);
+}
+// Fresh file URLs prevent pnpm from reusing a previous same-version tarball.
+const packDist = path.join(root, 'dist', `preview-${Date.now()}`);
+env.STUDIO_PACK_DIST = packDist;
+run(process.execPath, [path.join(root, 'pack.mjs')]);
+const manifest = JSON.parse(readFileSync(path.join(root, 'packages/bundle/package.json'), 'utf8'));
+const archive = path.join(packDist, `local-dsh-studio-${manifest.version}.tgz`);
+run(runtime, ['plugin', '--profile', 'lean-agent-web', 'add', archive]);
 const child = spawn(runtime, [
   '--profile', 'lean-agent-web',
-  ...(existsSync(path.join(root, '.dsh-home/profiles/lean-agent-web/package.json')) ? [] : ['--from-default-profile', 'web']),
-  '--patch', patch,
   '--host', '127.0.0.1', '--port', process.env.STUDIO_WEB_PORT || '19388', '--no-open',
 ], { cwd: root, stdio: 'inherit', env: { ...process.env, DSH_HOME: path.join(root, '.dsh-home') } });
 child.on('error', error => { console.error(error); process.exitCode = 1; });

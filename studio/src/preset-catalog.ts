@@ -1,0 +1,35 @@
+export interface CatalogTool { name: string; description: string }
+export interface CatalogSection { name: string; text: string }
+export interface CatalogPreset { promptProviders?: import('./prompt-composition.ts').PromptProvider[]; id: string; name?: string | undefined; sections: CatalogSection[]; tools: CatalogTool[]; declaration?: string; error?: string }
+export interface PresetCatalog { presets: CatalogPreset[]; tools: CatalogTool[] }
+export interface CatalogServices {
+  agentPresets: {
+    list(): Promise<{ id: string; name?: string }[]>;
+    readDocument(id: string): Promise<{ content: string }>;
+    acquireScope(id: string): Promise<{ key: object; [Symbol.asyncDispose](): Promise<void> }>;
+  };
+  systemPrompt: { assemble(context: { scope: object }): Promise<{ sections: CatalogSection[]; tools: CatalogTool[] }> };
+  tools: { schemas(scope?: object): CatalogTool[] };
+}
+/** Read registered contributions, not plugin-name guesses or source-file snapshots. */
+export async function readPresetCatalog(services: CatalogServices): Promise<PresetCatalog> {
+  const all = new Map(services.tools.schemas().map(tool => [tool.name, { name: tool.name, description: tool.description }]));
+  const presets: CatalogPreset[] = [];
+  for (const preset of await services.agentPresets.list()) {
+    let lease: Awaited<ReturnType<CatalogServices['agentPresets']['acquireScope']>> | undefined;
+    try {
+      lease = await services.agentPresets.acquireScope(preset.id);
+      const assembly = await services.systemPrompt.assemble({ scope: lease.key });
+      for (const tool of [...services.tools.schemas(lease.key), ...assembly.tools]) all.set(tool.name, { name: tool.name, description: tool.description });
+      const declaration = (await services.agentPresets.readDocument(preset.id)).content;
+      const tools = new Map([...services.tools.schemas(lease.key), ...assembly.tools].map(({ name, description }) => [name, { name, description }]));
+      presets.push({ id: preset.id, name: preset.name, declaration, sections: assembly.sections.map(({ name, text }) => ({ name, text })), tools: [...tools.values()] });
+    } catch (error) {
+      presets.push({ id: preset.id, name: preset.name, sections: [], tools: [], error: String(error) });
+    } finally { await lease?.[Symbol.asyncDispose](); }
+  }
+  return { presets, tools: [...all.values()].sort((a, b) => a.name.localeCompare(b.name)) };
+}
+export function mergePresetTools(manual: string[], presets: CatalogPreset[], active: string[], excluded: string[] = []): string[] {
+  return [...new Set([...manual, ...presets.filter(p => active.includes(p.id)).flatMap(p => p.tools.map(t => t.name))])].filter(name => !excluded.includes(name));
+}
