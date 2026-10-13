@@ -1,22 +1,23 @@
 # DSH Studio — lean-agent 기반
 
-`studio/feat/workflow`의 `89883feb29`에서 분리한 `feat/lean-agent` 브랜치다. 기존 workflow 작업은 원래 브랜치에 보존하며, 이 브랜치는 신규 기능을 넣기 위한 Studio 셸만 제공한다. 신규 기능은 아직 구현하지 않았다.
+수정하지 않은 DSH에 설치하는 Studio 플러그인이다. `studio/feat/workflow`의 `89883feb29`에서 셸을 분리한 뒤 프리셋·역할 편집 기능을 구현했다. 현재 기능과 과거 workflow 이력은 [목적별 문서 목차](docs/README.md)에서 구분한다. 다음 개선 작업은 [UI·UX 개선 백로그](docs/plans/ui-ux-backlog.md)를 따른다.
 
-## 남긴 것
+## 현재 구현
 
 - DSH Studio 사이드바 진입점과 `local.dsh-studio.services` 서비스 등록 슬롯
 - 기존 상단 탐색 `ServiceLayout`과 좌측 메뉴·본문 골격 `DetailLayout`
-- [디자인 시스템](docs/design-system.md), 공용 UI 부품, 기존 토큰·스타일
-- 셸 Host/Client 패키지와 셸만 등록하는 번들
-- 공용 UI·서비스 수명·기능 제거·커밋 범위 테스트
+- [디자인 시스템](docs/development/design-system.md), 공용 UI 부품, 기존 토큰·스타일
+- 읽기 전용 Master, Optimized 및 사용자 프리셋의 편집·저장·적용
+- 도구·프롬프트·Config 편집과 프로필별 영속화
+- 역할의 모델·reasoning·fresh/fork·persona 설정과 네이티브 서브에이전트 호출
+- 적용·호출 전 런타임 모델 검증과 Optimized 도구 정책
+- Host/Client 패키지, 설치 번들과 Studio 범위 회귀 테스트
 
-서비스가 등록되지 않은 현재 화면에는 사용 가능한 서비스가 없다는 안내만 표시한다. 허위 버튼이나 신규 기능 목업은 넣지 않는다.
+기능 기준 커밋은 `4f42345dd8`이다. Desktop DSH `0.2.0-rc.2` 설치 후 사용자가 반영을 확인했다. 이 결과는 모든 화면·접근성·세션 수명 검증을 의미하지 않는다.
 
-## 제거한 것
+## 이력과 현재 기능 구분
 
-Preset Builder, DSH 설정, 역할 설정, workflow 편집·적용·위임, 실험 기능, 하위 에이전트 카탈로그, 디자인 미리보기 목업 및 전용 locale·테스트·생성기·Desktop 호환 코드. 번들은 더 이상 Studio managed preset이나 도구를 등록하지 않는다. 구형 배포 스크립트도 제거했다.
-
-기존 기획·조사·이슈 기록은 이력 자료 표시와 함께 보존한다. 현재 구현·지원 기능으로 해석하지 않는다. 사용자 프로필, 저장 데이터, 설치된 Studio는 변경하지 않는다. 이 번들로 업데이트하더라도 기존 사용자 데이터 삭제·마이그레이션을 수행하지 않는다.
+분기 당시 제거한 workflow 편집·실험 기능의 기획·조사·이슈 기록은 이력으로 보존한다. 이를 이후 구현한 프리셋·역할 기능과 혼동하지 않는다. 문서 정리는 사용자 프로필·저장 데이터·설치된 Studio를 변경하지 않는다.
 
 ## 개발과 검증
 

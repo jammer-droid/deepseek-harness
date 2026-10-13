@@ -9,7 +9,7 @@ description: "Studio 이슈 16의 시스템·연결 검증과 등록 수명 대�
 
 ## 요약
 
-대상은 [GitHub #16](https://github.com/jammer-droid/deepseek-harness/issues/16)이며 준비 상태는 `ready`다. S1–S4의 구현과 이슈 범위 수용 검증은 4/4 완료했다. 전체 저장소와 Studio 전체 회귀의 미해결 실패는 아래 검증 기록에 남기며, 전체 검증 성공이나 트래커 종료를 의미하지 않는다. 잘못된 조합의 위치별 진단과 기능 해제 후 초안 보존을 제공한다. 선행 [#15](https://github.com/jammer-droid/deepseek-harness/issues/15)는 닫혔으며 현재 기준 코드에 포함되어 있다. [설계 절차](../design-workflow.md), [제품 명세](../workflow-specification.md), [구조 검토](../workflow-architecture-review.md)를 따른다.
+대상은 [GitHub #16](https://github.com/jammer-droid/deepseek-harness/issues/16)이며 준비 상태는 `ready`다. S1–S4의 구현과 이슈 범위 수용 검증은 4/4 완료했다. 전체 저장소와 Studio 전체 회귀의 미해결 실패는 아래 검증 기록에 남기며, 전체 검증 성공이나 트래커 종료를 의미하지 않는다. 잘못된 조합의 위치별 진단과 기능 해제 후 초안 보존을 제공한다. 선행 [#15](https://github.com/jammer-droid/deepseek-harness/issues/15)는 닫혔으며 현재 기준 코드에 포함되어 있다. [설계 절차](../design-workflow.md), [제품 명세](../archive/workflow/workflow-specification.md), [구조 검토](../archive/workflow/workflow-architecture-review.md)를 따른다.
 
 작업 브랜치는 `studio/feat/workflow-16`, 통합 대상은 `studio/feat/workflow`다. 시작점은 `studio/experiments`의 변경을 포함한 통합 브랜치의 설계 절차 문서 이름 변경 커밋이다. 정확한 기준 커밋은 이 문서를 처음 추가한 커밋의 부모다. 사용자가 S1–S4 전체 구현·검증·로컬 커밋을 승인했다. 푸시·통합 브랜치 병합·트래커 변경·설치 프로필 배포는 포함하지 않는다.
 

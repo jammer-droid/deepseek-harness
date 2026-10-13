@@ -26,12 +26,12 @@ description: "Studio 워크플로우 구현을 위한 등록·구성 검증·DSH
 
 | 조사 대상 | 재사용할 동작 | 새 구성 모델로 간주하면 안 되는 부분 |
 |---|---|---|
-| [General 설정](../packages/general/src/preset-settings.ts) | 선언 복사, 표현식 보존, 리비전 충돌 검사 | raw 플러그인 행의 해시·primitive 필드 목록은 기능 등록 명세가 아님 |
-| [역할 설정](../packages/roles/src/roles.ts) | Host 검증, 직렬화된 저장, 저장·활성화 상태, 분리된 자식 설정 캡처 | 구현자·리뷰어 고정 쌍과 현재 설정 조회 |
-| [위임](../packages/roles/src/delegation.ts) | executor 제한, scoped 모델 설정, DSH 실행 연결 | 고정 역할·리뷰 통과·재작업 순서를 기본 워크플로우에 강제하는 정책 |
-| [자식 실행 adapter](../packages/roles/src/child-runtime.ts) | 공개 DSH 실행·drain 호출의 국소화 | 별도 Studio 실행 엔진으로 확대할 필요 없음 |
+| [General 설정](../../../packages/general/src/preset-settings.ts) | 선언 복사, 표현식 보존, 리비전 충돌 검사 | raw 플러그인 행의 해시·primitive 필드 목록은 기능 등록 명세가 아님 |
+| [역할 설정](../../../packages/roles/src/roles.ts) | Host 검증, 직렬화된 저장, 저장·활성화 상태, 분리된 자식 설정 캡처 | 구현자·리뷰어 고정 쌍과 현재 설정 조회 |
+| [위임](../../../packages/roles/src/delegation.ts) | executor 제한, scoped 모델 설정, DSH 실행 연결 | 고정 역할·리뷰 통과·재작업 순서를 기본 워크플로우에 강제하는 정책 |
+| [자식 실행 adapter](../../../packages/roles/src/child-runtime.ts) | 공개 DSH 실행·drain 호출의 국소화 | 별도 Studio 실행 엔진으로 확대할 필요 없음 |
 
-[위임 테스트](../test/delegation.browser.test.ts)는 같은 루트에서 Apply 후 새 자식을 만들고 새 지침을 받는 동작을 기대한다. [전체 사이클 테스트](../test/full-cycle.browser.test.ts)의 기존 자식 설정 유지와는 별개다. 새 명세의 실행 전체 구성 고정은 동작과 테스트의 정책을 함께 바꾸어야 한다.
+[위임 테스트](../../../test/delegation.browser.test.ts)는 같은 루트에서 Apply 후 새 자식을 만들고 새 지침을 받는 동작을 기대한다. [전체 사이클 테스트](../../../test/full-cycle.browser.test.ts)의 기존 자식 설정 유지와는 별개다. 새 명세의 실행 전체 구성 고정은 동작과 테스트의 정책을 함께 바꾸어야 한다.
 
 ## 책임과 의존 방향
 
@@ -81,13 +81,13 @@ module의 depth는 복잡한 조합 판정을 작은 interface 뒤에 모으는 
 
 ## DSH 연결과 실행 구성
 
-DSH adapter는 모델·추론·프리셋·Agent 연결과 실제 지원 여부를 국소화한다. Studio 역할 이름과 템플릿 정책을 코어에 넣지 않는다. 현재 개발 범위는 [Studio 작업 범위](../goals.ko.md)에 따라 코어 무수정이다. 공개 확장 지점이 부족하면 제약·대안을 제시하고 별도 범위 승인을 받는다.
+DSH adapter는 모델·추론·프리셋·Agent 연결과 실제 지원 여부를 국소화한다. Studio 역할 이름과 템플릿 정책을 코어에 넣지 않는다. 현재 개발 범위는 [Studio 작업 범위](../../../goals.ko.md)에 따라 코어 무수정이다. 공개 확장 지점이 부족하면 제약·대안을 제시하고 별도 범위 승인을 받는다.
 
-장래 코어 확장이 승인되면 [공통 capability seam](../../docs/glossary.md#capability-seam)의 Definition / Provider / Consumer를 함께 설계한다. 두 번째 실행 implementation이 없는 지금 범용 runtime interface, RPC, 스케줄러, 큐, 복구 엔진을 만들지 않는다.
+장래 코어 확장이 승인되면 [공통 capability seam](../../../../docs/glossary.md#capability-seam)의 Definition / Provider / Consumer를 함께 설계한다. 두 번째 실행 implementation이 없는 지금 범용 runtime interface, RPC, 스케줄러, 큐, 복구 엔진을 만들지 않는다.
 
-루트 실행 시작에 구성을 고정하고 나중에 생성한 자식도 그 실행의 역할 정의를 사용한다. 새 Apply는 새 루트에 반영한다. 프로세스 내 프리셋 리비전 보유와 재시작 후 과거 코드 복원은 다르다. [프리셋 결정](../../.agents/notes/implemented/architecture/2026-09-18-declarative-agent-presets.md)은 재시작 시 현재 정의에 바인딩하며, [Host 소유권 결정](../../.agents/notes/implemented/architecture/2026-08-10-host-plane-ownership-after-presets.md)은 프로세스 전역 서비스와 Agent 구성을 구분한다. 본 작업은 이를 뒤집거나 과거 실행 코드 복원을 약속하지 않는다.
+루트 실행 시작에 구성을 고정하고 나중에 생성한 자식도 그 실행의 역할 정의를 사용한다. 새 Apply는 새 루트에 반영한다. 프로세스 내 프리셋 리비전 보유와 재시작 후 과거 코드 복원은 다르다. [프리셋 결정](../../../../.agents/notes/implemented/architecture/2026-09-18-declarative-agent-presets.md)은 재시작 시 현재 정의에 바인딩하며, [Host 소유권 결정](../../../../.agents/notes/implemented/architecture/2026-08-10-host-plane-ownership-after-presets.md)은 프로세스 전역 서비스와 Agent 구성을 구분한다. 본 작업은 이를 뒤집거나 과거 실행 코드 복원을 약속하지 않는다.
 
-새 프리셋 선언 생성 경로는 실제 Loader로 확인해야 한다. [ConfigEditor](../../packages/boot/config-editor/src/index.ts)의 기존 Entry 수정이 새 선언 생성까지 지원한다고 추정하지 않는다. 사용자 프로필 직접 덮어쓰기를 우회 경로로 사용하지 않는다.
+새 프리셋 선언 생성 경로는 실제 Loader로 확인해야 한다. [ConfigEditor](../../../../packages/boot/config-editor/src/index.ts)의 기존 Entry 수정이 새 선언 생성까지 지원한다고 추정하지 않는다. 사용자 프로필 직접 덮어쓰기를 우회 경로로 사용하지 않는다.
 
 ## 작업 순서
 

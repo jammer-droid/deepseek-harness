@@ -13,7 +13,7 @@ description: "Studio 이슈 17의 DSH 모델·추론 검증과 임의 역할 편
 
 ## 범위와 현재 근거
 
-사용자는 임의 역할을 추가·수정·삭제하고 그중 메인 역할을 지정하며, 실제 DSH 카탈로그의 모델과 해당 모델의 추론 옵션을 각 역할에서 독립 편집한다. 저장은 프리셋 적용·활성화·실행과 별개다. 실행 연결은 후속 이슈이며 DSH 코어·기존 General·고정 역할 설정은 변경하지 않는다. 전체 제품 요구는 [기능 명세](../workflow-specification.md), 책임 분리는 [구조 검토](../workflow-architecture-review.md)가 소유한다.
+사용자는 임의 역할을 추가·수정·삭제하고 그중 메인 역할을 지정하며, 실제 DSH 카탈로그의 모델과 해당 모델의 추론 옵션을 각 역할에서 독립 편집한다. 저장은 프리셋 적용·활성화·실행과 별개다. 실행 연결은 후속 이슈이며 DSH 코어·기존 General·고정 역할 설정은 변경하지 않는다. 전체 제품 요구는 [기능 명세](../archive/workflow/workflow-specification.md), 책임 분리는 [구조 검토](../archive/workflow/workflow-architecture-review.md)가 소유한다.
 
 현재 [문서 타입](../../packages/workflows/src/workflow-types.ts)은 `documentVersion: 2`와 인라인 `mainRole` 하나를 갖는다. [저장](../../packages/workflows/src/drafts.ts)은 legacy와 v2를 읽고 v2만 쓰며, [검증](../../packages/workflows/src/validation.ts)은 메인 역할의 컴포넌트만 순회한다. [Host 서비스](../../packages/workflows/src/index.ts)는 모델 서비스 없이 마운트된다. [실제 Loader 테스트](../../test/workflow-loader.test.mjs)는 이 독립성과 Gateway 결과를 확인한다.
 

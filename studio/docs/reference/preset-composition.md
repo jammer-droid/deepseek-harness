@@ -1,5 +1,7 @@
 # Studio 프롬프트 구성 편집
 
+> **초기 설계가 포함된 참고 문서:** 아래 minimal 기반 흐름·탭 명칭·역할 저장 전용 설명은 초기 단계 기록이다. 이후 [Master](master-preset.md), [Config 편집 기록](../verification/config-editor-progress.md), [역할 실행](role-preview.md), [Optimized 도구](optimized-tools.md)가 추가되었다. 현재 기능의 출발점은 [Studio 개요](../../README.md)다.
+
 ## 편집 순서
 
 1. 프롬프트 영역에서 Persona 기본 지침(prefix)과 후행 지침(suffix)을 편집한다. minimal 원본을 불러오며 각 필드는 원본 사용으로 복귀할 수 있다.
@@ -44,4 +46,4 @@ Studio 메뉴는 프리셋 목록 / 프리셋 생성 두 가지다. 생성 내�
 - 도구는 실행 서버 카탈로그 기준이며 다른 Desktop 서버와 자동 공유하지 않는다. 호환되지 않는 여러 프리셋의 실행 클로저를 혼합하지 않는다.
 - 수정하지 않은 DSH에 Studio만 패키징하여 검증한다. 시각 확인은 사용자 담당이다.
 
-상세 이력은 [이슈 24](issues/24-preset-composition.md)를 참고한다.
+상세 이력은 [이슈 24](../issues/24-preset-composition.md)를 참고한다.

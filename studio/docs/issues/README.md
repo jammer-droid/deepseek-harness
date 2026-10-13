@@ -3,7 +3,7 @@ kind: reference
 description: "Studio 이슈별 구현 명세의 색인."
 ---
 
-> **이력 자료:** `feat/lean-agent`는 기존 기능 구현을 제거한 셸 전용 브랜치입니다. 이 문서의 workflow 기능·검증 기록은 분기 전 기준이며 현재 배포 기능이 아닙니다.
+> **범위 구분:** #15–#23은 이전 workflow 작업의 이력이다. #24는 이후 프리셋 구성 설계 기록이다. 문서 당시 상태와 현재 제품 상태를 구분하며, 현재 안내는 [문서 목차](../README.md)를 따른다.
 
 # Studio 이슈 명세
 
@@ -11,9 +11,11 @@ description: "Studio 이슈별 구현 명세의 색인."
 
 이슈별 결정과 구현 단계는 이 디렉터리에 누적한다. 작성·검증·완료 절차는 [Studio 이슈 작업 절차](../design-workflow.md)를 따른다. 진행 상태는 GitHub 이슈와 각 명세를 확인한다.
 
-## 명세 목록
+## 프리셋 구성 설계 기록
 
 - [#24 minimal 기반 프리셋 구성과 선택적 덮어쓰기](24-preset-composition.md): 현재 셸 기반 신규 설계. 도구·프롬프트 제공자 선택, persona 편집, scoped override, 통합 미리보기 및 독립 배포. `draft`; 첫 단계 S1은 공개 API·구성 계약 확정.
+
+## 이전 workflow 이력
 
 - [#15 지침 컴포넌트 초안 편집·저장](15-workflow-draft.md): 등록 기반 편집과 프리셋을 변경하지 않는 초안 저장.
 - [#16 시스템·연결 검증과 등록 해제 대응](16-workflow-validation.md): 시스템·연결 폼 편집, 위치별 진단과 미해석 초안 보존.

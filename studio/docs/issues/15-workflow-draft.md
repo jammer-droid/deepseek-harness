@@ -9,7 +9,7 @@ description: "Studio 이슈 15의 지침 컴포넌트 초안 편집·저장 구�
 
 ## 요약
 
-대상은 [GitHub #15](https://github.com/jammer-droid/deepseek-harness/issues/15)이다. 구현 상태는 `completed`이며 S1–S4의 등록·편집·다중 초안 저장·실패 복구·수용 검증을 완료하고 `studio-general`에 로컬 통합했다. 선행 이슈는 없다. [구조 검토](../workflow-architecture-review.md)와 [작업 절차](../design-workflow.md)를 따른다.
+대상은 [GitHub #15](https://github.com/jammer-droid/deepseek-harness/issues/15)이다. 구현 상태는 `completed`이며 S1–S4의 등록·편집·다중 초안 저장·실패 복구·수용 검증을 완료하고 `studio-general`에 로컬 통합했다. 선행 이슈는 없다. [구조 검토](../archive/workflow/workflow-architecture-review.md)와 [작업 절차](../design-workflow.md)를 따른다.
 
 작업 브랜치는 `studio/workflow-15-draft`, 통합 대상은 `studio-general`이다. 분기점은 워크플로우 기획 문서를 추가한 커밋이며 작업 절차 설정도 이 브랜치에 포함한다. 이슈 완료·검증 후 로컬 통합은 승인되었고 푸시는 승인 범위에 포함하지 않는다. 원래 worktree의 디자인 변경은 보존한다.
 
@@ -62,6 +62,6 @@ S3는 저장 충돌·유효하지 않은 요청·서비스 종료와 저장 결�
 
 ## 완료 결과
 
-초안 저장은 실행 프리셋을 변경하지 않는다. Preset Builder 상단 서비스의 Workflow 좌측 메뉴에서 초안을 편집·저장·재조회한다. 서비스 등록 구조와 미저장 입력 보존은 [서비스 탐색 구조](../service-navigation.md)에 기록한다. 실제 프리셋 적용·활성화·실행은 이번 이슈 범위 밖이다.
+초안 저장은 실행 프리셋을 변경하지 않는다. Preset Builder 상단 서비스의 Workflow 좌측 메뉴에서 초안을 편집·저장·재조회한다. 서비스 등록 구조와 미저장 입력 보존은 [서비스 탐색 구조](../reference/service-navigation.md)에 기록한다. 실제 프리셋 적용·활성화·실행은 이번 이슈 범위 밖이다.
 
 Studio Node 회귀 63개, 실제 Loader·저장 장애 주입·UI 출력 테스트, 격리 Chrome의 Workflow·역할 편집·전체 실행 시나리오가 통과했다. Preset Builder 변경 후 빌드, 관련 단위 테스트 6개와 Workflow 브라우저 테스트도 통과했다. 서비스 순서·기본 선택·미저장 입력 보존·라이트와 다크의 720px 메뉴 전환을 검증했다. 라이브 모델 검증이나 설치 프로필 배포를 대신하는 증거로 간주하지 않는다. 사용자는 Web에서 변경을 확인하고 이슈 종료와 커밋·로컬 통합·원격 푸시를 승인했다.

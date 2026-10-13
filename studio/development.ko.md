@@ -21,7 +21,7 @@ npm --prefix studio run pack:bundle
 - `src/ui.tsx`, `src/ui-host.tsx`, `src/ui-styles.ts`: 기존 디자인 시스템.
 - `packages/shell`, `packages/bundle`: 셸 진입점과 번들 구성.
 
-새 기능은 `local.dsh-studio.services`에 등록한다. 슬롯의 `active` 값을 받아 비활성 화면의 부수 효과를 제어한다. 제품 문구는 ko·en를 제공하고 [디자인 시스템](docs/design-system.md)을 따른다.
+새 기능은 `local.dsh-studio.services`에 등록한다. 슬롯의 `active` 값을 받아 비활성 화면의 부수 효과를 제어한다. 제품 문구는 ko·en를 제공하고 [디자인 시스템](docs/development/design-system.md)을 따른다.
 
 ## 패키징·배포 경계
 

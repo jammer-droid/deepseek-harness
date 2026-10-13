@@ -1,37 +1,56 @@
----
-kind: reference
-description: "Studio 컴포넌트 기반 워크플로우의 기획·명세·조사 문서 안내."
----
+# Studio 문서 안내
 
-> **이력 자료:** `feat/lean-agent`는 기존 기능 구현을 제거한 셸 전용 브랜치입니다. 이 문서의 workflow 기능·검증 기록은 분기 전 기준이며 현재 배포 기능이 아닙니다.
+현재 제품 개요는 [Studio README](../README.md), 다음 화면 개선 작업은 [UI·UX 개선 백로그](plans/ui-ux-backlog.md)에서 시작한다. 과거 워크플로우 구현 기록을 현재 프리셋·역할 기능의 지원 보장으로 해석하지 않는다.
 
-# Studio 워크플로우 문서
+## 목적별 구조
 
-## 요약
+| 위치 | 목적 | 읽을 때 주의할 점 |
+| --- | --- | --- |
+| `reference/` | 프리셋·역할·도구·탐색 기능 참고 | 본문에 남은 초기 설계·시점별 검사 결과는 최신 구현과 구분 |
+| `development/` | UI 규칙과 공개 API·수명 조사 | 소스 조사만으로 설치 런타임 지원을 보장하지 않음 |
+| `plans/` | 앞으로 할 개선과 수용 조건 | 미구현 계획이며 현재 기능 설명이 아님 |
+| `verification/` | 특정 시점의 구현·검증 기록 | 테스트 수·버전·제약은 해당 기록 당시 기준 |
+| `issues/` | 이슈 번호별 결정·구현 단계 | 과거 workflow 이슈와 현재 프리셋 이슈를 색인에서 구분 |
+| `archive/workflow/` | 이전 workflow 제품 기획·조사·통합 이력 | 현재 실행 구조의 명세로 사용하지 않음 |
+| `archive/prototypes/` | 대체된 초기 화면 목업 | 현재 개선 계획과 분리 |
 
-이 문서 묶음은 합의된 Studio 제품 방향을 현재 DSH 소스와 대조하여 정리한 기획 자료다. 제품 구현·설치·GUI 검증 결과가 아니다. 현재 구현 설명은 [Studio README](../README.md)에 유지한다.
+[이슈 작업 절차](design-workflow.md)는 상위 작업 지침의 안정적인 진입 링크이므로 루트 경로를 유지한다.
 
-## 읽는 순서
+## 현재 기능 참고
 
-1. [기획서](workflow-product-plan.md): 제품 목적, 구성 개념, 사용자 경험, 첫 구현과 후속 범위.
-2. [기능 명세서](workflow-specification.md): 컴포넌트·시스템 요구사항, 저장·적용·실행 의미, 수용 기준과 구현 전 결정 항목.
-3. [구성·프리셋 조사](workflow-composition-research.md): 현재 편집기·역할 정책·프리셋 생성 및 등록 모델의 차이.
-4. [런타임 조사](workflow-runtime-research.md): 모델, 컨텍스트, 위임, 권한, 재개 기능의 소스 근거.
-5. [구조 검토와 작업 기준](workflow-architecture-review.md): 등록·구성·검증·DSH 연결의 책임, 실행 구성 고정, 8개 수직 작업의 순서와 검증 기준.
-6. [DSH 재사용 구현 조사](dsh-reuse-investigation.md): 명세 전체를 기존 서비스·플러그인 및 Studio 연결 작업에 매핑한 구현 목록, 공개 API 제약과 수용 기준별 검증 항목.
+- [프리셋 구성](reference/preset-composition.md): 초기 구성 설계와 편집 흐름. 최신 역할 실행·Master 차이는 후속 문서와 함께 읽는다.
+- [Master 프리셋](reference/master-preset.md): 읽기 전용 기준 프리셋과 구성.
+- [역할·미리보기](reference/role-preview.md): 역할 설정과 네이티브 위임 연결.
+- [Optimized 도구](reference/optimized-tools.md): 기본 정책, bundled 도구와 실행 범위.
+- [서비스 탐색](reference/service-navigation.md): Studio 서비스 등록·화면 골격.
 
-화면 구현 규칙은 [디자인 시스템](design-system.md)에 있다.
+## 개발 기준과 조사
 
-## 이슈 개발
+- [디자인 시스템](development/design-system.md)
+- [프리셋 런타임 수명 조사](development/preset-runtime-lifecycle.md)
+- [런타임 카탈로그 API 조사](development/runtime-catalog-api.md)
+- [개발·배포 안내](../development.ko.md)
+- [이슈 명세 색인](issues/README.md)
 
-구현 작업은 [Studio 이슈 작업 절차](design-workflow.md)를 따르고, 결정·단계·검증 기록은 [이슈별 명세](issues/README.md)에서 찾는다.
+## 개선 계획
 
-## 핵심 결론
+- [UI·UX 개선 백로그](plans/ui-ux-backlog.md): 상태 구분, 오류 복구, 모델 선택, 실효 도구 표시, 편집·접근성 개선. 각 항목에 근거·우선순위·수용 조건을 기록한다.
 
-Studio는 에이전트의 능력과 환경을 조립하는 도구이며 모든 작업 순서를 통제하는 실행기가 아니다. 첫 구현은 기존 DSH 루프와 하위 에이전트를 재사용한다. 메인·구현자·리뷰어는 초기 템플릿이고 고정된 역할 종류가 아니다.
+## 검증 이력
 
-기존 기능과 바로 연결할 수 있는 것, 별도 연결 구현이 필요한 것, 현재 지원으로 확인되지 않은 것을 구분했다. 역할별 컨텍스트 설정, 독립적인 자식 권한, 실행 당시 구성의 재시작 복원은 특히 주의가 필요하다. Jev, 별도 Studio 런타임, 모델 없는 미리보기와 상세 관찰은 후속 명세다.
+- [카탈로그 런타임 검증](verification/catalog-runtime-verification.md)
+- [Config 편집기 진행 기록](verification/config-editor-progress.md)
 
-## 조사 및 검증 범위
+두 문서의 수치와 제약은 당시 증거다. 이후 구현을 덮어쓰거나 이번 문서 정리를 새로운 GUI 검증으로 해석하지 않는다.
 
-저장소 소스·소유 문서, read-only Config Inspect, Jev 공식 문서를 근거로 사용했다. 문서 내 상대 링크와 소스 줄 참조, 문서 간 요구사항 일관성을 검토한다. 정적 소스 조사만으로 모델 실행·권한 강제·GUI 동작·복구 성공을 보장하지 않는다. 설치된 런타임과 체크아웃의 버전 차이도 구분한다.
+## 과거 기획·조사
+
+- [제품 기획](archive/workflow/workflow-product-plan.md), [기능 명세](archive/workflow/workflow-specification.md)
+- [구성 조사](archive/workflow/workflow-composition-research.md), [런타임 조사](archive/workflow/workflow-runtime-research.md)
+- [구조 검토](archive/workflow/workflow-architecture-review.md), [DSH 재사용 조사](archive/workflow/dsh-reuse-investigation.md)
+- [통합 기록](archive/workflow/workflow-integration.md), [업그레이드 기록](archive/workflow/workflow-upgrade.md), [실험 정책](archive/workflow/experiment-policies.md)
+- [초기 최적화 화면 목업](archive/prototypes/optimization-prototype.md)
+
+## 문서 추가 원칙
+
+새 개선은 `plans/`, 현재 기능 계약은 `reference/`, 검증 결과는 `verification/`에 둔다. 이슈 명세는 번호를 유지하여 `issues/`에 둔다. 대체된 자료는 삭제하거나 최신 결과로 덮어쓰지 않고 `archive/`에서 이력으로 보존한다. 문서를 이동할 때 Studio 내부 상대 링크를 함께 갱신한다. 코어 문서와 사용자 데이터는 이 정리의 범위가 아니다.

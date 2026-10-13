@@ -28,7 +28,7 @@ status: ready
 | [managed delegation](../../packages/roles/src/delegation.ts) | 실행 강제 패턴이 있다: `agent/created`에서 역할 판정, restrict + guard, child `agent/request` route 재적용(상속 effort 제거), durable 예약 → 시작 → 결과 기록, `sendMessage` 후속, 종료 시 drain. 고정 implementer/reviewer 쌍과 리뷰 순서가 섞여 있어 그대로 재사용할 수 없다. |
 | [child-runtime seam](../../packages/roles/src/child-runtime.ts)과 [rc.2 template](../../compat/desktop-0.2.0/child-runtime.ts.template) | 버전별 `startChild`/`drainChildren`을 빌드 시 교체한다. rc.2는 `startContinuable`이며 `outputSchema`가 없다. |
 | [catalog](../../packages/sub-agent-catalog/src/index.ts) | `startActivation` 의존으로 배포 제외. 모든 오류를 `admission-unknown`으로 처리해 전체 위임을 잠근다. 위임 기반으로 쓰지 않는다. |
-| [RoleSettings.capture](../../packages/roles/src/roles.ts#L99-L103) | child 생성 시점의 **현재** 적용본을 캡처한다. 루트 단위 고정이 아니다. [구조 검토](../workflow-architecture-review.md)도 기존 테스트가 "같은 루트에서 Apply 후 새 자식이 새 지침"을 기대한다고 기록했다. |
+| [RoleSettings.capture](../../packages/roles/src/roles.ts#L99-L103) | child 생성 시점의 **현재** 적용본을 캡처한다. 루트 단위 고정이 아니다. [구조 검토](../archive/workflow/workflow-architecture-review.md)도 기존 테스트가 "같은 루트에서 Apply 후 새 자식이 새 지침"을 기대한다고 기록했다. |
 | rc.2 `subagents` | `startContinuable`, `sendMessage(sender, targetId, ...)`, `drainContinuableChildren`. fork는 부모의 완료 turn까지만 상속한다. child는 `composeFrom`으로 부모 preset generation에 합류한다. |
 | rc.2 child 옵션 | 같은 route에서 effort 미지정이면 부모 effort를 상속한다. `persona`는 기본 persona를 대체한다. |
 | 표준 preset | `subagent`, `subagent_fork`, `send_message`, workflow PTC 도구를 포함한다. Studio preset이 포함하지 않으면 노출되지 않는다. |

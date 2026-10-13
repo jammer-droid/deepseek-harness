@@ -34,4 +34,4 @@
 
 새로 저장한 v3 초안을 이전 Studio 코드로 읽는 downgrade는 지원하지 않는다. 같은 v3이라도 `enabled: false`를 해석하지 못하는 이전 빌드에 새 문서를 넘기지 않는다. 되돌려야 하면 업그레이드 전 저장소 백업을 복원한다. 자동 downgrade는 제공하지 않는다.
 
-공개 서비스와 저장 실패 복구는 [워크플로우 패키지](../packages/workflows/README.md), 기능 범위는 [워크플로우 명세](workflow-specification.md)를 참고한다.
+공개 서비스와 저장 실패 복구는 [워크플로우 패키지](../../../packages/workflows/README.md), 기능 범위는 [워크플로우 명세](workflow-specification.md)를 참고한다.

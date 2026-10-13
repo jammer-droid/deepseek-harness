@@ -12,7 +12,7 @@ status: ready
 
 - 이슈: [#18 Studio 소유 프리셋 적용과 모델·지침 실행](https://github.com/jammer-droid/deepseek-harness/issues/18).
 - 기준 브랜치: `studio/feat/workflow`. 조사 시작 HEAD: `2f929c3d154bbb5b181c31c3eab39661822283ed`.
-- GitHub 선행 관계: [#17](https://github.com/jammer-droid/deepseek-harness/issues/17)은 closed다. 후속 [#19](https://github.com/jammer-droid/deepseek-harness/issues/19)가 #18을 기다린다. #18 본문 외 별도 댓글은 없으며 공통 구조 계약은 [#15 구조 검토 댓글](https://github.com/jammer-droid/deepseek-harness/issues/15)과 [구조 검토](../workflow-architecture-review.md)를 따른다.
+- GitHub 선행 관계: [#17](https://github.com/jammer-droid/deepseek-harness/issues/17)은 closed다. 후속 [#19](https://github.com/jammer-droid/deepseek-harness/issues/19)가 #18을 기다린다. #18 본문 외 별도 댓글은 없으며 공통 구조 계약은 [#15 구조 검토 댓글](https://github.com/jammer-droid/deepseek-harness/issues/15)과 [구조 검토](../archive/workflow/workflow-architecture-review.md)를 따른다.
 - 대상: 수정하지 않은 Desktop DSH `0.2.0-rc.2`의 공개 API를 개발 기준으로 삼는다. Web은 위 HEAD의 저장소 버전 `0.2.1-alpha.2`에서 같은 Studio 구현의 호환성을 검증한다. Web 전용 API로 Desktop 제약을 우회하지 않는다.
 - 준비 상태: `ready`. B1은 공개 Loader 및 전체 앱의 실제 요청 검증으로 해소됐다. S1–S5 구현과 독립 패키지 검증 기록은 아래에 구분한다. 메인 모델 강제 적용은 D1-a에 따라 제외하며 라이브 외부 모델 호출은 미검증이다. GitHub 상태는 변경하지 않는다.
 - 첫 단계: **S1 공개 API·실제 Loader 적합성 확인**만 먼저 진행할 수 있다. S1 실패 시 S2 이후로 진행하지 않는다. 구현·검사 실행은 별도 구현 요청에서 수행한다.
@@ -33,12 +33,12 @@ status: ready
 | [DraftStore](../../packages/workflows/src/drafts.ts)와 [wire 타입](../../packages/workflows/src/workflow-types.ts) | 프로필별 초안, expectedRevision 충돌 검사, 저장 결과 불명 시 후속 쓰기 중단이 있다. 적용 리비전·활성화 상태는 별도 소유해야 한다. 기존 초안 저장에 실행 부작용을 넣지 않는다. |
 | [컴포넌트 등록부](../../packages/workflows/src/component-registry.ts) | 기본 지침은 text 필드만 선언한다. 선언·의미 검증과 실행 변환은 다른 책임이며 모든 등록을 실행 가능으로 간주하지 않는다. |
 | [현재 Web 프리셋 등록 구현](../../../packages/preset/agent-preset-registry/src/index.ts) | 공개 `register()`와 disposer가 있으며 중복 ID를 거절한다. 등록 Promise 완료만으로 활성화 성공을 단정할 수 없고 별도 진단을 확인해야 한다. live Inspect에서도 등록·조회 계약을 확인했으나 Desktop rc.2 적합성 증거는 아니다. |
-| [프리셋 조사](../workflow-composition-research.md)와 [General 설정](../../packages/general/src/preset-settings.ts) | 기존 Entry 편집만으로 새 프리셋 생성 경로가 확보되지 않는다. 같은 논리 프리셋 갱신과 살아 있는 실행 보존을 실제 Loader에서 확인해야 한다. |
-| [#23 설치 기록](23-independent-plugin.md)과 [통합 제한](../workflow-integration.md) | rc.2에서 Studio 패키징·설치한 선행 증거는 있으나 #18 적용·실행 검증은 없다. 실험 카탈로그의 `startActivation` 비호환과 배포 제외를 해결된 실행 기반으로 간주하지 않는다. |
+| [프리셋 조사](../archive/workflow/workflow-composition-research.md)와 [General 설정](../../packages/general/src/preset-settings.ts) | 기존 Entry 편집만으로 새 프리셋 생성 경로가 확보되지 않는다. 같은 논리 프리셋 갱신과 살아 있는 실행 보존을 실제 Loader에서 확인해야 한다. |
+| [#23 설치 기록](23-independent-plugin.md)과 [통합 제한](../archive/workflow/workflow-integration.md) | rc.2에서 Studio 패키징·설치한 선행 증거는 있으나 #18 적용·실행 검증은 없다. 실험 카탈로그의 `startActivation` 비호환과 배포 제외를 해결된 실행 기반으로 간주하지 않는다. |
 
 ### 명세 검토: rc.2 선언 대조 결과
 
-[DSH 재사용 조사](../dsh-reuse-investigation.md)에서 rc.2 공개 선언·배포 JS와 이 명세를 대조했다. 실행 검증이 아니며 S1에서 실제 Loader로 확인한다.
+[DSH 재사용 조사](../archive/workflow/dsh-reuse-investigation.md)에서 rc.2 공개 선언·배포 JS와 이 명세를 대조했다. 실행 검증이 아니며 S1에서 실제 Loader로 확인한다.
 
 | 항목 | 확인한 사실 | 명세 영향 |
 | --- | --- | --- |
@@ -49,7 +49,7 @@ status: ready
 | 실행 변환 | 등록 정의에 실행 adapter가 없다(조사 F2). 검증 중 카탈로그 변경을 `model-lookup-failed`로 표시한다(F5). | S2에 apply compiler와 `catalog-changed`·`unsupported-adapter` 진단을 포함한다. |
 | 소유 방식 | Studio에는 정적 `studio-managed`, General entry 편집, 런타임 등록 세 가지가 공존한다(F6). experiments는 모든 새 agent에 정책을 설치한다(F7). | 적용은 런타임 등록만 쓰고 ID 접두사 `studio-workflow:`를 예약한다. experiments는 D2 결정대로 그대로 적용하고 표시한다. |
 
-기존 조사 문서의 '등록 기반 편집 모델이 없다' 등 과거 현황은 현재 소스와 다르다. 현재 편집·저장 사실은 위 소스를 우선하고, 구조·제품 요구는 [제품 명세](../workflow-specification.md)를 따른다. 이번 준비에서는 소스·문서·GitHub·read-only Inspect만 확인했으며 테스트, 빌드, 설치, 모델 호출은 실행하지 않았다.
+기존 조사 문서의 '등록 기반 편집 모델이 없다' 등 과거 현황은 현재 소스와 다르다. 현재 편집·저장 사실은 위 소스를 우선하고, 구조·제품 요구는 [제품 명세](../archive/workflow/workflow-specification.md)를 따른다. 이번 준비에서는 소스·문서·GitHub·read-only Inspect만 확인했으며 테스트, 빌드, 설치, 모델 호출은 실행하지 않았다.
 
 ## 확정 계약
 
@@ -84,7 +84,7 @@ Studio가 초안과 별도의 프로필별 적용본을 소유한다. 적용본�
 | S1 | Desktop 기준 공개 등록 경로의 적합성. 선행 #17 완료. | Studio 소유 Loader fixture 및 국소 DSH adapter 후보. rc.2 공개 타입·exports를 직접 확인하고 현재 Web에서도 같은 경로 확인. 코어·기존 프로필 수정 금지. | 실제 Loader에서 새 ID 등록, 같은 논리 프리셋 갱신, 새 대화 반영, 기존 메인 실행 보존, 중복 ID 거절, 활성화 실패 진단, disposer·재등록을 확인한다. 저장 후 실패 시 이전 정상 구성의 실제 상태도 확인한다. rc.2가 불가능하면 차단 사유·대안만 보고한다. |
 | S2 | 별도 적용본 저장과 재조회, apply compiler. 선행 S1 통과 및 아래 B1 해소. | workflows 저장 소유자와 Remote 계약. 초안 저장 동작 보존. 적용 식별·리비전·저장/활성화 사실의 wire 형태를 이 단계에서 문서화. 컴포넌트별 adapter로 역할 실행 구성을 만드는 Host 전용 compiler(#19가 재사용)와 `unsupported-adapter`·`catalog-changed` 진단. 모델 검증은 `WorkflowModels` 하나만 사용. | 정상 저장, 두 클라이언트 충돌, 저장 전 실패, 내구성 불명, 응답 유실 후 재조회, 재시작 읽기 테스트. 실패 상태가 성공으로 보이지 않고 무확인 재시도가 추가 쓰기를 만들지 않는다. |
 | S3 | 메인 지침을 Studio 프리셋으로 변환·등록하고 메인 모델 불일치를 판정. 선행 S2. | workflows 국소 변환·등록 소유자. 미지원 활성 항목 거절, 비활성 항목 보존/제외, 기존 프리셋 비변경. 모델은 강제하지 않음(D1-a). | 실제 Loader와 결정적 모델 adapter로 지침 section 순서·기본 persona 유지 스냅샷, 적용본 모델과 요청 헤더 route의 일치/불일치 판정, 잘못된 모델·제공자 해제·미지원 시스템 거절, 활성화 실패, 재적용 전후 두 루트 격리, HMR 해제 검증. 기존 프리셋 내용이 불변임을 비교한다. |
-| S4 | 적용·상태 재조회·새 대화 안내 UI. 선행 S3. | 기존 Workflow 화면·공용 UI·ko/en/zh locale. [디자인 시스템](../design-system.md) 준수. | 미저장 입력 보존, 저장 후 적용, 충돌, 저장됨/활성화 실패/결과 불명 분리, 재조회와 안전한 다음 행동, 다른 역할 미실행 안내, 메인 모델 불일치 경고와 모델 선택기 안내, experiments 적용 표시를 UI 출력과 브라우저로 확인한다. 라이트·다크·좁은 폭 확인. |
+| S4 | 적용·상태 재조회·새 대화 안내 UI. 선행 S3. | 기존 Workflow 화면·공용 UI·ko/en/zh locale. [디자인 시스템](../development/design-system.md) 준수. | 미저장 입력 보존, 저장 후 적용, 충돌, 저장됨/활성화 실패/결과 불명 분리, 재조회와 안전한 다음 행동, 다른 역할 미실행 안내, 메인 모델 불일치 경고와 모델 선택기 안내, experiments 적용 표시를 UI 출력과 브라우저로 확인한다. 라이트·다크·좁은 폭 확인. |
 | S5 | 패키지 배포·실행 증거와 제품 문서. 선행 S4. | Studio 패키징 및 격리 home/profile. 기존 앱·프로필 변경 금지. | 변경 기능 테스트·Studio 타입 검사·빌드, 미수정 rc.2와 고정 Web 기준의 실제 Loader·새 대화 흐름 검증을 별도 기록한다. 키 없는 replay와 실제 모델 호출 결과를 분리한다. 실제 호출 미실행 시 해당 이슈 조건을 미검증으로 남긴다. |
 
 S1은 공개 지원 경로를 확인하는 구현 첫 단계이며 본 문서 작성 중 테스트를 실행했다는 뜻이 아니다. 필요한 런타임 산출물이 없으면 준비물과 막힌 검사를 보고하고 전체 코어 빌드를 자동 실행하지 않는다. Web workspace 회귀는 Desktop 독립 설치 증거를 대신하지 않는다.

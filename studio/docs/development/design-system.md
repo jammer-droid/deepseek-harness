@@ -7,7 +7,7 @@ description: "Studio Client UI의 토큰, 공용 부품, 레이아웃, 상태 �
 
 ## 요약
 
-Studio 화면은 DSH 기본 디자인 시스템의 톤을 따른다. 색·선·배경은 DSH 토큰을 `--studio-*` 별칭으로만 쓰고, 컨트롤은 DSH primitives를 먼저 쓰며, 지원 범위를 숨기지 않고 표시한다. 새 UI는 이 문서의 공용 부품 위에 만들고, 부품이 없을 때만 공용 모듈에 추가한다. 일부 규칙은 [디자인 규칙 테스트](../test/design-rules.test.mjs)와 [스타일 격리 테스트](../test/design-system.test.mjs)가 강제한다.
+Studio 화면은 DSH 기본 디자인 시스템의 톤을 따른다. 색·선·배경은 DSH 토큰을 `--studio-*` 별칭으로만 쓰고, 컨트롤은 DSH primitives를 먼저 쓰며, 지원 범위를 숨기지 않고 표시한다. 새 UI는 이 문서의 공용 부품 위에 만들고, 부품이 없을 때만 공용 모듈에 추가한다. 일부 규칙은 [디자인 규칙 테스트](../../test/design-rules.test.mjs)와 [스타일 격리 테스트](../../test/design-system.test.mjs)가 강제한다.
 
 ## 목차
 
@@ -31,7 +31,7 @@ Studio 화면은 DSH 기본 디자인 시스템의 톤을 따른다. 색·선·�
 
 ## 토큰
 
-호스트 토큰은 [ui-styles.ts](../src/ui-styles.ts) 맨 앞의 `.studio-ui` 어댑터에서만 참조한다. 기능 스타일은 아래 별칭만 쓴다.
+호스트 토큰은 [ui-styles.ts](../../src/ui-styles.ts) 맨 앞의 `.studio-ui` 어댑터에서만 참조한다. 기능 스타일은 아래 별칭만 쓴다.
 
 | 별칭 | DSH 토큰 | 용도 |
 | --- | --- | --- |
@@ -56,9 +56,9 @@ Studio 화면은 DSH 기본 디자인 시스템의 톤을 따른다. 색·선·�
 
 | 모듈 | 내용 | 조건 |
 | --- | --- | --- |
-| [ui-styles.ts](../src/ui-styles.ts) | 토큰 어댑터와 `.studio-ui` 범위 스타일 | 모든 규칙은 `.studio-ui`로 시작 |
-| [ui.tsx](../src/ui.tsx) | Studio 소유 부품 | primitives를 import하지 않음. Node 단위 테스트에서 불러도 됨 |
-| [ui-host.tsx](../src/ui-host.tsx) | primitives 재수출과 primitives 기반 부품 | primitives를 직접 import하는 유일한 모듈. Node 테스트가 불러오면 안 됨 |
+| [ui-styles.ts](../../src/ui-styles.ts) | 토큰 어댑터와 `.studio-ui` 범위 스타일 | 모든 규칙은 `.studio-ui`로 시작 |
+| [ui.tsx](../../src/ui.tsx) | Studio 소유 부품 | primitives를 import하지 않음. Node 단위 테스트에서 불러도 됨 |
+| [ui-host.tsx](../../src/ui-host.tsx) | primitives 재수출과 primitives 기반 부품 | primitives를 직접 import하는 유일한 모듈. Node 테스트가 불러오면 안 됨 |
 
 primitives는 CSS 모듈을 함께 불러오므로 Node 단위 테스트에서 로드할 수 없다. 그래서 기능 모듈은 primitives를 `ui-host.tsx`에서 가져오고, 테스트 대상 모듈은 `ui-host.tsx`에 닿지 않는다. 런타임에서는 셸이 primitives를 플랫폼 모듈로 공유하고 Client 번들은 이를 외부 모듈로 둔다.
 
@@ -90,7 +90,7 @@ primitives는 CSS 모듈을 함께 불러오므로 Node 단위 테스트에서 �
 
 ## 레이아웃
 
-[ServiceLayout](../src/service-layout.tsx)은 등록된 서비스의 상단 탐색과 화면 표시를 담당한다. 메뉴는 좁은 폭에서 가로로 스크롤하고 선택하지 않은 화면도 마운트를 유지한다. 서비스 내용은 960px 최대 폭과 공통 여백을 사용한다. `feat/lean-agent`에서는 기존 기능과 네 목업을 제거하고, 동일한 내부 탐색 골격인 `DetailLayout`과 공용 부품·스타일을 유지한다. 등록과 수명은 [서비스 탐색 구조](service-navigation.md)를 따른다.
+[ServiceLayout](../../src/service-layout.tsx)은 등록된 서비스의 상단 탐색과 화면 표시를 담당한다. 메뉴는 좁은 폭에서 가로로 스크롤하고 선택하지 않은 화면도 마운트를 유지한다. 서비스 내용은 960px 최대 폭과 공통 여백을 사용한다. `feat/lean-agent`에서는 기존 기능과 네 목업을 제거하고, 동일한 내부 탐색 골격인 `DetailLayout`과 공용 부품·스타일을 유지한다. 등록과 수명은 [서비스 탐색 구조](../reference/service-navigation.md)를 따른다.
 
 - Studio 페이지는 왼쪽 메뉴와 본문이 따로 스크롤된다. 섹션을 바꾸면 새 섹션은 맨 위에서 시작하고 메뉴는 움직이지 않는다.
 - 본문 최대 너비는 960px이고, 섹션 안의 블록은 16px 간격으로 쌓는다.
@@ -143,8 +143,8 @@ DSH 규칙상 토스트는 결과를 낸 화면보다 오래 사는 호스트(`s
 
 | 검사 | 위치 |
 | --- | --- |
-| 모든 CSS 규칙이 `.studio-ui`로 시작하고, 호스트 토큰은 어댑터에서만 `var(--dsw-*)` 형태로 참조 | [design-system.test.mjs](../test/design-system.test.mjs) |
-| 색 리터럴 없음, 굵기 500 이하 | [design-rules.test.mjs](../test/design-rules.test.mjs) |
+| 모든 CSS 규칙이 `.studio-ui`로 시작하고, 호스트 토큰은 어댑터에서만 `var(--dsw-*)` 형태로 참조 | [design-system.test.mjs](../../test/design-system.test.mjs) |
+| 색 리터럴 없음, 굵기 500 이하 | [design-rules.test.mjs](../../test/design-rules.test.mjs) |
 | primitives 직접 import는 `ui-host.tsx`만 | 같은 파일 |
 | Node 테스트가 불러오는 모듈은 `ui-host.tsx`에 닿지 않음 | 같은 파일 |
 | 기능 모듈에 인라인 `style`, 색 리터럴, `studio-button` 클래스 직접 사용 없음 | 같은 파일 |

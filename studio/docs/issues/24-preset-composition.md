@@ -167,4 +167,4 @@ status: implemented-with-limitations
 - 내보낸 preset의 새 Agent 생성은 확인했으나 해당 Agent의 실도구 실행·모델 호출까지 검증하지 않았다. UI 시각·좁은 화면 확인은 사용자에게 맡긴다.
 - 푸시·병합·이슈 종료는 수행하지 않는다.
 
-사용법과 배포 조건은 [프리셋 내보내기 안내](../preset-composition.md)를 참고한다.
+사용법과 배포 조건은 [프리셋 내보내기 안내](../reference/preset-composition.md)를 참고한다.
