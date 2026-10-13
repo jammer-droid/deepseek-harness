@@ -7,13 +7,9 @@ async function compile(options) {
 }
 import { fileURLToPath } from 'node:url';
 const root = fileURLToPath(new URL('.', import.meta.url));
-await compile({
-  absWorkingDir: root, tsconfig: 'tsconfig.host.json', entryPoints: ['packages/roles/src/delegation-tool.ts'], outfile: 'packages/roles/delegation-tool.js',
-  bundle: true, platform: 'node', format: 'esm', target: 'node22', packages: 'external', external: ['@deepseek-ai/*'],
-});
-for (const part of ['shell', 'roles', 'general', 'workflows', 'experiments']) {
+for (const part of ['shell']) {
   await compile({
-    absWorkingDir: root, tsconfig: 'tsconfig.host.json', entryPoints: [['roles', 'general', 'workflows', 'experiments'].includes(part) ? `packages/${part}/src/index.ts` : `src/host/${part}.ts`], outfile: `packages/${part}/index.js`,
+    absWorkingDir: root, tsconfig: 'tsconfig.host.json', entryPoints: [`src/host/${part}.ts`], outfile: `packages/${part}/index.js`,
     bundle: true, platform: 'node', format: 'esm', target: 'node22', packages: 'external', external: ['@deepseek-ai/*'],
   });
   await compile({

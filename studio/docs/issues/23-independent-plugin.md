@@ -1,3 +1,5 @@
+> **이력 자료:** `feat/lean-agent`는 기존 기능 구현을 제거한 셸 전용 브랜치입니다. 이 문서의 workflow 기능·검증 기록은 분기 전 기준이며 현재 배포 기능이 아닙니다.
+
 # #23 독립 플러그인 배포와 워크플로우 사용 여부
 
 이슈: https://github.com/jammer-droid/deepseek-harness/issues/23

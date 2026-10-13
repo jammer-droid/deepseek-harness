@@ -11,6 +11,5 @@
     "src/*.ts",
     "src/*.tsx"
   ],
-  "exclude": ["src/catalog.tsx", "src/subagent-catalog-model.ts"],
   "references": []
 }

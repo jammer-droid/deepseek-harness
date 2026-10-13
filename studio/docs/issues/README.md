@@ -3,6 +3,8 @@ kind: reference
 description: "Studio 이슈별 구현 명세의 색인."
 ---
 
+> **이력 자료:** `feat/lean-agent`는 기존 기능 구현을 제거한 셸 전용 브랜치입니다. 이 문서의 workflow 기능·검증 기록은 분기 전 기준이며 현재 배포 기능이 아닙니다.
+
 # Studio 이슈 명세
 
 ## 요약

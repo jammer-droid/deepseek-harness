@@ -3,17 +3,10 @@ import React from "react";
 import { resolveSlotLabel } from '@deepseek-ai/dsh-client-ui-slots';
 import type { PropsRenderSlots } from '@deepseek-ai/dsh-client-ui-slots';
 import { ServiceLayout, type StudioServiceItem } from './service-layout.tsx';
-import { serviceText } from './service-locales.ts';
 import type {} from '@deepseek-ai/dsh-client-locale/client';
-import { SettingsLayout, type StudioSection } from './settings-layout.tsx';
-import { MockStudioProvider } from './mock-store.tsx';
-import { MockWorkflow } from './mock-workflow.tsx';
-import { MockAgents, MockComponents, MockSystems } from './mock-library.tsx';
-import type { StudioContext, StudioProps, IconProps } from "./contracts.js";
-import { DetailLayout } from './detail-layout.tsx';
-import { experimentText } from './experiment-locales.ts';
+import type { StudioContext, IconProps } from "./contracts.js";
 
-export const inject = ["slots", "remote", "remote.pluginManager", "locale"];
+export const inject = ["slots", "locale"];
 const panel = "local-dsh-studio";
 export function apply(ctx: StudioContext) {
     ctx.effect(() => ctx.locale.addLanguage({ id: 'ko', label: '한국어', fallback: 'en' }));
@@ -33,22 +26,6 @@ export function apply(ctx: StudioContext) {
         return <StudioSurface className="studio-shell"><main className="studio-page">
             <ServiceLayout locale={locale} services={items} renderSlot={renderSlot} />
         </main></StudioSurface>;
-    }
-    function Experiments({ renderSlot }: StudioProps) {
-        const locale = React.useSyncExternalStore(listener => ctx.locale.subscribe(listener), () => ctx.locale.getLocale().active);
-        const t = experimentText(locale);
-        const [selected, select] = React.useState('agent-optimizations');
-        return <DetailLayout title={serviceText(locale).experiments} navigation={t.title}
-            pages={[{ id: 'agent-optimizations', label: t.title, content: renderSlot('local.dsh-studio.features', {}, { only: 'agent-optimizations' }) }]}
-            selected={selected} onSelect={select} />;
-    }
-    function DesignPreview() {
-        const locale = React.useSyncExternalStore(listener => ctx.locale.subscribe(listener), () => ctx.locale.getLocale().active);
-        const [section, setSection] = React.useState<StudioSection>('workflows');
-        return <MockStudioProvider locale={locale} go={setSection}>
-            <SettingsLayout locale={locale} section={section} onSectionChange={setSection}
-                pages={{ workflows: <MockWorkflow />, agents: <MockAgents />, components: <MockComponents />, systems: <MockSystems /> }} />
-        </MockStudioProvider>;
     }
     function Icon({ size = 20 }: IconProps) {
         return (
@@ -80,14 +57,6 @@ export function apply(ctx: StudioContext) {
             StudioServices,
         ),
     );
-    ctx.slots.inject('local.dsh-studio.services', function* () {
-        yield ctx.slots.register({ name: 'local.dsh-studio.services', id: 'design-preview', order: 40,
-            label: () => serviceText(ctx.locale.getLocale().active).preview }, DesignPreview);
-        yield ctx.slots.register({ name: 'local.dsh-studio.services', id: 'experiments', order: 50,
-            label: () => serviceText(ctx.locale.getLocale().active).experiments,
-            children: { 'local.dsh-studio.features': { kind: 'list', scope: 'root' } },
-        }, Experiments);
-    });
     syncServices();
     ctx.slots.inject("sidebar.panellist", () =>
         ctx.slots.register(

@@ -1,6 +1,0 @@
-{
-  "extends": "../../tsconfig.typert.host.json",
-  "compilerOptions": { "rootDir": "src" },
-  "include": ["src/**/*.ts"],
-  "references": []
-}
