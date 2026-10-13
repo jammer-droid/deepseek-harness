@@ -27,9 +27,10 @@ const owned = (id: string) => id === OPTIMIZED_PRESET_ID || /^studio-user-[a-f0-
 const warning = 'Work convenience settings are saved but not applied yet. Legacy role overrides are stored only; roles apply only their supported settings.';
 
 /** Profile-local Studio data, never a Loader patch or profile package mutation. */
-export function studioStorePath(env: NodeJS.ProcessEnv = process.env): string {
-  if (!env.DSH_PROFILE_DIR) throw new Error('Studio preset persistence requires a profile (DSH_PROFILE_DIR)');
-  return join(env.DSH_PROFILE_DIR, 'studio-data', 'presets.json');
+export function studioStorePath(env: NodeJS.ProcessEnv = process.env, profile?: { readonly dir: string }): string {
+  const directory = profile?.dir ?? env.DSH_PROFILE_DIR;
+  if (!directory) throw new Error('Studio preset persistence requires a profile');
+  return join(directory, 'studio-data', 'presets.json');
 }
 
 /** Serializes mutations; retains last applied composition separately from unsaved-to-DSH drafts. */

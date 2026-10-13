@@ -25,11 +25,14 @@ export default class StudioCatalog extends TypertRemoteService {
   private snapshot: Promise<PresetCatalog>;
   private disposeMaster?: () => Promise<void>;
   private stopped = false;
-  private extensions = new MasterExtensions(join(dirname(studioStorePath()), 'master-extensions.json'));
+  private extensions: MasterExtensions;
   private changes: Promise<unknown> = Promise.resolve();
   constructor(ctx: Context) {
     super(ctx, 'studioCatalog');
-    this.store = new PresetStore(ctx, studioStorePath());
+    // Shell environment variables are not the Desktop Host's launch environment.
+    const storePath = studioStorePath(process.env, ctx.get('profileContext'));
+    this.extensions = new MasterExtensions(join(dirname(storePath), 'master-extensions.json'));
+    this.store = new PresetStore(ctx, storePath);
     // Do not return this task from a Cordis activation effect: Loader awaits us.
     this.snapshot = new Promise<void>(resolve => { setImmediate(resolve); }).then(() => this.capture());
     // Keep failure observable to RPC callers without an unhandled rejection.
