@@ -14,6 +14,10 @@ export async function assemblePreview(ctx: Context, input: PreviewRequest): Prom
   const id = `studio-preview-${randomUUID()}`;
   const unregister = await ctx.agentPresets.register({ id, plugins: plugins as never });
   try {
+    if (ctx.agentPresets.resolve) {
+      const resolved = await ctx.agentPresets.resolve(id);
+      if (resolved.broken) throw new Error(resolved.broken);
+    }
     const lease = await ctx.agentPresets.acquireScope(id);
     try {
       const key = {};

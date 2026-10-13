@@ -1,3 +1,4 @@
+import { applyConfigOverrides } from '../config-overrides.ts';
 import { MASTER_PRESET_ID } from '../master-preset.ts';
 import { providerFields } from '../provider-fields.ts';
 import type { Context } from '@deepseek-ai/cordis';
@@ -20,7 +21,8 @@ function findProviders(rows: CompositionRow[]): CompositionRow[] {
 export async function compositionPlan(ctx: Context, input: PreviewRequest) {
   const request = parsePreviewRequest(input);
   const base = request.preset === MASTER_PRESET_ID ? MASTER_PRESET_ID : 'minimal';
-  const minimal = parseComposition((await ctx.agentPresets.readDocument(base)).content);
+  if (request.configOverrides && base !== MASTER_PRESET_ID) throw new Error('Config overrides require Studio Master');
+  const minimal = applyConfigOverrides(parseComposition((await ctx.agentPresets.readDocument(base)).content), request.configOverrides ?? {});
   const available = new Map(findProviders(minimal).map(row => [row.name, row]));
   const presets = await ctx.agentPresets.list();
   for (const preset of presets) {
@@ -60,7 +62,7 @@ export async function compositionPlan(ctx: Context, input: PreviewRequest) {
   for (const name of Object.keys(request.providerConfigs ?? {})) if (!request.providers.includes(name)) throw new Error(`Unselected provider override: ${name}`);
   const globalNames = new Set(ctx.tools.schemas().map(tool => tool.name));
   const missing = request.tools.filter(name => !globalNames.has(name));
-  if (missing.length) {
+  if (missing.length || base === MASTER_PRESET_ID) {
     // Keep provider closures and dependency realms together; never transplant live definitions
     // from a different preset scope. Prefer minimal, otherwise one compatible source composition.
     let source: CompositionRow[] | undefined;

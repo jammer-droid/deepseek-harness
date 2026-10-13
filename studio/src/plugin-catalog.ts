@@ -1,6 +1,7 @@
 export interface PluginCatalogEntry {
   id: string;
   name: string;
+  config?: unknown;
   schema?: Record<string, unknown>;
   error?: string;
 }

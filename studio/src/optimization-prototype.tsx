@@ -1,6 +1,8 @@
 // Studio preset creation and saved-preset management.
 import React from 'react';
-import { ExecutionSettings, type ExecutionDraft } from './execution-settings.tsx';
+import { MasterExtensionsEditor, type MasterExtensionActions } from './master-extensions-editor.tsx';
+import { ConfigEditor } from './config-editor.tsx';
+import type { ConfigOverrides } from './config-overrides.ts';
 import { PresetList, type PresetActions } from './preset-manager.tsx';
 import type { PreviewRequest } from './prompt-composition.ts';
 import { PromptToolsPrototype, defaultProvidedTools } from './prompt-tools-prototype.tsx';
@@ -14,7 +16,7 @@ const seeds: Agent[] = [
   { name: 'Researcher', role: 'research', model: 'inherit', reasoning: 'inherit', spawn: 'fresh', persona: 'Investigate primary sources and cite the evidence.', overrides: {} },
   { name: 'Reviewer', role: 'review', model: 'inherit', reasoning: 'high', spawn: 'fork', persona: 'Review correctness and identify concrete risks.', overrides: { tools: 'read / grep / glob', spill: '4096' } },
 ];
-export function OptimizationPrototype({ locale, catalog, catalogError, onPreview, presetActions }: { presetActions?: PresetActions | undefined; onPreview?: import('./prompt-composition.ts').PreviewAction | undefined; locale: string; catalog?: import('./preset-catalog.ts').PresetCatalog | undefined; catalogError?: string | undefined }) {
+export function OptimizationPrototype({ locale, catalog, catalogError, onPreview, presetActions, extensionActions }: { extensionActions?: MasterExtensionActions | undefined; presetActions?: PresetActions | undefined; onPreview?: import('./prompt-composition.ts').PreviewAction | undefined; locale: string; catalog?: import('./preset-catalog.ts').PresetCatalog | undefined; catalogError?: string | undefined }) {
   const t = (ko: string, en: string, zh: string) => locale.startsWith('ko') ? ko : locale.startsWith('zh') ? zh : en;
   const [page, setPage] = React.useState('list');
   const [common, setCommon] = React.useState<Settings>({ ...initial });
@@ -26,15 +28,16 @@ export function OptimizationPrototype({ locale, catalog, catalogError, onPreview
   const [description, setDescription] = React.useState('');
   const [draftKey, setDraftKey] = React.useState(0);
   const [revision, setRevision] = React.useState(0);
-  const [execution, setExecution] = React.useState<ExecutionDraft>({ defaults: {} });
-  const activeExecution = { defaults: Object.fromEntries(Object.entries(execution.defaults).filter(([tool]) => provided.includes(tool))), ...(execution.batch && provided.includes('read_batch') ? { batch: execution.batch } : {}) };
+  const defaults = React.useMemo(() => Object.fromEntries((catalog?.plugins ?? []).filter(p => p.schema && ['tool-bash', 'tool-pwsh', 'tool-fs', 'spill-policy'].includes(p.id)).map(p => [p.id, {}])), [catalog]);
+  const [configDraft, setConfigDraft] = React.useState<ConfigOverrides>();
+  const configOverrides = configDraft ?? defaults;
   const [request, setRequest] = React.useState<PreviewRequest>();
   const [saving, setSaving] = React.useState(false);
   const [saveError, setSaveError] = React.useState('');
   const save = async () => {
     if (!presetActions || !request || !name.trim()) return;
     setSaving(true); setSaveError('');
-    try { await presetActions.save(JSON.stringify({ name: name.trim(), description, request: { ...request, execution: activeExecution }, conveniences: { spill: common.spill }, agents })); setRevision(n => n + 1); setPage('list'); setName(''); setDescription(''); setExecution({ defaults: {} }); setCommon({ ...initial }); setProvided([]); setAgents(seeds.map(a => ({ ...a, overrides: { ...a.overrides } }))); setSelected(0); setTab('tools'); setDraftKey(n => n + 1); }
+    try { await presetActions.save(JSON.stringify({ name: name.trim(), description, request: { ...request, configOverrides }, conveniences: { spill: common.spill }, agents })); setRevision(n => n + 1); setPage('list'); setName(''); setDescription(''); setConfigDraft(undefined); setCommon({ ...initial }); setProvided([]); setAgents(seeds.map(a => ({ ...a, overrides: { ...a.overrides } }))); setSelected(0); setTab('tools'); setDraftKey(n => n + 1); }
     catch (error) { setSaveError(String(error)); } finally { setSaving(false); }
   };
   const agent = agents[selected]!;
@@ -70,8 +73,8 @@ export function OptimizationPrototype({ locale, catalog, catalogError, onPreview
     <Note>{t('목업에서는 재정의가 공통 값을 대체합니다. 개별 spill·대기 적용 가능성은 추후 검증합니다.', 'Overrides replace shared values in this prototype. Per-agent spill and wait support remain unverified.', '原型中的覆盖将替换公共值。每个代理的 spill 和等待支持尚未验证。')}</Note>
   </>;
   const tabs = [
-    { id: 'tools', label: t('프롬프트·도구', 'Prompts & tools', '提示词与工具'), content: <PromptToolsPrototype key={draftKey} locale={locale} catalog={catalog} catalogError={catalogError} onPreview={onPreview ? request => onPreview({ ...request, execution: activeExecution }) : undefined} onRequestChange={setRequest} prompt={common.prompt} onPromptChange={value => setCommon(c => ({ ...c, prompt: value }))} provided={provided} onProvidedChange={setProvided} /> },
-    { id: 'convenience', label: t('실행 설정', 'Execution settings', '执行设置'), content: <ExecutionSettings locale={locale} catalog={catalog} selected={provided} value={execution} onChange={setExecution} /> },
+    { id: 'tools', label: t('프롬프트·도구', 'Prompts & tools', '提示词与工具'), content: <><MasterExtensionsEditor locale={locale} actions={extensionActions} /><PromptToolsPrototype key={draftKey} locale={locale} catalog={catalog} catalogError={catalogError} onPreview={onPreview ? request => onPreview({ ...request, configOverrides }) : undefined} onRequestChange={setRequest} prompt={common.prompt} onPromptChange={value => setCommon(c => ({ ...c, prompt: value }))} provided={provided} onProvidedChange={setProvided} /></> },
+    { id: 'convenience', label: t('실행 설정', 'Execution settings', '执行设置'), content: <><Note>{t('Spill은 이 프리셋에 추가하는 표시 제한입니다. Host의 기존 제한을 해제하거나 늘리지는 않습니다. read_batch는 공개 Config가 없어 여기에서 편집하지 않습니다.', 'Spill adds a scoped display limit; it cannot remove or increase the Host limit. read_batch has no public Config and is not editable here.', 'Spill 添加预设显示限制，不能解除或提高 Host 限制。read_batch 没有公开 Config，无法在此编辑。')}</Note><ConfigEditor locale={locale} entries={catalog?.plugins ?? []} value={configOverrides} onChange={setConfigDraft} /></> },
     { id: 'agents', label: t('서브에이전트 설정', 'Subagent settings', '子代理设置'), content: agentPage },
   ];
   const tabId = React.useId();

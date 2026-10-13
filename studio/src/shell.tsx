@@ -19,9 +19,9 @@ export async function apply(ctx: StudioContext) {
         id: '@local/dsh-studio-shell#studioCatalog/preview', service: 'studioCatalog', namespace: 'studioCatalog', method: 'preview',
         invocation: { kind: 'direct' }, parameters: [{ name: 'request', wire: 'request', source: 'json', codec: { mode: 'strict', typeSymbol: 'PreviewRequest', create: () => ({ parse: parsePreviewRequest }) } }], result: { mode: 'src-json' },
 
-    }, ...['listPresets', 'savePreset', 'applyPreset', 'deletePreset'].map(method => ({
+    }, ...['listPresets', 'savePreset', 'applyPreset', 'deletePreset', 'readExtensions', 'saveExtensions'].map(method => ({
         id: `@local/dsh-studio-shell#studioCatalog/${method}`, service: 'studioCatalog', namespace: 'studioCatalog', method,
-        invocation: { kind: 'direct' }, parameters: method === 'listPresets' ? [] : [{ name: method === 'savePreset' ? 'payload' : 'id', wire: method === 'savePreset' ? 'payload' : 'id', source: 'json', codec: { mode: 'strict', typeSymbol: 'string', create: () => ({ parse: (value: unknown) => { if (typeof value !== 'string') throw new TypeError('Expected a string'); return value; } }) } }], result: { mode: 'src-json' },
+        invocation: { kind: 'direct' }, parameters: ['listPresets', 'readExtensions'].includes(method) ? [] : [{ name: ['savePreset', 'saveExtensions'].includes(method) ? 'payload' : 'id', wire: ['savePreset', 'saveExtensions'].includes(method) ? 'payload' : 'id', source: 'json', codec: { mode: 'strict', typeSymbol: 'string', create: () => ({ parse: (value: unknown) => { if (typeof value !== 'string') throw new TypeError('Expected a string'); return value; } }) } }], result: { mode: 'src-json' },
     }))] });
     ctx.effect(() => ctx.locale.addLanguage({ id: 'ko', label: '한국어', fallback: 'en' }));
     const serviceListeners = new Set<() => void>();
@@ -96,7 +96,16 @@ export async function apply(ctx: StudioContext) {
                 delete: (id: string) => call('deletePreset', id),
             };
         }, []);
-        return <OptimizationPrototype presetActions={presetActions} locale={locale} catalog={catalog} catalogError={catalogError} onPreview={async request => {
+        const extensionActions = React.useMemo(() => {
+            const call = async (method: string, ...args: unknown[]) => {
+                const service = ctx.get('remote.studioCatalog' as never) as unknown as Record<string, (...args: unknown[]) => Promise<{ ok: boolean; value: unknown; error?: { message: string } }>>;
+                const result = await service[method]!(...args);
+                if (!result.ok) throw new Error(result.error?.message ?? 'Master update failed');
+                return result.value;
+            };
+            return { read: () => call('readExtensions'), save: async (payload: string) => { setCatalog(await call('saveExtensions', payload) as import('./preset-catalog.ts').PresetCatalog); } };
+        }, []);
+        return <OptimizationPrototype extensionActions={extensionActions} presetActions={presetActions} locale={locale} catalog={catalog} catalogError={catalogError} onPreview={async request => {
             const service = ctx.get('remote.studioCatalog' as never) as unknown as { preview(request: import('./prompt-composition.ts').PreviewRequest): Promise<{ ok: boolean; value: import('./prompt-composition.ts').PreviewResult; error?: { message: string } }> };
             const response = await service.preview(request);
             if (!response.ok) throw new Error(response.error?.message ?? 'Preview failed');
