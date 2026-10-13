@@ -32,7 +32,21 @@ export const studioStyles = `/* Only this adapter references host tokens. Studio
 .studio-ui *, .studio-ui *::before, .studio-ui *::after { box-sizing: border-box; }
 .studio-ui .studio-tool-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 12px; }
 .studio-ui .studio-tool-card { display: flex; flex-direction: column; gap: 8px; padding: 14px; border: 1px solid var(--studio-line); border-radius: var(--studio-radius); cursor: pointer; min-width: 0; }
-.studio-ui .studio-tool-card[data-selected="true"] { outline: 1px solid currentColor; }
+.studio-ui .studio-tool-card[data-selected="true"] { background: var(--studio-hover); border-color: var(--studio-ink); }
+.studio-ui .studio-transfer-items .studio-tool-card { height: 148px; box-sizing: border-box; padding: 10px; }
+.studio-ui .studio-transfer-items .studio-tool-card > button:first-child { display: flex; flex-direction: column; align-items: start; text-align: start; white-space: normal; flex: 1; min-height: 0; overflow: hidden; }
+.studio-ui .studio-card-excerpt { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; font-weight: 400; color: var(--studio-muted); }
+.studio-ui .studio-tool-card strong { overflow-wrap: anywhere; }
+.studio-ui .studio-selection-detail { padding: 16px; margin-top: 12px; border: 1px solid var(--studio-line); border-radius: var(--studio-radius); }
+.studio-ui .studio-schema-tool { margin-top: 12px; padding: 10px; border: 1px solid var(--studio-line); border-radius: var(--studio-small-radius); }
+.studio-ui .studio-schema-tool summary { cursor: pointer; overflow-wrap: anywhere; }
+.studio-ui .studio-schema-fields { margin: 8px 0; }
+.studio-ui .studio-schema-fields > div { display: grid; grid-template-columns: minmax(70px, 120px) minmax(0, 1fr); gap: 12px; padding: 6px 0; border-bottom: 1px solid var(--studio-line); }
+.studio-ui .studio-schema-fields dt { color: var(--studio-muted); overflow-wrap: anywhere; }
+.studio-ui .studio-schema-fields dd { margin: 0; min-width: 0; }
+.studio-ui .studio-schema-list { padding-inline-start: 20px; }
+.studio-ui .studio-schema-meta { color: var(--studio-muted); font-size: 12px; }
+.studio-ui .studio-row button[aria-pressed="true"] { background: var(--studio-hover); border-color: var(--studio-ink); }
 .studio-ui .studio-tool-description { white-space: pre-wrap; overflow-wrap: anywhere; }
 .studio-ui .studio-tool-card strong { font-weight: 500; }
 .studio-ui .studio-comparison { margin-top: 24px; }

@@ -4,6 +4,8 @@ import { readPresetCatalog, type CatalogServices } from '../preset-catalog.ts';
 
 import { assemblePreview, parseComposition, promptProviders } from './prompt-preview.ts';
 import type { PreviewRequest } from '../prompt-composition.ts';
+import { compositionPlan } from './composition-plan.ts';
+import { createPresetBundle } from '../preset-export.ts';
 
 /** Catalog reads and temporary composition previews; no Agents or model calls. */
 export default class StudioCatalog extends TypertRemoteService {
@@ -23,4 +25,12 @@ export default class StudioCatalog extends TypertRemoteService {
   }
   @Remote
   async preview(request: PreviewRequest) { return assemblePreview(this.ctx, request); }
+  @Remote
+  async exportPreset(request: PreviewRequest) {
+    // Validate real registration/visibility before producing an executable bundle.
+    await assemblePreview(this.ctx, request);
+    const { plugins } = await compositionPlan(this.ctx, request);
+    return createPresetBundle({ id: 'studio-custom', title: 'Studio custom', plugins,
+      policy: { tools: request.tools, toolOverrides: request.toolOverrides ?? {}, sections: request.sections ?? {}, prompt: request.prompt } });
+  }
 }

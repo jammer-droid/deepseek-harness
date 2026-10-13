@@ -7,6 +7,10 @@ async function compile(options) {
 }
 import { fileURLToPath } from 'node:url';
 const root = fileURLToPath(new URL('.', import.meta.url));
+await compile({
+  absWorkingDir: root, tsconfig: 'tsconfig.host.json', entryPoints: ['src/host/preset-policy.ts'], outfile: 'packages/shell/policy.js',
+  bundle: true, platform: 'node', format: 'esm', target: 'node22', packages: 'external', external: ['@deepseek-ai/*'],
+});
 for (const part of ['shell']) {
   await compile({
     absWorkingDir: root, tsconfig: 'tsconfig.host.json', entryPoints: [`src/host/${part}.ts`], outfile: `packages/${part}/index.js`,

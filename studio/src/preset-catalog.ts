@@ -1,4 +1,4 @@
-export interface CatalogTool { name: string; description: string }
+export interface CatalogTool { name: string; description: string; parameters?: Record<string, unknown> }
 export interface CatalogSection { name: string; text: string }
 export interface CatalogPreset { promptProviders?: import('./prompt-composition.ts').PromptProvider[]; id: string; name?: string | undefined; sections: CatalogSection[]; tools: CatalogTool[]; declaration?: string; error?: string }
 export interface PresetCatalog { presets: CatalogPreset[]; tools: CatalogTool[] }
@@ -13,16 +13,16 @@ export interface CatalogServices {
 }
 /** Read registered contributions, not plugin-name guesses or source-file snapshots. */
 export async function readPresetCatalog(services: CatalogServices): Promise<PresetCatalog> {
-  const all = new Map(services.tools.schemas().map(tool => [tool.name, { name: tool.name, description: tool.description }]));
+  const all = new Map(services.tools.schemas().map(tool => [tool.name, { name: tool.name, description: tool.description, ...(tool.parameters ? { parameters: tool.parameters } : {}) }]));
   const presets: CatalogPreset[] = [];
   for (const preset of await services.agentPresets.list()) {
     let lease: Awaited<ReturnType<CatalogServices['agentPresets']['acquireScope']>> | undefined;
     try {
       lease = await services.agentPresets.acquireScope(preset.id);
       const assembly = await services.systemPrompt.assemble({ scope: lease.key });
-      for (const tool of [...services.tools.schemas(lease.key), ...assembly.tools]) all.set(tool.name, { name: tool.name, description: tool.description });
+      for (const tool of [...services.tools.schemas(lease.key), ...assembly.tools]) all.set(tool.name, { name: tool.name, description: tool.description, ...(tool.parameters ? { parameters: tool.parameters } : {}) });
       const declaration = (await services.agentPresets.readDocument(preset.id)).content;
-      const tools = new Map([...services.tools.schemas(lease.key), ...assembly.tools].map(({ name, description }) => [name, { name, description }]));
+      const tools = new Map([...services.tools.schemas(lease.key), ...assembly.tools].map(({ name, description, parameters }) => [name, { name, description, ...(parameters ? { parameters } : {}) }]));
       presets.push({ id: preset.id, name: preset.name, declaration, sections: assembly.sections.map(({ name, text }) => ({ name, text })), tools: [...tools.values()] });
     } catch (error) {
       presets.push({ id: preset.id, name: preset.name, sections: [], tools: [], error: String(error) });

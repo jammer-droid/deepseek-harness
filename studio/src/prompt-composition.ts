@@ -4,14 +4,27 @@ export const promptProviderModules = [
   '@deepseek-ai/dsh-time-context',
 ] as const;
 export interface PromptProvider { name: string; description: string }
-export interface PreviewRequest { preset: string; providers: string[]; tools: string[]; prompt: string; model: string }
+export interface ToolOverride { description?: string; parameters?: Record<string, string> }
+export interface PreviewRequest { preset: string; providers: string[]; tools: string[]; prompt: string; model: string; persona?: string; toolOverrides?: Record<string, ToolOverride>; sections?: Record<string, string>; providerConfigs?: Record<string, Record<string, unknown>> }
+export interface PresetBundle { files: Record<string, string> }
+export type ExportAction = (request: PreviewRequest) => Promise<PresetBundle>;
 /** Runtime schema used by the public Remote input codec. */
 export function parsePreviewRequest(value: unknown): PreviewRequest {
   if (value === null || typeof value !== 'object' || Array.isArray(value)) throw new Error('Invalid preview request');
   const row = value as Record<string, unknown>;
   const strings = (input: unknown): input is string[] => Array.isArray(input) && input.every(item => typeof item === 'string');
   if (typeof row.preset !== 'string' || !strings(row.providers) || !strings(row.tools) || typeof row.prompt !== 'string' || typeof row.model !== 'string') throw new Error('Invalid preview request');
-  return { preset: row.preset, providers: [...row.providers], tools: [...row.tools], prompt: row.prompt, model: row.model };
+  const record = (value: unknown): value is Record<string, unknown> => value !== null && typeof value === 'object' && !Array.isArray(value);
+  if (row.persona !== undefined && typeof row.persona !== 'string') throw new Error('Invalid persona');
+  if (row.sections !== undefined && (!record(row.sections) || Object.values(row.sections).some(v => typeof v !== 'string'))) throw new Error('Invalid section overrides');
+  if (row.toolOverrides !== undefined && (!record(row.toolOverrides) || Object.values(row.toolOverrides).some(v => !record(v) || Object.keys(v).some(k => !['description', 'parameters'].includes(k)) || (v.description !== undefined && typeof v.description !== 'string') || (v.parameters !== undefined && (!record(v.parameters) || Object.values(v.parameters).some(p => typeof p !== 'string')))))) throw new Error('Invalid tool overrides');
+  if (row.providerConfigs !== undefined && (!record(row.providerConfigs) || Object.values(row.providerConfigs).some(v => !record(v)))) throw new Error('Invalid provider configs');
+  return { preset: row.preset, providers: [...row.providers], tools: [...row.tools], prompt: row.prompt, model: row.model,
+    ...(row.persona !== undefined ? { persona: row.persona as string } : {}),
+    ...(row.sections !== undefined ? { sections: row.sections as Record<string,string> } : {}),
+    ...(row.toolOverrides !== undefined ? { toolOverrides: row.toolOverrides as Record<string,ToolOverride> } : {}),
+    ...(row.providerConfigs !== undefined ? { providerConfigs: row.providerConfigs as Record<string,Record<string,unknown>> } : {}),
+  };
 }
 export interface PreviewResult { prompt: string; sections: { name: string; text: string }[]; context: string; tools: { name: string; description: string; parameters: Record<string, unknown> }[] }
 export type PreviewAction = (request: PreviewRequest) => Promise<PreviewResult>;

@@ -4,3 +4,4 @@ dist/
 packages/*/client.js
 packages/*/index.js
 packages/*/delegation-tool.js
+packages/*/policy.js

@@ -26,4 +26,28 @@ for (const tools of [request.tools, []]) {
   assert.deepEqual(result.value.tools.map(tool => tool.name).sort(), [...tools].sort());
 }
 assert.deepEqual(await rpc('agentPresets/list', {}), before, 'Temporary preset must be removed after success and failure');
-console.log('Packaged runtime preview passed: assembly, tool restrictions, empty selection, failure cleanup.');
+const edited = { ...request, preset: 'minimal', providers: ['@deepseek-ai/dsh-persona'], persona: 'STUDIO_PERSONA', toolOverrides: { read: { description: 'STUDIO_READ_DESCRIPTION', parameters: { file_path: 'STUDIO_PATH_DESCRIPTION' } } }, sections: { 'tool:jobs': 'STUDIO_JOB_RULES' } };
+const preview = await rpc('studioCatalog/preview', { request: edited });
+assert.equal(preview.ok, true, JSON.stringify(preview));
+assert.ok(preview.value.prompt.includes('STUDIO_PERSONA'));
+assert.ok(preview.value.prompt.includes('STUDIO_JOB_RULES'));
+assert.equal(preview.value.sections.at(-1).name, 'studio:additional');
+const read = preview.value.tools.find(t => t.name === 'read');
+assert.equal(read.description, 'STUDIO_READ_DESCRIPTION');
+assert.equal(read.parameters.properties.file_path.description, 'STUDIO_PATH_DESCRIPTION');
+const original = await rpc('studioCatalog/preview', { request });
+assert.notEqual(original.value.tools.find(t => t.name === 'read').description, read.description);
+const exported = await rpc('studioCatalog/exportPreset', { request: edited });
+assert.equal(exported.ok, true, JSON.stringify(exported));
+assert.ok(exported.value.files['cordis.patch.yml'].includes('@local/dsh-studio-shell/policy'));
+assert.equal(JSON.parse(exported.value.files['package.json']).dsh.bundle.patch, './cordis.patch.yml');
+if (process.argv[3]) {
+  const { mkdir, writeFile } = await import('node:fs/promises');
+  const path = await import('node:path');
+  const directory = path.resolve(process.argv[3]);
+  assert.ok(directory.startsWith(path.resolve('dist') + path.sep), 'Export verification output must stay in Studio dist');
+  await mkdir(directory, { recursive: true });
+  for (const [name, content] of Object.entries(exported.value.files)) { assert.equal(path.basename(name), name); await writeFile(path.join(directory, name), content); }
+}
+assert.deepEqual(await rpc('agentPresets/list', {}), before);
+console.log('Packaged runtime passed: preview, persona, description/parameter/section overlays, original restoration, exact selection, export and cleanup.');

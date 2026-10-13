@@ -1,6 +1,6 @@
 ---
 kind: implementation-spec
-status: draft
+status: implemented-with-limitations
 ---
 
 # #24 minimal 기반 프리셋 구성과 선택적 덮어쓰기
@@ -49,7 +49,7 @@ status: draft
 
 ## 현재 근거와 제약
 
-- [minimal 구성](../../../packages/bundle/web-app/presets/minimal.patch.yml)은 persona `complete: true`, `includeRuntimeContext: false`와 persistent shell 구성을 포함한다. complete 설정을 그대로 두면 추가 시스템 섹션이 숨겨진다. includeRuntimeContext는 별도 사용자 변경 없이 유지한다.
+- [minimal 구성](../../../../packages/bundle/web-app/presets/minimal.patch.yml)은 persona `complete: true`, `includeRuntimeContext: false`와 persistent shell 구성을 포함한다. complete 설정을 그대로 두면 추가 시스템 섹션이 숨겨진다. includeRuntimeContext는 별도 사용자 변경 없이 유지한다.
 - 현재 Tools 공개 계약에는 `get`, `schemas`, `register`, `restrict`가 있으며 필드 전용 patch 메서드는 없다. 도구 정의의 설명을 바꾸려면 실행·검증·프레젠테이션 관련 속성을 유지한 별도 정의 등록이 필요하다.
 - scoped 등록은 상위 정의를 가리지만 같은 layer의 중복 등록은 실패한다. scoped 도구는 전역 도구용 restrict와 동일하게 취급되지 않으므로 설명 편집으로 제외된 도구가 재노출되지 않게 해야 한다.
 - 현재 Studio 카탈로그는 실행 서버 기준이다. 설치되지 않은 구독 플러그인의 video 도구 등을 수동 목록만으로 실행 가능하게 만들 수 없다.
@@ -103,7 +103,7 @@ status: draft
 - 수용: 수정하지 않은 고정 버전 DSH에서 산출물을 로드하고 조립·도구 노출·원본 복귀를 검증한다. Studio 밖의 변경 없이 동작한다.
 - 검증: Studio 테스트·타입 검사·빌드·scope 검사와 패키징 후 격리 설치. 런타임 버전·실행 경로·패키지·명령·결과 기록. 라이브 모델 호출 여부는 별도 기록한다.
 
-## 준비 상태와 보류 사항
+## 최초 준비 상태와 보류 사항 (아래 진행 기록으로 대체)
 
 상태는 **draft**다. 사용자 제품 방향은 확정됐지만 S1의 공개 API 계약과 산출물 포맷이 미확정이므로 전체 구현 ready로 표시하지 않는다.
 
@@ -119,6 +119,34 @@ status: draft
 - 새 테스트는 통과했다. 자동 주입된 identity/suffix를 제외한 전체 목록을 기대하면 안 된다는 점도 확인했다. 자동 기여는 유지한다.
 - 이것은 개발 checkout 계약 증거이며 미수정 패키징 런타임 설치 검증은 아니다. S1의 도구 권한·scope 등록 순서와 제공자 카탈로그·산출물 계약은 아직 남아 있다. S2–S5는 시작하지 않았다.
 
-## 이번 기록의 검증
+## S1–S5 구현 및 검증 기록
 
-이슈 생성 후 본문과 OPEN 상태를 재조회했다. 이번 변경은 명세와 색인뿐이며 코드 테스트·빌드·독립 설치는 실행하지 않는다. 문서 링크 및 커밋 경로 검사는 커밋 전에 수행한다.
+사용자의 S5까지 진행 승인으로 아래 범위를 구현했다. 전체 제품 요구가 제한 없이 완료되었다는 뜻은 아니다.
+
+- **S1:** 미수정 DSH `0.2.0-rc.2`를 배포 검증 대상으로 고정했다. 하위 scope restrict는 상위 scoped 도구도 숨긴다. 같은 layer 등록만 예외이며 초기 초과 도구는 오류, 나중에 추가되는 미선택 도구는 guard로 실행 차단한다.
+- **S2:** minimal persona 복사, complete:false, 세 종류 제공자 수집, 공개 설정 allowlist, 설명·인자·섹션 override, disposer를 구현했다. 도구가 전역에 없으면 minimal 우선으로 하나의 호환 원본 composition을 선택한다. 서로 다른 preset scope의 live 실행 함수를 이식하지 않는다. 모든 선택 도구를 공급하는 단일 구성이 없으면 명시적으로 거부한다.
+- **S3:** 투 컬럼, 고정 높이 음영 카드, 독립 상세 버튼, persona·공개 제공자 설정·도구 설명·인자 설명·jobs 지침 편집 및 원본 복귀를 구현했다. ko/en/zh 문구와 상호작용 테스트를 추가했다.
+- **S4:** 실제 조립 순서와 본문을 한 스크롤로 표시하며 raw 전체 prompt/runtime 전용 패널을 제거했다. 도구 schema는 구조화된 접이식 표시로 바꿨다. 추가 지침 최하단과 빈 도구 선택을 검증했다.
+- **S5:** package/patch/한국어 안내문 내보내기, 별도 policy export, Loader `!!js` 보존, 공개 RPC를 구현했다. 패키징 설치 및 내보낸 preset의 새 세션 생성까지 확인했다.
+
+### 실행한 검사
+
+- `npm test`: Studio host/client 타입 검사 + 빌드 + 23개 테스트 통과. 실제 Tools/SystemPrompt 서비스 계약과 UI 상호작용 포함.
+- `node start-web.mjs`: Studio만 패키징하여 격리 `.dsh-home`의 `lean-agent-web` 프로필에 설치. DSH 본체 소스 수정·재빌드 없음.
+- `node scripts/check-preview-runtime.mjs <인증 URL> dist/export-verification`: 실제 rc.2 RPC로 persona, 도구 설명/인자 설명, jobs 본문, 최하단 추가 지침, 정확한 도구 선택, 원본 복귀, 내보내기, 실패 후 임시 preset 정리 통과.
+- 내보낸 패키지의 미공개 shell 의존성만 로컬 배포 tarball로 연결한 뒤 `dsh plugin --profile lean-agent-web add <export 디렉터리>`로 설치했다. 재시작 후 `agentPresets/list`에서 studio-custom 확인, `session/create`에서 해당 preset으로 실제 Agent 생성 성공.
+- 최초 export RPC 검증에서 인자 이름 불일치를 발견해 수정하고 재패키징 후 통과했다.
+- 사용자 Desktop19387 프로필은 변경하지 않았다. 테스트용 Studio19388만 재시작했다. 라이브 모델 호출·유료 추론은 실행하지 않았다.
+
+### 남은 제한 및 미검증
+
+- 제공자 탐색은 모든 프리셋을 순회하지만 persona/agent-instructions/time-context의 명시적 지원 목록이다. 임의 제3자 Config 자동 편집은 지원하지 않는다.
+- 동명 도구 구현을 선택하는 출처 UI는 없다. 전역 구현 우선이며, incompatible preset 조합은 차단한다.
+- UI 인자 편집은 최상위 속성만 제공한다. 정책 엔진은 dotted 중첩 속성도 검증할 수 있다. 원본 복귀는 도구/제공자 단위다.
+- 초안은 메모리 상태이며 영구 저장·재불러오기 미구현이다. 내보내기는 여러 파일 다운로드이므로 브라우저 허용이 필요하다.
+- shell 패키지는 공개 registry에 배포하지 않았다. 다른 머신 설치에는 shell tarball/접근 가능한 registry 및 해당 원본 provider 의존성이 필요하다.
+- sessionless 미리보기 cwd는 서버 작업 디렉터리다. pre-step instructions/time 메시지, 실제 세션의 동적 컨텍스트, 모델 실행 결과까지 재현하지 않는다.
+- 내보낸 preset의 새 Agent 생성은 확인했으나 해당 Agent의 실도구 실행·모델 호출까지 검증하지 않았다. UI 시각·좁은 화면 확인은 사용자에게 맡긴다.
+- 푸시·병합·이슈 종료는 수행하지 않는다.
+
+사용법과 배포 조건은 [프리셋 내보내기 안내](../preset-composition.md)를 참고한다.

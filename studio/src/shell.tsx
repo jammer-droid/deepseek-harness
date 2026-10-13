@@ -18,6 +18,9 @@ export async function apply(ctx: StudioContext) {
     }, {
         id: '@local/dsh-studio-shell#studioCatalog/preview', service: 'studioCatalog', namespace: 'studioCatalog', method: 'preview',
         invocation: { kind: 'direct' }, parameters: [{ name: 'request', wire: 'request', source: 'json', codec: { mode: 'strict', typeSymbol: 'PreviewRequest', create: () => ({ parse: parsePreviewRequest }) } }], result: { mode: 'src-json' },
+    }, {
+        id: '@local/dsh-studio-shell#studioCatalog/exportPreset', service: 'studioCatalog', namespace: 'studioCatalog', method: 'exportPreset',
+        invocation: { kind: 'direct' }, parameters: [{ name: 'request', wire: 'request', source: 'json', codec: { mode: 'strict', typeSymbol: 'PreviewRequest', create: () => ({ parse: parsePreviewRequest }) } }], result: { mode: 'src-json' },
     }] });
     ctx.effect(() => ctx.locale.addLanguage({ id: 'ko', label: '한국어', fallback: 'en' }));
     const serviceListeners = new Set<() => void>();
@@ -78,7 +81,12 @@ export async function apply(ctx: StudioContext) {
             remote.read().then(result => { if (!active) return; if (result.ok) setCatalog(result.value); else setCatalogError(result.error?.message ?? 'Catalog request failed'); }, error => { if (active) setCatalogError(String(error)); });
             return () => { active = false; };
         }, []);
-        return <OptimizationPrototype locale={locale} catalog={catalog} catalogError={catalogError} onPreview={async request => {
+        return <OptimizationPrototype locale={locale} catalog={catalog} catalogError={catalogError} exportPreset={async request => {
+             const service = ctx.get('remote.studioCatalog' as never) as unknown as { exportPreset(request: import('./prompt-composition.ts').PreviewRequest): Promise<{ ok: boolean; value: import('./prompt-composition.ts').PresetBundle; error?: { message: string } }> };
+             const response = await service.exportPreset(request);
+             if (!response.ok) throw new Error(response.error?.message ?? 'Export failed');
+             return response.value;
+         }} onPreview={async request => {
             const service = ctx.get('remote.studioCatalog' as never) as unknown as { preview(request: import('./prompt-composition.ts').PreviewRequest): Promise<{ ok: boolean; value: import('./prompt-composition.ts').PreviewResult; error?: { message: string } }> };
             const response = await service.preview(request);
             if (!response.ok) throw new Error(response.error?.message ?? 'Preview failed');

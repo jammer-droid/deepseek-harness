@@ -4,11 +4,13 @@
   "type": "module",
   "exports": {
     ".": "./index.js",
-    "./client": "./client.js"
+    "./client": "./client.js",
+    "./policy": "./policy.js"
   },
   "files": [
     "index.js",
-    "client.js"
+    "client.js",
+    "policy.js"
   ],
   "dependencies": { "js-yaml": "^4.3.2" },
   "peerDependencies": {
