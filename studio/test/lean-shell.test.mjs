@@ -12,7 +12,7 @@ test('bundle contains only the shell and no managed preset', () => {
   assert.ok(!sources.some(name => /^(mock|roles|workflow|preset|catalog|experiments|general)/.test(name)));
 });
 
-test('built client registers only the Studio panel and sidebar, without feature or remote effects', () => {
+test('built client registers Studio and optimization prototype without remote effects', () => {
   let plugin;
   vm.runInNewContext(read('../packages/shell/client.js'), {
     window: { __ModuleLoader__: { load({ factory }) {
@@ -37,9 +37,10 @@ test('built client registers only the Studio panel and sidebar, without feature 
     },
   };
   plugin.apply(ctx);
-  assert.deepEqual(registrations.map(item => item.name), ['main', 'sidebar.panellist']);
+  assert.deepEqual(registrations.map(item => item.name), ['main', 'local.dsh-studio.services', 'sidebar.panellist']);
   assert.equal(registrations[0].key, 'local-dsh-studio');
-  assert.equal(registrations[1].id, 'local-dsh-studio');
+  assert.equal(registrations[1].id, 'optimization-prototype');
+  assert.equal(registrations[2].id, 'local-dsh-studio');
   assert.deepEqual(Object.keys(registrations[0].children), ['local.dsh-studio.services']);
   assert.deepEqual(subscriptions, ['local.dsh-studio.services']);
 });

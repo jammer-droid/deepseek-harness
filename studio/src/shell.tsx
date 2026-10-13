@@ -1,4 +1,5 @@
 import { StudioSurface } from './ui.tsx';
+import { OptimizationPrototype } from './optimization-prototype.tsx';
 import React from "react";
 import { resolveSlotLabel } from '@deepseek-ai/dsh-client-ui-slots';
 import type { PropsRenderSlots } from '@deepseek-ai/dsh-client-ui-slots';
@@ -57,6 +58,14 @@ export function apply(ctx: StudioContext) {
             StudioServices,
         ),
     );
+    function OptimizationPage() {
+        const locale = React.useSyncExternalStore(listener => ctx.locale.subscribe(listener), () => ctx.locale.getLocale().active);
+        return <OptimizationPrototype locale={locale} />;
+    }
+    ctx.slots.inject('local.dsh-studio.services', () => ctx.slots.register({
+        name: 'local.dsh-studio.services', id: 'optimization-prototype', order: 0,
+        label: () => ({ ko: '최적화', en: 'Optimization', zh: '优化' }[ctx.locale.getLocale().active] ?? 'Optimization'),
+    }, OptimizationPage));
     syncServices();
     ctx.slots.inject("sidebar.panellist", () =>
         ctx.slots.register(
