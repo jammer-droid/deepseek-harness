@@ -141,3 +141,18 @@ test('save failure keeps the draft and blocks a duplicate save while pending', a
     assert.equal(name.value, 'Kept');
   } finally { await act(async () => root.unmount()); dom.window.close(); }
 });
+
+test('apply and unapply share one split control; unapply lives in its menu', async () => {
+  let unapplied;
+  const view = await mount({ list: async () => [preset('a', 'applied'), preset('b')], apply: async () => {}, unapply: async id => { unapplied = id; }, delete: async () => {} });
+  try {
+    assert.equal(view.button('Unapply from DSH'), undefined, 'unapply is not a separate card button');
+    const carets = [...document.querySelectorAll('button[aria-label="Apply options"]')];
+    assert.equal(carets.length, 1, 'only applied presets offer the unapply menu');
+    await act(async () => carets[0].click());
+    assert.equal(document.querySelector('[role=menu]').textContent, 'Unapply from DSH');
+    await act(async () => document.querySelector('[role=menuitem]').click());
+    assert.equal(unapplied, 'a');
+    assert.equal(document.querySelector('[role=menu]'), null);
+  } finally { await view.close(); }
+});

@@ -66,10 +66,10 @@ test('Optimized has separate edit/copy actions and disables only Delete', async 
   const api = { list: async () => [template], apply: async () => template, unapply: async () => {}, delete: async () => {} };
   try {
     await act(async () => root.render(React.createElement(PresetList, { locale: 'ko', revision: 0, api, onEdit: value => { edited = value; }, onCopy: value => { copied = value; } })));
-    const buttons = [...document.querySelectorAll('article button')];
+    const buttons = [...document.querySelectorAll('article button')].filter(button => !button.closest('.studio-split'));
     assert.deepEqual(buttons.filter(button => button.disabled).map(button => button.textContent), ['삭제']);
     await act(async () => buttons.find(button => button.textContent === '편집').click());
-    await act(async () => buttons.find(button => button.textContent === '사본 만들기').click());
+    await act(async () => buttons.find(button => button.textContent === '복사').click());
     assert.equal(edited.id, template.id); assert.equal(copied.id, template.id);
   } finally { await act(async () => root.unmount()); dom.window.close(); }
 });

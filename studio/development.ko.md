@@ -34,7 +34,7 @@ npm --prefix studio run pack:bundle
 설치된 `dsh` CLI가 필요하다. 현재 머신의 `dsh --version`은 `0.2.0-rc.2`다. 아래 명령은 Studio만 빌드하고 수정하지 않은 설치 런타임으로 Web을 실행한다. DSH 본체를 빌드하거나 Desktop 프로필을 교체하지 않는다.
 
 ```sh
-cd /Users/home/playground/vibecoding/deepseek-harness-lean-agent
+cd /Users/home/playground/vibecoding/deepseek-harness
 npm --prefix studio test
 npm --prefix studio run web
 ```
