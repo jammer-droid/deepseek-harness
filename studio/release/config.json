@@ -10,8 +10,7 @@
     "tsconfig.json",
     "tsconfig.host.json",
     "tsconfig.client.json",
-    "LICENSE",
-    ".gitignore"
+    "LICENSE"
   ],
   "exclude": [
     "test/staged-scope.test.mjs"
@@ -19,6 +18,7 @@
   "copy": {
     "release/standalone/tsconfig.base.json": "tsconfig.base.json",
     "release/standalone/tsconfig.base.client.json": "tsconfig.base.client.json",
+    "release/standalone/gitignore": ".gitignore",
     "release/types": "types",
     "release/README.md": "README.md",
     "release/docs": "docs"
@@ -32,7 +32,12 @@
   "packageManager": "pnpm@11.7.0",
   "scripts": {},
   "dropScripts": [
-    "web"
+    "web",
+    "dev",
+    "dev:desktop",
+    "deploy",
+    "release:github",
+    "release:npm"
   ],
   "allowBuilds": {
     "esbuild": true,
@@ -65,6 +70,13 @@
     "studio/feat",
     "HarnessEngineeringLab",
     "the fork",
-    "monorepo"
+    "monorepo",
+    "\\.dsh-home",
+    "dev\\.mjs",
+    "start-web",
+    "release/deploy",
+    "release/sync",
+    "dev:desktop",
+    "web-preview"
   ]
 }

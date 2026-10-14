@@ -117,21 +117,49 @@ export class PresetStore {
     return result;
   }
   private public(row: StoredPreset): StudioPreset & { template?: boolean; nonDeletable?: boolean } { const { applied, ...value } = row; return structuredClone({ ...value, ...(row.id === OPTIMIZED_PRESET_ID ? { template: true, nonDeletable: true } : {}) }); }
-  /** Seed once. Later startups retain user edits and explicit unapplied state. */
-  ensureOptimized(tools: string[], plugins: CompositionRow[]) { return this.serial(async () => {
-    const existing = this.rows.find(row => row.id === OPTIMIZED_PRESET_ID);
-    if (existing) return this.public(existing);
-    const template = optimizedTemplate(tools);
-    const request = template.request;
+  /** Compose the Optimized applied snapshot: the template request over the current base composition. */
+  private optimizedApplied(request: PreviewRequest, plugins: CompositionRow[]) {
     const delegates = request.tools.includes(ROLE_TOOL);
     const base = applyConfigOverrides(plugins, request.configOverrides ?? {});
-    const applied = { name: template.name, description: template.description, plugins: dump([...(delegates ? [...withoutDelegationPlugins(base), { id: 'studio-roles', name: ROLE_PLUGIN, config: { roles: [] } }] : base), { id: 'studio-optimized-policy', name: POLICY_PLUGIN, config: { tools: request.tools, toolOverrides: request.toolOverrides, sections: {}, prompt: request.prompt, execution: request.execution } }], { schema: entryListSchema, noRefs: true }) };
+    return dump([...(delegates ? [...withoutDelegationPlugins(base), { id: 'studio-roles', name: ROLE_PLUGIN, config: { roles: [] } }] : base), { id: 'studio-optimized-policy', name: POLICY_PLUGIN, config: { tools: request.tools, toolOverrides: request.toolOverrides, sections: {}, prompt: request.prompt, execution: request.execution } }], { schema: entryListSchema, noRefs: true });
+  }
+  /**
+   * Seed the built-in on first run, then keep it aligned with the shipped template. Optimized is
+   * locked against editing, so its stored request carries no user content — only the applied or
+   * unapplied choice is the user's, and that survives. Without the alignment a profile plugin that
+   * registers a new tool would enlarge the preset forever after its first seed.
+   */
+  ensureOptimized(tools: string[], plugins: CompositionRow[]) { return this.serial(async () => {
+    const template = optimizedTemplate(tools);
+    const existing = this.rows.find(row => row.id === OPTIMIZED_PRESET_ID);
+    if (existing && JSON.stringify(existing.request) === JSON.stringify(template.request)) return this.public(existing);
     const now = new Date().toISOString();
-    const row: StoredPreset = { id: template.id, name: template.name, description: template.description, request: template.request, conveniences: {}, agents: [], updatedAt: now, appliedAt: now, status: 'applied', applied, ...(template.applyWarning ? { applyWarning: template.applyWarning } : {}) };
-    await this.mount(row.id, applied);
-    try { await this.persist([...this.rows, row]); }
-    catch (error) { await this.disposers.get(row.id)?.(); this.disposers.delete(row.id); throw error; }
-    return this.public(row);
+    // Compose the applied snapshot lazily: an unapplied draft never needs the base composition.
+    const buildApplied = () => ({ name: template.name, description: template.description, plugins: this.optimizedApplied(template.request, plugins) });
+    if (!existing) {
+      const applied = buildApplied();
+      const row: StoredPreset = { id: template.id, name: template.name, description: template.description, request: template.request, conveniences: {}, agents: [], updatedAt: now, appliedAt: now, status: 'applied', applied, ...(template.applyWarning ? { applyWarning: template.applyWarning } : {}) };
+      await this.mount(row.id, applied);
+      try { await this.persist([...this.rows, row]); }
+      catch (error) { await this.disposers.get(row.id)?.(); this.disposers.delete(row.id); throw error; }
+      return this.public(row);
+    }
+    const refresh: StoredPreset = { ...existing, name: template.name, description: template.description, request: template.request, updatedAt: now };
+    if (template.applyWarning) refresh.applyWarning = template.applyWarning; else delete refresh.applyWarning;
+    if (existing.applied) {
+      const applied = buildApplied();
+      await this.disposers.get(existing.id)?.(); this.disposers.delete(existing.id);
+      try { await this.mount(existing.id, applied); }
+      catch (error) { try { await this.mount(existing.id, existing.applied); } catch { /* report the original failure */ } throw error; }
+      refresh.applied = applied; refresh.appliedAt = now; refresh.status = 'applied';
+    }
+    try { await this.persist(this.rows.map(row => row.id === existing.id ? refresh : row)); }
+    catch (error) {
+      await this.disposers.get(existing.id)?.(); this.disposers.delete(existing.id);
+      if (existing.applied) { try { await this.mount(existing.id, existing.applied); } catch { /* report the original failure */ } }
+      throw error;
+    }
+    return this.public(refresh);
   }); }
   list() { return this.serial(async () => this.rows.map(row => this.public(row))); }
   save(payload: string) { return this.serial(async () => {

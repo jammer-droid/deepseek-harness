@@ -7,10 +7,18 @@ import assert from 'node:assert/strict';
 import { mkdtemp } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { optimizedTemplate, BUILTIN_TOOL_PRESETS } from '../src/optimized-preset.ts';
+import { optimizedTemplate, BUILTIN_TOOL_PRESETS, OPTIMIZED_TOOLS } from '../src/optimized-preset.ts';
 import { PresetStore } from '../src/host/preset-store.ts';
 import { storeRuntime } from './store-runtime.mjs';
 const runtime = () => storeRuntime({ base: 'studio-master', document: '- id: persona\n  name: "@deepseek-ai/dsh-persona"\n  config: {complete: true}\n- id: spill-policy\n  name: "@deepseek-ai/dsh-spill-policy"\n' });
+test('Optimized selects only its fixed allow list, never an extra profile tool', () => {
+  // The desktop profile registers these four through its runtime plugins; they must not leak in.
+  const catalog = ['load_workspace_dependencies', 'x_search', 'video_generate', 'image_generate', ...OPTIMIZED_TOOLS];
+  const template = optimizedTemplate(catalog);
+  assert.equal(OPTIMIZED_TOOLS.length, 22);
+  assert.deepEqual([...template.request.tools].sort(), [...OPTIMIZED_TOOLS].sort());
+  for (const extra of ['load_workspace_dependencies', 'x_search', 'video_generate', 'image_generate']) assert.ok(!template.request.tools.includes(extra));
+});
 test('Optimized seeds once, supports edit/apply/unapply, survives restart, and only deletion is prohibited', async () => {
   const template = optimizedTemplate([]);
   assert.equal(template.nonDeletable, true); assert.equal(template.readOnly, undefined);
@@ -34,14 +42,17 @@ test('Optimized seeds once, supports edit/apply/unapply, survives restart, and o
   assert.equal((await store.list())[0].request.prompt, seeded.request.prompt);
   assert.equal((await store.apply(template.id)).applyWarning, undefined); await store.dispose();
   const b = await runtime(); const restored = new PresetStore(b.ctx, file);
-  await restored.ensureOptimized(['read'], []);
+  await restored.ensureOptimized(['read'], [{ id: 'spill-policy', name: '@deepseek-ai/dsh-spill-policy' }]);
   assert.equal((await restored.list())[0].request.prompt, seeded.request.prompt);
+  // The locked built-in re-aligns to the shipped allow list instead of freezing its first seed.
+  assert.deepEqual((await restored.list())[0].request.tools, ['read']);
   assert.equal(b.registrations.get(template.id).name, 'Optimized');
   await restored.unapply(template.id); await restored.dispose();
   const c = await runtime(); const reopened = new PresetStore(c.ctx, file);
   const retained = await reopened.ensureOptimized(['different'], []);
   assert.equal(retained.status, 'draft'); assert.equal(c.registrations.size, 0);
   assert.equal(retained.name, 'Optimized');
+  assert.deepEqual(retained.request.tools, []);
   const { id, ...copy } = retained;
   const saved = await reopened.save(JSON.stringify(copy));
   assert.match(saved.id, /^studio-user-/); assert.equal(saved.nonDeletable, undefined);

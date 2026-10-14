@@ -7,9 +7,15 @@
 ```sh
 npm --prefix studio run typecheck
 npm --prefix studio test
+npm --prefix studio run dev
+npm --prefix studio run dev:desktop
 npm --prefix studio run watch
 npm --prefix studio run pack:bundle
 ```
+
+`dev`는 지금 개발한 것을 한 번에 검증하고 Web에서 확인하는 명령이다. 테스트(타입 검사·빌드·테스트)를 통과해야 다음으로 진행하고, 패키징한 셸을 격리 프로필에 설치한 뒤 Web을 띄운다. 검증을 건너뛰려면 `--skip-test`, 빌드까지만 하려면 `--build-only`, 포트를 바꾸려면 `--port`를 준다. 실패를 무시하고 서버만 띄우지 않으며, 코드를 고치면 서버를 끄고 같은 명령을 다시 실행한다.
+
+`dev:desktop`(`node dev.mjs --desktop`)은 같은 검증·패키징 결과를 격리 프로필이 아니라 **실제 `desktop` 프로필**에 설치한다. DSH 앱을 다시 시작해야 반영되고, 저장한 프리셋은 그대로 남는다. 실제 사용자 프로필을 바꾸므로 DSH 앱이 실행 중이면 중단하며, 앱을 종료한 뒤 다시 실행한다. 검증 없이 즉시 적용하지 않는다. 다른 프로필은 `--profile <이름>`, 정말 강제로 적용하려면 `--force`를 쓴다.
 
 새 워크트리의 무시되는 `studio/node_modules`에는 원본 워크트리의 기존 의존성·공개 타입 산출물을 가리키는 로컬 링크를 준비했다. 원본 설치에 의존하는 개발 편의 환경이며 독립 배포 증거가 아니다. 새 의존성 설치나 lockfile 갱신이 필요하면 루트 변경 범위를 먼저 승인받는다. 타입 준비물이 없다고 DSH 전체 빌드를 자동 실행하지 않는다.
 
@@ -31,20 +37,22 @@ npm --prefix studio run pack:bundle
 
 ## Desktop과 분리된 Web 실행
 
-설치된 `dsh` CLI가 필요하다. 현재 머신의 `dsh --version`은 `0.2.0-rc.2`다. 아래 명령은 Studio만 빌드하고 수정하지 않은 설치 런타임으로 Web을 실행한다. DSH 본체를 빌드하거나 Desktop 프로필을 교체하지 않는다.
+설치된 `dsh` CLI가 필요하다. 현재 머신의 `dsh --version`은 `0.2.0-rc.2`다. 아래 명령은 Studio를 테스트·빌드하고 수정하지 않은 설치 런타임으로 Web을 실행한다. DSH 본체를 빌드하거나 Desktop 프로필을 교체하지 않는다.
 
 ```sh
 cd /Users/home/playground/vibecoding/deepseek-harness
-npm --prefix studio test
-npm --prefix studio run web
+npm --prefix studio run dev
 ```
+
+`dev`는 테스트(타입 검사·빌드·테스트)가 통과할 때만 진행하고, 번들을 패키징해 격리 프로필에 설치한 뒤 Web을 띄운다. 테스트를 생략하려면 `npm --prefix studio run dev -- --skip-test`, 빌드까지만 하려면 `--build-only`, 포트를 바꾸려면 `--port 19389`를 준다.
 
 터미널에 출력된 `http://127.0.0.1:19388/?token=...` 주소 전체를 브라우저에서 연다. 토큰 없이 접근하면 인증 오류가 날 수 있다. 토큰은 실행 로그에서 확인하며 문서나 Git에 저장하지 않는다. 서버를 종료하려면 실행 터미널에서 Ctrl+C를 누른다.
 
 - 데이터: `studio/.dsh-home` 내부의 격리 `lean-agent-web` 프로필
 - 연결: `studio/dist/web-preview.patch.yml`을 자동 생성하여 로컬 셸 진입점을 개발용으로 로드
-- 포트 충돌: `STUDIO_WEB_PORT=19389 npm --prefix studio run web`
-- 다른 CLI: `STUDIO_DSH_BIN=/absolute/path/to/dsh npm --prefix studio run web`
+- 포트 충돌: `npm --prefix studio run dev -- --port 19389`
+- 다른 CLI: `STUDIO_DSH_BIN=/absolute/path/to/dsh npm --prefix studio run dev`
+- 테스트 없이 서버만: `npm --prefix studio run web` (빌드 후 Web 실행, 테스트 생략)
 - 코드 변경 후: 서버를 종료하고 같은 명령을 다시 실행한 뒤 브라우저 새로고침. 자동 HMR은 보장하지 않는다.
 
 ### 브라우저 확인 순서

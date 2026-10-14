@@ -77,6 +77,11 @@ await transform('package.json', text => {
   const out = { ...manifest, name: 'dsh-studio-development', private: true, packageManager: config.packageManager,
     scripts: { ...manifest.scripts, ...config.scripts }, devDependencies: { ...resolveWorkspace(manifest.devDependencies), ...config.devDependencies } };
   for (const key of config.dropScripts) delete out.scripts[key];
+  // Development and release scripts stay in the fork. A kept script that runs a file the
+  // snapshot does not carry would be broken in public and names private tooling.
+  const dangling = Object.entries(out.scripts).flatMap(([key, command]) => [...String(command).matchAll(/(?:^|\s)([\w./-]+\.m?[jt]s)\b/g)]
+    .map(match => match[1]).filter(file => !existsSync(path.join(work, file))).map(file => `${key}: ${file}`));
+  if (dangling.length) throw new Error(`Exported scripts reference files outside the snapshot; add them to dropScripts:\n${dangling.join('\n')}`);
   return JSON.stringify(out, null, 2) + '\n';
 });
 await transform('packages/shell/package.json', text => {
@@ -100,7 +105,7 @@ const marker = `${sourceBranch}@${source}`;
 const version = JSON.parse(await readFile(path.join(studio, 'packages/shell/package.json'), 'utf8')).version;
 // The public tree must not name the private source, its authors, branches or local machines.
 const leaks = [];
-for (const file of (await readdir(work, { recursive: true })).filter(file => !file.startsWith('.git') && !file.startsWith('node_modules'))) {
+for (const file of (await readdir(work, { recursive: true })).filter(file => file !== '.git' && !file.startsWith(`.git${path.sep}`) && !file.startsWith('node_modules'))) {
   const full = path.join(work, file);
   let text; try { text = await readFile(full, 'utf8'); } catch { continue; }
   for (const pattern of config.forbidden) for (const line of text.split('\n')) if (new RegExp(pattern, 'i').test(line)) leaks.push(`${file}: /${pattern}/ ${line.trim().slice(0, 100)}`);

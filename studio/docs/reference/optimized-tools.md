@@ -1,8 +1,9 @@
 # Optimized와 기본 도구
 
 - Studio 목록 순서는 Master, Optimized, 사용자 프리셋이다.
-- Master는 읽기 전용이다. Optimized는 최초 실행 시 저장소에 기본값과 반영 스냅샷을 생성한다. 이후 사용자 편집과 반영 해제 상태를 재시작 때 유지한다.
-- Optimized는 편집·반영·반영 해제·사본 만들기를 지원한다. 삭제만 UI와 Host 양쪽에서 금지한다. 사본은 독립적인 사용자 프리셋이다.
+- Master는 읽기 전용이다. Optimized는 최초 실행 시 저장소에 기본값과 반영 스냅샷을 생성한다. Optimized는 편집할 수 없어 저장된 요청에 사용자 내용이 없으므로, 시작할 때 저장된 요청이 배포된 allowlist·기본값과 다르면 다시 맞춘다. 사용자의 반영/반영 해제 선택은 유지한다.
+- Optimized는 반영·반영 해제·사본 만들기만 지원한다. 편집과 삭제는 UI와 Host 양쪽에서 금지한다. 사본(`studio-user-*`)은 독립적인 사용자 프리셋이며 시작 시 정렬 대상이 아니다.
+- 프리셋은 정의한 도구가 모두 있어야 실행된다. 반영 시 기준 구성에 없는 도구는 `does not supply tools`로, 세션 시작·재개 시 없는 도구는 `Studio policy selected tools unavailable`로 실패한다. 없는 도구를 빼고 실행하지 않는다(`aa083f17`의 건너뛰기 동작은 `48430309`에서 되돌림). 프로필 플러그인 도구(`load_workspace_dependencies` 등)를 고른 사본은 그 도구를 제공하는 프로필에서만 동작한다.
 - 제공 도구 토글은 standard, ptc, minimal, cordis의 실제 카탈로그를 사용한다.
 - read_batch는 Studio shell 패키지의 /batch 제공자로 포함되고 Master에 등록된다. 별도 실험 플러그인 설치가 필요 없다. task_run 제공자(/tasks)는 패키지에 남아 있지만 현재 Master에서 제외되어 도구 목록에 나타나지 않으며, 저장된 프리셋의 task_run 선택은 편집·반영 시 자동으로 빠진다.
 - read_batch는 최대 8개의 read/grep/glob 읽기를 순서대로 수행하고 첫 오류에서 멈춘다. read는 최대 200줄이다.
@@ -11,11 +12,11 @@
 
 ## Optimized 기본 정책
 
-- Goal/Todo 도구 네 개와 task_run은 Optimized 선택에서 제외한다. task_run의 제공자는 Master에 남지만 Optimized 지침에는 등장하지 않는다. 서브에이전트 설정은 변경하지 않는다.
+- Optimized는 일상 도구 22개를 allowlist(`OPTIMIZED_TOOLS`)로 고정한다. 목록에 없는 도구는 런타임에 존재해도 선택하지 않으므로, 프로필 플러그인이 등록한 `x_search`·`image_generate`·`video_generate`·`load_workspace_dependencies`와 Goal/Todo·task_run·cordis introspection·plugin_manager가 새어 들어오지 않는다. task_run의 제공자는 Master에 남지만 Optimized 지침에는 등장하지 않는다. 서브에이전트 설정은 변경하지 않는다.
 - spill-policy.maxInlineTokens는 2500이다. 초과 판정과 반환 미리보기 예산이 같으며, 문자 기준 앞뒤 512자 정책은 사용하지 않는다.
 - bash.timeoutMs 생략 시 600000ms, job_output.timeout_ms 생략 시 120000ms를 요청한다. 실제 대기는 native 런타임 상한을 따른다. 명시한 인자는 변경하지 않는다.
 - 독립 호출 묶기, 의존 호출 순서, 충분한 대기, 완료 후 검증, 관련 작업 수집·불필요한 작업 취소, 최소 충분 검증 후 종료를 공통 지침과 도구 인자 설명에 반영한다.
-- 기존 저장본은 배포할 때 무조건 덮어쓰지 않는다. 승인된 19388 프리뷰만 scripts/apply-optimized-defaults.mjs로 명시적으로 갱신한다. 먼저 미리보기를 검사하고 원본을 dist 아래 백업한 뒤 저장·반영한다. 사용자 모델·역할·추가 설정과 설명 수정은 유지하며, 사용자 작성 task_run 문구가 있으면 자동 삭제하지 않고 중단한다.
+- Optimized는 편집할 수 없는 빌트인이므로 시작할 때 저장된 요청을 배포된 allowlist·기본값에 맞춘다. 이 정렬은 사본(`studio-user-*`)과 다른 사용자 프리셋에는 적용하지 않는다. 반영/반영 해제 상태는 유지하고, 반영 중이면 현재 마스터 구성 위에 스냅샷을 다시 조립한다. 정렬이 실패하면 이전 스냅샷을 복구하고 오류를 보고한다. 사용자 프리셋의 모델·역할·추가 설정과 설명 수정은 유지한다.
 
 ## 편집 UI
 

@@ -28,6 +28,19 @@ fork (deepseek-harness/studio)          공개 레포 (matamt-dbg/dsh-studio)   
 
 ## 배포 절차
 
+[release/deploy.mjs](../release/deploy.mjs)가 아래 2~5 과정을 두 명령으로 묶는다. 각 단계는 검증에 실패하면 멈추고, 공개 레포와 npm 밖의 상태는 바꾸지 않는다.
+
+```sh
+node studio/release/deploy.mjs github   # 2~4단계 push까지: fork studio/ → 공개 레포 main
+node studio/release/deploy.mjs npm      # 4~5단계: 공개 레포 main을 새로 clone해 빌드·테스트 후 npm publish (브라우저 인증)
+node studio/release/deploy.mjs all      # 두 단계 연속. 인증 가능한 대화형 터미널에서만
+```
+
+- `github`는 [sync.mjs](../release/sync.mjs)에 위임한다. export 목록·금지어 검사·공개 의존성 설치·테스트·`release: <version>` 커밋은 sync가 그대로 소유한다. `--dry-run`은 push 없이 export·검증·패키징만 한다.
+- `npm`은 공개 레포 브랜치를 임시 폴더에 새로 clone한다. fork 작업 트리 상태와 무관하게 **공개 브랜치에 실제로 올라간 커밋**만 공개 패키지로 빌드·테스트해 `pack.mjs` tarball을 만들고 publish한다. 같은 버전이 이미 레지스트리에 있으면 설치 전에 멈춘다.
+- publish 뒤에는 `npm view`로 레지스트리를 재조회해 `dist.shasum`이 방금 만든 tarball과 같은지 확인한다. 전파가 늦으면 경고만 남기고, shasum이 다르면 실패로 처리한다.
+- 2차 인증은 기본적으로 브라우저에서 한다. `--otp` 없이 실행하면 npm이 publish 시점에 브라우저 인증 창을 열고 승인을 기다리므로, 설치·테스트 동안 인증이 만료되지 않는다. 대화형 터미널이 필요하다. 비대화형 실행에서만 `--otp=`를 넘기고, OTP·토큰은 채팅·문서·셸 기록에 남기지 않는다.
+
 ### 1. 버전 올리기
 
 두 곳을 같은 값으로 바꾼다. 다르면 테스트가 실패한다.
@@ -59,9 +72,9 @@ node studio/release/sync.mjs
 ```
 
 1. 공개 레포를 임시 폴더(기본: 새 temp 폴더, `STUDIO_RELEASE_DIR`로 지정 가능)에 받는다.
-2. [config.json](../release/config.json)의 `include` 목록만 복사하고, `copy` 항목(공개 README, guide, 이미지, 단독 tsconfig)을 덮는다.
-3. `workspace:*` 의존을 `versions`의 공개 버전으로 바꾼다.
-4. 금지어 검사: `forbidden` 패턴(개인 계정, fork 경로, 브랜치, 로컬 경로·포트)이 하나라도 있으면 위치를 출력하고 멈춘다.
+2. [config.json](../release/config.json)의 `include` 목록만 복사하고, `copy` 항목(공개 README, guide, 이미지, 단독 tsconfig, 공개용 `.gitignore`)을 덮는다.
+3. `workspace:*` 의존을 `versions`의 공개 버전으로 바꾼다. `dropScripts`에 적은 개발·배포 스크립트(`web`, `dev`, `dev:desktop`, `deploy`, `release:*`)는 공개 `package.json`에서 뺀다. 남은 스크립트가 스냅샷에 없는 파일을 실행하면 멈춘다.
+4. 금지어 검사: `forbidden` 패턴(개인 계정, fork 경로, 브랜치, 로컬 경로·포트, 개발 스크립트·격리 프로필 이름)이 하나라도 있으면 위치를 출력하고 멈춘다. `.gitignore` 같은 점 파일도 검사한다.
 5. `pnpm install` → 타입 검사·빌드·테스트 → `pack.mjs`로 tarball을 만든다.
 6. `release: <version>` 커밋을 만든다. push는 하지 않는다.
 
@@ -136,6 +149,15 @@ dsh plugin --profile desktop add @matamt-dbg/dsh-studio@latest
 
 저장한 프리셋은 `~/.dsh/profiles/desktop/studio-data/`에 남는다.
 
+npm에 올리기 전에 로컬 개발 빌드를 앱에서 바로 확인하려면 개발 스크립트를 쓴다.
+
+```sh
+# DSH 앱을 종료한 뒤 실행. 테스트·빌드·패키징 후 desktop 프로필에 설치하고, 앱 재시작으로 반영한다.
+npm --prefix studio run dev:desktop
+```
+
+`node studio/dev.mjs --desktop`은 실제 `desktop` 프로필을 바꾸므로 앱이 실행 중이면 중단한다. 다른 프로필은 `--profile <이름>`, 강제 적용은 `--force`를 쓴다. 되돌리려면 위 `add @matamt-dbg/dsh-studio@latest`를 다시 실행한다. 이 로컬 설치는 독립 배포 검증이 아니다.
+
 ## 문서와 스크린샷
 
 - 공개 README: [release/README.md](../release/README.md). fork 루트 README는 내부용이며 공개되지 않는다.
@@ -143,6 +165,16 @@ dsh plugin --profile desktop add @matamt-dbg/dsh-studio@latest
 - 스크린샷: `release/docs/images/en/`, `release/docs/images/ko/`. 화면이 바뀌면 두 언어 모두 다시 찍는다. 개인 데이터가 없는 격리 환경(위 5번)에서 찍고 1600×1000으로 줄인다.
 - npm 페이지는 레포 파일을 읽지 못하므로 `pack.mjs`가 README의 이미지·문서 링크를 GitHub 절대 주소로 바꾼다. 이미지는 npm 패키지에 넣지 않는다.
 - 공개 문서에 내부 정보(fork, 개인 계정, 로컬 경로·포트, 내부 이슈)를 쓰지 않는다. 쓰면 sync의 금지어 검사가 멈춘다. 새 금지어는 `config.json`의 `forbidden`에 추가한다.
+
+### 개발 환경 정보를 배포에서 빼는 규칙
+
+공개 스냅샷에는 사용자가 빌드·테스트·패키징하는 데 필요한 것만 넣는다. 개발 루프(`dev.mjs`, `start-web.mjs`, `.dsh-home` 격리 프로필)와 배포 도구(`release/`)는 fork에만 둔다.
+
+| 새로 추가한 것 | 함께 할 일 |
+|---|---|
+| `package.json` 개발·배포 스크립트 | `config.json`의 `dropScripts`에 이름 추가. 빠뜨리면 sync가 "reference files outside the snapshot"으로 멈춘다. |
+| 개발 전용 파일 | `include`에 넣지 않는다. 이름이 공개 파일에 나오면 안 되면 `forbidden`에도 추가한다. |
+| 개발용 ignore 항목 | `studio/.gitignore`에만 추가한다. 공개 `.gitignore`는 [release/standalone/gitignore](../release/standalone/gitignore)이며 빌드 산출물만 담는다. |
 
 ## 문제 해결
 
@@ -156,5 +188,6 @@ dsh plugin --profile desktop add @matamt-dbg/dsh-studio@latest
 | `npm publish` 403 2FA required | npm 2단계 인증 꺼짐 | npmjs.com에서 2FA를 `auth-and-writes`로 켜고 `npm login` |
 | `npm publish` EOTP | 2단계 인증 필요 | 출력된 링크로 승인하거나 `--otp` 지정 |
 | `npm publish` 403 cannot publish over | 같은 버전이 이미 있음 | 버전을 올려 다시 sync |
+| `… is already on npm` (deploy npm) | 공개 브랜치 버전이 이미 레지스트리에 있음 | 버전을 올려 `deploy.mjs github`부터 다시 실행 |
 | 설치 후 `@matamt-dbg/dsh-studio: failed` | 같은 프로필에 `@local/dsh-studio` 잔존 | `dsh plugin --profile <프로필> remove @local/dsh-studio` |
 | 공개 레포 Contributors에 다른 계정 | GitHub 기여자 목록 캐시 | 커밋 작성자가 맞으면 재계산을 기다림 |

@@ -8,7 +8,12 @@
     "test": "npm run build && node --import tsx --test test/*.test.mjs",
     "pack:bundle": "node pack.mjs",
     "watch": "node build.mjs --watch",
-    "web": "npm run build && node start-web.mjs"
+    "web": "npm run build && node start-web.mjs",
+    "dev": "node dev.mjs",
+    "dev:desktop": "node dev.mjs --desktop",
+    "deploy": "node release/deploy.mjs",
+    "release:github": "node release/deploy.mjs github",
+    "release:npm": "node release/deploy.mjs npm"
   },
   "devDependencies": {
     "@deepseek-ai/dsh-scope": "workspace:*",

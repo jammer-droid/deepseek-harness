@@ -14,6 +14,7 @@ DSH Studio is a page inside the DeepSeek Harness web GUI for building **agent pr
 - [Adapt Optimized to your work](#adapt-optimized-to-your-work)
 - [Apply a preset to DSH](#apply-a-preset-to-dsh)
 - [Tool providers](#tool-providers)
+- [Tools that depend on your profile](#tools-that-depend-on-your-profile)
 - [Where data is stored](#where-data-is-stored)
 - [Troubleshooting](#troubleshooting)
 
@@ -21,11 +22,14 @@ DSH Studio is a page inside the DeepSeek Harness web GUI for building **agent pr
 
 Studio requires DSH `0.2.0-rc.2` or `0.2.1-alpha.2`.
 
+Install Studio into the DSH profile you use. `web` is the profile of `dsh web`; `desktop` is the profile of the DeepSeek Harness desktop app.
+
 ```sh
-dsh plugin --profile web add @matamt-dbg/dsh-studio
+dsh plugin --profile web add @matamt-dbg/dsh-studio       # dsh web
+dsh plugin --profile desktop add @matamt-dbg/dsh-studio   # desktop app: quit the app first
 ```
 
-Restart the web GUI and select **DSH Studio** in the sidebar.
+Restart the web GUI or the app, then select **DSH Studio** in the sidebar. Each profile keeps its own presets and its own set of tools, so install Studio in every profile where you want to use it.
 
 ## Preset list
 
@@ -35,8 +39,8 @@ The list shows every preset Studio manages:
 
 | Preset | What it is |
 |---|---|
-| **Studio Master** | Read-only reference that contains every tool Studio can offer. Use it to see what is available. |
-| **Optimized** | Built-in starting point for coding agents: 22 everyday tools, tuned tool descriptions and execution defaults, and short working instructions. It is locked: copy it to make changes. See [Adapt Optimized to your work](#adapt-optimized-to-your-work). |
+| **Studio Master** | Read-only reference that contains every tool available in this profile. Use it to see what you can select. |
+| **Optimized** | Built-in starting point for coding agents: a fixed list of 22 everyday tools, tuned tool descriptions and execution defaults, and short working instructions. It is locked: copy it to make changes. See [Adapt Optimized to your work](#adapt-optimized-to-your-work). |
 | Your presets | Anything you create or copy. |
 
 Each card shows its status — **Applied**, **Needs reapply** (saved changes not yet in DSH), or **Not applied** — and the number of tools and subagent roles. The card buttons:
@@ -47,6 +51,8 @@ Each card shows its status — **Applied**, **Needs reapply** (saved changes not
 - **Apply to DSH / Reapply to DSH** registers the saved preset with DSH. The arrow next to it offers **Unapply from DSH**.
 
 If several presets share a warning, it is shown once above the cards instead of on every card.
+
+Optimized follows the installed Studio version. Each time Studio starts, it resets Optimized to that version's tool list and defaults. If Optimized was applied, Studio reapplies it; if you unapplied it, it stays unapplied. Your copies are never changed.
 
 ## Edit a preset
 
@@ -105,11 +111,11 @@ Add **roles** to give the agent named specialists to delegate to:
 | Field | Meaning |
 |---|---|
 | Name | Display name of the role. |
-| Role | Identifier the agent uses when calling `subagent_role`. Must be unique. |
+| Role ID | Identifier the agent uses when calling `subagent_role`. Must be unique. |
 | Model | **Inherit parent model**, or a specific model from your configured providers. **Refresh models** reloads the list. |
 | Reasoning | Reasoning effort supported by the chosen model, or the parent/model default. |
 | Spawn mode | **New conversation (Fresh)** starts with only the task; **Continue parent (Fork)** also receives the conversation so far. |
-| User instructions (persona) | Replaces the persona for this role. Leave empty to keep the preset persona, shown as dimmed placeholder text. |
+| Role instructions (persona) | Replaces the persona for this role. Leave empty to keep the preset persona, shown as dimmed placeholder text. |
 
 The agent writes the actual task each time it calls `subagent_role`. With **no roles**, `subagent_role` starts a fresh subagent with the parent's model, reasoning and preset instructions.
 
@@ -123,6 +129,8 @@ Optimized is tuned for **coding-agent work**: reading and editing code, running 
 |---|---|
 | Track long, multi-step objectives | Turn on the goal and todo tools (`create_goal`, `get_goal`, `update_goal`, `todo_write`) in **Prompts & tools**. |
 | Develop or inspect DSH plugins | Turn on `cordis_inspect_list`, `cordis_inspect_query` and `plugin_manager`. |
+| Work with Office files or data using the app's bundled Python and Node | Turn on `load_workspace_dependencies` (desktop app profile only; see [Tools that depend on your profile](#tools-that-depend-on-your-profile)). |
+| Search X, or generate images and videos | Turn on `x_search`, `image_generate` or `video_generate` (only when a plugin in your profile provides them). |
 | Do research, writing or operations instead of coding | Rewrite **Additional Studio instructions** for that work, and drop tools it does not need. |
 | Change how much tool output stays inline | Adjust `spill-policy` in **Execution settings**. |
 | Tune any other plugin behavior | Turn on that plugin in **Execution settings** and edit only the fields you need. |
@@ -143,6 +151,18 @@ If applying fails, the previously applied version stays in effect and the list e
 
 **Tool providers** registers tools from other installed plugins in the Studio tool list, so presets can select them. Enter a JSON array of entries with `id`, `name` (the installed package) and `config`, then select **Validate and update master**. Registering runs the plugin's code, so add only plugins you trust. Studio does not install packages; install them first.
 
+## Tools that depend on your profile
+
+Studio Master lists only the tools that the plugins in **this profile** register. Some tools come from plugins that only certain environments load. For example, the desktop app adds `load_workspace_dependencies`, `x_search`, `image_generate` and `video_generate`, but a `dsh web` profile or a headless runtime may not have them. Optimized never selects these tools, so it works in every profile.
+
+A preset can use only the tools it lists. If any selected tool is missing from the profile, Studio does not drop it silently:
+
+- In the editor, the tool is marked **Not available in this profile**.
+- Applying the preset fails, and the previously applied version stays in effect.
+- Starting or resuming a session with an already applied preset fails with `Studio policy selected tools unavailable: <tool>`.
+
+To use such a tool, install the plugin that provides it in that profile, or turn it on in the Studio tool list with **Tool providers**. If you work in several profiles, keep a separate copy for each profile and turn on only the tools that profile provides.
+
 ## Where data is stored
 
 Presets are saved per DSH profile in `<profile>/studio-data/`. Applying a preset registers a Studio-owned DSH agent preset; Studio never edits DSH's own presets or your profile's package list.
@@ -158,3 +178,7 @@ dsh plugin --profile web remove @local/dsh-studio
 Your saved presets are kept and migrated automatically.
 
 **A preset shows "Needs reapply".** It was saved after it was last applied. Apply it again to update DSH.
+
+**Applying or starting fails with "does not supply tools" or "selected tools unavailable".** The preset selects a tool that this profile does not provide, such as `load_workspace_dependencies` outside the desktop app. Install the plugin that provides it, or turn the tool off in your copy and apply again. See [Tools that depend on your profile](#tools-that-depend-on-your-profile).
+
+**Optimized has different tools after an update.** This is expected: Optimized follows the installed Studio version. Your copies keep their own tools.
