@@ -4,6 +4,10 @@
  *
  *   node studio/release/sync.mjs                 # dry run: export, install, typecheck, test, pack; never pushes
  *   node studio/release/sync.mjs --push          # same, then commit and push the snapshot
+ *   node studio/release/sync.mjs --push --publish [--otp=123456]  # also publish the packed package to npm
+ *
+ * Commits are authored as config.author; the push uses config.publisher.github's gh token and
+ * npm publish requires `npm whoami` to equal config.publisher.npm, whatever account is active locally.
  *
  * The fork's studio/ is the only source of truth. The exported tree replaces workspace
  * links with public npm versions, inherits no monorepo tsconfig, and carries only public docs.
@@ -18,7 +22,9 @@ import { fileURLToPath } from 'node:url';
 
 const studio = fileURLToPath(new URL('..', import.meta.url));
 const monorepo = path.resolve(studio, '..');
-const push = process.argv.includes('--push');
+const publish = process.argv.includes('--publish');
+const push = process.argv.includes('--push') || publish;
+const otp = process.argv.find(arg => arg.startsWith('--otp='))?.slice('--otp='.length);
 const repo = process.env.STUDIO_RELEASE_REPO ?? 'https://github.com/matamt-dbg/dsh-studio.git';
 const branch = process.env.STUDIO_RELEASE_BRANCH ?? 'main';
 const config = JSON.parse(await readFile(path.join(studio, 'release/config.json'), 'utf8'));
@@ -31,6 +37,13 @@ const source = git(['rev-parse', '--short=10', 'HEAD']);
 const sourceBranch = git(['rev-parse', '--abbrev-ref', 'HEAD']);
 
 // 2. Check out the target (an empty repository starts an orphan branch).
+// Fail before any work when the publishing identities are not available.
+const ghToken = () => run('gh', ['auth', 'token', '--user', config.publisher.github], monorepo, { capture: true }).trim();
+if (push) ghToken();
+if (publish) {
+  const who = run('npm', ['whoami'], monorepo, { capture: true }).trim();
+  if (who !== config.publisher.npm) throw new Error(`npm is logged in as ${who}; run npm login as ${config.publisher.npm}.`);
+}
 const work = process.env.STUDIO_RELEASE_DIR ?? await mkdtemp(path.join(tmpdir(), 'dsh-studio-release-'));
 await rm(work, { recursive: true, force: true });
 run('git', ['clone', '--quiet', repo, work], monorepo);
@@ -94,12 +107,19 @@ console.log(`\nExported ${exported.length} files from ${marker} into ${work}\nPa
 
 // 6. Commit; push only when asked.
 run('git', ['add', '-A'], work);
-if (!git(['status', '--porcelain'], work)) { console.log('No changes relative to the published snapshot.'); process.exit(0); }
+const unchanged = !git(['status', '--porcelain'], work);
+if (unchanged && !publish) { console.log('No changes relative to the published snapshot.'); process.exit(0); }
 // Snapshots are authored by the publishing account, never the fork's local git identity.
 const identity = { GIT_AUTHOR_NAME: config.author.name, GIT_AUTHOR_EMAIL: config.author.email, GIT_COMMITTER_NAME: config.author.name, GIT_COMMITTER_EMAIL: config.author.email };
-run('git', ['commit', '--quiet', '-m', `sync: deepseek-harness ${marker}`], work, { env: identity });
+if (!unchanged) run('git', ['commit', '--quiet', '-m', `sync: deepseek-harness ${marker}`], work, { env: identity });
 console.log(git(['show', '--stat', '--oneline', 'HEAD'], work).split('\n').slice(0, 1).join('\n'));
 if (!push) { console.log(`Dry run: not pushed. Inspect ${work}; re-run with --push to publish the snapshot.`); process.exit(0); }
-run('git', ['push', 'origin', `HEAD:${branch}`], work);
-if (!existsSync(tarball)) throw new Error('Packed tarball missing after push');
-console.log(`Pushed ${marker} to ${repo} ${branch}.`);
+// Push with the publisher's token so the active gh account and local git credentials never matter.
+const auth = Buffer.from(`x-access-token:${ghToken()}`).toString('base64');
+run('git', ['-c', `http.https://github.com/.extraheader=AUTHORIZATION: basic ${auth}`, '-c', 'credential.helper=', 'push', 'origin', `HEAD:${branch}`], work);
+console.log(`Pushed ${marker} to ${repo} ${branch} as ${config.publisher.github}.`);
+if (!publish) process.exit(0);
+if (!existsSync(tarball)) throw new Error('Packed tarball missing');
+const version = JSON.parse(await readFile(path.join(work, 'packages/shell/package.json'), 'utf8')).version;
+run('npm', ['publish', tarball, '--access', 'public', ...(otp ? ['--otp', otp] : [])], work);
+console.log(`Published @${version} as ${config.publisher.npm}.`);

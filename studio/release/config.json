@@ -49,5 +49,9 @@
   "author": {
     "name": "matamt-dbg",
     "email": "336766097+matamt-dbg@users.noreply.github.com"
+  },
+  "publisher": {
+    "github": "matamt-dbg",
+    "npm": "mamt"
   }
 }
