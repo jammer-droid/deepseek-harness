@@ -129,3 +129,31 @@ test('two-column selection keeps prompt on top and uses authoritative assembly o
     assert.equal(document.querySelectorAll('input[type=checkbox]').length, 0);
   } finally { await act(async () => root.unmount()); dom.window.close(); }
 });
+
+test('built-in tool set buttons toggle against tools already selected by a copied preset', async () => {
+  const dom = new JSDOM('<div id="root"></div>');
+  globalThis.window = dom.window; globalThis.document = dom.window.document; globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+  const { createRoot } = await import('react-dom/client');
+  const root = createRoot(document.getElementById('root'));
+  const tool = name => ({ name, description: name });
+  const catalog = { tools: ['bash', 'read', 'grep', 'run_code'].map(tool), presets: [
+    { id: 'studio-master', sections: [], tools: [], promptProviders: [] },
+    { id: 'standard', sections: [], tools: [tool('read'), tool('grep')] },
+  ] };
+  let current;
+  function Harness() {
+    const [provided, onProvidedChange] = React.useState(['bash', 'read', 'grep']);
+    current = provided;
+    return React.createElement(PromptToolsPrototype, { catalog, locale: 'en', prompt: '', onPromptChange() {}, provided, onProvidedChange, initialRequest: { tools: provided } });
+  }
+  const standard = () => [...document.querySelectorAll('button')].find(b => b.textContent === 'standard');
+  try {
+    await act(async () => root.render(React.createElement(Harness)));
+    assert.equal(standard().getAttribute('aria-pressed'), 'true', 'a copied preset already containing the set shows it as included');
+    await act(async () => standard().click());
+    assert.deepEqual(current, ['bash']);
+    assert.equal(standard().getAttribute('aria-pressed'), 'false');
+    await act(async () => standard().click());
+    assert.deepEqual(current, ['bash', 'read', 'grep']);
+  } finally { await act(async () => root.unmount()); dom.window.close(); }
+});

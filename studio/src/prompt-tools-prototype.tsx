@@ -3,7 +3,8 @@ import { BUILTIN_TOOL_PRESETS } from './optimized-preset.ts';
 import React from 'react';
 import { ItemPicker } from './item-picker.tsx';
 import { Button, DetailDialog, Note, SectionHead } from './ui.tsx';
-import { mergePresetTools, type PresetCatalog } from './preset-catalog.ts';
+import { type PresetCatalog } from './preset-catalog.ts';
+import { delegationTools, GENERIC_DELEGATION_TOOLS, LEGACY_ROLE_TOOL, renameLegacyRoleKey, ROLE_TOOL, WITHDRAWN_TOOLS } from './delegation.ts';
 import type { PreviewAction, PreviewResult } from './prompt-composition.ts';
 
 export const defaultProvidedTools: string[] = [];
@@ -16,13 +17,10 @@ export function PromptToolsPrototype({ locale, prompt, onPromptChange, provided,
 }) {
   const t = (ko: string, en: string, zh: string) => locale.startsWith('ko') ? ko : locale.startsWith('zh') ? zh : en;
   const base = initialRequest?.preset ?? 'studio-master';
-  const [toolOverrides, setToolOverrides] = React.useState<Record<string, { description?: string; parameters?: Record<string, string> }>>(initialRequest?.toolOverrides ?? {});
+  const [toolOverrides, setToolOverrides] = React.useState<Record<string, { description?: string; parameters?: Record<string, string> }>>(renameLegacyRoleKey(initialRequest?.toolOverrides) ?? {});
   const [sections, setSections] = React.useState<Record<string, string>>(initialRequest?.sections ?? {});
   const providers = initialRequest?.providers ?? ['@deepseek-ai/dsh-persona'];
   const [providerConfigs, setProviderConfigs] = React.useState<Record<string, Record<string, unknown>>>(initialRequest?.providerConfigs ?? {});
-  const [toolPresets, setToolPresets] = React.useState<string[]>([]);
-  const [manual, setManual] = React.useState(provided);
-  const [excluded, setExcluded] = React.useState<string[]>([]);
   const [result, setResult] = React.useState<PreviewResult>();
   const [resultKey, setResultKey] = React.useState('');
   const [error, setError] = React.useState('');
@@ -44,19 +42,19 @@ export function PromptToolsPrototype({ locale, prompt, onPromptChange, provided,
   const requestKey = JSON.stringify(request);
   React.useEffect(() => { onRequestChange?.(request); }, [requestKey, onRequestChange]);
   const labels = { filter: t('보기', 'Show', '显示'), search: t('도구 검색', 'Search tools', '搜索工具'), searchHint: t('이름, 설명, 인자로 검색', 'Search names, descriptions or parameters', '按名称、描述或参数搜索'), all: t('전체', 'All', '全部'), selected: t('선택됨', 'Selected', '已选'), modified: t('변경됨', 'Modified', '已修改'), settings: t('설정', 'Details', '详情'), done: t('완료', 'Close', '关闭'), empty: t('항목이 없습니다.', 'No items', '无项目'), noResults: t('검색 결과가 없습니다.', 'No matching results.', '没有匹配结果。'), modifiedTag: t('변경됨', 'Modified', '已修改'), clear: t('전체 보기', 'Show all', '显示全部') };
+  // A tool set counts as included whenever all its tools are selected, so copied or edited presets toggle the same as fresh drafts.
+  // Generic subagent tools are folded into subagent_role, so a set's delegation tools map to that one tool.
+  const presetTools = (presetId: string) => delegationTools(presets.find(p => p.id === presetId)?.tools.map(tool => tool.name) ?? []);
   const togglePreset = (presetId: string) => {
-    const active = toolPresets.includes(presetId) ? toolPresets.filter(p => p !== presetId) : [...toolPresets, presetId];
-    const nextExcluded = excluded.filter(name => !presets.find(p => p.id === presetId)?.tools.some(tool => tool.name === name));
-    setToolPresets(active); setExcluded(nextExcluded);
-    onProvidedChange(mergePresetTools(manual, presets, active, nextExcluded));
+    const names = presetTools(presetId);
+    onProvidedChange(includesPreset(presetId) ? provided.filter(name => !names.includes(name)) : [...new Set([...provided, ...names])]);
   };
-  const changeTools = (next: string[]) => {
-    const removed = provided.filter(name => !next.includes(name));
-    const added = next.filter(name => !provided.includes(name));
-    setManual([...new Set([...manual.filter(name => !removed.includes(name)), ...added])]);
-    setExcluded([...new Set([...excluded.filter(name => !added.includes(name)), ...removed])]);
-    onProvidedChange(next);
-  };
+  const includesPreset = (presetId: string) => { const names = presetTools(presetId); return names.length > 0 && names.every(name => provided.includes(name)); };
+  const changeTools = (next: string[]) => onProvidedChange(delegationTools(next));
+  // Presets saved before the fold still list generic delegation tools; migrate them once on open.
+  React.useEffect(() => {
+    if (provided.some(name => name === LEGACY_ROLE_TOOL || GENERIC_DELEGATION_TOOLS.includes(name) || WITHDRAWN_TOOLS.includes(name))) onProvidedChange(delegationTools(provided));
+  }, []);
   const preview = async () => {
     if (!onPreview) return;
     setPreviewOpen(true);
@@ -80,8 +78,8 @@ export function PromptToolsPrototype({ locale, prompt, onPromptChange, provided,
     </section>
     <section className="studio-form-section">
     <SectionHead title={t('도구', 'Provided tools', '提供的工具')} description={t('에이전트가 쓸 도구를 고릅니다. 설정에서 모델에 보이는 설명을 바꿀 수 있으며, 도구 동작은 바뀌지 않습니다.', 'Choose tools. Details edits model-facing descriptions only; tool behavior is unchanged.', '选择工具。详情只编辑模型可见的描述，工具行为不变。')} />
-    <div className="studio-field"><span>{t('기본 프리셋에서 한 번에 추가', 'Include a built-in preset tool set', '引入内置预设工具集')}</span><div className="studio-inline-actions">{toolSources.map(p => <Button small key={p.id} disabled={!!p.error} aria-pressed={toolPresets.includes(p.id)} onClick={() => togglePreset(p.id)}>{p.id === 'cordis' ? 'creator (cordis)' : p.id}</Button>)}</div></div>
-    <ItemPicker label={t('도구', 'Provided tools', '提供的工具')} items={[...tools.map(tool => ({ ...tool, searchText: JSON.stringify(tool.parameters) })), ...provided.filter(name => !tools.some(tool => tool.name === name)).map(name => ({ name, description: t('현재 설치된 도구 목록에 없습니다.', 'Absent from current catalog', '不在当前目录中') }))]} selected={provided} onChange={changeTools} labels={labels} isModified={name => {
+    <div className="studio-field"><span>{t('기본 프리셋에서 한 번에 추가', 'Include a built-in preset tool set', '引入内置预设工具集')}</span><div className="studio-inline-actions">{toolSources.map(p => <Button small key={p.id} disabled={!!p.error} aria-pressed={includesPreset(p.id)} onClick={() => togglePreset(p.id)}>{p.id === 'cordis' ? 'creator (cordis)' : p.id}</Button>)}</div></div>
+    <ItemPicker label={t('도구', 'Provided tools', '提供的工具')} items={[...tools.map(tool => ({ ...tool, searchText: JSON.stringify(tool.parameters), ...(GENERIC_DELEGATION_TOOLS.includes(tool.name) ? { disabledReason: t(`${ROLE_TOOL}로 통합되었습니다. 서브에이전트 위임은 ${ROLE_TOOL}을 선택하세요.`, `Merged into ${ROLE_TOOL}. Select ${ROLE_TOOL} for subagent delegation.`, `已合并到 ${ROLE_TOOL}。请选择 ${ROLE_TOOL} 进行子代理委派。`) } : {}) })), ...provided.filter(name => !tools.some(tool => tool.name === name)).map(name => ({ name, description: t('현재 설치된 도구 목록에 없습니다.', 'Absent from current catalog', '不在当前目录中') }))]} selected={provided} onChange={changeTools} labels={labels} isModified={name => {
       const tool = tools.find(item => item.name === name);
       const override = toolOverrides[name];
       const parameters = parameterFields(tool?.parameters);

@@ -1,4 +1,5 @@
 import type { PreviewRequest } from './prompt-composition.ts';
+import { delegationTools } from './delegation.ts';
 export const OPTIMIZED_PRESET_ID = 'studio-optimized';
 export const BUILTIN_TOOL_PRESETS = ['standard', 'ptc', 'minimal', 'cordis'] as const;
 const excluded = new Set(['get_goal', 'create_goal', 'update_goal', 'todo_write', 'task_run']);
@@ -9,7 +10,7 @@ Track every job you start. Before reporting completion, collect all relevant res
 Delegate self-contained independent work when useful and collect the result before relying on it.
 Keep changes within the requested scope and preserve user work. Use the smallest sufficient checks for the requested outcome and risk, then stop when the work is complete.`;
 export function optimizedTemplate(tools: string[]) {
-  const selected = tools.filter(name => !excluded.has(name));
+  const selected = delegationTools(tools.filter(name => !excluded.has(name)));
   const request: PreviewRequest = { preset: 'studio-master', providers: ['@deepseek-ai/dsh-persona'], tools: selected, prompt: OPTIMIZED_PROMPT, model: 'testLLM',
     configOverrides: { 'spill-policy': { maxInlineTokens: 2500 } },
     toolOverrides: {

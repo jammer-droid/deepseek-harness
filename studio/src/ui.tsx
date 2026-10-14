@@ -202,8 +202,8 @@ export function SplitButton({ label, onClick, primary = false, disabled = false,
  * @param props Open state, title, optional subtitle, close callback with optional header close label, body, and footer actions.
  * @returns Dialog that restores focus to its opener when it closes.
  */
-export function DetailDialog({ open, title, subtitle, onClose, closeLabel, footer, wide = false, children }: React.PropsWithChildren<{
-  open: boolean; wide?: boolean; title: React.ReactNode; subtitle?: React.ReactNode; onClose: () => void; closeLabel?: string; footer?: React.ReactNode;
+export function DetailDialog({ open, title, subtitle, onClose, closeLabel, footer, wide = false, compact = false, children }: React.PropsWithChildren<{
+  open: boolean; wide?: boolean; compact?: boolean; title: React.ReactNode; subtitle?: React.ReactNode; onClose: () => void; closeLabel?: string; footer?: React.ReactNode;
 }>) {
   const ref = React.useRef<HTMLDialogElement>(null);
   const opener = React.useRef<HTMLElement | null>(null);
@@ -219,7 +219,7 @@ export function DetailDialog({ open, title, subtitle, onClose, closeLabel, foote
       opener.current?.focus?.();
     }
   }, [open]);
-  return <dialog ref={ref} className={`studio-detail-dialog ${wide ? 'studio-dialog-wide' : ''}`} aria-labelledby={titleId} onCancel={event => { event.preventDefault(); onClose(); }}>
+  return <dialog ref={ref} className={`studio-detail-dialog ${wide ? 'studio-dialog-wide' : compact ? 'studio-dialog-compact' : ''}`} aria-labelledby={titleId} onCancel={event => { event.preventDefault(); onClose(); }}>
     <div className="studio-dialog">
       <header><div><h2 id={titleId}>{title}</h2>{subtitle && <p className="studio-muted">{subtitle}</p>}</div>{closeLabel && <Button small onClick={onClose}>{closeLabel}</Button>}</header>
       <div className="studio-dialog-body studio-selection-detail">{children}</div>

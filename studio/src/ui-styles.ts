@@ -164,6 +164,8 @@ export const studioStyles = `/* Only this adapter references host tokens. Studio
 .studio-ui fieldset label.studio-inline-label { display: block; }
 .studio-ui input:not([type=checkbox]), .studio-ui textarea, .studio-ui select { width: 100%; min-width: 0; padding: 6px 10px; border: .5px solid var(--studio-control-line); border-radius: var(--studio-control-radius); background: var(--studio-bg); color: var(--studio-ink); font: inherit; }
 .studio-ui input:not([type=checkbox]), .studio-ui select { min-height: 32px; }
+/* Native select arrows hug the edge; draw an inset chevron in the text color instead. */
+.studio-ui select:not([multiple]) { appearance: none; -webkit-appearance: none; padding-inline-end: 34px; background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%); background-position: right 17px top 50%, right 12px top 50%; background-size: 5px 5px, 5px 5px; background-repeat: no-repeat; text-overflow: ellipsis; }
 .studio-ui textarea { min-height: 144px; resize: vertical; }
 .studio-ui .studio-field { display: grid; gap: 6px; margin: 12px 0; }
 .studio-ui .studio-field-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: 0 var(--studio-gap); }
@@ -334,7 +336,8 @@ export const studioStyles = `/* Only this adapter references host tokens. Studio
 .studio-ui .studio-card-note { margin-top: auto; padding-top: 10px; }
 .studio-ui .studio-card-footer .studio-card-footer-end { margin-inline-start: auto; }
 .studio-ui .studio-tool-cards.studio-card-pair { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-.studio-ui article.studio-preset-card .studio-note { margin: 4px 0 0; }
+.studio-ui .studio-preset-warnings { display: flex; flex-direction: column; gap: 6px; margin: 0 0 12px; padding: 0; list-style: none; }
+.studio-ui .studio-preset-warnings > li { display: flex; align-items: baseline; gap: 8px; padding: 6px 12px; border-radius: var(--studio-control-radius); background: var(--studio-hover); color: var(--studio-muted); font-size: 12px; }
 
 /* Selection columns: a quiet header row and compact cards. */
 .studio-ui .studio-transfer-column { display: flex; flex-direction: column; background: var(--studio-surface); }
@@ -449,6 +452,18 @@ export const studioStyles = `/* Only this adapter references host tokens. Studio
 .studio-ui .studio-picker-empty .studio-button { margin: 0; }
 
 /* Prompt preview: sections read as a document on the left, tool schemas sit in a right rail. */
+.studio-ui .studio-detail-dialog.studio-dialog-compact { width: min(440px, calc(100vw - 48px)); }
+.studio-ui .studio-dialog-compact .studio-dialog > header { border-bottom: 0; padding-bottom: 0; }
+.studio-ui .studio-dialog-compact .studio-dialog .studio-dialog-body { padding-top: 10px; padding-bottom: 4px; }
+.studio-ui .studio-dialog-compact .studio-dialog > footer { border-top: 0; padding-bottom: 18px; }
+.studio-ui .studio-dialog-compact .studio-dialog > footer .studio-button:first-child:not(:last-child) { margin-inline-end: 0; }
+/* Preset identity: one card, short name beside a wider description, quiet labels. */
+.studio-ui .studio-identity { display: grid; grid-template-columns: minmax(200px, 2fr) minmax(0, 3fr); gap: 12px var(--studio-gap); padding: 14px 16px; border: .5px solid var(--studio-line); border-radius: var(--studio-radius); background: var(--studio-surface); }
+.studio-ui .studio-identity > label.studio-field { margin: 0; gap: 4px; }
+.studio-ui .studio-identity > label.studio-field > span { color: var(--studio-subtle); font-size: 12px; }
+.studio-ui .studio-identity input:not([type=checkbox]) { min-height: 36px; background: var(--studio-bg); }
+.studio-ui .studio-identity .studio-identity-name input { font-size: 15px; font-weight: 500; }
+@media (max-width: 720px) { .studio-ui .studio-identity { grid-template-columns: minmax(0, 1fr); } }
 .studio-ui .studio-detail-dialog.studio-dialog-wide { width: min(1180px, calc(100vw - 48px)); height: calc(100dvh - 64px); }
 .studio-ui .studio-dialog-wide .studio-dialog-body { display: flex; flex-direction: column; padding-bottom: 16px; }
 .studio-ui .studio-preview { display: grid; flex: 1 1 auto; grid-template-columns: minmax(0, 1fr) 300px; gap: 16px; min-height: 0; }

@@ -107,6 +107,32 @@ test('delete failure closes the dialog and states the preset was not deleted', a
   } finally { await view.close(); }
 });
 
+test('a shared apply warning appears once above the cards, not inside each card', async () => {
+  const warn = 'Settings are saved but not applied yet.';
+  const view = await mount({ list: async () => [{ ...preset('a', 'applied'), applyWarning: warn }, { ...preset('b', 'applied'), applyWarning: warn }, preset('c')], apply: async () => {}, delete: async () => {} });
+  try {
+    const notices = [...document.querySelectorAll('.studio-preset-warnings > li')];
+    assert.equal(notices.length, 1);
+    assert.match(notices[0].textContent, /Affects: Preset a, Preset b/);
+    assert.equal([...document.querySelectorAll('article.studio-preset-card')].filter(card => card.textContent.includes(warn)).length, 0);
+  } finally { await view.close(); }
+});
+
+test('user presets offer edit, copy and delete so a copy can be copied again', async () => {
+  let copied;
+  const dom = new JSDOM('<div id="root"></div>');
+  globalThis.window = dom.window; globalThis.document = dom.window.document; globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+  const { createRoot } = await import('react-dom/client');
+  const root = createRoot(document.getElementById('root'));
+  try {
+    await act(async () => root.render(React.createElement(PresetList, { locale: 'en', revision: 0, api: { list: async () => [preset('copy')], apply: async () => {}, delete: async () => {} }, onEdit: () => {}, onCopy: value => { copied = value; } })));
+    const buttons = [...document.querySelectorAll('article button')].filter(button => !button.closest('.studio-split'));
+    assert.deepEqual(buttons.map(button => [button.textContent, button.disabled]), [['Edit', false], ['Create copy', false], ['Delete', false]]);
+    await act(async () => buttons[1].click());
+    assert.equal(copied.id, 'copy');
+  } finally { await act(async () => root.unmount()); dom.window.close(); }
+});
+
 test('a missing Host API is reported instead of an empty list', async () => {
   const view = await mount(undefined);
   try {

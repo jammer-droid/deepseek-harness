@@ -34,3 +34,10 @@ test('inherit and fresh use native defaults without arbitrary overrides',async()
   await definition.execute({action:'call',role:'review',task:'x'},{agent:{},signal:new AbortController().signal});
   assert.equal(spec.provider,'spawn');assert.equal(spec.request.agentOptions,undefined);assert.equal(spec.request.persona,undefined);assert.equal(spec.request.overrides,undefined);
 });
+test('without saved roles, call starts a fresh child identical to the parent',async()=>{
+  let definition;let spec;apply({tools:{register:d=>{definition=d;}},subagents:{resolveMaxDepth:()=>undefined,startActivation:async s=>{spec=s;return {childId:'c'};}}},{roles:[]});
+  assert.match(definition.description,/same model and settings/);
+  assert.deepEqual(JSON.parse((await definition.execute({action:'list'},{signal:new AbortController().signal})).result).roles,[]);
+  const result=JSON.parse((await definition.execute({action:'call',task:'x'},{agent:{},signal:new AbortController().signal})).result);
+  assert.equal(result.subagentId,'c');assert.equal(spec.provider,'spawn');assert.equal(spec.request.agentOptions,undefined);assert.equal(spec.request.persona,undefined);
+});

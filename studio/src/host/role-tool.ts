@@ -5,18 +5,23 @@ import { defineTool } from '@deepseek-ai/dsh-tools';
 import { ReasoningEffortId } from '@deepseek-ai/dsh-llm';
 import type {} from '@deepseek-ai/dsh-subagent';
 import { executableRoles, parseRoles, type StudioRole } from '../role-settings.ts';
+import { ROLE_TOOL } from '../delegation.ts';
 
 export const name = 'studio-role';
 export const inject = ['tools', 'subagents', 'llm'];
 export interface Config { roles: StudioRole[] }
+/** Implicit role used when a preset defines none: same model, reasoning and persona as the parent, new conversation. */
+const PARENT_ROLE = { name: 'Subagent', role: 'subagent', model: 'inherit', reasoning: 'inherit', spawn: 'fresh', persona: '' } as const;
 export function apply(ctx: Context, config: Config): void {
   const roles = executableRoles(parseRoles(config.roles));
   ctx.tools.register(defineTool({
-    name: 'studio_role',
-    description: 'Discover saved specialist roles or delegate a task to one. Calls return a native child agent id; the child reports back through normal subagent delivery.',
+    name: ROLE_TOOL,
+    description: roles.length
+      ? 'Discover saved specialist roles or delegate a task to one. Calls return a native child agent id; the child reports back through normal subagent delivery.'
+      : 'Delegate a self-contained task to a subagent that starts with the same model and settings as you. Calls return a native child agent id; the child reports back through normal subagent delivery.',
     parameters: {
       action: { type: 'string', enum: ['list', 'call'], required: true, description: 'list discovers role identifiers and settings; call delegates a task.' },
-      role: { type: 'string', description: 'Saved role identifier, required for call.' },
+      role: { type: 'string', description: roles.length ? 'Saved role identifier, required for call.' : 'Not needed; no specialist roles are defined, so every call starts a child matching the parent.' },
       task: { type: 'string', description: 'Self-contained task for the specialist, required for call. Fork roles also inherit the conversation.' },
     },
     output: {
@@ -27,7 +32,8 @@ export function apply(ctx: Context, config: Config): void {
     async execute(args, exec) {
       if (args.action === 'list') return { result: JSON.stringify({ roles: roles.map(({ persona: _persona, ...role }) => role) }) };
       if (args.action !== 'call') throw new Error('Unknown Studio role action');
-      const role = roles.find(role => role.role === args.role);
+      // Without saved roles the tool still replaces generic delegation: the child inherits everything from the parent.
+      const role = roles.length ? roles.find(role => role.role === args.role) : PARENT_ROLE;
       if (!role) throw new Error('Unknown Studio role; use action=list to discover roles');
       if (typeof args.task !== 'string' || !args.task.trim()) throw new Error('Role call requires a task');
       if (!exec.agent) throw new Error('Studio role call requires a calling agent');

@@ -5,12 +5,14 @@ import { randomUUID } from 'node:crypto';
 import { type PreviewRequest, type PreviewResult } from '../prompt-composition.ts';
 import { compositionPlan, parseComposition } from './composition-plan.ts';
 import { installPolicy } from './preset-policy.ts';
+import { delegationTools } from '../delegation.ts';
 export { parseComposition };
 export { promptProviders } from '../prompt-composition.ts';
 
 /** Real assembly in a disposable child scope; same plan and policy used by exported presets. */
 export async function assemblePreview(ctx: Context, input: PreviewRequest): Promise<PreviewResult> {
-  const { request, plugins } = await compositionPlan(ctx, input);
+  // Preview the same tool surface that apply registers: generic delegation folds into subagent_role.
+  const { request, plugins } = await compositionPlan(ctx, { ...input, tools: delegationTools(input.tools) });
   const id = `studio-preview-${randomUUID()}`;
   const unregister = await ctx.agentPresets.register({ id, plugins: plugins as never });
   try {

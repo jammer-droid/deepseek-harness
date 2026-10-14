@@ -4,7 +4,7 @@
 - Master는 읽기 전용이다. Optimized는 최초 실행 시 저장소에 기본값과 반영 스냅샷을 생성한다. 이후 사용자 편집과 반영 해제 상태를 재시작 때 유지한다.
 - Optimized는 편집·반영·반영 해제·사본 만들기를 지원한다. 삭제만 UI와 Host 양쪽에서 금지한다. 사본은 독립적인 사용자 프리셋이다.
 - 제공 도구 토글은 standard, ptc, minimal, cordis의 실제 카탈로그를 사용한다.
-- read_batch와 task_run은 Studio shell 패키지의 /batch, /tasks 제공자로 포함되고 Master에 등록된다. 별도 실험 플러그인 설치가 필요 없다. task_run은 bash 기반이라 Windows Master에는 등록하지 않는다.
+- read_batch는 Studio shell 패키지의 /batch 제공자로 포함되고 Master에 등록된다. 별도 실험 플러그인 설치가 필요 없다. task_run 제공자(/tasks)는 패키지에 남아 있지만 현재 Master에서 제외되어 도구 목록에 나타나지 않으며, 저장된 프리셋의 task_run 선택은 편집·반영 시 자동으로 빠진다.
 - read_batch는 최대 8개의 read/grep/glob 읽기를 순서대로 수행하고 첫 오류에서 멈춘다. read는 최대 200줄이다.
 - task_run은 같은 세션의 기존 task_run 성공 작업만 의존성으로 허용한다. 내부 bash가 백그라운드로 승격되어 종료 코드를 확인할 수 없으면 unknown_exit로 처리하여 후속 의존 작업을 실행하지 않는다. native jobs와 도구 실행 정책을 사용한다.
 - 도구 카드의 설명·인자 설명·공유 프롬프트 섹션이 원본과 다르면 수정됨 표시를 붙인다. Config 카드는 중첩 값과 공개 schema 기본값을 비교한다. 선택만 하거나 원본으로 복원하면 표시하지 않는다.

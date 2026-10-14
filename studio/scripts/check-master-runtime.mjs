@@ -10,7 +10,7 @@ async function rpc(method, args = {}, ok = true) {
 const catalog = await rpc('studioCatalog/read');
 assert.deepEqual(catalog.presets.map(p => p.id), ['studio-master', 'standard', 'ptc', 'minimal', 'cordis']);
 assert.ok(catalog.tools.some(t => t.name === 'read_batch'));
-assert.ok(catalog.tools.some(t => t.name === 'task_run'));
+assert.ok(!catalog.tools.some(t => t.name === 'task_run'));
 assert.ok(catalog.tools.some(t => t.name === 'read'));
 const master = (await rpc('studioCatalog/listPresets')).find(p => p.id === 'studio-master'); assert.equal(master.readOnly, true);
 for (const method of ['deletePreset', 'applyPreset']) await rpc(`studioCatalog/${method}`, { id: master.id }, false);
