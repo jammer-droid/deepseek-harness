@@ -140,3 +140,29 @@ test('an extend role child hides the default and its own tools; a replace role c
   assert.doesNotMatch(await text(reviewer), /write guidance/);
   assert.match(await text(parent), /Edited write guidance/);
 });
+
+test('the guide example: worker uses the default, reviewer adds write, edit and bash', async () => {
+  const { roleToolFilter } = await import('../src/role-settings.ts');
+  const tools = ['read', 'write', 'edit', 'bash', 'ask_user_question'];
+  const presetDefault = ['ask_user_question'];
+  const worker = roleToolFilter(undefined, presetDefault);
+  const reviewer = roleToolFilter({ toolFilter: { mode: 'extend', deny: ['write', 'edit', 'bash'] } }, presetDefault);
+  const policy = { ...config, tools, toolOverrides: {}, prompt: 'Run tests with bash.', childToolFilter: { deny: [...new Set([...worker, ...reviewer])] } };
+  const { ctx, studio, createAgent } = await runtime(policy);
+  for (const name of ['edit', 'bash']) ctx.tools.register(tool(name));
+  for (const [name, order] of [['tool:bash', 'TOOL_BASH'], ['tool:write', 'TOOL_WRITE'], ['tool:edit', 'TOOL_EDIT']]) ctx.systemPrompt.section({ name, order: ctx.systemPrompt.getSectionOrder(order), text: `${name} guidance` });
+  const text = async agent => (await ctx.systemPrompt.assemble({ scope: agent })).sections.map(s => s.text).join('\n');
+  const parent = await createAgent(studio);
+  const w = await createAgent(studio, { owner: parent, filter: { deny: worker } });
+  const r = await createAgent(studio, { owner: parent, filter: { deny: reviewer } });
+  assert.deepEqual(ctx.tools.schemas(parent).map(t => t.name).sort(), [...tools].sort());
+  assert.deepEqual(ctx.tools.schemas(w).map(t => t.name).sort(), ['bash', 'edit', 'read', 'write']);
+  assert.deepEqual(ctx.tools.schemas(r).map(t => t.name), ['read']);
+  for (const section of ['tool:bash', 'tool:write', 'tool:edit']) {
+    assert.match(await text(parent), new RegExp(`${section} guidance`));
+    assert.match(await text(w), new RegExp(`${section} guidance`));
+    assert.doesNotMatch(await text(r), new RegExp(`${section} guidance`));
+  }
+  // Additional Studio instructions reach every subagent unchanged, even when they name a filtered tool.
+  for (const agent of [parent, w, r]) assert.match(await text(agent), /Run tests with bash\./);
+});

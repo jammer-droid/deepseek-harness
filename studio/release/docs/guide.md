@@ -17,6 +17,7 @@ DSH Studio is a page inside the DeepSeek Harness web GUI for building **agent pr
 - [Tools that depend on your profile](#tools-that-depend-on-your-profile)
 - [Where data is stored](#where-data-is-stored)
 - [Troubleshooting](#troubleshooting)
+- [Appendix: Check a preset in a live session](appendix/preset-check.md)
 
 ## Install and open Studio
 
@@ -138,6 +139,39 @@ Tools in the **Subagent Tool Filter** are removed from every subagent of this pr
   | **This role only (ignore default)** | Only the tools you pick, starting from an empty list | Not affected |
 
   Each role card shows its choice, for example `Tool Filter: default + 2`.
+
+##### What each subagent receives
+
+Take a preset that selects `read`, `write`, `edit`, `bash`, `ask_user_question` and `subagent_role`, with the default Tool Filter `ask_user_question`, and two roles: **worker** uses the preset default, **reviewer** adds `write`, `edit` and `bash`. Each agent's system prompt and tool list then look like this:
+
+```text
+                      Parent             worker (Fork)        reviewer (Fresh)
+                      ─────────────────  ───────────────────  ───────────────────
+System prompt
+  Persona             ✓                  ✓                    ✓ (role persona if set)
+  tool:bash guidance  ✓                  ✓                    ✗ removed
+  tool:write guidance ✓                  ✓                    ✗ removed
+  tool:edit guidance  ✓                  ✓                    ✗ removed
+  Additional Studio
+  instructions        ✓                  ✓ unchanged          ✓ unchanged
+
+Tool list
+  read                ✓                  ✓                    ✓
+  write               ✓                  ✓                    ✗ filtered
+  edit                ✓                  ✓                    ✗ filtered
+  bash                ✓                  ✓                    ✗ filtered
+  ask_user_question   ✓                  ✗ filtered           ✗ filtered
+  subagent_role       ✓                  ✓                    ✓
+                      ─────────────────  ───────────────────  ───────────────────
+                      6 tools            5 tools              2 tools
+```
+
+- **✗ filtered**: the tool, its description and its parameter descriptions are gone from the subagent's tool list, and a call to it is rejected.
+- **✗ removed**: usage instructions that only filtered tools use are dropped from that subagent's system prompt. Instructions shared with a tool the subagent keeps stay; for example `tool:jobs` stays until `job_list`, `job_output` and `job_kill` are all filtered.
+- The parent is never affected, and neither are your edits on the Prompts & tools tab. **Preview prompt** shows the parent.
+- Additional Studio instructions reach every subagent unchanged, including sentences that mention a filtered tool.
+
+To confirm this in a running session, see [Appendix: Check a preset in a live session](appendix/preset-check.md).
 - Sentences you write in **Additional Studio instructions** are still included. If they contain guidance a subagent does not need, you can move it to the role instructions (persona) or to a tool description.
 
 #### Tips for subagent tools

@@ -1,5 +1,7 @@
 # 서브에이전트 Tool Filter 동작 확인 절차
 
+> 공개용 스킬은 [release/docs/appendix/preset-check](../../release/docs/appendix/preset-check/SKILL.md)에 있다. 이 문서는 fork 내부 확인용이다.
+
 이 문서를 받은 에이전트는 아래 절차대로 Studio 서브에이전트 동작을 직접 확인하고 [보고 양식](#보고-양식)으로 결과를 보고한다. 사용자가 이 문서를 세션에 참조로 걸고, Studio 프리셋을 지정해 세션을 시작한 상태를 전제로 한다.
 
 ## 전제

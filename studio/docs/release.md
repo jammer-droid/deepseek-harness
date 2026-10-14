@@ -162,6 +162,7 @@ npm --prefix studio run dev:desktop
 
 - 공개 README: [release/README.md](../release/README.md). fork 루트 README는 내부용이며 공개되지 않는다.
 - 사용 가이드: [release/docs/guide.md](../release/docs/guide.md)(영어), [guide.ko.md](../release/docs/guide.ko.md)(한국어). 구성은 두 문서가 같아야 한다.
+- 부록: [release/docs/appendix/](../release/docs/appendix/)는 공개 레포의 `docs/appendix/`로 나간다. `preset-check/`는 사용자가 복사해 쓰는 에이전트 스킬(`SKILL.md`, 영어)과 검증 스크립트다. 패키지에는 넣지 않는다. 스크립트는 공개 레포에서 단독 실행되어야 하므로 Studio 소스를 import하지 않고, 역할 Tool Filter 계산·도구-사용 지침 매핑 같은 규칙을 직접 갖는다. 그 규칙(`roleToolFilter`, `tool-prompt-sections.ts`)을 바꾸면 스크립트도 함께 고친다.
 - 스크린샷: `release/docs/images/en/`, `release/docs/images/ko/`. 화면이 바뀌면 두 언어 모두 다시 찍는다. 개인 데이터가 없는 격리 환경(위 5번)에서 찍고 1600×1000으로 줄인다.
 - npm 페이지는 레포 파일을 읽지 못하므로 `pack.mjs`가 README의 이미지·문서 링크를 GitHub 절대 주소로 바꾼다. 이미지는 npm 패키지에 넣지 않는다.
 - 공개 문서에 내부 정보(fork, 개인 계정, 로컬 경로·포트, 내부 이슈)를 쓰지 않는다. 쓰면 sync의 금지어 검사가 멈춘다. 새 금지어는 `config.json`의 `forbidden`에 추가한다.
