@@ -131,5 +131,6 @@ run('git', ['tag', '-f', `dsh-studio-snapshot/${snapshot}`, 'HEAD'], monorepo);
 console.log(`Pushed ${marker} to ${repo} ${branch} as ${config.publisher.github}; tagged dsh-studio-snapshot/${snapshot} locally.`);
 if (!publish) process.exit(0);
 if (!existsSync(tarball)) throw new Error('Packed tarball missing');
-run('npm', ['publish', tarball, '--access', 'public', ...(otp ? ['--otp', otp] : [])], work);
+// An absolute path: npm reads a bare relative path like dist/x.tgz as a GitHub shorthand.
+run('npm', ['publish', path.resolve(work, tarball), '--access', 'public', ...(otp ? ['--otp', otp] : [])], work);
 console.log(`Published @${version} as ${config.publisher.npm}.`);
