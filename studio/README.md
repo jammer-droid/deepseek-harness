@@ -29,4 +29,4 @@ npm --prefix studio run pack:bundle
 
 `test`는 Studio 타입 검사·빌드 후 테스트를 실행한다. `watch`는 Studio 번들만 재생성한다. 루트 빌드나 현재 앱 설치는 실행하지 않는다.
 
-자세한 환경·배포 제약은 [개발 안내](development.ko.md)를 참조한다. 패키징 성공은 수정하지 않은 DSH에서의 독립 설치 검증을 대신하지 않는다.
+개발 환경은 [개발 안내](development.ko.md), 공개 레포 동기화·npm 공개·업데이트 절차는 [배포 가이드](docs/release.md)를 참조한다. 패키징 성공은 수정하지 않은 DSH에서의 독립 설치 검증을 대신하지 않는다.

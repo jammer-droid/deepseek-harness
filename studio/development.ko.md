@@ -19,13 +19,13 @@ npm --prefix studio run pack:bundle
 - `src/service-layout.tsx`: 서비스 등록 목록과 선택·마운트 유지.
 - `src/detail-layout.tsx`: 기존 디자인 미리보기와 같은 좌측 메뉴·본문 골격.
 - `src/ui.tsx`, `src/ui-host.tsx`, `src/ui-styles.ts`: 기존 디자인 시스템.
-- `packages/shell`, `packages/bundle`: 셸 진입점과 번들 구성.
+- `packages/shell`: 공개 패키지. 셸 진입점과 번들 패치(`cordis.patch.yml`)를 함께 담는다.
 
 새 기능은 `local.dsh-studio.services`에 등록한다. 슬롯의 `active` 값을 받아 비활성 화면의 부수 효과를 제어한다. 제품 문구는 ko·en를 제공하고 [디자인 시스템](docs/development/design-system.md)을 따른다.
 
 ## 패키징·배포 경계
 
-`pack:bundle`은 `studio/dist`에 셸과 번들 tarball을 만든다. 번들에는 로컬 셸 tarball의 절대 경로가 들어가므로 같은 머신의 설치 확인용이다. 외부 배포용 registry 의존성으로 검증된 산출물이 아니다.
+`pack:bundle`은 `studio/dist`에 공개용 패키지(`@matamt-dbg/dsh-studio`) tarball 하나를 만든다. 공개 레포·npm 배포는 [배포 가이드](docs/release.md)를 따른다.
 
 셸과 번들의 지원 선언은 `0.2.0-rc.2 || 0.2.1-alpha.2`다. rc.2의 공개 Slot 등록·구독·목록 조회, locale 등록·구독·조회 계약과 셸 사용법을 대조했다. Host는 비즈니스 서비스가 없는 진입점이고 Client는 slots·locale만 요구한다. 버전 예외는 사용하지 않는다. 신규 기능은 별도 호환성 검증이 필요하다.
 

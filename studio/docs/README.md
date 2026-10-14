@@ -29,7 +29,8 @@
 - [디자인 시스템](development/design-system.md)
 - [프리셋 런타임 수명 조사](development/preset-runtime-lifecycle.md)
 - [런타임 카탈로그 API 조사](development/runtime-catalog-api.md)
-- [개발·배포 안내](../development.ko.md)
+- [개발 안내](../development.ko.md)
+- [배포 가이드](release.md): fork → 공개 레포 스냅샷 → npm 공개 절차
 - [이슈 명세 색인](issues/README.md)
 
 ## 개선 계획
