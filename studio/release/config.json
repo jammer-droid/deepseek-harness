@@ -45,5 +45,9 @@
   },
   "devDependencies": {
     "zod": "^4.4.3"
+  },
+  "author": {
+    "name": "matamt-dbg",
+    "email": "336766097+matamt-dbg@users.noreply.github.com"
   }
 }

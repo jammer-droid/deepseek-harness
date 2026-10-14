@@ -95,7 +95,9 @@ console.log(`\nExported ${exported.length} files from ${marker} into ${work}\nPa
 // 6. Commit; push only when asked.
 run('git', ['add', '-A'], work);
 if (!git(['status', '--porcelain'], work)) { console.log('No changes relative to the published snapshot.'); process.exit(0); }
-run('git', ['-c', 'user.name=' + git(['config', 'user.name']), '-c', 'user.email=' + git(['config', 'user.email']), 'commit', '--quiet', '-m', `sync: deepseek-harness ${marker}`], work);
+// Snapshots are authored by the publishing account, never the fork's local git identity.
+const identity = { GIT_AUTHOR_NAME: config.author.name, GIT_AUTHOR_EMAIL: config.author.email, GIT_COMMITTER_NAME: config.author.name, GIT_COMMITTER_EMAIL: config.author.email };
+run('git', ['commit', '--quiet', '-m', `sync: deepseek-harness ${marker}`], work, { env: identity });
 console.log(git(['show', '--stat', '--oneline', 'HEAD'], work).split('\n').slice(0, 1).join('\n'));
 if (!push) { console.log(`Dry run: not pushed. Inspect ${work}; re-run with --push to publish the snapshot.`); process.exit(0); }
 run('git', ['push', 'origin', `HEAD:${branch}`], work);
