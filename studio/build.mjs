@@ -18,9 +18,9 @@ await compile({
   absWorkingDir: root, tsconfig: 'tsconfig.host.json', entryPoints: ['src/host/role-tool.ts'], outfile: 'packages/shell/roles.js',
   bundle: true, platform: 'node', format: 'esm', target: 'node22', packages: 'external', external: ['@deepseek-ai/*'],
 });
-for (const [entry, output] of [['batch-tool', 'batch'], ['task-tool', 'tasks']]) {
-  await compile({ absWorkingDir: root, tsconfig: 'tsconfig.host.json', entryPoints: [`src/host/${entry}.ts`], outfile: `packages/shell/${output}.js`, bundle: true, platform: 'node', format: 'esm', target: 'node22', external: ['@deepseek-ai/*'] });
-}
+// zod is bundled because DSH does not expose it to plugins; minify keeps the published package small.
+// task_run (src/host/task-tool.ts) is withdrawn from the Master and is not built or shipped.
+await compile({ absWorkingDir: root, tsconfig: 'tsconfig.host.json', entryPoints: ['src/host/batch-tool.ts'], outfile: 'packages/shell/batch.js', bundle: true, minify: true, platform: 'node', format: 'esm', target: 'node22', external: ['@deepseek-ai/*'] });
 for (const part of ['shell']) {
   await compile({
     absWorkingDir: root, tsconfig: 'tsconfig.host.json', entryPoints: [`src/host/${part}.ts`], outfile: `packages/${part}/index.js`,

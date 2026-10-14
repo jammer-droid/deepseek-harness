@@ -2,7 +2,8 @@ import type { PreviewRequest } from './prompt-composition.ts';
 import { delegationTools } from './delegation.ts';
 export const OPTIMIZED_PRESET_ID = 'studio-optimized';
 export const BUILTIN_TOOL_PRESETS = ['standard', 'ptc', 'minimal', 'cordis'] as const;
-const excluded = new Set(['get_goal', 'create_goal', 'update_goal', 'todo_write', 'task_run']);
+// Goal/Todo, withdrawn task_run, and Cordis introspection/plugin management stay in the Master but not in Optimized.
+const excluded = new Set(['get_goal', 'create_goal', 'update_goal', 'todo_write', 'task_run', 'cordis_inspect_list', 'cordis_inspect_query', 'plugin_manager']);
 export const OPTIMIZED_PROMPT = `Use glob to discover paths, grep to search contents, and read to inspect files before editing. Prefer targeted edits.
 Batch independent read-only inspections with read_batch. Start independent tool calls together; keep calls that depend on earlier results sequential. Do not guess unknown arguments.
 Wait for required work to finish before validating it. Use background execution only for independent work or intentionally long-lived services. Do not duplicate running work or busy-poll it.

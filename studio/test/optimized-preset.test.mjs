@@ -30,6 +30,7 @@ test('Optimized seeds once, supports edit/apply/unapply, survives restart, and o
   assert.doesNotMatch(JSON.stringify(defaults.request), /task_run/);
   assert.match(defaults.request.toolOverrides.job_output.parameters.wait, /Use true/);
   assert.equal(optimizedTemplate(['read_batch', 'task_run']).applyWarning, undefined);
+  assert.deepEqual(optimizedTemplate(['read', 'cordis_inspect_list', 'cordis_inspect_query', 'plugin_manager', 'subagent']).request.tools, ['read', 'subagent_role']);
   assert.deepEqual(BUILTIN_TOOL_PRESETS, ['standard', 'ptc', 'minimal', 'cordis']);
   const file = join(await mkdtemp(join(tmpdir(), 'studio-template-')), 'presets.json');
   const a = runtime(); const store = new PresetStore(a.ctx, file);
