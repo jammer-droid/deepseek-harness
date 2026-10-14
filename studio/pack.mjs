@@ -14,7 +14,12 @@ await mkdir(staging, { recursive: true });
 for (const file of manifest.files) await cp(path.join(source, file), path.join(staging, file));
 // Prefer the user-facing README in release/ when present.
 const readme = ['release/README.md', 'README.md'].map(file => path.join(root, file)).find(file => existsSync(file));
-await cp(readme, path.join(staging, 'README.md'));
+// npm renders README without the repository tree: point relative docs/ links at the published repository.
+const repository = manifest.repository?.url?.replace(/^git\+/, '').replace(/\.git$/, '');
+const readmeText = await readFile(readme, 'utf8');
+await writeFile(path.join(staging, 'README.md'), repository ? readmeText
+  .replace(/\]\((docs\/images\/[^)]+)\)/g, (_, file) => `](${repository.replace('https://github.com/', 'https://raw.githubusercontent.com/')}/main/${file})`)
+  .replace(/\]\((docs\/[^)]+)\)/g, (_, file) => `](${repository}/blob/main/${file})`) : readmeText);
 await cp(path.join(root, 'LICENSE'), path.join(staging, 'LICENSE'));
 // Development-only links (workspace:*) never ship.
 const { devDependencies: _dev, ...published } = manifest;

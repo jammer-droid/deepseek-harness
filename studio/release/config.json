@@ -20,7 +20,8 @@
     "release/standalone/tsconfig.base.json": "tsconfig.base.json",
     "release/standalone/tsconfig.base.client.json": "tsconfig.base.client.json",
     "release/types": "types",
-    "release/README.md": "README.md"
+    "release/README.md": "README.md",
+    "release/docs": "docs"
   },
   "versions": {
     "@deepseek-ai/*": "0.2.0-rc.2",
