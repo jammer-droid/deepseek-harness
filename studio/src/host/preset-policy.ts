@@ -56,15 +56,24 @@ function patchParameter(parameters: Record<string, unknown>, path: string, descr
 export function installPolicy(ctx: Context, scopeKey: object, config: PresetPolicyConfig): () => void {
   validatePolicy(config);
   if (scopeOf(ctx) !== scopeKey) throw new Error('Studio policy requires its owning scoped context');
-  // A preset travels between hosts. A tool the author selected may simply not be
-  // provided here — another bundle owns it on the host where the preset was authored,
-  // or this host has no such plugin at all. Drop it and keep the preset portable;
-  // failing the agent would make an environment difference look like a preset defect.
+  // run_code is transport, not an end-capability. Never pass it to restrict or
+  // silently rewrite this scope's presentation (and certainly not the host's).
+  if (config.tools.includes('run_code') || ctx.tools.get('run_code', scopeKey) !== undefined) {
+    throw new Error('Studio policy does not support PTC presentation or the reserved run_code tool; configure this preset with native tool presentation');
+  }
   const missing = config.tools.filter(name => ctx.tools.get(name, scopeKey) === undefined);
-  if (missing.length) console.warn(`Studio policy: ${missing.length} selected tool(s) unavailable on this host, skipped: ${missing.join(', ')}`);
-  const available = config.tools.filter(name => !missing.includes(name));
-  const selected = new Set(available);
-  const definitions = available.map(name => {
+  if (missing.length) throw new Error(`Studio policy selected tools unavailable: ${missing.join(', ')}`);
+  // Public restrict masks inherited definitions, not this scope's own tools.
+  // Probe with an empty allow-list, then restore synchronously even on failure.
+  // Reject own registrations, including same-name shadows: permitting them would
+  // promise exposure enforcement that the supported public API cannot provide.
+  const restoreProbe = ctx.tools.restrict({ allow: [] });
+  try {
+    const local = ctx.tools.schemas(scopeKey);
+    if (local.length) throw new Error(`Studio policy does not support own-scope tools: ${local.map(tool => tool.name).join(', ')}; register providers in an ancestor preset scope. Public API cannot hide late own-scope schemas; dynamic own-scope providers are unsupported`);
+  } finally { restoreProbe(); }
+  const selected = new Set(config.tools);
+  const definitions = config.tools.map(name => {
     const definition = ctx.tools.get(name, scopeKey)!;
     const override = config.toolOverrides[name];
     const defaults = config.execution?.defaults[name];
@@ -94,10 +103,12 @@ export function installPolicy(ctx: Context, scopeKey: object, config: PresetPoli
   const disposers: Array<() => void> = [];
   const dispose = () => { for (const release of disposers.splice(0).reverse()) release(); };
   try {
-    disposers.push(ctx.tools.restrict({ allow: available }));
-    // Restrictions mask ancestors, but leave this layer's own definitions visible.
-    const excess = ctx.tools.schemas(scopeKey).filter(tool => !selected.has(tool.name));
-    if (excess.length) throw new Error(`Unselected scoped tools must be removed from preset plugins: ${excess.map(tool => tool.name).join(', ')}`);
+    disposers.push(ctx.tools.restrict({ allow: [...selected] }));
+    // Public API gap: a plugin can register an own-scope schema after installation;
+    // restrict cannot hide it and tools/change is only a notification, not a veto.
+    // Do not monkeypatch the registry or claim an exact late-schema boundary.
+    // The monotonic guard still denies every unselected body, including run_code
+    // if another plugin switches presentation later. Providers must remain stable.
     disposers.push(ctx.tools.guard(execution => selected.has(execution.name) ? undefined : 'Tool excluded by Studio preset policy'));
     for (const definition of definitions) disposers.push(ctx.tools.register(definition));
     for (const [name, text] of Object.entries(config.sections)) disposers.push(ctx.systemPrompt.section({ name, order: ctx.systemPrompt.getSectionOrder(POLICY_SECTION_ORDERS[name]!), text, interpolate: false }));

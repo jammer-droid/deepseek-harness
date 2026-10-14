@@ -9,16 +9,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { optimizedTemplate, BUILTIN_TOOL_PRESETS } from '../src/optimized-preset.ts';
 import { PresetStore } from '../src/host/preset-store.ts';
-function runtime() {
-  const registrations = new Map();
-  return { registrations, ctx: { agentPresets: {
-    list: async () => [{ id: 'studio-master' }, ...registrations.values()],
-    readDocument: async () => ({ content: '- id: persona\n  name: "@deepseek-ai/dsh-persona"\n  config: {complete: true}\n- id: spill-policy\n  name: "@deepseek-ai/dsh-spill-policy"\n' }),
-    register: async row => { assert.ok(!registrations.has(row.id)); registrations.set(row.id, row); return async () => { registrations.delete(row.id); }; },
-    resolve: async id => registrations.get(id),
-    acquireScope: async () => ({ key: {}, [Symbol.asyncDispose]: async () => {} }),
-  }, tools: { schemas: () => [] } } };
-}
+import { storeRuntime } from './store-runtime.mjs';
+const runtime = () => storeRuntime({ base: 'studio-master', document: '- id: persona\n  name: "@deepseek-ai/dsh-persona"\n  config: {complete: true}\n- id: spill-policy\n  name: "@deepseek-ai/dsh-spill-policy"\n' });
 test('Optimized seeds once, supports edit/apply/unapply, survives restart, and only deletion is prohibited', async () => {
   const template = optimizedTemplate([]);
   assert.equal(template.nonDeletable, true); assert.equal(template.readOnly, undefined);
@@ -33,7 +25,7 @@ test('Optimized seeds once, supports edit/apply/unapply, survives restart, and o
   assert.deepEqual(optimizedTemplate(['read', 'cordis_inspect_list', 'cordis_inspect_query', 'plugin_manager', 'subagent']).request.tools, ['read', 'subagent_role']);
   assert.deepEqual(BUILTIN_TOOL_PRESETS, ['standard', 'ptc', 'minimal', 'cordis']);
   const file = join(await mkdtemp(join(tmpdir(), 'studio-template-')), 'presets.json');
-  const a = runtime(); const store = new PresetStore(a.ctx, file);
+  const a = await runtime(); const store = new PresetStore(a.ctx, file);
   const seeded = await store.ensureOptimized([], [{ id: 'spill-policy', name: '@deepseek-ai/dsh-spill-policy' }]);
   assert.equal(a.registrations.get(template.id).plugins[0].config.maxInlineTokens, 2500);
   assert.equal(seeded.status, 'applied'); assert.ok(a.registrations.has(template.id));
@@ -41,12 +33,12 @@ test('Optimized seeds once, supports edit/apply/unapply, survives restart, and o
   await assert.rejects(store.save(JSON.stringify({ ...seeded, name: 'Customized Optimized', request: { ...seeded.request, prompt: 'User-edited instruction' } })), /locked built-in/);
   assert.equal((await store.list())[0].request.prompt, seeded.request.prompt);
   assert.equal((await store.apply(template.id)).applyWarning, undefined); await store.dispose();
-  const b = runtime(); const restored = new PresetStore(b.ctx, file);
+  const b = await runtime(); const restored = new PresetStore(b.ctx, file);
   await restored.ensureOptimized(['read'], []);
   assert.equal((await restored.list())[0].request.prompt, seeded.request.prompt);
   assert.equal(b.registrations.get(template.id).name, 'Optimized');
   await restored.unapply(template.id); await restored.dispose();
-  const c = runtime(); const reopened = new PresetStore(c.ctx, file);
+  const c = await runtime(); const reopened = new PresetStore(c.ctx, file);
   const retained = await reopened.ensureOptimized(['different'], []);
   assert.equal(retained.status, 'draft'); assert.equal(c.registrations.size, 0);
   assert.equal(retained.name, 'Optimized');

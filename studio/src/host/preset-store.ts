@@ -1,4 +1,6 @@
 import { OPTIMIZED_PRESET_ID, optimizedTemplate } from '../optimized-preset.ts';
+import { createScope } from '@deepseek-ai/dsh-scope';
+import { installPolicy, type PresetPolicyConfig } from './preset-policy.ts';
 import { applyConfigOverrides } from '../config-overrides.ts';
 import { randomUUID } from 'node:crypto';
 import { mkdir, readFile, writeFile, rename } from 'node:fs/promises';
@@ -20,7 +22,7 @@ export interface StudioPreset {
 }
 interface StoredPreset extends StudioPreset { applied?: { name: string; description: string; plugins: string } }
 const owned = (id: string) => id === OPTIMIZED_PRESET_ID || /^studio-user-[a-f0-9-]{36}$/.test(id);
-const warning = 'Work convenience settings are saved but not applied yet. Legacy role overrides are stored only; roles apply only their supported settings.';
+const retiredLegacyWarning = 'Work convenience settings are saved but not applied yet. Legacy role overrides are stored only; roles apply only their supported settings.';
 
 import { validateRoleModel } from './role-validation.ts';
 import { currentPluginName, LEGACY_PACKAGE_NAME, POLICY_PLUGIN } from '../package-name.ts';
@@ -64,6 +66,7 @@ export class PresetStore {
           if (!owned(row.id)) throw new Error('Invalid Studio preset ownership');
           parsePreviewRequest(row.request);
           migrateLegacyNames(row);
+          if (row.applyWarning === retiredLegacyWarning) delete row.applyWarning;
         }
       } catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error; }
       for (const row of this.rows) if (row.applied) {
@@ -73,10 +76,30 @@ export class PresetStore {
     })();
   }
   private async mount(id: string, definition: NonNullable<StoredPreset['applied']>) {
-    const dispose = await this.ctx.agentPresets.register({ id, name: definition.name, description: definition.description, plugins: parseComposition(definition.plugins) as never });
+    const plugins = parseComposition(definition.plugins);
+    const dispose = await this.ctx.agentPresets.register({ id, name: definition.name, description: definition.description, plugins: plugins as never });
     try {
       const preset = await this.ctx.agentPresets.resolve(id);
       if (preset.broken) throw new Error(preset.broken);
+      // Loader activation does not create an Agent: validate its policy in a disposable
+      // child as well, so missing tools and invalid overrides cannot appear applied.
+      const policies = (rows: CompositionRow[]): PresetPolicyConfig[] => rows.flatMap(row => row.disabled === true ? []
+        : row.group && Array.isArray(row.config) ? policies(row.config as CompositionRow[])
+          : row.name === POLICY_PLUGIN ? [row.config as unknown as PresetPolicyConfig] : []);
+      const configs = policies(plugins);
+      if (configs.length) {
+        const lease = await this.ctx.agentPresets.acquireScope(id);
+        try {
+          const key = {};
+          const child = createScope(this.ctx, key, { parent: lease.key });
+          const releases: Array<() => void> = [];
+          try { for (const config of configs) releases.push(installPolicy(child.ctx, key, config)); }
+          finally {
+            try { for (const release of releases.reverse()) release(); }
+            finally { await child.dispose(); }
+          }
+        } finally { await lease[Symbol.asyncDispose](); }
+      }
       this.disposers.set(id, dispose);
     } catch (error) { await dispose(); throw error; }
   }
@@ -148,11 +171,8 @@ export class PresetStore {
     await this.disposers.get(id)?.(); this.disposers.delete(id);
     try {
       await this.mount(id, applied);
-      const hasLegacySettings = (old.conveniences != null && Object.keys(Object(old.conveniences)).length > 0)
-        || (Array.isArray(old.agents) && old.agents.some(role => role && Object.hasOwn(role, 'overrides')));
       const row: StoredPreset = { ...old, applied, appliedAt: new Date().toISOString(), status: 'applied' };
-      if (hasLegacySettings) row.applyWarning = warning;
-      else delete row.applyWarning;
+      delete row.applyWarning;
       await this.persist(this.rows.map(item => item.id === id ? row : item));
       return this.public(row);
     } catch (error) {

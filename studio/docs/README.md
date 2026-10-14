@@ -20,6 +20,7 @@
 
 - [프리셋 구성](reference/preset-composition.md): 초기 구성 설계와 편집 흐름. 최신 역할 실행·Master 차이는 후속 문서와 함께 읽는다.
 - [Master 프리셋](reference/master-preset.md): 읽기 전용 기준 프리셋과 구성.
+- [프리셋 수명·의존성 정책](reference/preset-lifecycle-policy.md): 비활성화·제거와 세션 재개, 저장본 보존 및 Studio의 책임.
 - [역할·미리보기](reference/role-preview.md): 역할 설정과 네이티브 위임 연결.
 - [Optimized 도구](reference/optimized-tools.md): 기본 정책, bundled 도구와 실행 범위.
 - [서비스 탐색](reference/service-navigation.md): Studio 서비스 등록·화면 골격.
@@ -41,6 +42,7 @@
 
 - [카탈로그 런타임 검증](verification/catalog-runtime-verification.md)
 - [Config 편집기 진행 기록](verification/config-editor-progress.md)
+- [프리셋 정책 일치 검증](verification/policy-alignment.md): 조합·Config·policy 사전 검증과 공개 API 제한.
 
 두 문서의 수치와 제약은 당시 증거다. 이후 구현을 덮어쓰거나 이번 문서 정리를 새로운 GUI 검증으로 해석하지 않는다.
 
