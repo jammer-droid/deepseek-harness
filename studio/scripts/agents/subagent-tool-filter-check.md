@@ -11,8 +11,8 @@
   | `worker` | Continue parent (Fork) | 프리셋 기본값 사용 |
   | `reviewer` | New conversation (Fresh) | 기본값에 추가 (권장: `write`, `edit`, `bash`) |
 
-- `reviewer`가 **이 역할만 따로 (기본값 무시)**로 설정되어 있어도 진행한다. 이때는 판정 3번의 기대값이 달라진다.
-- 사용자가 프리셋 기본 Tool Filter와 `reviewer`의 목록을 정해 두었다. 에이전트는 값을 추측하지 않는다. [1단계](#1-설정-확인)에서 `subagent_role` `action: list`로 역할을 확인하고, 실제로 적용된 목록은 [4단계](#4-세션-기록으로-확인)의 기록에서 읽는다.
+- `reviewer`가 **이 역할만 따로 (기본값 무시)**로 설정되어 있어도 진행한다. 판정은 저장된 모드를 기준으로 한다.
+- 사용자가 프리셋 기본 Tool Filter와 각 역할의 모드·목록을 정해 두었다. 에이전트는 값을 추측하지 않는다. 설정값과 기대 목록은 [4단계](#4-세션-기록으로-확인) 스크립트가 프리셋 저장 파일에서 읽고, 실제로 적용된 목록은 세션 기록에서 읽는다.
 - 프리셋 설정이 위와 다르면(역할이 없음, 시작 방식이 다름, `subagent_role` 없음) 위임을 시작하지 말고 다른 점을 보고한 뒤 멈춘다.
 
 ## 지켜야 할 범위
@@ -65,7 +65,7 @@ Do not modify anything.
 
 ## 4. 세션 기록으로 확인
 
-서브에이전트의 자기 보고는 틀릴 수 있다. 실제로 모델에 전달된 도구와 DSH가 기록한 Tool Filter를 세션 기록에서 확인한다. 저장소 루트에서 실행한다.
+서브에이전트의 자기 보고는 틀릴 수 있다. 실제로 모델에 전달된 도구와 DSH가 기록한 Tool Filter를 세션 기록에서 확인한다. 저장소 루트에서 실행한다. 프로필이 `desktop`이 아니면 `--profile <이름>`을 붙인다.
 
 ```sh
 node studio/scripts/agents/subagent-report.mjs <현재 세션 ID>
@@ -73,7 +73,12 @@ node studio/scripts/agents/subagent-report.mjs <현재 세션 ID>
 
 - 세션 ID는 `session-` 접두어를 붙여도, 빼도 된다.
 - 세션 ID를 모르면 `ls -t ~/.dsh/sessions/*/ | head` 로 가장 최근 `session-*` 를 찾고, 찾은 방법을 보고서에 적는다.
-- 스크립트는 읽기만 한다. 부모와 이 세션이 시작한 모든 서브에이전트에 대해 다음을 출력한다.
+- 스크립트는 읽기만 한다. 먼저 Studio와 프리셋 정보를 출력한다.
+  - `installed`: 프로필에 설치된 Studio 버전과 설치 시각, 실행 중인 앱의 시작 시각
+  - `WARNING`/`NOTE`: 앱이 설치 전에 시작됐거나 이 세션이 설치 전에 시작돼 다른 빌드로 실행됐을 수 있을 때. 이 줄이 있으면 [판정 0번](#5-판정-기준)을 본다.
+  - `default Tool Filter`: 프리셋 기본 목록
+  - `role … mode=… expected=…`: 역할마다 저장된 모드(`default`/`extend`/`replace`)와, 그 모드로 계산한 기대 목록. 모드 없이 저장된 0.2.7 이전 목록은 `replace`로 표시하고 NOTE를 붙인다.
+- 이어서 부모와 이 세션이 시작한 모든 서브에이전트에 대해 다음을 출력한다.
   - `provider`: `fork` 또는 `spawn`(Fresh)
   - `toolFilter (recorded by DSH)`: DSH가 자식에게 실제로 적용하고 기록한 목록
   - `tools`: 첫 모델 요청에 실린 도구 목록
@@ -86,20 +91,21 @@ node studio/scripts/agents/subagent-report.mjs <현재 세션 ID>
 
 | # | 항목 | 통과 조건 |
 |---|---|---|
+| 0 | 확인 대상 빌드 | `WARNING`도 `NOTE`(빌드 관련)도 없다. 있으면 "확인 불가"로 적고, 사용자에게 앱 재시작 후 새 세션에서 다시 확인하라고 보고한다. 나머지 항목은 계속 판정하되 결과가 그 이전 빌드 기준임을 적는다 |
 | 1 | 부모 도구 유지 | 부모 `tools`에 서브에이전트 Tool Filter의 도구가 모두 남아 있다 |
-| 2 | Fork 기본값 적용 | `worker`(`provider=fork`)의 `toolFilter`가 프리셋 기본 목록과 같다 |
-| 3 | Fresh 역할별 적용 | `reviewer`(`provider=spawn`)의 `toolFilter`가 모드에 맞다. **기본값에 추가**면 `worker`의 목록을 모두 포함하고 그보다 많다. **따로**면 `worker`와 겹치지 않을 수 있고 `reviewer` 목록만 담는다 |
+| 2 | Fork 역할 적용 | `worker`(`provider=fork`)의 `toolFilter`가 스크립트의 `role worker … expected`와 같다(순서 무관) |
+| 3 | Fresh 역할 적용 | `reviewer`(`provider=spawn`)의 `toolFilter`가 `role reviewer … expected`와 같다. 모드가 `extend`면 기본 목록을 모두 포함해야 하고, `replace`면 기본 목록이 빠져 있어도 정상이다 |
 | 4 | 도구 목록에서 제외 | 각 서브에이전트의 `tools`에 자기 `toolFilter` 도구가 하나도 없다 |
 | 5 | 나머지 도구 유지 | 각 서브에이전트의 `tools` = 부모 `tools` − 자기 `toolFilter` |
 | 6 | 사용 지침 제거 | 서브에이전트 `toolFilter`에 `bash`가 있으면 `tool:bash`가 없다. `job_list`·`job_output`·`job_kill`이 모두 있으면 `tool:jobs`, `workflow`가 있으면 `tool:workflow`가 없다. 해당 도구가 목록에 없으면 이 항목은 "해당 없음" |
 | 7 | 부모 사용 지침 유지 | 부모의 `usage instructions present`에 6번에서 사라진 섹션이 남아 있다 |
-| 8 | 실행 차단 | `reviewer`의 4번이 거절되고, `tool-filter-probe.txt`가 생기지 않았다. 생략했으면 "확인 불가" |
+| 8 | 실행 차단 | `reviewer` 목록에 `write`가 있을 때: `write`가 `reviewer`의 `tools`에 없고(4번) 시도 후 `tool-filter-probe.txt`가 생기지 않았다. 모델에게 도구가 없으면 호출 자체를 만들 수 없으므로 실행 단계 거절 오류가 없어도 통과다. 거절 오류가 나왔다면 그것도 통과다. 파일이 생겼으면 실패다. `write`가 목록에 없어 4번을 생략했으면 "해당 없음" |
 | 9 | 정책 설치 | 어느 세션에도 `policy rejections`가 없다. 단, 8번의 거절 1건은 예상된 결과다 |
 | 10 | 자기 보고 일치 | 서브에이전트가 말한 도구 목록이 4단계 `tools`와 같다. 다르면 차이를 적는다 |
 
 판정 메모:
-- `worker`와 `reviewer`가 같은 목록을 받았는데 `reviewer`에 도구를 추가했거나 따로 정했다면 3번은 실패다.
-- 역할의 모드는 Studio 편집기에서만 보인다. 기록에는 DSH가 적용한 최종 목록만 남는다. 모드를 모르면 보고서에 "모드 미확인"으로 적고, 3번은 두 목록의 포함 관계만 기록한다.
+- 2·3번의 기대 목록은 스크립트가 저장된 프리셋에서 계산한다. 세션이 실행된 뒤 사용자가 프리셋을 다시 저장했다면 기대값이 달라질 수 있다. 프리셋 `applied` 시각이 세션 시작 뒤라면 보고서에 적는다.
+- 역할 이름(`Worker`)과 역할 ID가 다를 수 있다. 스크립트의 `role` 값은 역할 ID다.
 - 첫 모델 요청 이후에 도구가 바뀌었을 수 있다. 4단계 `tools`는 첫 요청 기준이므로, 자기 보고와 다르면 두 값을 모두 적는다.
 - `tool-filter-probe.txt`가 만들어졌다면 지우지 말고 경로를 보고한다. 정리는 사용자가 정한다.
 
@@ -109,8 +115,9 @@ node studio/scripts/agents/subagent-report.mjs <현재 세션 ID>
 ## 서브에이전트 Tool Filter 확인 결과
 
 - 세션: <부모 세션 ID> (찾은 방법: <직접 확인 / 최근 세션>)
-- 프리셋: <preset>
-- Studio 버전: <확인했다면 기재, 모르면 "미확인">
+- 프리셋: <preset 이름 (id)>, applied <시각>
+- Studio: 설치 <버전> (<설치 시각>), 앱 시작 <시각>, 경고: <없음 / WARNING·NOTE 원문>
+- 역할 설정: <역할 ID — mode, 기대 목록>
 
 | 세션 | 역할 | 시작 방식 | DSH 기록 toolFilter | 도구 수 |
 |---|---|---|---|---|
