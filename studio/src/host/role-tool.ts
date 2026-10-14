@@ -39,7 +39,7 @@ export function apply(ctx: Context, config: Config): void {
       if (!exec.agent) throw new Error('Studio role call requires a calling agent');
       exec.signal.throwIfAborted();
       await validateRoleModel(ctx.llm, role, exec.signal);
-      const agentOptions: NonNullable<Parameters<typeof ctx.subagents.startActivation>[0]['request']['agentOptions']> = {};
+      const agentOptions: { provider?: string; model?: string; reasoningEffort?: ReturnType<typeof ReasoningEffortId> } = {};
       if (role.model !== 'inherit') {
         const slash = role.model.indexOf('/');
         agentOptions.provider = role.model.slice(0, slash);
@@ -56,9 +56,12 @@ export function apply(ctx: Context, config: Config): void {
         },
         signal: exec.signal,
       };
-      // Both methods are public native APIs. rc.2 predates activation unification.
-      const native = ctx.subagents as typeof ctx.subagents & {
-        startContinuable?: (input: typeof spec) => Promise<{ childId: string }>;
+      // Both methods are public native APIs, but each exists in only one supported runtime:
+      // 0.2.0-rc.2 has startContinuable, 0.2.1-alpha.2 unified it into startActivation. Type both as optional.
+      type Start<T> = (input: T) => Promise<{ childId: string }>;
+      const native = ctx.subagents as unknown as {
+        startActivation?: Start<typeof spec & { delivery: 'parent' }>;
+        startContinuable?: Start<typeof spec>;
       };
       const started = typeof native.startActivation === 'function'
         ? await native.startActivation({ ...spec, delivery: 'parent' })

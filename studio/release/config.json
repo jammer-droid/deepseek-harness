@@ -42,5 +42,8 @@
     "koffi": false,
     "node-pty": false,
     "protobufjs": false
+  },
+  "devDependencies": {
+    "zod": "^4.4.3"
   }
 }

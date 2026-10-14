@@ -62,7 +62,7 @@ const resolveWorkspace = deps => Object.fromEntries(Object.entries(deps ?? {}).m
 await transform('package.json', text => {
   const manifest = JSON.parse(text);
   const out = { ...manifest, name: 'dsh-studio-development', private: true, packageManager: config.packageManager,
-    scripts: { ...manifest.scripts, ...config.scripts }, devDependencies: resolveWorkspace(manifest.devDependencies) };
+    scripts: { ...manifest.scripts, ...config.scripts }, devDependencies: { ...resolveWorkspace(manifest.devDependencies), ...config.devDependencies } };
   for (const key of config.dropScripts) delete out.scripts[key];
   return JSON.stringify(out, null, 2) + '\n';
 });
