@@ -1,5 +1,5 @@
 import { spawnSync, spawn } from 'node:child_process';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
@@ -23,9 +23,8 @@ if (!existsSync(path.join(root, '.dsh-home/profiles/lean-agent-web/package.json'
 // Fresh file URLs prevent pnpm from reusing a previous same-version tarball.
 const packDist = path.join(root, 'dist', `preview-${Date.now()}`);
 env.STUDIO_PACK_DIST = packDist;
-run(process.execPath, [path.join(root, 'pack.mjs')]);
-const manifest = JSON.parse(readFileSync(path.join(root, 'packages/bundle/package.json'), 'utf8'));
-const archive = path.join(packDist, `local-dsh-studio-${manifest.version}.tgz`);
+const archive = spawnSync(process.execPath, [path.join(root, 'pack.mjs')], { cwd: root, env, encoding: 'utf8' }).stdout.trim().split('\n').at(-1);
+if (!archive || !existsSync(archive)) throw new Error('Studio pack failed');
 run(runtime, ['plugin', '--profile', 'lean-agent-web', 'add', archive]);
 const child = spawn(runtime, [
   '--profile', 'lean-agent-web',

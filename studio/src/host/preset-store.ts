@@ -23,16 +23,21 @@ const owned = (id: string) => id === OPTIMIZED_PRESET_ID || /^studio-user-[a-f0-
 const warning = 'Work convenience settings are saved but not applied yet. Legacy role overrides are stored only; roles apply only their supported settings.';
 
 import { validateRoleModel } from './role-validation.ts';
+import { currentPluginName, LEGACY_PACKAGE_NAME, POLICY_PLUGIN } from '../package-name.ts';
 
-/** studio_role was renamed subagent_role: rewrite drafts and the applied snapshot so restore registers the current tool. */
-function migrateRoleToolName(row: StoredPreset): void {
+/** Snapshots from older builds name the pre-publication package and the studio_role tool; rewrite both so restore registers current entries. */
+function migrateLegacyNames(row: StoredPreset): void {
   const request = row.request;
   if (request.toolOverrides) { const next = renameLegacyRoleKey(request.toolOverrides); if (next) request.toolOverrides = next; }
   if (request.execution?.defaults) { const next = renameLegacyRoleKey(request.execution.defaults); if (next) request.execution.defaults = next; }
-  if (!row.applied?.plugins.includes('studio_role')) return;
-  const rows = parseComposition(row.applied.plugins).map(entry => entry.name === '@local/dsh-studio-shell/policy' && entry.config && typeof entry.config === 'object'
-    ? { ...entry, config: migratePolicyConfig(entry.config as Record<string, unknown>) } : entry);
-  row.applied = { ...row.applied, plugins: dump(rows, { schema: entryListSchema, noRefs: true }) };
+  if (!row.applied || (!row.applied.plugins.includes('studio_role') && !row.applied.plugins.includes(LEGACY_PACKAGE_NAME))) return;
+  const visit = (entries: CompositionRow[]): CompositionRow[] => entries.map(entry => {
+    const name = currentPluginName(entry.name);
+    const config = entry.group && Array.isArray(entry.config) ? visit(entry.config as CompositionRow[])
+      : name === POLICY_PLUGIN && entry.config && typeof entry.config === 'object' ? migratePolicyConfig(entry.config as Record<string, unknown>) : entry.config;
+    return { ...entry, name, ...(config === undefined ? {} : { config }) };
+  });
+  row.applied = { ...row.applied, plugins: dump(visit(parseComposition(row.applied.plugins)), { schema: entryListSchema, noRefs: true }) };
 }
 
 /** Profile-local Studio data, never a Loader patch or profile package mutation. */
@@ -58,7 +63,7 @@ export class PresetStore {
         for (const row of this.rows) {
           if (!owned(row.id)) throw new Error('Invalid Studio preset ownership');
           parsePreviewRequest(row.request);
-          migrateRoleToolName(row);
+          migrateLegacyNames(row);
         }
       } catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error; }
       for (const row of this.rows) if (row.applied) {
@@ -97,7 +102,7 @@ export class PresetStore {
     const request = template.request;
     const delegates = request.tools.includes(ROLE_TOOL);
     const base = applyConfigOverrides(plugins, request.configOverrides ?? {});
-    const applied = { name: template.name, description: template.description, plugins: dump([...(delegates ? [...withoutDelegationPlugins(base), { id: 'studio-roles', name: ROLE_PLUGIN, config: { roles: [] } }] : base), { id: 'studio-optimized-policy', name: '@local/dsh-studio-shell/policy', config: { tools: request.tools, toolOverrides: request.toolOverrides, sections: {}, prompt: request.prompt, execution: request.execution } }], { schema: entryListSchema, noRefs: true }) };
+    const applied = { name: template.name, description: template.description, plugins: dump([...(delegates ? [...withoutDelegationPlugins(base), { id: 'studio-roles', name: ROLE_PLUGIN, config: { roles: [] } }] : base), { id: 'studio-optimized-policy', name: POLICY_PLUGIN, config: { tools: request.tools, toolOverrides: request.toolOverrides, sections: {}, prompt: request.prompt, execution: request.execution } }], { schema: entryListSchema, noRefs: true }) };
     const now = new Date().toISOString();
     const row: StoredPreset = { id: template.id, name: template.name, description: template.description, request: template.request, conveniences: {}, agents: [], updatedAt: now, appliedAt: now, status: 'applied', applied, ...(template.applyWarning ? { applyWarning: template.applyWarning } : {}) };
     await this.mount(row.id, applied);
@@ -137,7 +142,7 @@ export class PresetStore {
     const rolePlugins: CompositionRow[] = delegates ? [{ id: 'studio-roles', name: ROLE_PLUGIN, config: { roles } }] : [];
     const execution = request.execution && { ...request.execution, defaults: keep(request.execution.defaults),
       ...(request.execution.batch && !tools.includes(request.execution.batch.tool) ? { batch: undefined } : {}) };
-    const applied = { name: old.name, description: old.description, plugins: dump([...withoutDelegationPlugins(plugins), ...rolePlugins, { id: 'studio-policy', name: '@local/dsh-studio-shell/policy', config: { tools: [...new Set(tools)], toolOverrides: keep(request.toolOverrides ?? {}), sections: request.sections ?? {}, prompt: request.prompt, ...(execution ? { execution } : {}) } }], { schema: entryListSchema, noRefs: true }) };
+    const applied = { name: old.name, description: old.description, plugins: dump([...withoutDelegationPlugins(plugins), ...rolePlugins, { id: 'studio-policy', name: POLICY_PLUGIN, config: { tools: [...new Set(tools)], toolOverrides: keep(request.toolOverrides ?? {}), sections: request.sections ?? {}, prompt: request.prompt, ...(execution ? { execution } : {}) } }], { schema: entryListSchema, noRefs: true }) };
     await this.disposers.get(id)?.(); this.disposers.delete(id);
     try {
       await this.mount(id, applied);

@@ -3,7 +3,8 @@ export const ROLE_TOOL = 'subagent_role';
 /** Earlier name of {@link ROLE_TOOL}; saved presets and applied snapshots are migrated on read. */
 export const LEGACY_ROLE_TOOL = 'studio_role';
 export const GENERIC_DELEGATION_TOOLS: readonly string[] = ['subagent', 'subagent_fork', 'list_subagent_models'];
-export const ROLE_PLUGIN = '@local/dsh-studio-shell/roles';
+import { ROLE_PLUGIN } from './package-name.ts';
+export { ROLE_PLUGIN };
 const SUBAGENT_PLUGIN = '@deepseek-ai/dsh-tool-subagent';
 
 /** Tools no longer offered by the Studio Master; saved presets drop them instead of failing to apply. */

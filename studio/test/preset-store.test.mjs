@@ -23,7 +23,7 @@ test('profile persistence saves extras, applies policy, restores last applied sn
   assert.equal(draft.status,'draft');assert.equal(draft.agents[0].name,'helper');assert.equal(draft.agents[0].model,'inherit');
   await assert.rejects(store.delete('minimal'),/Studio-owned/);
   const applied=await store.apply(draft.id);assert.equal(applied.status,'applied');assert.match(applied.applyWarning,/not applied/);
-  const definition=a.registrations.get(draft.id);assert.equal(definition.plugins.at(-1).name,'@local/dsh-studio-shell/policy');assert.equal(definition.plugins.at(-1).config.prompt,request.prompt);
+  const definition=a.registrations.get(draft.id);assert.equal(definition.plugins.at(-1).name,'@matamt-dbg/dsh-studio/policy');assert.equal(definition.plugins.at(-1).config.prompt,request.prompt);
   await store.save(JSON.stringify({...draft,name:'New draft'}));
   assert.equal((await store.list())[0].status,'modified');
   await store.dispose();assert.equal(a.registrations.size,0);
@@ -48,7 +48,7 @@ test('roles persist legacy overrides but apply only supported settings and repla
   assert.deepEqual(saved.agents[0].overrides,overrides);
   await store.apply(draft.id);
   const plugins=r.registrations.get(draft.id).plugins;
-  const roles=plugins.find(row=>row.name==='@local/dsh-studio-shell/roles');
+  const roles=plugins.find(row=>row.name==='@matamt-dbg/dsh-studio/roles');
   assert.deepEqual(roles.config.roles,[updated]);
   assert.deepEqual(plugins.at(-1).config.tools,['subagent_role']);
   await assert.rejects(store.save(JSON.stringify({...draft,agents:[role,role]})),/unique/);
@@ -79,26 +79,37 @@ test('generic delegation tools fold into subagent_role even without saved roles'
   await store.apply(draft.id);
   const plugins=r.registrations.get(draft.id).plugins;
   assert.deepEqual(plugins.at(-1).config.tools,['subagent_role']);
-  assert.deepEqual(plugins.find(row=>row.name==='@local/dsh-studio-shell/roles').config.roles,[]);
+  assert.deepEqual(plugins.find(row=>row.name==='@matamt-dbg/dsh-studio/roles').config.roles,[]);
   await store.dispose();
 });
 test('withdrawn task_run drops out of saved tool lists',async()=>{
   const {delegationTools}=await import('../src/delegation.ts');
   const {masterComposition}=await import('../src/host/master-composition.ts');
   assert.deepEqual(delegationTools(['bash','task_run']),['bash']);
-  assert.ok(!JSON.stringify(masterComposition()).includes('dsh-studio-shell/tasks'));
+  assert.ok(!JSON.stringify(masterComposition()).includes('dsh-studio/tasks'));
 });
 test('presets saved with the old studio_role name restore and edit as subagent_role',async()=>{
   const {writeFile,mkdir}=await import('node:fs/promises');const {dump}=await import('js-yaml');
   const dir=await mkdtemp(join(tmpdir(),'studio-rename-'));const file=join(dir,'presets.json');
   const policy={tools:['read','studio_role'],toolOverrides:{studio_role:{description:'Custom'}},sections:{},prompt:''};
   const legacyRequest={...request,tools:['read','studio_role'],toolOverrides:{studio_role:{description:'Custom'}}};
-  const applied={name:'Old',description:'',plugins:dump([{id:'studio-roles',name:'@local/dsh-studio-shell/roles',config:{roles:[]}},{id:'studio-policy',name:'@local/dsh-studio-shell/policy',config:policy}])};
+  const applied={name:'Old',description:'',plugins:dump([{id:'studio-roles',name:'@matamt-dbg/dsh-studio/roles',config:{roles:[]}},{id:'studio-policy',name:'@matamt-dbg/dsh-studio/policy',config:policy}])};
   await writeFile(file,JSON.stringify({version:1,presets:[{id:'studio-user-00000000-0000-0000-0000-000000000000',name:'Old',description:'',request:legacyRequest,conveniences:{},agents:[],updatedAt:'',status:'applied',applied}]}));
   const r=runtime();const store=new PresetStore(r.ctx,file);await store.initialize();
   const policyRow=r.registrations.get('studio-user-00000000-0000-0000-0000-000000000000').plugins.at(-1).config;
   assert.deepEqual(policyRow.tools,['read','subagent_role']);assert.deepEqual(policyRow.toolOverrides,{subagent_role:{description:'Custom'}});
   const [row]=await store.list();assert.deepEqual(row.request.toolOverrides,{subagent_role:{description:'Custom'}});
   const {delegationTools}=await import('../src/delegation.ts');assert.deepEqual(delegationTools(row.request.tools),['read','subagent_role']);
+  await store.dispose();
+});
+test('applied snapshots naming the pre-publication @local package restore under the published name',async()=>{
+  const {writeFile}=await import('node:fs/promises');const {dump}=await import('js-yaml');
+  const file=join(await mkdtemp(join(tmpdir(),'studio-pkg-')),'presets.json');const id='studio-user-11111111-1111-1111-1111-111111111111';
+  const applied={name:'Old',description:'',plugins:dump([{id:'studio-batch',name:'@local/dsh-studio-shell/batch'},{id:'g',name:'cordis:group',group:true,config:[{id:'studio-roles',name:'@local/dsh-studio-shell/roles',config:{roles:[]}}]},{id:'studio-policy',name:'@local/dsh-studio-shell/policy',config:{tools:['read'],toolOverrides:{},sections:{},prompt:''}}])};
+  await writeFile(file,JSON.stringify({version:1,presets:[{id,name:'Old',description:'',request,conveniences:{},agents:[],updatedAt:'',status:'applied',applied}]}));
+  const r=runtime();const store=new PresetStore(r.ctx,file);await store.initialize();
+  const plugins=r.registrations.get(id).plugins;
+  assert.deepEqual(plugins.map(row=>row.name),['@matamt-dbg/dsh-studio/batch','cordis:group','@matamt-dbg/dsh-studio/policy']);
+  assert.equal(plugins[1].config[0].name,'@matamt-dbg/dsh-studio/roles');
   await store.dispose();
 });

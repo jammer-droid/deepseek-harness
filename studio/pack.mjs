@@ -1,30 +1,23 @@
-import { mkdir, writeFile, readFile, copyFile } from 'node:fs/promises';
-import { globSync } from 'node:fs';
+/** Pack the single publishable Studio package into dist (or STUDIO_PACK_DIST) and print the tarball path. */
+import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { execFileSync } from 'node:child_process';
+import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 const root = fileURLToPath(new URL('.', import.meta.url));
+const source = path.join(root, 'packages/shell');
 const dist = path.resolve(root, process.env.STUDIO_PACK_DIST ?? 'dist');
-const runtimeVersion = process.env.STUDIO_RUNTIME_VERSION;
-const staging = path.join(dist, 'bundle');
+const staging = path.join(dist, 'package');
+const manifest = JSON.parse(await readFile(path.join(source, 'package.json'), 'utf8'));
+await rm(staging, { recursive: true, force: true });
 await mkdir(staging, { recursive: true });
-const dependencies = {};
-for (const part of ['shell']) {
-  const output = execFileSync('npm', ['pack', '--ignore-scripts', '--json', '--pack-destination', dist], { cwd: path.join(root, 'packages', part), encoding: 'utf8' });
-  dependencies[`@local/dsh-studio-${part}`] = `file:${path.join(dist, JSON.parse(output)[0].filename)}`;
-}
-const manifest = JSON.parse(await readFile(path.join(root, 'packages/bundle/package.json'), 'utf8'));
-const versions = new Map();
-for (const file of globSync('packages/*/*/package.json', { cwd: path.resolve(root, '..') })) {
-  const pkg = JSON.parse(await readFile(path.resolve(root, '..', file), 'utf8'));
-  versions.set(pkg.name, pkg.version);
-}
-for (const [name, spec] of Object.entries(manifest.dependencies)) {
-  if (name in dependencies) continue;
-  if (spec !== 'workspace:*' || (!runtimeVersion && !versions.has(name))) throw new Error(`Unresolved bundle dependency: ${name}`);
-  dependencies[name] = runtimeVersion ?? versions.get(name);
-}
-await writeFile(path.join(staging, 'package.json'), JSON.stringify({ ...manifest, dependencies }, null, 2) + '\n');
-await copyFile(path.join(root, 'packages/bundle/cordis.patch.yml'), path.join(staging, 'cordis.patch.yml'));
+for (const file of manifest.files) await cp(path.join(source, file), path.join(staging, file));
+// The npm page shows the public README; the fork keeps its internal README at the root.
+const readme = ['release/README.md', 'README.md'].map(file => path.join(root, file)).find(file => existsSync(file));
+await cp(readme, path.join(staging, 'README.md'));
+await cp(path.join(root, 'LICENSE'), path.join(staging, 'LICENSE'));
+// Development-only links (workspace:*) never ship.
+const { devDependencies: _dev, ...published } = manifest;
+await writeFile(path.join(staging, 'package.json'), JSON.stringify(published, null, 2) + '\n');
 const output = execFileSync('npm', ['pack', '--ignore-scripts', '--json', '--pack-destination', dist], { cwd: staging, encoding: 'utf8' });
 console.log(path.join(dist, JSON.parse(output)[0].filename));

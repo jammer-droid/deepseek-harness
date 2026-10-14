@@ -1,4 +1,5 @@
 import type { CompositionRow } from '../prompt-composition.ts';
+import { BATCH_PLUGIN, ROLE_PLUGIN } from '../package-name.ts';
 const plugin = (id: string, config?: Record<string, unknown>, suffix = id): CompositionRow => ({ id, name: `@deepseek-ai/dsh-${suffix}`, ...(config ? { config } : {}) });
 /** Explicit supported baseline. No dependency on mutable user preset declarations. */
 export function masterComposition(): CompositionRow[] {
@@ -7,8 +8,8 @@ export function masterComposition(): CompositionRow[] {
     plugin('agent-instructions', { maxBytes: 65536 }), plugin('time-context'),
     plugin(process.platform === 'win32' ? 'tool-pwsh' : 'tool-bash'),
     plugin('spill-policy'),
-    { id: 'studio-batch', name: '@local/dsh-studio-shell/batch' },
-    // task_run (@local/dsh-studio-shell/tasks) is withheld from the Master for now; the provider stays packaged.
+    { id: 'studio-batch', name: BATCH_PLUGIN },
+    // task_run (the /tasks entry) is withheld from the Master for now; the provider stays packaged.
     plugin('tool-fs'), plugin('tool-fs-search', { sampleOverCapGlobResults: false }),
     plugin('tool-jobs'), plugin('skill-filesystem'), plugin('tool-skill'),
     plugin('command-goal'), plugin('tool-goal'),
@@ -20,7 +21,7 @@ export function masterComposition(): CompositionRow[] {
       plugin('tool-subagent-fork', { provider: 'fork', toolName: 'subagent_fork', toolFilter: { deny: ['schedule_create', 'schedule_delete', 'schedule_list', 'schedule_update'] } }, 'tool-subagent'),
       plugin('workflow-ptc', { provider: 'spawn' }), plugin('tool-workflow'),
       // Catalog source for subagent_role; Studio presets replace the generic subagent tools above with it.
-      { id: 'studio-master-roles', name: '@local/dsh-studio-shell/roles', config: { roles: [] } },
+      { id: 'studio-master-roles', name: ROLE_PLUGIN, config: { roles: [] } },
     ] },
     plugin('tool-ask-user'), plugin('tool-todo', { allowParallelInProgress: true }),
     plugin('tool-web', { fetch: true, searchTimeoutMs: 60000 }), plugin('tool-present'),

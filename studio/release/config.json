@@ -1,0 +1,38 @@
+{
+  "include": [
+    "src",
+    "test",
+    "packages/shell/package.json",
+    "packages/shell/cordis.patch.yml",
+    "build.mjs",
+    "pack.mjs",
+    "package.json",
+    "tsconfig.json",
+    "tsconfig.host.json",
+    "tsconfig.client.json",
+    "LICENSE",
+    ".gitignore",
+    "docs/reference",
+    "docs/development/design-system.md"
+  ],
+  "exclude": [
+    "test/staged-scope.test.mjs"
+  ],
+  "copy": {
+    "release/standalone/tsconfig.base.json": "tsconfig.base.json",
+    "release/standalone/tsconfig.base.client.json": "tsconfig.base.client.json",
+    "release/types": "types",
+    "release/README.md": "README.md"
+  },
+  "versions": {
+    "@deepseek-ai/*": "0.2.0-rc.2",
+    "@deepseek-ai/cordis": "~4.0.4",
+    "@deepseek-ai/cordis-plugin-include": "~1.0.9",
+    "@deepseek-ai/dsh": "0.2.0-rc.2"
+  },
+  "packageManager": "pnpm@11.7.0",
+  "scripts": {},
+  "dropScripts": [
+    "web"
+  ]
+}

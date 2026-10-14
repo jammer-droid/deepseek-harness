@@ -4,10 +4,14 @@ import { readFileSync, readdirSync } from 'node:fs';
 import vm from 'node:vm';
 const read = path => readFileSync(new URL(path, import.meta.url), 'utf8');
 
-test('bundle contains only the shell and no managed preset', () => {
-  const manifest = JSON.parse(read('../packages/bundle/package.json'));
-  assert.deepEqual(Object.keys(manifest.dependencies), ['@local/dsh-studio-shell']);
-  assert.equal(read('../packages/bundle/cordis.patch.yml'), "- insert:\n    - id: local-dsh-studio-shell\n      name: '@local/dsh-studio-shell'\n");
+test('one publishable package declares its own bundle patch and no managed preset', async () => {
+  const manifest = JSON.parse(read('../packages/shell/package.json'));
+  const { PACKAGE_NAME, STUDIO_VERSION } = await import('../src/package-name.ts');
+  assert.equal(manifest.name, PACKAGE_NAME); assert.equal(manifest.version, STUDIO_VERSION);
+  assert.equal(manifest.dsh.bundle.patch, './cordis.patch.yml'); assert.ok(manifest.files.includes('cordis.patch.yml'));
+  assert.deepEqual(Object.keys(manifest.dependencies), ['js-yaml']);
+  assert.equal(read('../packages/shell/cordis.patch.yml'), `- insert:\n    - id: dsh-studio\n      name: '${PACKAGE_NAME}'\n`);
+  assert.match(read('../packages/shell/client.js'), new RegExp(`__ModuleLoader__\\.load\\(\\{id: '${PACKAGE_NAME}'`));
   const sources = readdirSync(new URL('../src/', import.meta.url));
   assert.ok(!sources.filter(name => !['preset-catalog.ts', 'preset-diagnostics.tsx', 'preset-export.ts', 'preset-manager.tsx'].includes(name)).some(name => /^(mock|roles|workflow|preset|catalog|experiments|general)/.test(name)));
 });

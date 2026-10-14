@@ -7,20 +7,21 @@ import type { PropsRenderSlots } from '@deepseek-ai/dsh-client-ui-slots';
 import { ServiceLayout, type StudioServiceItem } from './service-layout.tsx';
 import type {} from '@deepseek-ai/dsh-client-locale/client';
 import type { StudioContext, IconProps } from "./contracts.js";
+import { PACKAGE_NAME } from './package-name.ts';
 
 export const inject = ["slots", "locale", "remote"];
 const panel = "local-dsh-studio";
 export async function apply(ctx: StudioContext) {
     const remote = ctx.get('remote' as never) as unknown as { $mount(contribution: unknown): Promise<() => void> };
-    await remote.$mount({ package: '@local/dsh-studio-shell', descriptors: [{
-        id: '@local/dsh-studio-shell#studioCatalog/read', service: 'studioCatalog', namespace: 'studioCatalog', method: 'read',
+    await remote.$mount({ package: PACKAGE_NAME, descriptors: [{
+        id: `${PACKAGE_NAME}#studioCatalog/read`, service: 'studioCatalog', namespace: 'studioCatalog', method: 'read',
         invocation: { kind: 'direct' }, parameters: [], result: { mode: 'src-json' },
     }, {
-        id: '@local/dsh-studio-shell#studioCatalog/preview', service: 'studioCatalog', namespace: 'studioCatalog', method: 'preview',
+        id: `${PACKAGE_NAME}#studioCatalog/preview`, service: 'studioCatalog', namespace: 'studioCatalog', method: 'preview',
         invocation: { kind: 'direct' }, parameters: [{ name: 'request', wire: 'request', source: 'json', codec: { mode: 'strict', typeSymbol: 'PreviewRequest', create: () => ({ parse: parsePreviewRequest }) } }], result: { mode: 'src-json' },
 
     }, ...['listPresets', 'savePreset', 'applyPreset', 'unapplyPreset', 'roleModels', 'deletePreset', 'readExtensions', 'saveExtensions'].map(method => ({
-        id: `@local/dsh-studio-shell#studioCatalog/${method}`, service: 'studioCatalog', namespace: 'studioCatalog', method,
+        id: `${PACKAGE_NAME}#studioCatalog/${method}`, service: 'studioCatalog', namespace: 'studioCatalog', method,
         invocation: { kind: 'direct' }, parameters: ['listPresets', 'readExtensions', 'roleModels'].includes(method) ? [] : [{ name: ['savePreset', 'saveExtensions'].includes(method) ? 'payload' : 'id', wire: ['savePreset', 'saveExtensions'].includes(method) ? 'payload' : 'id', source: 'json', codec: { mode: 'strict', typeSymbol: 'string', create: () => ({ parse: (value: unknown) => { if (typeof value !== 'string') throw new TypeError('Expected a string'); return value; } }) } }], result: { mode: 'src-json' },
     }))] });
     ctx.effect(() => ctx.locale.addLanguage({ id: 'ko', label: '한국어', fallback: 'en' }));
