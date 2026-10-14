@@ -70,7 +70,8 @@ await transform('packages/shell/package.json', text => {
   const manifest = JSON.parse(text);
   return JSON.stringify({ ...manifest, devDependencies: resolveWorkspace(manifest.devDependencies) }, null, 2) + '\n';
 });
-await writeFile(path.join(work, 'pnpm-workspace.yaml'), 'packages:\n  - packages/*\n');
+// Studio builds with esbuild only; DSH runtime natives pulled in as type sources never need their scripts here.
+await writeFile(path.join(work, 'pnpm-workspace.yaml'), `packages:\n  - packages/*\nallowBuilds:\n${Object.entries(config.allowBuilds).map(([name, allow]) => `  '${name}': ${allow}`).join('\n')}\n`);
 for (const file of ['tsconfig.host.json', 'tsconfig.client.json']) {
   await transform(file, text => text.replace('"../tsconfig.base.client.json"', '"./tsconfig.base.client.json"').replace('"../tsconfig.base.json"', '"./tsconfig.base.json"'));
 }
