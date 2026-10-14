@@ -41,3 +41,17 @@ test('without saved roles, call starts a fresh child identical to the parent',as
   const result=JSON.parse((await definition.execute({action:'call',task:'x'},{agent:{},signal:new AbortController().signal})).result);
   assert.equal(result.subagentId,'c');assert.equal(spec.provider,'spawn');assert.equal(spec.request.agentOptions,undefined);assert.equal(spec.request.persona,undefined);
 });
+test('a preset tool filter reaches every fresh and fork child request',async()=>{
+  const specs=[];let definition;
+  apply({tools:{register:d=>{definition=d;}},subagents:{resolveMaxDepth:()=>undefined,startActivation:async s=>{specs.push(s);return {childId:'c'};}}},
+    {roles:[{...role,role:'fresh',spawn:'fresh',model:'inherit',reasoning:'inherit',persona:''},{...role,role:'fork',spawn:'fork',model:'inherit',reasoning:'inherit',persona:''}],toolFilter:{deny:['ask_user_question','present']}});
+  for(const name of ['fresh','fork']) await definition.execute({action:'call',role:name,task:'x'},{agent:{},signal:new AbortController().signal});
+  assert.deepEqual(specs.map(s=>s.provider),['spawn','fork']);
+  for(const s of specs) assert.deepEqual(s.request.toolFilter,{deny:['ask_user_question','present']});
+  assert.throws(()=>apply({tools:{register:()=>{}},subagents:{}},{roles:[],toolFilter:{deny:[1]}}),/Invalid subagent tool filter/);
+});
+test('without a tool filter the child request carries none',async()=>{
+  let definition;let spec;apply({tools:{register:d=>{definition=d;}},subagents:{resolveMaxDepth:()=>undefined,startActivation:async s=>{spec=s;return {childId:'c'};}}},{roles:[],toolFilter:{deny:[]}});
+  await definition.execute({action:'call',task:'x'},{agent:{},signal:new AbortController().signal});
+  assert.equal(spec.request.toolFilter,undefined);
+});

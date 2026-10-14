@@ -12,20 +12,23 @@ const tool = name => ({ name, description: `${name} original`, parameters: { typ
 const config = { tools: ['read'], toolOverrides: { read: { description: 'Studio read' } }, sections: {}, prompt: 'Studio rules' };
 
 /** Mirrors agent-preset-registry: preset scopes, an Agent registry, and recompose = rebind + tools/change. */
-async function runtime() {
+async function runtime(policy = config) {
   const ctx = new Context();
   await ctx.plugin(SystemPrompt); await ctx.plugin(Tools);
-  for (const name of ['read', 'write', 'todo_write']) ctx.tools.register(tool(name));
-  const live = [];
-  ctx.provide('agents'); ctx.set('agents', { list: () => [...live] });
+  for (const name of ['read', 'write', 'todo_write', 'ask_user_question']) ctx.tools.register(tool(name));
+  const live = [], owned = new Set();
+  ctx.provide('agents'); ctx.set('agents', { list: () => [...live], roots: () => live.filter(agent => !owned.has(agent)) });
   const holder = ctx.inject(['tools', 'systemPrompt'], () => {});
   const presetScope = () => { const key = {}; return { key, scope: createScope(holder.ctx, key) }; };
   const standard = presetScope(), studio = presetScope();
-  await studio.scope.ctx.plugin(policyPlugin, config);
-  const createAgent = async preset => {
+  await studio.scope.ctx.plugin(policyPlugin, policy);
+  // `filter` mirrors DSH applyChildComposition: a child joins the parent preset, then restrict(toolFilter).
+  const createAgent = async (preset, { owner, filter } = {}) => {
     const agent = { id: `a${live.length}` };
     const scope = createScope(holder.ctx, agent);
     agent.ctx = scope.ctx; agent.binding = bindScopeParent(agent, preset.key);
+    if (filter) agent.ctx.tools.restrict(filter);
+    if (owner) owned.add(agent);
     live.push(agent);
     await ctx.serial(scopeTarget(agent, agent), 'agent/created', { agent, source: 'startup' }).catch(() => {});
     return agent;
@@ -37,7 +40,7 @@ async function runtime() {
 test('selecting a Studio preset after creation installs its policy; switching away releases it', async () => {
   const { ctx, standard, studio, createAgent, recompose } = await runtime();
   const agent = await createAgent(standard);
-  assert.deepEqual(ctx.tools.schemas(agent).map(t => t.name).sort(), ['read', 'todo_write', 'write']);
+  assert.deepEqual(ctx.tools.schemas(agent).map(t => t.name).sort(), ['ask_user_question', 'read', 'todo_write', 'write']);
 
   recompose(agent, studio);
   assert.deepEqual(ctx.tools.schemas(agent).map(t => t.name), ['read']);
@@ -46,7 +49,7 @@ test('selecting a Studio preset after creation installs its policy; switching aw
   assert.match(JSON.stringify(denied), /excluded by Studio|not found|unknown/i);
 
   recompose(agent, standard);
-  assert.deepEqual(ctx.tools.schemas(agent).map(t => t.name).sort(), ['read', 'todo_write', 'write']);
+  assert.deepEqual(ctx.tools.schemas(agent).map(t => t.name).sort(), ['ask_user_question', 'read', 'todo_write', 'write']);
   assert.equal(ctx.tools.get('read', agent).description, 'read original');
 });
 
@@ -82,4 +85,21 @@ test('a blocked Agent takes the policy once the previous preset releases its own
   assert.equal(ctx.tools.get('read', agent).description, 'Studio read');
   const allowed = await ctx.tools.execute({ name: 'read', callId: 'c', arguments: {}, agent, signal: new AbortController().signal });
   assert.doesNotMatch(JSON.stringify(allowed), /could not be installed|excluded/);
+});
+
+test('a preset subagent filter hides tools from children while the parent keeps them', async () => {
+  const policy = { ...config, tools: ['read', 'ask_user_question'], toolOverrides: { read: { description: 'Studio read' }, ask_user_question: { description: 'Ask' } }, childToolFilter: { deny: ['ask_user_question'] } };
+  const { ctx, studio, createAgent } = await runtime(policy);
+  const parent = await createAgent(studio);
+  assert.deepEqual(ctx.tools.schemas(parent).map(t => t.name).sort(), ['ask_user_question', 'read']);
+  for (const spawn of ['fresh', 'fork']) {
+    const child = await createAgent(studio, { owner: parent, filter: policy.childToolFilter });
+    assert.deepEqual(ctx.tools.schemas(child).map(t => t.name), ['read'], spawn);
+    assert.equal(ctx.tools.get('read', child).description, 'Studio read');
+    const denied = await ctx.tools.execute({ name: 'ask_user_question', callId: 'c', arguments: {}, agent: child, signal: new AbortController().signal });
+    assert.match(JSON.stringify(denied), /excluded by Studio|not found|unknown/i);
+  }
+  // A resumed child is a root again, but DSH re-applies its persisted filter: it still gets the child policy.
+  const resumed = await createAgent(studio, { filter: policy.childToolFilter });
+  assert.deepEqual(ctx.tools.schemas(resumed).map(t => t.name), ['read']);
 });

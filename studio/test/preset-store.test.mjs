@@ -136,3 +136,20 @@ test('applied snapshots naming the pre-publication @local package restore under 
   assert.equal(plugins[1].config[0].name,'@matamt-dbg/dsh-studio/roles');
   await store.dispose();
 });
+test('a subagent tool filter is validated on apply and reaches both the role tool and the policy',async()=>{
+  const file=join(await mkdtemp(join(tmpdir(),'studio-child-filter-')),'presets.json');const r=await runtime();const store=new PresetStore(r.ctx,file);
+  const draft=await store.save(JSON.stringify({name:'Filter',description:'',request:{...request,tools:['read','subagent_role'],subagentToolFilter:{deny:['read']}}}));
+  assert.deepEqual(draft.request.subagentToolFilter,{deny:['read']});
+  await store.apply(draft.id);
+  const plugins=r.registrations.get(draft.id).plugins;
+  assert.deepEqual(plugins.find(row=>row.name==='@matamt-dbg/dsh-studio/roles').config.toolFilter,{deny:['read']});
+  assert.deepEqual(plugins.at(-1).config.childToolFilter,{deny:['read']});
+  // A hidden tool the preset does not select would fail every delegation; reject it when applying.
+  const bad=await store.save(JSON.stringify({...draft,request:{...draft.request,subagentToolFilter:{deny:['write']}}}));
+  await assert.rejects(store.apply(bad.id),/hidden from subagents must be selected in this preset: write/);
+  // An empty filter is not stored, and a preset without delegation carries no filter.
+  const empty=await store.save(JSON.stringify({name:'Empty',description:'',request:{...request,tools:['read'],subagentToolFilter:{deny:[]}}}));
+  assert.equal(empty.request.subagentToolFilter,undefined);
+  await assert.rejects(store.save(JSON.stringify({name:'Bad',description:'',request:{...request,subagentToolFilter:{deny:'read'}}})),/Invalid subagent tool filter/);
+  await store.dispose();
+});

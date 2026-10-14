@@ -9,11 +9,15 @@ import { ROLE_TOOL } from '../delegation.ts';
 
 export const name = 'studio-role';
 export const inject = ['tools', 'subagents', 'llm'];
-export interface Config { roles: StudioRole[] }
+export interface Config { roles: StudioRole[]; toolFilter?: { deny: string[] } }
 /** Implicit role used when a preset defines none: same model, reasoning and persona as the parent, new conversation. */
 const PARENT_ROLE = { name: 'Subagent', role: 'subagent', model: 'inherit', reasoning: 'inherit', spawn: 'fresh', persona: '' } as const;
 export function apply(ctx: Context, config: Config): void {
   const roles = executableRoles(parseRoles(config.roles));
+  const deny = config.toolFilter?.deny;
+  if (deny !== undefined && (!Array.isArray(deny) || deny.some(name => typeof name !== 'string' || !name))) throw new Error('Invalid subagent tool filter');
+  // Same native restriction tool-subagent applies from its toolFilter Config, for fresh and fork alike.
+  const toolFilter = deny?.length ? { deny: [...deny] } : undefined;
   ctx.tools.register(defineTool({
     name: ROLE_TOOL,
     description: roles.length
@@ -53,6 +57,7 @@ export function apply(ctx: Context, config: Config): void {
           ...(Object.keys(agentOptions).length ? { agentOptions } : {}),
           ...(role.persona ? { persona: role.persona } : {}),
           ...(maxDepth === undefined ? {} : { maxDepth }),
+          ...(toolFilter ? { toolFilter } : {}),
         },
         signal: exec.signal,
       };

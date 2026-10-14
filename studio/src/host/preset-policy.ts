@@ -11,6 +11,8 @@ export interface PresetPolicyConfig {
   sections: Record<string, string>;
   prompt: string;
   execution?: ExecutionDefaults;
+  /** Selected tools hidden from every subagent (fresh and fork) started under this preset. */
+  childToolFilter?: { deny: string[] };
 }
 
 /** Explicit supported section placements; never infer a plugin from its section name. */
@@ -39,6 +41,21 @@ export function validatePolicy(config: PresetPolicyConfig): void {
   for (const [name, text] of Object.entries(config.sections)) {
     if (!own(POLICY_SECTION_ORDERS, name) || typeof text !== 'string') throw new Error(`Unsupported policy section: ${name}`);
   }
+  if (config.childToolFilter !== undefined) {
+    const deny = record(config.childToolFilter) ? config.childToolFilter.deny : undefined;
+    if (!Array.isArray(deny) || deny.some(name => typeof name !== 'string' || !name)) throw new Error('Invalid subagent tool filter');
+    for (const name of deny) if (!config.tools.includes(name)) throw new Error(`Subagent tool filter requires selected tool: ${name}`);
+  }
+}
+
+/** The policy a subagent receives: the preset policy without the tools hidden from children. */
+export function childPolicy(config: PresetPolicyConfig): PresetPolicyConfig {
+  const deny = new Set(config.childToolFilter?.deny ?? []);
+  if (!deny.size) return config;
+  const keep = <T>(entries: Record<string, T>) => Object.fromEntries(Object.entries(entries).filter(([name]) => !deny.has(name)));
+  const { childToolFilter: _filter, execution, ...rest } = config;
+  return { ...rest, tools: config.tools.filter(name => !deny.has(name)), toolOverrides: keep(config.toolOverrides),
+    ...(execution ? { execution: (({ batch, ...value }) => ({ ...value, defaults: keep(execution.defaults), ...(batch && !deny.has(batch.tool) ? { batch } : {}) }))(execution) } : {}) };
 }
 
 /** Parameter paths follow properties recursively, e.g. "options.timeout" (not JSON pointers). */
@@ -118,19 +135,28 @@ export function installPolicy(ctx: Context, scopeKey: object, config: PresetPoli
 }
 
 interface PolicyAgent { ctx: Context; id?: unknown }
-interface AgentRegistry { list(): PolicyAgent[] }
+interface AgentRegistry { list(): PolicyAgent[]; roots?(): PolicyAgent[] }
 
 export const name = 'studio-preset-policy';
 export const inject = ['tools', 'systemPrompt'];
 export function apply(ctx: Context, config: PresetPolicyConfig): void {
   validatePolicy(config);
+  const forChildren = childPolicy(config);
+  const registry = ctx.get('agents' as never) as AgentRegistry | undefined;
+  // subagent_role passes childToolFilter to DSH, which restricts the child natively (and persists it
+  // for resume). Those tools are then invisible to the child, so the full policy would reject them as
+  // unavailable: a child gets the policy minus the hidden tools. A child is an owned Agent (absent from
+  // roots()) or, after a resume that made it a root, one whose hidden tools are already masked.
+  const isChild = (agent: PolicyAgent) => forChildren !== config && (
+    (registry?.roots !== undefined && !registry.roots().includes(agent))
+    || config.childToolFilter!.deny.every(name => agent.ctx.tools.get(name, agent) === undefined));
   const installed = new Map<PolicyAgent, () => void>();
   const installing = new Set<PolicyAgent>();
   const install = (agent: PolicyAgent) => {
     if (installed.has(agent) || installing.has(agent)) return;
     // Reserve first: registering the patched definitions emits tools/change synchronously.
     installing.add(agent);
-    try { installed.set(agent, installPolicy(agent.ctx, agent, config)); }
+    try { installed.set(agent, installPolicy(agent.ctx, agent, isChild(agent) ? forChildren : config)); }
     finally { installing.delete(agent); }
   };
   const remove = (agent: PolicyAgent) => { installed.get(agent)?.(); installed.delete(agent); };
@@ -142,7 +168,7 @@ export function apply(ctx: Context, config: PresetPolicyConfig): void {
   // agent/created, so reconcile live Agents by ancestry: install for Agents now under this
   // preset's scope, release for Agents that moved away.
   const composition = scopeOf(ctx);
-  const agents = ctx.get('agents' as never) as AgentRegistry | undefined;
+  const agents = registry;
   if (composition === undefined || agents === undefined) {
     ctx.effect(() => () => { for (const dispose of installed.values()) dispose(); installed.clear(); });
     return;

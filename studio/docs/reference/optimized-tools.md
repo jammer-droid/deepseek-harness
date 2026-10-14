@@ -18,6 +18,13 @@
 - 독립 호출 묶기, 의존 호출 순서, 충분한 대기, 완료 후 검증, 관련 작업 수집·불필요한 작업 취소, 최소 충분 검증 후 종료를 공통 지침과 도구 인자 설명에 반영한다.
 - Optimized는 편집할 수 없는 빌트인이므로 시작할 때 저장된 요청을 배포된 allowlist·기본값에 맞춘다. 이 정렬은 사본(`studio-user-*`)과 다른 사용자 프리셋에는 적용하지 않는다. 반영/반영 해제 상태는 유지하고, 반영 중이면 현재 마스터 구성 위에 스냅샷을 다시 조립한다. 정렬이 실패하면 이전 스냅샷을 복구하고 오류를 보고한다. 사용자 프리셋의 모델·역할·추가 설정과 설명 수정은 유지한다.
 
+## 서브에이전트에게 숨길 도구
+
+- 프리셋 요청의 `subagentToolFilter.deny`에 저장한다. 이 프리셋에서 고른 도구만 넣을 수 있고 반영 시 검사한다(`Tools hidden from subagents must be selected in this preset`). DSH가 자식의 필터에 상속받을 수 없는 이름이 있으면 시작을 거절하므로, 첫 호출이 아니라 반영 단계에서 실패하게 했다.
+- 반영하면 roles 플러그인의 `toolFilter`와 policy 플러그인의 `childToolFilter`에 같은 값을 넣는다. `subagent_role`은 fresh·fork 요청에 `toolFilter`를 넘기고, DSH가 `tools.restrict()`로 자식을 제한하며 재개를 위해 기록한다. `dsh-tool-subagent`가 `toolFilter` Config로 하는 것과 같은 경로다.
+- 자식은 부모 프리셋에 붙으므로 같은 policy가 설치된다. 숨긴 도구는 자식에게 보이지 않아 전체 policy로는 `selected tools unavailable`로 실패하므로, 자식에게는 숨긴 도구를 뺀 policy를 설치한다. 자식은 소유 Agent가 있는(`roots()`에 없는) Agent이거나, 재개되어 루트가 되었어도 숨긴 도구가 이미 가려진 Agent다.
+- 실행 설정의 `tool-subagent` `toolFilter`는 Studio 프리셋에서 그 플러그인 행을 지우므로 효과가 없다. 사용 가이드에서 이 칸 대신 서브에이전트 탭을 안내한다.
+
 ## 편집 UI
 
 실행 설정은 플러그인 이름·ID와 중첩 schema 필드명·설명으로 검색한다. 도구도 이름·설명·인자 schema로 검색하며 실행 설정과 같은 사용 가능/선택됨 2열 카드, 개별 추가·제외, 카드 내 상세 편집을 사용한다. 검색은 사용 가능 목록에 적용하고 선택된 편집 카드와 수정값은 유지한다. Persona와 Studio 지침 입력은 상단에 유지한다.

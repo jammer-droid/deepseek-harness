@@ -192,10 +192,16 @@ export class PresetStore {
     const delegates = tools.includes(ROLE_TOOL);
     const keep = <T>(entries: Record<string, T>) => Object.fromEntries(Object.entries(entries).filter(([name]) => tools.includes(name)));
     // Generic subagent tools never ship with a Studio preset; the role tool replaces them, even with no saved roles.
-    const rolePlugins: CompositionRow[] = delegates ? [{ id: 'studio-roles', name: ROLE_PLUGIN, config: { roles } }] : [];
+    // Tools hidden from every subagent. They must be tools the preset selects: DSH rejects a child
+    // filter naming a tool the child could not inherit, so check here instead of at the first call.
+    const hidden = (old.request.subagentToolFilter?.deny ?? []).filter(name => name !== ROLE_TOOL || delegates);
+    const unknownHidden = hidden.filter(name => !tools.includes(name));
+    if (unknownHidden.length) throw new Error(`Tools hidden from subagents must be selected in this preset: ${unknownHidden.join(', ')}`);
+    const childToolFilter = delegates && hidden.length ? { deny: hidden } : undefined;
+    const rolePlugins: CompositionRow[] = delegates ? [{ id: 'studio-roles', name: ROLE_PLUGIN, config: { roles, ...(childToolFilter ? { toolFilter: childToolFilter } : {}) } }] : [];
     const execution = request.execution && { ...request.execution, defaults: keep(request.execution.defaults),
       ...(request.execution.batch && !tools.includes(request.execution.batch.tool) ? { batch: undefined } : {}) };
-    const applied = { name: old.name, description: old.description, plugins: dump([...withoutDelegationPlugins(plugins), ...rolePlugins, { id: 'studio-policy', name: POLICY_PLUGIN, config: { tools: [...new Set(tools)], toolOverrides: keep(request.toolOverrides ?? {}), sections: request.sections ?? {}, prompt: request.prompt, ...(execution ? { execution } : {}) } }], { schema: entryListSchema, noRefs: true }) };
+    const applied = { name: old.name, description: old.description, plugins: dump([...withoutDelegationPlugins(plugins), ...rolePlugins, { id: 'studio-policy', name: POLICY_PLUGIN, config: { tools: [...new Set(tools)], toolOverrides: keep(request.toolOverrides ?? {}), sections: request.sections ?? {}, prompt: request.prompt, ...(execution ? { execution } : {}), ...(childToolFilter ? { childToolFilter } : {}) } }], { schema: entryListSchema, noRefs: true }) };
     await this.disposers.get(id)?.(); this.disposers.delete(id);
     try {
       await this.mount(id, applied);

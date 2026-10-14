@@ -1,11 +1,12 @@
 import React from 'react';
 import { Badge, Button, DetailDialog, Note, SectionHead } from './ui.tsx';
+import { ItemPicker } from './item-picker.tsx';
 import type { StudioRole } from './role-settings.ts';
 export interface RoleModelCatalog {
   groups: { id: string; name: string; models: { id: string; name: string; reasoning?: { efforts: { id: string; name: string }[] } }[] }[];
   failures: { name: string; message: string }[];
 }
-export function RoleEditor({ locale, roles, onChange, loadModels, defaultPersona = '' }: { locale: string; roles: StudioRole[]; onChange: (roles: StudioRole[]) => void; loadModels?: (() => Promise<RoleModelCatalog>) | undefined; defaultPersona?: string }) {
+export function RoleEditor({ locale, roles, onChange, loadModels, defaultPersona = '', tools, hiddenTools = [], onHiddenToolsChange }: { locale: string; roles: StudioRole[]; onChange: (roles: StudioRole[]) => void; loadModels?: (() => Promise<RoleModelCatalog>) | undefined; defaultPersona?: string; tools?: { name: string; description: string }[] | undefined; hiddenTools?: string[]; onHiddenToolsChange?: ((names: string[]) => void) | undefined }) {
   const t = (ko: string, en: string, zh: string) => locale.startsWith('ko') ? ko : locale.startsWith('zh') ? zh : en;
   const [selected, setSelected] = React.useState<number>();
   const [catalog, setCatalog] = React.useState<RoleModelCatalog>();
@@ -36,6 +37,13 @@ export function RoleEditor({ locale, roles, onChange, loadModels, defaultPersona
       <p className="studio-card-meta">{item.model === 'inherit' ? t('부모 모델 사용', 'Inherit parent model', '继承父级模型') : models.find(model => model.value === item.model)?.label ?? item.model} · {t('추론', 'Reasoning', '推理')} {item.reasoning === 'inherit' ? t('기본값', 'default', '默认') : item.reasoning}</p>
       <div className="studio-card-footer"><Button small aria-haspopup="dialog" onClick={() => setSelected(index)}>{t('편집', 'Edit', '编辑')}</Button></div>
     </article>)}</div>
+    {tools && onHiddenToolsChange && <section className="studio-form-section">
+      <SectionHead title={t('서브에이전트에게 숨길 도구', 'Tools hidden from subagents', '对子代理隐藏的工具')} description={t('선택한 도구는 이 프리셋의 모든 서브에이전트(새 대화·부모 대화 이어받기)에서 빠지고, 호출해도 거절됩니다. 부모 에이전트는 그대로 씁니다. 사용자와 직접 대화하는 도구처럼 자식에게 필요 없는 도구를 숨기면 자식의 컨텍스트가 가벼워집니다.', 'Checked tools are removed from every subagent of this preset, in both New conversation and Continue parent modes, and calls to them are rejected. The parent agent keeps them. Hiding tools a child does not need, such as ones that talk to the user directly, keeps the child’s context smaller.', '勾选的工具会从此预设的所有子代理（新对话和继承父对话）中移除，调用也会被拒绝。父代理仍可使用。隐藏子代理不需要的工具（例如直接与用户对话的工具）可让子代理的上下文更精简。')} />
+      <ItemPicker label={t('서브에이전트에게 숨길 도구', 'Tools hidden from subagents', '对子代理隐藏的工具')}
+        items={[...tools, ...hiddenTools.filter(name => !tools.some(tool => tool.name === name)).map(name => ({ name, description: t('이 프리셋에서 선택하지 않은 도구입니다. 해제하거나 도구를 선택하세요. 이대로 반영하면 실패합니다.', 'Not selected in this preset. Uncheck it or select the tool; applying will fail otherwise.', '此预设未选择该工具。请取消勾选或选择该工具，否则应用会失败。') }))]}
+        selected={hiddenTools} onChange={onHiddenToolsChange} hasDetails={() => false}
+        labels={{ filter: t('보기', 'Show', '显示'), search: t('도구 검색', 'Search tools', '搜索工具'), searchHint: t('이름, 설명으로 검색', 'Search names or descriptions', '按名称或描述搜索'), all: t('전체', 'All', '全部'), selected: t('숨김', 'Hidden', '已隐藏'), modified: t('변경됨', 'Modified', '已修改'), settings: t('설정', 'Details', '设置'), done: t('완료', 'Close', '完成'), empty: t('이 프리셋에서 선택한 도구가 없습니다.', 'This preset selects no tools.', '此预设未选择任何工具。'), noResults: t('검색 결과가 없습니다.', 'No matching results.', '没有匹配结果。'), modifiedTag: t('변경됨', 'Modified', '已修改'), clear: t('전체 보기', 'Show all', '显示全部') }} />
+    </section>}
     <DetailDialog open={role !== undefined} title={role?.name || t('새 역할', 'New role', '新角色')} subtitle={t('역할 편집', 'Edit role', '编辑角色')} onClose={close}
       footer={<><Button small onClick={() => { onChange(roles.filter((_, index) => index !== selected)); close(); }}>{t('역할 삭제', 'Remove role', '移除角色')}</Button><Button small primary onClick={close}>{t('완료', 'Done', '完成')}</Button></>}>
       {role && <><div className="studio-field-grid">

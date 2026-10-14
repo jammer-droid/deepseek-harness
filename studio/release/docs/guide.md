@@ -121,6 +121,19 @@ The agent writes the actual task each time it calls `subagent_role`. With **no r
 
 Models are checked when you apply the preset and again before each call, so an unavailable model fails early with a clear message.
 
+**Tools hidden from subagents** removes selected tools from every subagent this preset starts — both **New conversation (Fresh)** and **Continue parent (Fork)**, with or without roles. The tools disappear from the child's prompt and calls to them are rejected; the parent agent keeps them. Only tools the preset selects can be hidden, and `subagent_role` itself is not listed.
+
+#### Tips for subagent tools
+
+A child sees every tool its parent has unless you hide it. Each tool's description is part of the child's prompt, so hiding tools the child does not need keeps its context smaller and its choices clearer.
+
+- **Hide tools that talk to the user.** A subagent works on a delegated task and reports back to its parent; it should not interrupt the user. `ask_user_question`, `present` and `exit_plan_mode` are good candidates.
+- **Hide tools whose results belong to the parent.** If the parent tracks the plan or decides what to show the user, hide `todo_write` and the goal tools from children.
+- **Keep delegation where you want it.** With `send_message`, `interrupt_agent` and `list_agents` hidden, a child cannot steer other agents.
+- **Check the effect.** The filter applies to children only, so **Preview prompt** still shows the parent's tools. Start a session and delegate a task to confirm what the child receives.
+
+The DSH `tool-subagent` Config in **Execution settings** has its own `toolFilter`, but Studio replaces that plugin with `subagent_role`, so set the filter here instead.
+
 ## Adapt Optimized to your work
 
 Optimized is tuned for **coding-agent work**: reading and editing code, running commands, and checking results. For anything else, treat it as a starting point. Select **Create copy** on Optimized and adjust the copy with the same screens described above — everything in the copy can be changed.
@@ -136,6 +149,7 @@ Optimized is tuned for **coding-agent work**: reading and editing code, running 
 | Tune any other plugin behavior | Turn on that plugin in **Execution settings** and edit only the fields you need. |
 | Steer how the model uses a tool | Edit its description, usage instructions or parameter text in the tool's **Details**. |
 | Delegate to specialists | Add roles in **Subagent settings** with their own model, reasoning effort and persona. |
+| Keep subagents focused | Add tools such as `ask_user_question` to **Tools hidden from subagents**. See [Tips for subagent tools](#tips-for-subagent-tools). |
 
 Use **Preview prompt** after each change to confirm what the model will receive, then save and apply the copy. Optimized itself stays available as a reference, and you can keep several presets for different kinds of work.
 
