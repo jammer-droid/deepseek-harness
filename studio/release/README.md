@@ -23,15 +23,13 @@ Presets are stored per profile in `studio-data/`. Applying a preset registers a 
 
 ## Development
 
-This repository is a published snapshot. Development happens in the `studio/` directory of [jammer-droid/deepseek-harness](https://github.com/jammer-droid/deepseek-harness); see `SOURCE` for the exact commit. Changes made here are overwritten by the next sync.
-
 ```sh
 pnpm install
 pnpm test        # typecheck, build, tests
 node pack.mjs    # writes dist/matamt-dbg-dsh-studio-<version>.tgz
 ```
 
-Reference notes are in [docs/reference](docs/reference) (Korean).
+Please report bugs and requests in [Issues](https://github.com/matamt-dbg/dsh-studio/issues).
 
 ## License
 

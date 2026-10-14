@@ -11,9 +11,7 @@
     "tsconfig.host.json",
     "tsconfig.client.json",
     "LICENSE",
-    ".gitignore",
-    "docs/reference",
-    "docs/development/design-system.md"
+    ".gitignore"
   ],
   "exclude": [
     "test/staged-scope.test.mjs"
@@ -53,5 +51,19 @@
   "publisher": {
     "github": "matamt-dbg",
     "npm": "mamt"
-  }
+  },
+  "forbidden": [
+    "jammer",
+    "deepseek-harness/studio",
+    "feat/workflow",
+    "feat/lean-agent",
+    "lean-agent",
+    "/Users/",
+    "/private/tmp",
+    "1938[78]",
+    "studio/feat",
+    "HarnessEngineeringLab",
+    "the fork",
+    "monorepo"
+  ]
 }

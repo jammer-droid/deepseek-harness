@@ -1,5 +1,5 @@
 {
-  // Standalone copy of the deepseek-harness base options, without monorepo path aliases.
+  // Shared strict compiler options for host and client builds.
   "compilerOptions": {
     "target": "es2024",
     "module": "esnext",

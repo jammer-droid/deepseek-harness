@@ -12,7 +12,7 @@ const manifest = JSON.parse(await readFile(path.join(source, 'package.json'), 'u
 await rm(staging, { recursive: true, force: true });
 await mkdir(staging, { recursive: true });
 for (const file of manifest.files) await cp(path.join(source, file), path.join(staging, file));
-// The npm page shows the public README; the fork keeps its internal README at the root.
+// Prefer the user-facing README in release/ when present.
 const readme = ['release/README.md', 'README.md'].map(file => path.join(root, file)).find(file => existsSync(file));
 await cp(readme, path.join(staging, 'README.md'));
 await cp(path.join(root, 'LICENSE'), path.join(staging, 'LICENSE'));

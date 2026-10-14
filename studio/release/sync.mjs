@@ -97,7 +97,15 @@ for (const file of exported.filter(file => file.endsWith('.md'))) {
   }));
 }
 const marker = `${sourceBranch}@${source}`;
-await writeFile(path.join(work, 'SOURCE'), `Snapshot of deepseek-harness studio/ at ${marker}.\nDo not edit here; change the source and re-sync.\n`);
+const version = JSON.parse(await readFile(path.join(studio, 'packages/shell/package.json'), 'utf8')).version;
+// The public tree must not name the private source, its authors, branches or local machines.
+const leaks = [];
+for (const file of (await readdir(work, { recursive: true })).filter(file => !file.startsWith('.git') && !file.startsWith('node_modules'))) {
+  const full = path.join(work, file);
+  let text; try { text = await readFile(full, 'utf8'); } catch { continue; }
+  for (const pattern of config.forbidden) for (const line of text.split('\n')) if (new RegExp(pattern, 'i').test(line)) leaks.push(`${file}: /${pattern}/ ${line.trim().slice(0, 100)}`);
+}
+if (leaks.length) throw new Error(`Snapshot contains private references:\n${leaks.join('\n')}`);
 
 // 5. Prove the snapshot builds from public packages alone, then pack it.
 run('pnpm', ['install', '--no-frozen-lockfile'], work);
@@ -111,15 +119,17 @@ const unchanged = !git(['status', '--porcelain'], work);
 if (unchanged && !publish) { console.log('No changes relative to the published snapshot.'); process.exit(0); }
 // Snapshots are authored by the publishing account, never the fork's local git identity.
 const identity = { GIT_AUTHOR_NAME: config.author.name, GIT_AUTHOR_EMAIL: config.author.email, GIT_COMMITTER_NAME: config.author.name, GIT_COMMITTER_EMAIL: config.author.email };
-if (!unchanged) run('git', ['commit', '--quiet', '-m', `sync: deepseek-harness ${marker}`], work, { env: identity });
+if (!unchanged) run('git', ['commit', '--quiet', '-m', `release: ${version}`], work, { env: identity });
 console.log(git(['show', '--stat', '--oneline', 'HEAD'], work).split('\n').slice(0, 1).join('\n'));
 if (!push) { console.log(`Dry run: not pushed. Inspect ${work}; re-run with --push to publish the snapshot.`); process.exit(0); }
 // Push with the publisher's token so the active gh account and local git credentials never matter.
 const auth = Buffer.from(`x-access-token:${ghToken()}`).toString('base64');
 run('git', ['-c', `http.https://github.com/.extraheader=AUTHORIZATION: basic ${auth}`, '-c', 'credential.helper=', 'push', 'origin', `HEAD:${branch}`], work);
-console.log(`Pushed ${marker} to ${repo} ${branch} as ${config.publisher.github}.`);
+// Traceability stays in the private source: a local tag maps this source commit to the public snapshot.
+const snapshot = git(['rev-parse', '--short=10', 'HEAD'], work);
+run('git', ['tag', '-f', `dsh-studio-snapshot/${snapshot}`, 'HEAD'], monorepo);
+console.log(`Pushed ${marker} to ${repo} ${branch} as ${config.publisher.github}; tagged dsh-studio-snapshot/${snapshot} locally.`);
 if (!publish) process.exit(0);
 if (!existsSync(tarball)) throw new Error('Packed tarball missing');
-const version = JSON.parse(await readFile(path.join(work, 'packages/shell/package.json'), 'utf8')).version;
 run('npm', ['publish', tarball, '--access', 'public', ...(otp ? ['--otp', otp] : [])], work);
 console.log(`Published @${version} as ${config.publisher.npm}.`);
