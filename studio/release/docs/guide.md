@@ -11,6 +11,7 @@ DSH Studio is a page inside the DeepSeek Harness web GUI for building **agent pr
   - [Prompt preview](#prompt-preview)
   - [Execution settings](#execution-settings)
   - [Subagent settings](#subagent-settings)
+- [Adapt Optimized to your work](#adapt-optimized-to-your-work)
 - [Apply a preset to DSH](#apply-a-preset-to-dsh)
 - [Tool providers](#tool-providers)
 - [Where data is stored](#where-data-is-stored)
@@ -35,7 +36,7 @@ The list shows every preset Studio manages:
 | Preset | What it is |
 |---|---|
 | **Studio Master** | Read-only reference that contains every tool Studio can offer. Use it to see what is available. |
-| **Optimized** | Built-in starting point: 22 everyday tools, tuned tool descriptions and execution defaults, and short working instructions. You can edit it, but not delete it. |
+| **Optimized** | Built-in starting point for coding agents: 22 everyday tools, tuned tool descriptions and execution defaults, and short working instructions. You can edit it, but not delete it. See [Adapt Optimized to your work](#adapt-optimized-to-your-work). |
 | Your presets | Anything you create or copy. |
 
 Each card shows its status — **Applied**, **Needs reapply** (saved changes not yet in DSH), or **Not applied** — and the number of tools and subagent roles. The card buttons:
@@ -113,6 +114,22 @@ Add **roles** to give the agent named specialists to delegate to:
 The agent writes the actual task each time it calls `subagent_role`. With **no roles**, `subagent_role` starts a fresh subagent with the parent's model, reasoning and preset instructions.
 
 Models are checked when you apply the preset and again before each call, so an unavailable model fails early with a clear message.
+
+## Adapt Optimized to your work
+
+Optimized is tuned for **coding-agent work**: reading and editing code, running commands, and checking results. For anything else, treat it as a starting point. Select **Create copy** on Optimized and adjust the copy with the same screens described above — nothing in Optimized is fixed.
+
+| If you want to… | Change this |
+|---|---|
+| Track long, multi-step objectives | Turn on the goal and todo tools (`create_goal`, `get_goal`, `update_goal`, `todo_write`) in **Prompts & tools**. |
+| Develop or inspect DSH plugins | Turn on `cordis_inspect_list`, `cordis_inspect_query` and `plugin_manager`. |
+| Do research, writing or operations instead of coding | Rewrite **Additional Studio instructions** for that work, and drop tools it does not need. |
+| Change how much tool output stays inline | Adjust `spill-policy` in **Execution settings**. |
+| Tune any other plugin behavior | Turn on that plugin in **Execution settings** and edit only the fields you need. |
+| Steer how the model uses a tool | Edit its description, usage instructions or parameter text in the tool's **Details**. |
+| Delegate to specialists | Add roles in **Subagent settings** with their own model, reasoning effort and persona. |
+
+Use **Preview prompt** after each change to confirm what the model will receive, then save and apply the copy. Optimized itself stays available as a reference, and you can keep several presets for different kinds of work.
 
 ## Apply a preset to DSH
 

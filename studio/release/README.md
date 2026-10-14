@@ -34,7 +34,9 @@ Compared with the stock setup, Optimized
 - **folds delegation into one tool**, `subagent_role`, instead of several generic subagent tools;
 - **adds working instructions and tunes tool descriptions** so the model batches independent reads, waits for background work instead of polling it, collects the jobs it starts, and keeps checks proportional before reporting.
 
-In our early internal benchmarks, this preset performed noticeably better than DSH's stock `standard` preset. Treat Optimized as a starting point: copy it and tune it for your own work.
+In our early internal benchmarks, this preset performed noticeably better than DSH's stock `standard` preset.
+
+Optimized is tuned for **coding-agent work**. It is a starting point, not a fixed recipe: copy it and adjust the tools, instructions, tool descriptions and plugin Configs to fit your own tasks. See [Adapt Optimized to your work](docs/guide.md#adapt-optimized-to-your-work).
 
 > DSH Studio is a community project. It is not affiliated with, endorsed by, or supported by DeepSeek.
 
