@@ -1,6 +1,6 @@
 import type { Context } from '@deepseek-ai/cordis';
 import { applyExecutionDefaults, validateBatchLimit, validateExecutionDefault, validateExecutionDefaults, type ExecutionDefaults } from '../execution-defaults.ts';
-import { scopeOf } from '@deepseek-ai/dsh-scope';
+import { scopeChainOf, scopeOf } from '@deepseek-ai/dsh-scope';
 import type { PromptSectionOrderName } from '@deepseek-ai/dsh-system-prompt';
 import type {} from '@deepseek-ai/dsh-tools';
 import type {} from '@deepseek-ai/dsh-agent-preset-registry';
@@ -117,15 +117,64 @@ export function installPolicy(ctx: Context, scopeKey: object, config: PresetPoli
   } catch (error) { dispose(); throw error; }
 }
 
+interface PolicyAgent { ctx: Context; id?: unknown }
+interface AgentRegistry { list(): PolicyAgent[] }
+
 export const name = 'studio-preset-policy';
 export const inject = ['tools', 'systemPrompt'];
 export function apply(ctx: Context, config: PresetPolicyConfig): void {
   validatePolicy(config);
-  const installed = new Map<object, () => void>();
-  ctx.on('agent/created', ({ agent }) => {
-    if (!installed.has(agent)) installed.set(agent, installPolicy(agent.ctx, agent, config));
-    return undefined;
+  const installed = new Map<PolicyAgent, () => void>();
+  const installing = new Set<PolicyAgent>();
+  const install = (agent: PolicyAgent) => {
+    if (installed.has(agent) || installing.has(agent)) return;
+    // Reserve first: registering the patched definitions emits tools/change synchronously.
+    installing.add(agent);
+    try { installed.set(agent, installPolicy(agent.ctx, agent, config)); }
+    finally { installing.delete(agent); }
+  };
+  const remove = (agent: PolicyAgent) => { installed.get(agent)?.(); installed.delete(agent); };
+  ctx.on('agent/created', ({ agent }) => { install(agent as PolicyAgent); return undefined; });
+  ctx.on('agent/disposed', ({ agent }) => { remove(agent as PolicyAgent); });
+
+  // A session that picks this preset before its first turn is created under the default preset
+  // and then reparented (agentPresets.select -> recompose). That emits tools/change, not
+  // agent/created, so reconcile live Agents by ancestry: install for Agents now under this
+  // preset's scope, release for Agents that moved away.
+  const composition = scopeOf(ctx);
+  const agents = ctx.get('agents' as never) as AgentRegistry | undefined;
+  if (composition === undefined || agents === undefined) {
+    ctx.effect(() => () => { for (const dispose of installed.values()) dispose(); installed.clear(); });
+    return;
+  }
+  const belongs = (agent: PolicyAgent) => scopeChainOf(scopeOf(agent.ctx)).includes(composition);
+  // Fail closed but keep retrying: an Agent that joined this preset but cannot take its policy
+  // yet must not run the unrestricted inherited tool set, so every call is denied. The usual
+  // cause is transient: the previous preset's own-scope tool (tool-subagent's `subagent`) is
+  // removed asynchronously after the same tools/change, and that removal emits tools/change again.
+  const blocked = new Map<PolicyAgent, { release: () => void; reason: string }>();
+  const unblock = (agent: PolicyAgent) => { blocked.get(agent)?.release(); blocked.delete(agent); };
+  const block = (agent: PolicyAgent, error: unknown) => {
+    const reason = `Studio preset policy could not be installed: ${error instanceof Error ? error.message : String(error)}`;
+    const current = blocked.get(agent);
+    if (current?.reason === reason) return;
+    current?.release();
+    blocked.set(agent, { release: agent.ctx.tools.guard(() => reason), reason });
+  };
+  const reconcile = () => {
+    const live = agents.list();
+    for (const agent of live) {
+      if (!belongs(agent)) { remove(agent); unblock(agent); continue; }
+      if (installed.has(agent)) continue;
+      try { install(agent); unblock(agent); } catch (error) { block(agent, error); }
+    }
+    for (const agent of [...blocked.keys()]) if (!live.includes(agent)) unblock(agent);
+  };
+  ctx.on('tools/change', reconcile);
+  ctx.on('agent/disposed', ({ agent }) => { unblock(agent as PolicyAgent); });
+  reconcile();
+  ctx.effect(() => () => {
+    for (const dispose of installed.values()) dispose(); installed.clear();
+    for (const agent of [...blocked.keys()]) unblock(agent);
   });
-  ctx.on('agent/disposed', ({ agent }) => { installed.get(agent)?.(); installed.delete(agent); });
-  ctx.effect(() => () => { for (const dispose of installed.values()) dispose(); installed.clear(); });
 }

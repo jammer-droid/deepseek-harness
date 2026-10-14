@@ -13,6 +13,14 @@ Studio의 도구 조합·노출·실행과 Config 병합을 정리한 개발 검
 - 설치 시 Agent 자체 scope 도구는 임시 inherited restriction 검사로 식별하여 거절한다. 같은 이름으로 상속 도구를 가린 경우도 포함한다. 검사 후 제한을 복원하며 sibling scope를 변경하지 않는다.
 - PTC와 예약 `run_code`는 명시적인 미지원 오류로 거절한다. 전역 presentation을 바꾸거나 통로만 예외 허용하지 않는다.
 
+## 프리셋 선택 후 정책 설치 (0.2.3)
+
+GUI에서 새 세션의 프리셋을 고르면 Agent는 먼저 기본 프리셋(`standard`)으로 생성되고, 첫 턴 전에 `agentPresets.select()` → `recompose()`로 선택한 프리셋 scope에 다시 연결된다. 이 경로는 `agent/created`를 다시 발생시키지 않고 `tools/change`만 발생시킨다. 기존 policy는 `agent/created`에서만 설치되어, 이렇게 시작한 세션에는 Studio 프리셋 플러그인의 도구만 더해지고 도구 제한·실행 차단·설명 덮어쓰기·추가 지침이 적용되지 않았다. 실제 desktop 세션에서 Optimized Copy(26개 선택)를 골랐는데 도구가 33개였고 `bash` 설명이 원본이었다.
+
+policy 플러그인은 `tools/change`에서 Agent 레지스트리를 훑어, scope 조상에 이 프리셋이 있는 Agent에 policy를 설치하고 다른 프리셋으로 옮겨간 Agent의 policy를 해제한다. DSH `tool-subagent`가 같은 경로에 쓰는 방식이며, `recompose`의 `tools/change` 발생은 0.2.0-rc.2와 0.2.1-alpha.2 모두 같다. 프리셋에 들어온 Agent에 policy를 설치하지 못하면 제한 없이 실행하지 않고 모든 도구 호출을 거절하는 guard를 건다. 회귀 테스트: [policy-reselect.test.mjs](../../test/policy-reselect.test.mjs) (수정 전 2건 실패, 수정 후 통과).
+
+0.2.3을 desktop 앱에 설치해 확인한 결과, `standard`로 만든 세션에서 Optimized를 고르면 policy 설치가 `own-scope tools: subagent`로 거절되어 모든 도구 호출이 막혔다. `standard`의 `tool-subagent`가 Agent 자체 scope에 등록한 `subagent`가 같은 `tools/change` 이후 비동기로 제거되기 때문이다. 0.2.4는 설치에 실패한 Agent를 막아 두고 이후 `tools/change`마다 다시 설치를 시도해, 이전 프리셋의 도구가 제거되면 policy를 적용하고 차단을 해제한다. 도구 제거도 `tools/change`를 발생시키는 것은 0.2.0-rc.2 `dsh-tools`에서 확인했다.
+
 ## 공개 API 제한
 
 Inspect의 tools 계약에서 `restrict`는 inherited 도구를 제한하지만 own-scope 등록은 숨기지 않는다. scope-local 도구를 선택적으로 숨기는 공개 API는 확인되지 않았다. 따라서 외부 제공자는 안정된 ancestor preset scope 등록을 사용해야 한다.
