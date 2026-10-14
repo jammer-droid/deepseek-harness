@@ -50,7 +50,7 @@ Restart the web GUI, then open **DSH Studio** from the sidebar.
 
 ## Features
 
-![Preset list](docs/images/preset-list.png)
+![Preset list](docs/images/en/preset-list.png)
 
 - **Presets** — a read-only *Studio Master* with every available tool, a built-in *Optimized* preset (22 everyday tools), and your own presets. Edit, copy, delete, apply to DSH, or unapply.
 - **Prompts & tools** — edit persona and additional instructions, pick tools (or whole built-in tool sets), and rewrite the descriptions the model sees for each tool and parameter.
@@ -60,9 +60,9 @@ Restart the web GUI, then open **DSH Studio** from the sidebar.
 
 | Prompts & tools | Prompt preview | Subagent roles |
 |---|---|---|
-| ![Tools](docs/images/tools.png) | ![Preview](docs/images/prompt-preview.png) | ![Roles](docs/images/role-editor.png) |
+| ![Tools](docs/images/en/tools.png) | ![Preview](docs/images/en/prompt-preview.png) | ![Roles](docs/images/en/role-editor.png) |
 
-**[사용 가이드 (한국어) →](docs/guide.ko.md)**
+**User guide: [English](docs/guide.md) · [한국어](docs/guide.ko.md)**
 
 ## Quick start
 

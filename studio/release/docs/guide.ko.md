@@ -1,5 +1,7 @@
 # DSH Studio 사용 가이드
 
+[English](guide.md) | 한국어
+
 DSH Studio는 DeepSeek Harness 웹 GUI 안에서 **에이전트 프리셋**을 만드는 화면입니다. 에이전트가 볼 도구, 처음 받는 지침, 플러그인 설정, 작업을 맡길 서브에이전트 역할을 한곳에서 정하고, DSH에 반영하면 새 세션에서 그 프리셋을 고를 수 있습니다.
 
 - [설치하고 열기](#설치하고-열기)
@@ -26,7 +28,7 @@ dsh plugin --profile web add @matamt-dbg/dsh-studio
 
 ## 프리셋 목록
 
-![프리셋 목록](images/preset-list.png)
+![프리셋 목록](images/ko/preset-list.png)
 
 Studio가 관리하는 프리셋이 카드로 표시됩니다.
 
@@ -51,7 +53,7 @@ Studio가 관리하는 프리셋이 카드로 표시됩니다.
 
 ### 프롬프트·도구
 
-![프롬프트 구성](images/prompts.png)
+![프롬프트 구성](images/ko/prompts.png)
 
 **프롬프트**에서는 에이전트가 처음 받는 지침을 정합니다.
 
@@ -59,7 +61,7 @@ Studio가 관리하는 프리셋이 카드로 표시됩니다.
 - **끝에 붙일 지침 (Persona)**: persona 뒤에 덧붙는 문구입니다.
 - **추가 지침**: 직접 정하는 작업 규칙입니다. 시스템 프롬프트의 마지막 섹션으로 들어갑니다.
 
-![도구 선택](images/tools.png)
+![도구 선택](images/ko/tools.png)
 
 **도구**에서는 에이전트가 호출할 수 있는 도구를 고릅니다.
 
@@ -67,7 +69,7 @@ Studio가 관리하는 프리셋이 카드로 표시됩니다.
 - **기본 프리셋에서 한 번에 추가**는 DSH의 `standard`, `ptc`, `minimal`, `creator (cordis)` 프리셋 도구를 한 번에 넣거나 뺍니다. 그 묶음의 도구가 모두 선택되어 있으면 버튼이 눌린 상태로 보입니다.
 - 이름·설명·인자로 검색하고 **전체**, **선택됨**, **변경됨**으로 걸러 볼 수 있습니다.
 
-![도구 설정](images/tool-details.png)
+![도구 설정](images/ko/tool-details.png)
 
 선택한 도구의 **설정**에서는 모델이 읽는 설명만 바꿉니다. 도구의 동작은 바뀌지 않습니다.
 
@@ -79,25 +81,25 @@ Studio가 관리하는 프리셋이 카드로 표시됩니다.
 
 ### 프롬프트 미리보기
 
-![프롬프트 미리보기](images/prompt-preview.png)
+![프롬프트 미리보기](images/ko/prompt-preview.png)
 
 **프롬프트 미리보기**는 DSH가 이 프리셋으로 조립할 시스템 프롬프트를 그대로 보여줍니다. 에이전트를 시작하거나 모델을 호출하지 않습니다. 왼쪽에는 섹션이 조립 순서대로, 오른쪽에는 모델이 받는 도구 스키마가 표시됩니다. 미리보기를 연 뒤 설정을 바꾸면 다시 실행하라는 안내가 나옵니다.
 
 ### 실행 설정
 
-![실행 설정](images/execution-settings.png)
+![실행 설정](images/ko/execution-settings.png)
 
 플러그인 Config 값을 이 프리셋에서만 덮어씁니다. 예를 들어 `spill-policy`로 도구 출력을 화면에 얼마나 보여주고 나머지를 파일로 넘길지 정할 수 있습니다. 플러그인을 켜고 **설정**에서 값을 바꾸면, 바꾼 항목만 저장됩니다. 끄면 기본값으로 돌아갑니다. 설정 형식을 읽을 수 없는 플러그인은 비활성으로 표시됩니다.
 
 ### 서브에이전트
 
-![서브에이전트](images/subagents.png)
+![서브에이전트](images/ko/subagents.png)
 
 Studio는 DSH의 기본 서브에이전트 도구(`subagent`, `subagent_fork`, `list_subagent_models`)를 **`subagent_role`** 하나로 통합해 제공합니다. 그만큼 초기 프롬프트가 가벼워집니다. 시작한 서브에이전트에 추가 지시를 보내거나 멈추고 목록을 보는 `send_message`, `interrupt_agent`, `list_agents`는 그대로 쓸 수 있습니다. `subagent_role`의 설명은 프롬프트·도구 탭의 도구 목록에서 확인하고 고칠 수 있습니다.
 
 **역할 추가**로 에이전트가 일을 맡길 전문 역할을 정의합니다.
 
-![역할 편집](images/role-editor.png)
+![역할 편집](images/ko/role-editor.png)
 
 | 항목 | 설명 |
 |---|---|
