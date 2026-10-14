@@ -146,7 +146,7 @@ test('a subagent tool filter is validated on apply and reaches both the role too
   assert.deepEqual(plugins.at(-1).config.childToolFilter,{deny:['read']});
   // A hidden tool the preset does not select would fail every delegation; reject it when applying.
   const bad=await store.save(JSON.stringify({...draft,request:{...draft.request,subagentToolFilter:{deny:['write']}}}));
-  await assert.rejects(store.apply(bad.id),/hidden from subagents must be selected in this preset: write/);
+  await assert.rejects(store.apply(bad.id),/Subagent Tool Filter may only list tools selected in this preset: write/);
   // An empty filter is not stored, and a preset without delegation carries no filter.
   const empty=await store.save(JSON.stringify({name:'Empty',description:'',request:{...request,tools:['read'],subagentToolFilter:{deny:[]}}}));
   assert.equal(empty.request.subagentToolFilter,undefined);

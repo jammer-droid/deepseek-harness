@@ -4,7 +4,7 @@ import { defineTool } from '@deepseek-ai/dsh-tools';
 
 import { ReasoningEffortId } from '@deepseek-ai/dsh-llm';
 import type {} from '@deepseek-ai/dsh-subagent';
-import { executableRoles, parseRoles, type StudioRole } from '../role-settings.ts';
+import { executableRoles, parseRoles, roleToolFilter, type StudioRole } from '../role-settings.ts';
 import { ROLE_TOOL } from '../delegation.ts';
 
 export const name = 'studio-role';
@@ -16,8 +16,7 @@ export function apply(ctx: Context, config: Config): void {
   const roles = executableRoles(parseRoles(config.roles));
   const deny = config.toolFilter?.deny;
   if (deny !== undefined && (!Array.isArray(deny) || deny.some(name => typeof name !== 'string' || !name))) throw new Error('Invalid subagent tool filter');
-  // Same native restriction tool-subagent applies from its toolFilter Config, for fresh and fork alike.
-  const toolFilter = deny?.length ? { deny: [...deny] } : undefined;
+  const presetDefault = deny ?? [];
   ctx.tools.register(defineTool({
     name: ROLE_TOOL,
     description: roles.length
@@ -51,6 +50,10 @@ export function apply(ctx: Context, config: Config): void {
       }
       if (role.reasoning !== 'inherit') agentOptions.reasoningEffort = ReasoningEffortId(role.reasoning);
       const maxDepth = ctx.subagents.resolveMaxDepth();
+      // Same native restriction tool-subagent applies from its toolFilter Config, for fresh and fork
+      // alike. A role's own list replaces the preset default; the implicit role uses the default.
+      const hidden = roleToolFilter(roles.length ? role as StudioRole : undefined, presetDefault);
+      const toolFilter = hidden.length ? { deny: hidden } : undefined;
       const spec = {
         provider: role.spawn === 'fork' ? 'fork' : 'spawn', label: role.name,
         request: { parent: exec.agent, prompt: [{ type: 'text' as const, text: args.task }],

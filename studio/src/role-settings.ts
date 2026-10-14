@@ -1,7 +1,10 @@
 /** Persisted editor shape. Legacy overrides are retained as data, never executed. */
 export interface StudioRole {
   name: string; role: string; model: string; reasoning: string;
-  spawn: 'fresh' | 'fork'; persona: string; overrides?: unknown;
+  spawn: 'fresh' | 'fork'; persona: string;
+  /** Tools hidden from this role's subagents; replaces the preset default. Omitted: use the preset default. */
+  toolFilter?: { deny: string[] };
+  overrides?: unknown;
 }
 const object = (value: unknown): value is Record<string, unknown> => !!value && typeof value === 'object' && !Array.isArray(value);
 export function parseRoles(input: unknown): StudioRole[] {
@@ -26,10 +29,18 @@ export function parseRoles(input: unknown): StudioRole[] {
     if (!/^[a-zA-Z0-9_-]+$/.test(reasoning)) throw new Error('Role reasoning must be inherit or an effort identifier');
     if (spawn !== 'fresh' && spawn !== 'fork') throw new Error('Role spawn must be fresh or fork');
     seen.add(role);
-    return { name, role, model, reasoning, spawn, persona, ...('overrides' in value ? { overrides: structuredClone(value.overrides) } : {}) };
+    const filter = value.toolFilter;
+    if (filter !== undefined && (!object(filter) || !Array.isArray(filter.deny) || filter.deny.some(name => typeof name !== 'string' || !name))) throw new Error('Invalid role tool filter');
+    return { name, role, model, reasoning, spawn, persona,
+      ...(filter !== undefined ? { toolFilter: { deny: [...new Set(filter.deny as string[])] } } : {}),
+      ...('overrides' in value ? { overrides: structuredClone(value.overrides) } : {}) };
   });
 }
 /** Strict allowlist crossing the stored-data → executable-config boundary. */
 export function executableRoles(roles: StudioRole[]): Omit<StudioRole, 'overrides'>[] {
-  return roles.map(({ name, role, model, reasoning, spawn, persona }) => ({ name, role, model, reasoning, spawn, persona }));
+  return roles.map(({ name, role, model, reasoning, spawn, persona, toolFilter }) => ({ name, role, model, reasoning, spawn, persona, ...(toolFilter ? { toolFilter } : {}) }));
+}
+/** The tools a role's subagents do not get: its own list when set, else the preset default. */
+export function roleToolFilter(role: Pick<StudioRole, 'toolFilter'> | undefined, presetDefault: readonly string[] = []): string[] {
+  return [...(role?.toolFilter?.deny ?? presetDefault)];
 }

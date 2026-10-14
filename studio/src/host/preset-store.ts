@@ -194,11 +194,14 @@ export class PresetStore {
     // Generic subagent tools never ship with a Studio preset; the role tool replaces them, even with no saved roles.
     // Tools hidden from every subagent. They must be tools the preset selects: DSH rejects a child
     // filter naming a tool the child could not inherit, so check here instead of at the first call.
-    const hidden = (old.request.subagentToolFilter?.deny ?? []).filter(name => name !== ROLE_TOOL || delegates);
-    const unknownHidden = hidden.filter(name => !tools.includes(name));
-    if (unknownHidden.length) throw new Error(`Tools hidden from subagents must be selected in this preset: ${unknownHidden.join(', ')}`);
-    const childToolFilter = delegates && hidden.length ? { deny: hidden } : undefined;
-    const rolePlugins: CompositionRow[] = delegates ? [{ id: 'studio-roles', name: ROLE_PLUGIN, config: { roles, ...(childToolFilter ? { toolFilter: childToolFilter } : {}) } }] : [];
+    const presetHidden = old.request.subagentToolFilter?.deny ?? [];
+    const lists = [presetHidden, ...roles.map(role => role.toolFilter?.deny ?? [])];
+    const unknownHidden = [...new Set(lists.flat().filter(name => !tools.includes(name) || name === ROLE_TOOL))];
+    if (delegates && unknownHidden.length) throw new Error(`Subagent Tool Filter may only list tools selected in this preset: ${unknownHidden.join(', ')}`);
+    // The policy may hide any tool some role (or the default) filters; each child hides only its own list.
+    const hideable = delegates ? [...new Set(lists.flat())] : [];
+    const childToolFilter = hideable.length ? { deny: hideable } : undefined;
+    const rolePlugins: CompositionRow[] = delegates ? [{ id: 'studio-roles', name: ROLE_PLUGIN, config: { roles, ...(presetHidden.length ? { toolFilter: { deny: [...presetHidden] } } : {}) } }] : [];
     const execution = request.execution && { ...request.execution, defaults: keep(request.execution.defaults),
       ...(request.execution.batch && !tools.includes(request.execution.batch.tool) ? { batch: undefined } : {}) };
     const applied = { name: old.name, description: old.description, plugins: dump([...withoutDelegationPlugins(plugins), ...rolePlugins, { id: 'studio-policy', name: POLICY_PLUGIN, config: { tools: [...new Set(tools)], toolOverrides: keep(request.toolOverrides ?? {}), sections: request.sections ?? {}, prompt: request.prompt, ...(execution ? { execution } : {}), ...(childToolFilter ? { childToolFilter } : {}) } }], { schema: entryListSchema, noRefs: true }) };

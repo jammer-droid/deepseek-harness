@@ -6,7 +6,7 @@ export interface RoleModelCatalog {
   groups: { id: string; name: string; models: { id: string; name: string; reasoning?: { efforts: { id: string; name: string }[] } }[] }[];
   failures: { name: string; message: string }[];
 }
-export function RoleEditor({ locale, roles, onChange, loadModels, defaultPersona = '', tools, hiddenTools = [], onHiddenToolsChange }: { locale: string; roles: StudioRole[]; onChange: (roles: StudioRole[]) => void; loadModels?: (() => Promise<RoleModelCatalog>) | undefined; defaultPersona?: string; tools?: { name: string; description: string }[] | undefined; hiddenTools?: string[]; onHiddenToolsChange?: ((names: string[]) => void) | undefined }) {
+export function RoleEditor({ locale, roles, onChange, loadModels, defaultPersona = '', tools, hiddenTools = [], onHiddenToolsChange, delegates = true }: { delegates?: boolean; locale: string; roles: StudioRole[]; onChange: (roles: StudioRole[]) => void; loadModels?: (() => Promise<RoleModelCatalog>) | undefined; defaultPersona?: string; tools?: { name: string; description: string }[] | undefined; hiddenTools?: string[]; onHiddenToolsChange?: ((names: string[]) => void) | undefined }) {
   const t = (ko: string, en: string, zh: string) => locale.startsWith('ko') ? ko : locale.startsWith('zh') ? zh : en;
   const [selected, setSelected] = React.useState<number>();
   const [catalog, setCatalog] = React.useState<RoleModelCatalog>();
@@ -21,9 +21,16 @@ export function RoleEditor({ locale, roles, onChange, loadModels, defaultPersona
   const models = (catalog?.groups ?? []).flatMap(group => group.models.map(model => ({ ...model, value: `${group.id}/${model.id}`, label: `${group.name} · ${model.name}` })));
   const role = selected === undefined ? undefined : roles[selected];
   const model = models.find(model => model.value === role?.model);
-  const update = (patch: Partial<StudioRole>) => onChange(roles.map((role, index) => index === selected ? { ...role, ...patch } : role));
+  const update = (patch: { [K in keyof StudioRole]?: StudioRole[K] | undefined }) => onChange(roles.map((role, index) => {
+    if (index !== selected) return role;
+    const next = { ...role, ...patch } as StudioRole;
+    if (next.toolFilter === undefined) delete next.toolFilter;
+    return next;
+  }));
   const field = (label: string, content: React.ReactNode) => <label className="studio-field"><span>{label}</span>{content}</label>;
   const close = () => setSelected(undefined);
+  const defaultCount = hiddenTools.filter(name => tools?.some(tool => tool.name === name)).length;
+  const filterTitle = t('서브에이전트 Tool Filter', 'Subagent Tool Filter', '子代理 Tool Filter');
   return <>
     <SectionHead title={<h3 className="studio-panel-title">{t('서브에이전트', 'Subagents', '子代理')}<span className="studio-count">{roles.length}</span></h3>} description={t('바꾼 내용은 프리셋을 저장하고 DSH에 다시 반영해야 적용됩니다.', 'Save the preset and reapply it to DSH after changes.', '修改后需保存预设并重新应用到 DSH。')} actions={<><Button small disabled={loading || !loadModels} onClick={() => void refresh()}>{loading ? t('모델 불러오는 중…', 'Loading models…', '正在加载模型…') : t('모델 목록 새로고침', 'Refresh models', '刷新模型列表')}</Button><Button small onClick={() => { setSelected(roles.length); onChange([...roles, { name: '', role: '', model: 'inherit', reasoning: 'inherit', spawn: 'fresh', persona: '' }]); }}>{t('역할 추가', 'Add role', '添加角色')}</Button></>} />
     {error && <Note>{error}</Note>}{catalog?.failures.map(failure => <Note key={failure.name}>{failure.name}: {failure.message}</Note>)}
@@ -38,11 +45,9 @@ export function RoleEditor({ locale, roles, onChange, loadModels, defaultPersona
       <div className="studio-card-footer"><Button small aria-haspopup="dialog" onClick={() => setSelected(index)}>{t('편집', 'Edit', '编辑')}</Button></div>
     </article>)}</div>
     {tools && onHiddenToolsChange && <section className="studio-form-section">
-      <SectionHead title={t('서브에이전트에게 숨길 도구', 'Tools hidden from subagents', '对子代理隐藏的工具')} description={t('선택한 도구는 이 프리셋의 모든 서브에이전트(새 대화·부모 대화 이어받기)에서 빠지고, 호출해도 거절됩니다. 부모 에이전트는 그대로 씁니다. 사용자와 직접 대화하는 도구처럼 자식에게 필요 없는 도구를 숨기면 자식의 컨텍스트가 가벼워집니다.', 'Checked tools are removed from every subagent of this preset, in both New conversation and Continue parent modes, and calls to them are rejected. The parent agent keeps them. Hiding tools a child does not need, such as ones that talk to the user directly, keeps the child’s context smaller.', '勾选的工具会从此预设的所有子代理（新对话和继承父对话）中移除，调用也会被拒绝。父代理仍可使用。隐藏子代理不需要的工具（例如直接与用户对话的工具）可让子代理的上下文更精简。')} />
-      <ItemPicker label={t('서브에이전트에게 숨길 도구', 'Tools hidden from subagents', '对子代理隐藏的工具')}
-        items={[...tools, ...hiddenTools.filter(name => !tools.some(tool => tool.name === name)).map(name => ({ name, description: t('이 프리셋에서 선택하지 않은 도구입니다. 해제하거나 도구를 선택하세요. 이대로 반영하면 실패합니다.', 'Not selected in this preset. Uncheck it or select the tool; applying will fail otherwise.', '此预设未选择该工具。请取消勾选或选择该工具，否则应用会失败。') }))]}
-        selected={hiddenTools} onChange={onHiddenToolsChange} hasDetails={() => false}
-        labels={{ filter: t('보기', 'Show', '显示'), search: t('도구 검색', 'Search tools', '搜索工具'), searchHint: t('이름, 설명으로 검색', 'Search names or descriptions', '按名称或描述搜索'), all: t('전체', 'All', '全部'), selected: t('숨김', 'Hidden', '已隐藏'), modified: t('변경됨', 'Modified', '已修改'), settings: t('설정', 'Details', '设置'), done: t('완료', 'Close', '完成'), empty: t('이 프리셋에서 선택한 도구가 없습니다.', 'This preset selects no tools.', '此预设未选择任何工具。'), noResults: t('검색 결과가 없습니다.', 'No matching results.', '没有匹配结果。'), modifiedTag: t('변경됨', 'Modified', '已修改'), clear: t('전체 보기', 'Show all', '显示全部') }} />
+      <SectionHead title={filterTitle} description={t('Tool Filter에 등록한 도구는 이 프리셋의 모든 서브에이전트에서 빠집니다. 서브에이전트의 시스템 프롬프트에서 서브에이전트에게 필요 없는 도구를 제거해 컨텍스트를 가볍게 유지해 보세요. 역할 편집에서 역할마다 따로 정할 수도 있습니다.', 'Tools in the Tool Filter are removed from every subagent of this preset. Remove tools a subagent does not need from its system prompt to keep its context light. Each role can also set its own list in the role editor.', '加入 Tool Filter 的工具会从此预设的所有子代理中移除。从子代理的系统提示中移除其不需要的工具，让上下文保持精简。也可以在角色编辑中为每个角色单独设置。')} />
+      {!delegates ? <Note>{t('프롬프트·도구 탭에서 subagent_role을 선택하면 쓸 수 있습니다.', 'Select subagent_role on the Prompts & tools tab to use the Tool Filter.', '在“提示词与工具”页选择 subagent_role 后即可使用。')}</Note>
+        : <ToolFilterPicker label={filterTitle} tools={tools} selected={hiddenTools} onChange={onHiddenToolsChange} t={t} />}
     </section>}
     <DetailDialog open={role !== undefined} title={role?.name || t('새 역할', 'New role', '新角色')} subtitle={t('역할 편집', 'Edit role', '编辑角色')} onClose={close}
       footer={<><Button small onClick={() => { onChange(roles.filter((_, index) => index !== selected)); close(); }}>{t('역할 삭제', 'Remove role', '移除角色')}</Button><Button small primary onClick={close}>{t('완료', 'Done', '完成')}</Button></>}>
@@ -55,9 +60,24 @@ export function RoleEditor({ locale, roles, onChange, loadModels, defaultPersona
         {field(t('추론 수준', 'Reasoning', '推理级别'), <select value={role.reasoning} disabled={!model} onChange={e => update({ reasoning: e.target.value })}><option value="inherit">{role.model === 'inherit' ? t('부모 설정 사용', 'Inherit parent setting', '继承父级设置') : t('모델 기본값', 'Model default', '模型默认值')}</option>{role.reasoning !== 'inherit' && !model?.reasoning?.efforts.some(e => e.id === role.reasoning) && <option value={role.reasoning} disabled>{role.reasoning} · {t('지원 여부 확인 필요', 'Support unconfirmed', '需确认支持')}</option>}{model?.reasoning?.efforts.map(e => <option value={e.id} key={e.id}>{e.name}</option>)}</select>)}
         {field(t('시작 방식', 'Spawn mode', '生成方式'), <select value={role.spawn} onChange={e => update({ spawn: e.target.value as StudioRole['spawn'] })}><option value="fresh">{t('새 대화 (Fresh)', 'New conversation (Fresh)', '新对话（Fresh）')}</option><option value="fork">{t('부모 대화 이어받기 (Fork)', 'Continue parent (Fork)', '继承父对话（Fork）')}</option></select>)}
       </div>
+      {tools && delegates && <div className="studio-field">
+        <span>{filterTitle}</span>
+        <select aria-label={t('이 역할의 Tool Filter', 'Tool Filter for this role', '此角色的 Tool Filter')} value={role.toolFilter ? 'own' : 'default'} onChange={e => update(e.target.value === 'own' ? { toolFilter: { deny: [...hiddenTools] } } : { toolFilter: undefined })}>
+          <option value="default">{t(`프리셋 기본값 사용 (${defaultCount}개)`, `Use preset default (${defaultCount})`, `使用预设默认值（${defaultCount} 个）`)}</option>
+          <option value="own">{t('이 역할만 따로 설정', 'Set for this role only', '仅为此角色设置')}</option>
+        </select>
+        {role.toolFilter && <ToolFilterPicker label={t('이 역할의 Tool Filter', 'Tool Filter for this role', '此角色的 Tool Filter')} tools={tools} selected={role.toolFilter.deny} onChange={deny => update({ toolFilter: { deny } })} t={t} />}
+      </div>}
       {field(t('역할 지침 (persona)', 'Role instructions (persona)', '角色指令（persona）'), <textarea rows={6} value={role.persona} placeholder={defaultPersona} onChange={e => update({ persona: e.target.value })} />)}
       {!role.persona && defaultPersona && <p className="studio-muted studio-hint">{t('흐린 글씨는 프리셋의 기본 persona입니다. 비워 두면 이 내용이 그대로 쓰입니다.', 'The dimmed text is the preset default persona; it is used while this field is empty.', '浅色文字是预设的默认 persona，留空时使用该内容。')}</p>}
 </>}
     </DetailDialog>
   </>;
+}
+
+type Translate = (ko: string, en: string, zh: string) => string;
+/** Tool Filter list: only tools the preset selects. A tool deselected there drops out here and on save. */
+function ToolFilterPicker({ label, tools, selected, onChange, t }: { label: string; tools: { name: string; description: string }[]; selected: string[]; onChange: (names: string[]) => void; t: Translate }) {
+  return <ItemPicker label={label} items={tools} selected={selected.filter(name => tools.some(tool => tool.name === name))} onChange={onChange} hasDetails={() => false}
+    labels={{ filter: t('보기', 'Show', '显示'), search: t('도구 검색', 'Search tools', '搜索工具'), searchHint: t('이름, 설명으로 검색', 'Search names or descriptions', '按名称或描述搜索'), all: t('전체', 'All', '全部'), selected: t('제외됨', 'Filtered', '已排除'), modified: t('변경됨', 'Modified', '已修改'), settings: t('설정', 'Details', '设置'), done: t('완료', 'Close', '完成'), empty: t('이 프리셋에서 선택한 도구가 없습니다.', 'This preset selects no tools.', '此预设未选择任何工具。'), noResults: t('검색 결과가 없습니다.', 'No matching results.', '没有匹配结果。'), modifiedTag: t('변경됨', 'Modified', '已修改'), clear: t('전체 보기', 'Show all', '显示全部') }} />;
 }

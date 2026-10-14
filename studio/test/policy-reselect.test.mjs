@@ -103,3 +103,21 @@ test('a preset subagent filter hides tools from children while the parent keeps 
   const resumed = await createAgent(studio, { filter: policy.childToolFilter });
   assert.deepEqual(ctx.tools.schemas(resumed).map(t => t.name), ['read']);
 });
+
+test('each child hides only its own list and loses usage guidance that belonged to those tools', async () => {
+  const policy = { ...config, tools: ['read', 'write', 'ask_user_question'], toolOverrides: {},
+    sections: { 'tool:write': 'Edited write guidance' }, childToolFilter: { deny: ['ask_user_question', 'write'] } };
+  const { ctx, studio, createAgent } = await runtime(policy);
+  ctx.systemPrompt.section({ name: 'tool:write', order: ctx.systemPrompt.getSectionOrder('TOOL_WRITE'), text: 'Native write guidance' });
+  const text = async agent => (await ctx.systemPrompt.assemble({ scope: agent })).sections.map(s => s.text).join('\n');
+  const parent = await createAgent(studio);
+  assert.match(await text(parent), /Edited write guidance/);
+  const worker = await createAgent(studio, { owner: parent, filter: { deny: ['ask_user_question'] } });
+  assert.deepEqual(ctx.tools.schemas(worker).map(t => t.name).sort(), ['read', 'write']);
+  assert.match(await text(worker), /Edited write guidance/);
+  const reviewer = await createAgent(studio, { owner: parent, filter: { deny: ['write'] } });
+  assert.deepEqual(ctx.tools.schemas(reviewer).map(t => t.name).sort(), ['ask_user_question', 'read']);
+  assert.doesNotMatch(await text(reviewer), /write guidance/);
+  // The parent keeps its own guidance; only the reviewer's copy was blanked.
+  assert.match(await text(parent), /Edited write guidance/);
+});

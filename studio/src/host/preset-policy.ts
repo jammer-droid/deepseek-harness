@@ -4,6 +4,7 @@ import { scopeChainOf, scopeOf } from '@deepseek-ai/dsh-scope';
 import type { PromptSectionOrderName } from '@deepseek-ai/dsh-system-prompt';
 import type {} from '@deepseek-ai/dsh-tools';
 import type {} from '@deepseek-ai/dsh-agent-preset-registry';
+import { sectionsOnlyFor } from '../tool-prompt-sections.ts';
 
 export interface PresetPolicyConfig {
   tools: string[];
@@ -21,6 +22,7 @@ export const POLICY_SECTION_ORDERS: Readonly<Record<string, PromptSectionOrderNa
   'tool:read': 'TOOL_READ', 'tool:write': 'TOOL_WRITE', 'tool:edit': 'TOOL_EDIT',
   'tool:glob': 'TOOL_GLOB', 'tool:grep': 'TOOL_GREP',
   'tool:web_fetch': 'TOOL_WEB_FETCH', 'tool:web_search': 'TOOL_WEB_SEARCH', 'tool:goal': 'TOOL_GOAL',
+  'tool:workflow': 'TOOL_WORKFLOW',
 });
 const own = (object: object, key: string) => Object.prototype.hasOwnProperty.call(object, key);
 const record = (value: unknown): value is Record<string, unknown> => !!value && typeof value === 'object' && !Array.isArray(value);
@@ -48,13 +50,20 @@ export function validatePolicy(config: PresetPolicyConfig): void {
   }
 }
 
-/** The policy a subagent receives: the preset policy without the tools hidden from children. */
-export function childPolicy(config: PresetPolicyConfig): PresetPolicyConfig {
-  const deny = new Set(config.childToolFilter?.deny ?? []);
+/**
+ * The policy a subagent receives: the preset policy without the tools DSH hid from this child.
+ * `hidden` is the child's own toolFilter result (it varies per role), always a subset of the
+ * preset's hideable set. Sections only those tools used are blanked for the child alone, so the
+ * parent's prompt and its edited usage instructions are unchanged.
+ */
+export function childPolicy(config: PresetPolicyConfig, hidden: readonly string[]): PresetPolicyConfig {
+  const deny = new Set(hidden);
   if (!deny.size) return config;
   const keep = <T>(entries: Record<string, T>) => Object.fromEntries(Object.entries(entries).filter(([name]) => !deny.has(name)));
   const { childToolFilter: _filter, execution, ...rest } = config;
-  return { ...rest, tools: config.tools.filter(name => !deny.has(name)), toolOverrides: keep(config.toolOverrides),
+  const tools = config.tools.filter(name => !deny.has(name));
+  const blank = Object.fromEntries(sectionsOnlyFor([...deny], tools).filter(name => own(POLICY_SECTION_ORDERS, name)).map(name => [name, '']));
+  return { ...rest, tools, toolOverrides: keep(config.toolOverrides), sections: { ...config.sections, ...blank },
     ...(execution ? { execution: (({ batch, ...value }) => ({ ...value, defaults: keep(execution.defaults), ...(batch && !deny.has(batch.tool) ? { batch } : {}) }))(execution) } : {}) };
 }
 
@@ -141,22 +150,27 @@ export const name = 'studio-preset-policy';
 export const inject = ['tools', 'systemPrompt'];
 export function apply(ctx: Context, config: PresetPolicyConfig): void {
   validatePolicy(config);
-  const forChildren = childPolicy(config);
   const registry = ctx.get('agents' as never) as AgentRegistry | undefined;
-  // subagent_role passes childToolFilter to DSH, which restricts the child natively (and persists it
-  // for resume). Those tools are then invisible to the child, so the full policy would reject them as
-  // unavailable: a child gets the policy minus the hidden tools. A child is an owned Agent (absent from
-  // roots()) or, after a resume that made it a root, one whose hidden tools are already masked.
-  const isChild = (agent: PolicyAgent) => forChildren !== config && (
-    (registry?.roots !== undefined && !registry.roots().includes(agent))
-    || config.childToolFilter!.deny.every(name => agent.ctx.tools.get(name, agent) === undefined));
+  const hideable = config.childToolFilter?.deny ?? [];
+  // subagent_role passes each role's toolFilter to DSH, which restricts the child natively and
+  // persists it for resume. Those tools are invisible to the child, so the full policy would reject
+  // them as unavailable. Install the child policy without exactly the hideable tools this child
+  // cannot see. A tool that is missing but not hideable still fails closed as unavailable.
+  const policyFor = (agent: PolicyAgent) => {
+    if (!hideable.length) return config;
+    // Hidden means masked on this Agent while the preset itself still provides it; a tool the
+    // preset lost is not hidden and stays in the policy so the Agent fails closed.
+    const provided = (name: string) => scopeOf(ctx) === undefined || ctx.tools.get(name, scopeOf(ctx)) !== undefined;
+    const hidden = hideable.filter(name => agent.ctx.tools.get(name, agent) === undefined && provided(name));
+    return hidden.length ? childPolicy(config, hidden) : config;
+  };
   const installed = new Map<PolicyAgent, () => void>();
   const installing = new Set<PolicyAgent>();
   const install = (agent: PolicyAgent) => {
     if (installed.has(agent) || installing.has(agent)) return;
     // Reserve first: registering the patched definitions emits tools/change synchronously.
     installing.add(agent);
-    try { installed.set(agent, installPolicy(agent.ctx, agent, isChild(agent) ? forChildren : config)); }
+    try { installed.set(agent, installPolicy(agent.ctx, agent, policyFor(agent))); }
     finally { installing.delete(agent); }
   };
   const remove = (agent: PolicyAgent) => { installed.get(agent)?.(); installed.delete(agent); };

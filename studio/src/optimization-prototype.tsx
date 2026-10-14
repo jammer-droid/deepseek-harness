@@ -6,7 +6,7 @@ import { ConfigEditor } from './config-editor.tsx';
 import type { ConfigOverrides } from './config-overrides.ts';
 import { PresetList, type PresetActions } from './preset-manager.tsx';
 import type { PreviewRequest } from './prompt-composition.ts';
-import { ROLE_TOOL } from './delegation.ts';
+import { GENERIC_DELEGATION_TOOLS, ROLE_TOOL } from './delegation.ts';
 /** The Subagent tab owns the child filter; drop the copy the tools tab carried over from the saved request. */
 const withoutSubagentFilter = (request: PreviewRequest): PreviewRequest => { const { subagentToolFilter: _filter, ...rest } = request; return rest; };
 import { PromptToolsPrototype, defaultProvidedTools } from './prompt-tools-prototype.tsx';
@@ -14,7 +14,7 @@ import { DetailLayout } from './detail-layout.tsx';
 import { Button, Notice, PageHead, SectionHead } from './ui.tsx';
 
 type Settings = { prompt: string; tools: string; spill: string; wait: string };
-type Agent = { name: string; role: string; model: string; reasoning: string; spawn: 'fresh' | 'fork'; persona: string };
+type Agent = import('./role-settings.ts').StudioRole;
 const initial: Settings = { prompt: 'Report evidence, uncertainty and remaining work.', tools: 'read / grep / glob', spill: '2048', wait: '60000' };
 const seeds: Agent[] = [
   { name: 'Researcher', role: 'research', model: 'inherit', reasoning: 'inherit', spawn: 'fresh', persona: 'Investigate primary sources and cite the evidence.' },
@@ -37,12 +37,14 @@ export function OptimizationPrototype({ locale, catalog, catalogError, onPreview
   const configOverrides = configDraft ?? defaults;
   const [request, setRequest] = React.useState<PreviewRequest>();
   const [hiddenFromSubagents, setHiddenFromSubagents] = React.useState<string[]>([]);
+  // A tool dropped on the Prompts & tools tab leaves the Tool Filter too; it could only fail on apply.
+  const selectable = (names: string[]) => names.filter(name => provided.includes(name) && name !== ROLE_TOOL);
   const [saving, setSaving] = React.useState(false);
   const [saveError, setSaveError] = React.useState('');
   const save = async () => {
     if (saving || !presetActions || !request || !name.trim()) return;
     setSaving(true); setSaveError('');
-    try { await presetActions.save(JSON.stringify({ ...(editing?.id ? { id: editing.id } : {}), name: name.trim(), description, request: { ...withoutSubagentFilter(request), configOverrides, ...(hiddenFromSubagents.length ? { subagentToolFilter: { deny: hiddenFromSubagents } } : {}) }, conveniences: { spill: common.spill }, agents })); setRevision(n => n + 1); setPage('list'); setName(''); setDescription(''); setConfigDraft(undefined); setCommon({ ...initial }); setProvided([]); setAgents(seeds.map(a => ({ ...a }))); setHiddenFromSubagents([]); setEditing(undefined); setTab('tools'); setDraftKey(n => n + 1); }
+    try { await presetActions.save(JSON.stringify({ ...(editing?.id ? { id: editing.id } : {}), name: name.trim(), description, request: { ...withoutSubagentFilter(request), configOverrides, ...(selectable(hiddenFromSubagents).length ? { subagentToolFilter: { deny: selectable(hiddenFromSubagents) } } : {}) }, conveniences: { spill: common.spill }, agents: agents.map(role => role.toolFilter ? { ...role, toolFilter: { deny: selectable(role.toolFilter.deny) } } : role) })); setRevision(n => n + 1); setPage('list'); setName(''); setDescription(''); setConfigDraft(undefined); setCommon({ ...initial }); setProvided([]); setAgents(seeds.map(a => ({ ...a }))); setHiddenFromSubagents([]); setEditing(undefined); setTab('tools'); setDraftKey(n => n + 1); }
     catch (error) { setSaveError(error instanceof Error ? error.message : String(error)); } finally { setSaving(false); }
   };
   const editPreset = (item: import('./preset-manager.tsx').SavedPreset, copy = false) => {
@@ -59,7 +61,8 @@ export function OptimizationPrototype({ locale, catalog, catalogError, onPreview
   const defaultPersona = typeof presetPersona === 'string' ? presetPersona : typeof masterPersona === 'string' ? masterPersona : '';
   // Only tools this preset selects can be hidden from subagents; subagent_role itself is the delegation tool.
   const toolChoices = (catalog?.tools ?? []).filter(tool => provided.includes(tool.name) && tool.name !== ROLE_TOOL).map(tool => ({ name: tool.name, description: tool.description }));
-  const agentPage = <RoleEditor key={draftKey} locale={locale} roles={agents} onChange={setAgents} loadModels={presetActions?.models} defaultPersona={defaultPersona} tools={toolChoices} hiddenTools={hiddenFromSubagents} onHiddenToolsChange={setHiddenFromSubagents} />;
+  const delegates = provided.some(name => name === ROLE_TOOL || GENERIC_DELEGATION_TOOLS.includes(name));
+  const agentPage = <RoleEditor key={draftKey} locale={locale} roles={agents} onChange={setAgents} loadModels={presetActions?.models} defaultPersona={defaultPersona} tools={toolChoices} hiddenTools={hiddenFromSubagents} onHiddenToolsChange={setHiddenFromSubagents} delegates={delegates} />;
   const tabs = [
     { id: 'tools', label: t('프롬프트·도구', 'Prompts & tools', '提示词与工具'), content: <PromptToolsPrototype key={draftKey} initialRequest={editing?.request} locale={locale} catalog={catalog} catalogError={catalogError} onPreview={onPreview ? request => onPreview({ ...request, configOverrides }) : undefined} onRequestChange={setRequest} prompt={common.prompt} onPromptChange={value => setCommon(c => ({ ...c, prompt: value }))} provided={provided} onProvidedChange={setProvided} /> },
     { id: 'convenience', label: t('실행 설정', 'Execution settings', '执行设置'), content: <><SectionHead title={t('실행 설정', 'Execution settings', '执行设置')} description={t('플러그인 Config 값을 이 프리셋에서만 덮어씁니다. 켠 Config에서 바꾼 항목만 저장됩니다.', 'Override plugin Config values for this preset only. Only the fields you change in an enabled Config are saved.', '仅为此预设覆盖插件 Config 值。只保存已启用 Config 中修改的字段。')} /><ConfigEditor locale={locale} entries={catalog?.plugins ?? []} value={configOverrides} onChange={setConfigDraft} /></> },

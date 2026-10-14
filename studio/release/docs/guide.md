@@ -96,7 +96,7 @@ Edited tools are marked **Modified**. Changes apply to this preset only.
 
 ![Execution settings](images/en/execution-settings.png)
 
-Override plugin configuration for this preset only — for example, how much tool output is shown inline before it is saved to a file (`spill-policy`). Check a plugin to override it, then **Edit** to change fields. Only fields you change are saved; unchecking a plugin resets it. Plugins whose settings cannot be read are shown disabled.
+Override plugin configuration for this preset only — for example, how much tool output is shown inline before it is saved to a file (`spill-policy`). Check a plugin to override it, then **Edit** to change fields. Only fields you change are saved; unchecking a plugin resets it. Plugins whose settings cannot be read are shown disabled, and so are the `tool-subagent` Configs, which `subagent_role` replaces.
 
 ### Subagent settings
 
@@ -116,21 +116,35 @@ Add **roles** to give the agent named specialists to delegate to:
 | Reasoning | Reasoning effort supported by the chosen model, or the parent/model default. |
 | Spawn mode | **New conversation (Fresh)** starts with only the task; **Continue parent (Fork)** also receives the conversation so far. |
 | Role instructions (persona) | Replaces the persona for this role. Leave empty to keep the preset persona, shown as dimmed placeholder text. |
+| Subagent Tool Filter | **Use preset default**, or **Set for this role only** to pick this role's own filtered tools. See [Subagent Tool Filter](#subagent-tool-filter). |
 
 The agent writes the actual task each time it calls `subagent_role`. With **no roles**, `subagent_role` starts a fresh subagent with the parent's model, reasoning and preset instructions.
 
 Models are checked when you apply the preset and again before each call, so an unavailable model fails early with a clear message.
 
-**Tools hidden from subagents** removes selected tools from every subagent this preset starts — both **New conversation (Fresh)** and **Continue parent (Fork)**, with or without roles. The tools disappear from the child's prompt and calls to them are rejected; the parent agent keeps them. Only tools the preset selects can be hidden, and `subagent_role` itself is not listed.
+#### Subagent Tool Filter
+
+Tools in the **Subagent Tool Filter** are removed from every subagent of this preset. Remove tools a subagent does not need from its system prompt to keep its context light.
+
+- It applies to both **New conversation (Fresh)** and **Continue parent (Fork)**, and to the subagent `subagent_role` starts when no roles are defined. The parent agent keeps every tool.
+- A filtered tool disappears from the subagent's tool list together with its description, and calls to it are rejected. Its **Tool usage instructions** are removed from the subagent's system prompt as well; the parent's prompt and your edits on the Prompts & tools tab are unchanged.
+- Only tools selected on the **Prompts & tools** tab can be filtered. If you deselect a tool there, it leaves the filter too. The filter is available once `subagent_role` is selected.
+- **Per role:** in a role's editor, choose **Set for this role only** to give that role its own list. It replaces the preset default for that role; other roles keep using the default.
+- Sentences you write in **Additional Studio instructions** are still included. If they contain guidance a subagent does not need, you can move it to the role instructions (persona) or to a tool description.
 
 #### Tips for subagent tools
 
-A child sees every tool its parent has unless you hide it. Each tool's description is part of the child's prompt, so hiding tools the child does not need keeps its context smaller and its choices clearer.
+A subagent sees every tool its parent has unless you filter it. Each tool's description is part of the subagent's prompt, so filtering tools it does not need keeps its context smaller and its choices clearer.
 
-- **Hide tools that talk to the user.** A subagent works on a delegated task and reports back to its parent; it should not interrupt the user. `ask_user_question`, `present` and `exit_plan_mode` are good candidates.
-- **Hide tools whose results belong to the parent.** If the parent tracks the plan or decides what to show the user, hide `todo_write` and the goal tools from children.
-- **Keep delegation where you want it.** With `send_message`, `interrupt_agent` and `list_agents` hidden, a child cannot steer other agents.
-- **Check the effect.** The filter applies to children only, so **Preview prompt** still shows the parent's tools. Start a session and delegate a task to confirm what the child receives.
+- **Filter tools that talk to the user.** A subagent works on a delegated task and reports back to its parent; it should not interrupt the user. `ask_user_question`, `present` and `exit_plan_mode` are good candidates.
+- **Filter tools whose results belong to the parent.** If the parent tracks the plan or decides what to show the user, filter `todo_write` and the goal tools.
+- **Give reviewers a read-only toolset.** A reviewer role with its own list that filters `write`, `edit` and `bash` can read and report but not change files.
+- **Keep delegation where you want it.** With `send_message`, `interrupt_agent` and `list_agents` filtered, a subagent cannot steer other agents.
+- **Check the effect.** The filter applies to subagents only, so **Preview prompt** still shows the parent's tools. Start a session and delegate a task to confirm what the subagent receives.
+
+#### Settings that stay in DSH
+
+The maximum recursion depth and the subagent parallelism limit follow **Built-in plugins → Subagent** in DSH settings. For model selection, the role settings of the Studio preset take precedence. The `tool-subagent` Configs in **Execution settings** are merged into `subagent_role` and cannot be turned on.
 
 The DSH `tool-subagent` Config in **Execution settings** has its own `toolFilter`, but Studio replaces that plugin with `subagent_role`, so set the filter here instead.
 
@@ -149,7 +163,7 @@ Optimized is tuned for **coding-agent work**: reading and editing code, running 
 | Tune any other plugin behavior | Turn on that plugin in **Execution settings** and edit only the fields you need. |
 | Steer how the model uses a tool | Edit its description, usage instructions or parameter text in the tool's **Details**. |
 | Delegate to specialists | Add roles in **Subagent settings** with their own model, reasoning effort and persona. |
-| Keep subagents focused | Add tools such as `ask_user_question` to **Tools hidden from subagents**. See [Tips for subagent tools](#tips-for-subagent-tools). |
+| Keep subagents focused | Add tools such as `ask_user_question` to the **Subagent Tool Filter**, or give a role its own list. See [Subagent Tool Filter](#subagent-tool-filter). |
 
 Use **Preview prompt** after each change to confirm what the model will receive, then save and apply the copy. Optimized itself stays available as a reference, and you can keep several presets for different kinds of work.
 
