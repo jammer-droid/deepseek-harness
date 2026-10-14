@@ -68,7 +68,7 @@ primitives는 CSS 모듈을 함께 불러오므로 Node 단위 테스트에서 �
 | 부품 | 쓰는 곳 |
 | --- | --- |
 | `StudioSurface` | 마운트된 Studio 화면의 최상위. 스타일시트를 함께 넣고 마운트 해제 시 제거한다 |
-| `ItemPicker` ([item-picker.tsx](../../src/item-picker.tsx)) | 도구·Config 선택. 한 목록에서 행의 체크로 켜고 끄며, 켠 행은 자리를 옮기지 않고 강조된다. 검색과 전체/선택됨/변경됨 필터로 좁혀 본다. 켠 행에만 `설정`이 있으며 `DetailDialog`로 연다. 두 열 이동 방식은 쓰지 않는다 |
+| `ItemPicker` ([item-picker.tsx](../../src/item-picker.tsx)) | 도구·Config 선택. 한 목록에서 행의 체크로 켜고 끄며, 켠 행은 자리를 옮기지 않고 강조된다. 검색과 전체/선택됨/변경됨 필터로 좁혀 본다. 켠 행에만 `설정`이 있으며 `DetailDialog`로 연다. `lockedReason`을 준 행은 켜진 채로 잠기고 이유를 설명으로 보여 준다(예: 프리셋 기본값에서 온 Tool Filter 도구). 두 열 이동 방식은 쓰지 않는다 |
 | `Button` | 모든 버튼 동작. 기본은 DSH outline, `primary`는 채운 주 버튼, `small`은 카드·행 안의 보조 동작 |
 | `PageHead` | 섹션당 하나의 제목·설명·우측 동작. 상태줄은 children으로 넣는다 |
 | `SectionHead` | 페이지 안의 제목 행과 우측 동작. 입력 필드를 담을 때 `field` |

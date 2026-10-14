@@ -121,3 +121,22 @@ test('each child hides only its own list and loses usage guidance that belonged 
   // The parent keeps its own guidance; only the reviewer's copy was blanked.
   assert.match(await text(parent), /Edited write guidance/);
 });
+
+test('an extend role child hides the default and its own tools; a replace role child only its own', async () => {
+  const { roleToolFilter } = await import('../src/role-settings.ts');
+  const presetDefault = ['ask_user_question'];
+  const extend = roleToolFilter({ toolFilter: { mode: 'extend', deny: ['write'] } }, presetDefault);
+  const replace = roleToolFilter({ toolFilter: { mode: 'replace', deny: ['write'] } }, presetDefault);
+  assert.deepEqual(extend, ['ask_user_question', 'write']); assert.deepEqual(replace, ['write']);
+  const policy = { ...config, tools: ['read', 'write', 'ask_user_question'], toolOverrides: {}, sections: { 'tool:write': 'Edited write guidance' },
+    childToolFilter: { deny: [...new Set([...presetDefault, ...extend, ...replace])] } };
+  const { ctx, studio, createAgent } = await runtime(policy);
+  const parent = await createAgent(studio);
+  const reviewer = await createAgent(studio, { owner: parent, filter: { deny: extend } });
+  const other = await createAgent(studio, { owner: parent, filter: { deny: replace } });
+  assert.deepEqual(ctx.tools.schemas(reviewer).map(t => t.name), ['read']);
+  assert.deepEqual(ctx.tools.schemas(other).map(t => t.name).sort(), ['ask_user_question', 'read']);
+  const text = async agent => (await ctx.systemPrompt.assemble({ scope: agent })).sections.map(s => s.text).join('\n');
+  assert.doesNotMatch(await text(reviewer), /write guidance/);
+  assert.match(await text(parent), /Edited write guidance/);
+});

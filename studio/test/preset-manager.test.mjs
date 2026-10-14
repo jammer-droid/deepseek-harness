@@ -67,45 +67,63 @@ test('the subagent tab hides selected tools from subagents and round-trips throu
   } finally { await act(async () => root.unmount()); dom.window.close(); }
 });
 
-test('a role can replace the preset Tool Filter, and the filter waits for subagent_role', async () => {
+test('a role can add to or replace the preset Tool Filter, and the filter waits for subagent_role', async () => {
   const dom = new JSDOM('<div id="root"></div>');
   globalThis.window = dom.window; globalThis.document = dom.window.document; globalThis.IS_REACT_ACT_ENVIRONMENT = true;
   dom.window.HTMLDialogElement.prototype.showModal = function () { this.open = true; };
   dom.window.HTMLDialogElement.prototype.close = function () { this.open = false; };
   const { createRoot } = await import('react-dom/client');
   const { Simulate } = await import('react-dom/test-utils');
-  const root = createRoot(document.getElementById('root'));
-  const worker = { name: 'Worker', role: 'worker', model: 'inherit', reasoning: 'inherit', spawn: 'fork', persona: '' };
-  const make = tools => ({ id: 'studio-user-b', name: 'B', description: '', status: 'draft', conveniences: {}, agents: [worker],
+  const plain = { model: 'inherit', reasoning: 'inherit', persona: '' };
+  const make = tools => ({ id: 'studio-user-b', name: 'B', description: '', status: 'draft', conveniences: {},
+    agents: [{ ...plain, name: 'Worker', role: 'worker', spawn: 'fork' }, { ...plain, name: 'Reviewer', role: 'reviewer', spawn: 'fresh' }],
     request: { preset: 'studio-master', providers: [], tools, prompt: '', model: 'testLLM', subagentToolFilter: { deny: ['ask_user_question'] } } });
-  let preset = make(['read', 'bash', 'ask_user_question', 'subagent_role']); let saved;
+  let preset = make(['read', 'bash', 'write', 'ask_user_question', 'subagent_role']); let saved;
   const api = { list: async () => [preset], save: async payload => { saved = JSON.parse(payload); return { ...saved, status: 'draft' }; }, apply: async () => preset, delete: async () => {} };
   const tool = name => ({ name, description: name, parameters: { type: 'object', properties: {} } });
-  const catalog = { presets: [{ id: 'studio-master', tools: [], sections: [], promptProviders: [] }], tools: ['read', 'bash', 'ask_user_question', 'subagent_role'].map(tool) };
+  const catalog = { presets: [{ id: 'studio-master', tools: [], sections: [], promptProviders: [] }], tools: ['read', 'bash', 'write', 'ask_user_question', 'subagent_role'].map(tool) };
   const click = async text => act(async () => [...document.querySelectorAll('button')].find(b => b.textContent === text).click());
+  const editRole = async index => act(async () => document.querySelectorAll('.studio-role-card button')[index].click());
+  const mode = () => document.querySelector('dialog[open] select[aria-label="Tool Filter for this role"]');
+  const own = () => document.querySelector('dialog[open] ul[aria-label="Tool Filter for this role"]');
+  const switchOf = name => own().querySelector(`button[aria-label="${name}"]`);
+  let root = createRoot(document.getElementById('root'));
   try {
     await act(async () => root.render(React.createElement(OptimizationPrototype, { locale: 'en', presetActions: api, catalog })));
     await click('Edit'); await click('Subagent settings');
-    await act(async () => document.querySelector('.studio-role-card button').click());
-    const mode = document.querySelector('dialog[open] select[aria-label="Tool Filter for this role"]');
-    assert.equal(mode.value, 'default'); assert.match(mode.textContent, /Use preset default \(1\)/);
-    await act(async () => Simulate.change(mode, { target: { value: 'own' } }));
-    const own = document.querySelector('dialog[open] ul[aria-label="Tool Filter for this role"]');
-    // Starts from the preset default, then edits independently of it.
-    assert.equal(own.querySelector('button[aria-label="ask_user_question"]').getAttribute('aria-checked'), 'true');
-    await act(async () => own.querySelector('button[aria-label="bash"]').click());
-    await click('Done'); await click('Save preset');
-    assert.deepEqual(saved.agents[0].toolFilter, { deny: ['ask_user_question', 'bash'] });
+    assert.match([...document.querySelectorAll('.studio-role-card')].map(c => c.textContent).join('|'), /Tool Filter: default.*Tool Filter: default/s);
+
+    // Extend: the default is shown on and locked; the role adds bash.
+    await editRole(1);
+    assert.equal(mode().value, 'default'); assert.match(mode().textContent, /Use preset default \(1\)/);
+    await act(async () => Simulate.change(mode(), { target: { value: 'extend' } }));
+    assert.equal(switchOf('ask_user_question').getAttribute('aria-checked'), 'true');
+    assert.equal(switchOf('ask_user_question').disabled, true);
+    assert.match(switchOf('ask_user_question').textContent, /Preset default/);
+    await act(async () => switchOf('bash').click());
+    await click('Done');
+
+    // Replace: starts empty and ignores the default.
+    await editRole(0);
+    await act(async () => Simulate.change(mode(), { target: { value: 'replace' } }));
+    assert.equal(switchOf('ask_user_question').getAttribute('aria-checked'), 'false');
+    assert.match(document.querySelector('dialog[open]').textContent, /does not apply to this role/);
+    await act(async () => switchOf('write').click());
+    await click('Done');
+    assert.match([...document.querySelectorAll('.studio-role-card')].map(c => c.textContent).join('|'), /Tool Filter: own 1.*Tool Filter: default \+ 1/s);
+
+    await click('Save preset');
+    assert.deepEqual(saved.agents.map(role => role.toolFilter), [{ mode: 'replace', deny: ['write'] }, { mode: 'extend', deny: ['bash'] }]);
     assert.deepEqual(saved.request.subagentToolFilter, { deny: ['ask_user_question'] });
     await act(async () => root.unmount());
 
     // Without subagent_role the Tool Filter is explained, not offered.
     preset = make(['read', 'bash']);
-    const again = createRoot(document.getElementById('root'));
-    await act(async () => again.render(React.createElement(OptimizationPrototype, { locale: 'en', presetActions: api, catalog })));
+    root = createRoot(document.getElementById('root'));
+    await act(async () => root.render(React.createElement(OptimizationPrototype, { locale: 'en', presetActions: api, catalog })));
     await click('Edit'); await click('Subagent settings');
     assert.equal(document.querySelector('ul[aria-label="Subagent Tool Filter"]'), null);
     assert.match(document.body.textContent, /Select subagent_role on the Prompts & tools tab/);
-    await act(async () => again.unmount());
+    await act(async () => root.unmount());
   } finally { dom.window.close(); }
 });

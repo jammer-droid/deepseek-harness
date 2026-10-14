@@ -10,7 +10,7 @@ import { dump } from 'js-yaml';
 import { entryListSchema } from '@deepseek-ai/cordis-plugin-include';
 import { parsePreviewRequest, type PreviewRequest } from '../prompt-composition.ts';
 import { compositionPlan, parseComposition } from './composition-plan.ts';
-import { executableRoles, parseRoles } from '../role-settings.ts';
+import { executableRoles, parseRoles, roleToolFilter } from '../role-settings.ts';
 import { delegationTools, migratePolicyConfig, renameLegacyRoleKey, ROLE_PLUGIN, ROLE_TOOL, withoutDelegationPlugins } from '../delegation.ts';
 import type { CompositionRow } from '../prompt-composition.ts';
 
@@ -195,7 +195,7 @@ export class PresetStore {
     // Tools hidden from every subagent. They must be tools the preset selects: DSH rejects a child
     // filter naming a tool the child could not inherit, so check here instead of at the first call.
     const presetHidden = old.request.subagentToolFilter?.deny ?? [];
-    const lists = [presetHidden, ...roles.map(role => role.toolFilter?.deny ?? [])];
+    const lists = [presetHidden, ...roles.map(role => roleToolFilter(role, presetHidden))];
     const unknownHidden = [...new Set(lists.flat().filter(name => !tools.includes(name) || name === ROLE_TOOL))];
     if (delegates && unknownHidden.length) throw new Error(`Subagent Tool Filter may only list tools selected in this preset: ${unknownHidden.join(', ')}`);
     // The policy may hide any tool some role (or the default) filters; each child hides only its own list.

@@ -55,11 +55,16 @@ test('without a tool filter the child request carries none',async()=>{
   await definition.execute({action:'call',task:'x'},{agent:{},signal:new AbortController().signal});
   assert.equal(spec.request.toolFilter,undefined);
 });
-test('a role tool filter replaces the preset default; roles without one use the default',async()=>{
+test('roles use, extend or replace the preset Tool Filter',async()=>{
   const specs=[];let definition;
+  const plain={...role,model:'inherit',reasoning:'inherit',persona:''};
   apply({tools:{register:d=>{definition=d;}},subagents:{resolveMaxDepth:()=>undefined,startActivation:async s=>{specs.push(s);return {childId:'c'};}}},
-    {roles:[{...role,role:'worker',spawn:'fork',model:'inherit',reasoning:'inherit',persona:''},{...role,role:'reviewer',spawn:'fresh',model:'inherit',reasoning:'inherit',persona:'',toolFilter:{deny:['bash','write']}},{...role,role:'open',spawn:'fresh',model:'inherit',reasoning:'inherit',persona:'',toolFilter:{deny:[]}}],toolFilter:{deny:['ask_user_question']}});
-  for(const name of ['worker','reviewer','open']) await definition.execute({action:'call',role:name,task:'x'},{agent:{},signal:new AbortController().signal});
-  assert.deepEqual(specs.map(s=>s.request.toolFilter),[{deny:['ask_user_question']},{deny:['bash','write']},undefined]);
+    {roles:[{...plain,role:'worker',spawn:'fork'},{...plain,role:'reviewer',spawn:'fresh',toolFilter:{mode:'extend',deny:['bash','write']}},
+      {...plain,role:'own',spawn:'fresh',toolFilter:{mode:'replace',deny:['bash']}},{...plain,role:'open',spawn:'fresh',toolFilter:{mode:'replace',deny:[]}}],toolFilter:{deny:['ask_user_question']}});
+  for(const name of ['worker','reviewer','own','open']) await definition.execute({action:'call',role:name,task:'x'},{agent:{},signal:new AbortController().signal});
+  assert.deepEqual(specs.map(s=>s.request.toolFilter),[{deny:['ask_user_question']},{deny:['ask_user_question','bash','write']},{deny:['bash']},undefined]);
   assert.throws(()=>parseRoles([{name:'a',toolFilter:{deny:'bash'}}]),/Invalid role tool filter/);
+  assert.throws(()=>parseRoles([{name:'a',toolFilter:{mode:'merge',deny:[]}}]),/Invalid role tool filter/);
+  // 0.2.6 stored a role list without a mode; it replaced the default and still does.
+  assert.deepEqual(parseRoles([{name:'a',toolFilter:{deny:['bash']}}])[0].toolFilter,{mode:'replace',deny:['bash']});
 });

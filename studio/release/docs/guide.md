@@ -116,7 +116,7 @@ Add **roles** to give the agent named specialists to delegate to:
 | Reasoning | Reasoning effort supported by the chosen model, or the parent/model default. |
 | Spawn mode | **New conversation (Fresh)** starts with only the task; **Continue parent (Fork)** also receives the conversation so far. |
 | Role instructions (persona) | Replaces the persona for this role. Leave empty to keep the preset persona, shown as dimmed placeholder text. |
-| Subagent Tool Filter | **Use preset default**, or **Set for this role only** to pick this role's own filtered tools. See [Subagent Tool Filter](#subagent-tool-filter). |
+| Subagent Tool Filter | **Use preset default**, **Add to preset default**, or **This role only (ignore default)**. See [Subagent Tool Filter](#subagent-tool-filter). |
 
 The agent writes the actual task each time it calls `subagent_role`. With **no roles**, `subagent_role` starts a fresh subagent with the parent's model, reasoning and preset instructions.
 
@@ -129,7 +129,15 @@ Tools in the **Subagent Tool Filter** are removed from every subagent of this pr
 - It applies to both **New conversation (Fresh)** and **Continue parent (Fork)**, and to the subagent `subagent_role` starts when no roles are defined. The parent agent keeps every tool.
 - A filtered tool disappears from the subagent's tool list together with its description, and calls to it are rejected. Its **Tool usage instructions** are removed from the subagent's system prompt as well; the parent's prompt and your edits on the Prompts & tools tab are unchanged.
 - Only tools selected on the **Prompts & tools** tab can be filtered. If you deselect a tool there, it leaves the filter too. The filter is available once `subagent_role` is selected.
-- **Per role:** in a role's editor, choose **Set for this role only** to give that role its own list. It replaces the preset default for that role; other roles keep using the default.
+- **Per role:** in a role's editor, choose how that role uses the filter:
+
+  | Option | Tools filtered for this role | When you change the preset default |
+  |---|---|---|
+  | **Use preset default** | The preset default | Follows it |
+  | **Add to preset default** | The preset default plus the tools you pick. Default tools are shown locked. | Follows it |
+  | **This role only (ignore default)** | Only the tools you pick, starting from an empty list | Not affected |
+
+  Each role card shows its choice, for example `Tool Filter: default + 2`.
 - Sentences you write in **Additional Studio instructions** are still included. If they contain guidance a subagent does not need, you can move it to the role instructions (persona) or to a tool description.
 
 #### Tips for subagent tools
@@ -138,7 +146,7 @@ A subagent sees every tool its parent has unless you filter it. Each tool's desc
 
 - **Filter tools that talk to the user.** A subagent works on a delegated task and reports back to its parent; it should not interrupt the user. `ask_user_question`, `present` and `exit_plan_mode` are good candidates.
 - **Filter tools whose results belong to the parent.** If the parent tracks the plan or decides what to show the user, filter `todo_write` and the goal tools.
-- **Give reviewers a read-only toolset.** A reviewer role with its own list that filters `write`, `edit` and `bash` can read and report but not change files.
+- **Give reviewers a read-only toolset.** Choose **Add to preset default** on a reviewer role and add `write`, `edit` and `bash`: it can read and report but not change files, and still loses the default tools.
 - **Keep delegation where you want it.** With `send_message`, `interrupt_agent` and `list_agents` filtered, a subagent cannot steer other agents.
 - **Check the effect.** The filter applies to subagents only, so **Preview prompt** still shows the parent's tools. Start a session and delegate a task to confirm what the subagent receives.
 

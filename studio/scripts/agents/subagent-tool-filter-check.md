@@ -9,8 +9,9 @@
   | 역할 ID | 시작 방식 | Tool Filter |
   |---|---|---|
   | `worker` | Continue parent (Fork) | 프리셋 기본값 사용 |
-  | `reviewer` | New conversation (Fresh) | 이 역할만 따로 설정 |
+  | `reviewer` | New conversation (Fresh) | 기본값에 추가 (권장: `write`, `edit`, `bash`) |
 
+- `reviewer`가 **이 역할만 따로 (기본값 무시)**로 설정되어 있어도 진행한다. 이때는 판정 3번의 기대값이 달라진다.
 - 사용자가 프리셋 기본 Tool Filter와 `reviewer`의 목록을 정해 두었다. 에이전트는 값을 추측하지 않는다. [1단계](#1-설정-확인)에서 `subagent_role` `action: list`로 역할을 확인하고, 실제로 적용된 목록은 [4단계](#4-세션-기록으로-확인)의 기록에서 읽는다.
 - 프리셋 설정이 위와 다르면(역할이 없음, 시작 방식이 다름, `subagent_role` 없음) 위임을 시작하지 말고 다른 점을 보고한 뒤 멈춘다.
 
@@ -87,7 +88,7 @@ node studio/scripts/agents/subagent-report.mjs <현재 세션 ID>
 |---|---|---|
 | 1 | 부모 도구 유지 | 부모 `tools`에 서브에이전트 Tool Filter의 도구가 모두 남아 있다 |
 | 2 | Fork 기본값 적용 | `worker`(`provider=fork`)의 `toolFilter`가 프리셋 기본 목록과 같다 |
-| 3 | Fresh 역할별 적용 | `reviewer`(`provider=spawn`)의 `toolFilter`가 `reviewer` 목록과 같고, 프리셋 기본값과 다르면 기본값이 아니라 `reviewer` 목록을 따른다 |
+| 3 | Fresh 역할별 적용 | `reviewer`(`provider=spawn`)의 `toolFilter`가 모드에 맞다. **기본값에 추가**면 `worker`의 목록을 모두 포함하고 그보다 많다. **따로**면 `worker`와 겹치지 않을 수 있고 `reviewer` 목록만 담는다 |
 | 4 | 도구 목록에서 제외 | 각 서브에이전트의 `tools`에 자기 `toolFilter` 도구가 하나도 없다 |
 | 5 | 나머지 도구 유지 | 각 서브에이전트의 `tools` = 부모 `tools` − 자기 `toolFilter` |
 | 6 | 사용 지침 제거 | 서브에이전트 `toolFilter`에 `bash`가 있으면 `tool:bash`가 없다. `job_list`·`job_output`·`job_kill`이 모두 있으면 `tool:jobs`, `workflow`가 있으면 `tool:workflow`가 없다. 해당 도구가 목록에 없으면 이 항목은 "해당 없음" |
@@ -97,7 +98,8 @@ node studio/scripts/agents/subagent-report.mjs <현재 세션 ID>
 | 10 | 자기 보고 일치 | 서브에이전트가 말한 도구 목록이 4단계 `tools`와 같다. 다르면 차이를 적는다 |
 
 판정 메모:
-- `worker`와 `reviewer`가 같은 목록을 받았는데 사용자가 두 목록을 다르게 정했다면 3번은 실패다.
+- `worker`와 `reviewer`가 같은 목록을 받았는데 `reviewer`에 도구를 추가했거나 따로 정했다면 3번은 실패다.
+- 역할의 모드는 Studio 편집기에서만 보인다. 기록에는 DSH가 적용한 최종 목록만 남는다. 모드를 모르면 보고서에 "모드 미확인"으로 적고, 3번은 두 목록의 포함 관계만 기록한다.
 - 첫 모델 요청 이후에 도구가 바뀌었을 수 있다. 4단계 `tools`는 첫 요청 기준이므로, 자기 보고와 다르면 두 값을 모두 적는다.
 - `tool-filter-probe.txt`가 만들어졌다면 지우지 말고 경로를 보고한다. 정리는 사용자가 정한다.
 

@@ -147,9 +147,28 @@ test('a subagent tool filter is validated on apply and reaches both the role too
   // A hidden tool the preset does not select would fail every delegation; reject it when applying.
   const bad=await store.save(JSON.stringify({...draft,request:{...draft.request,subagentToolFilter:{deny:['write']}}}));
   await assert.rejects(store.apply(bad.id),/Subagent Tool Filter may only list tools selected in this preset: write/);
+  // Extend and replace role lists are checked too; extend also carries the default into the policy set.
+  const roles=await store.save(JSON.stringify({...draft,agents:[{name:'Reviewer',role:'reviewer',toolFilter:{mode:'extend',deny:['subagent_role']}}]}));
+  await assert.rejects(store.apply(roles.id),/may only list tools selected in this preset: subagent_role/);
   // An empty filter is not stored, and a preset without delegation carries no filter.
   const empty=await store.save(JSON.stringify({name:'Empty',description:'',request:{...request,tools:['read'],subagentToolFilter:{deny:[]}}}));
   assert.equal(empty.request.subagentToolFilter,undefined);
   await assert.rejects(store.save(JSON.stringify({name:'Bad',description:'',request:{...request,subagentToolFilter:{deny:'read'}}})),/Invalid subagent tool filter/);
+  await store.dispose();
+});
+test('the policy may hide the union of the default and every role list, resolved per mode',async()=>{
+  const file=join(await mkdtemp(join(tmpdir(),'studio-role-filter-')),'presets.json');const r=await runtime();const store=new PresetStore(r.ctx,file);
+  const roles=[{name:'Worker',role:'worker'},{name:'Reviewer',role:'reviewer',toolFilter:{mode:'extend',deny:['subagent_role']}}];
+  // subagent_role itself cannot be filtered; use only tools the fixture base supplies (read).
+  const draft=await store.save(JSON.stringify({name:'Union',description:'',request:{...request,tools:['read','subagent_role'],subagentToolFilter:{deny:['read']}},agents:[roles[0],{...roles[1],toolFilter:{mode:'replace',deny:[]}}]}));
+  await store.apply(draft.id);
+  let plugins=r.registrations.get(draft.id).plugins;
+  assert.deepEqual(plugins.at(-1).config.childToolFilter,{deny:['read']});
+  assert.deepEqual(plugins.find(row=>row.name==='@matamt-dbg/dsh-studio/roles').config.roles[1].toolFilter,{mode:'replace',deny:[]});
+  // A replace-only list that drops the default still keeps the default hideable for the other roles.
+  const extend=await store.save(JSON.stringify({...draft,agents:[roles[0],{...roles[1],toolFilter:{mode:'extend',deny:[]}}]}));
+  await store.apply(extend.id);
+  plugins=r.registrations.get(draft.id).plugins;
+  assert.deepEqual(plugins.at(-1).config.childToolFilter,{deny:['read']});
   await store.dispose();
 });

@@ -20,9 +20,9 @@
 
 ## 서브에이전트 Tool Filter
 
-- 프리셋 기본값은 요청의 `subagentToolFilter.deny`, 역할별 목록은 역할의 `toolFilter.deny`에 저장한다. 역할 목록이 있으면 그 역할에서 기본값을 **대체**하고, 없으면 기본값을 쓴다. 역할이 없을 때의 기본 자식은 기본값을 쓴다.
+- 프리셋 기본값은 요청의 `subagentToolFilter.deny`, 역할별 목록은 역할의 `toolFilter`(`mode`, `deny`)에 저장한다. 역할에 `toolFilter`가 없으면 기본값, `extend`면 기본값 ∪ `deny`, `replace`면 `deny`만 쓴다(`roleToolFilter`). `extend`는 이후 기본값 변경을 따른다. 0.2.6에서 `mode` 없이 저장된 역할 목록은 `replace`로 읽는다. 역할이 없을 때의 기본 자식은 기본값을 쓴다.
 - 프롬프트·도구 탭에서 선택한 도구만 넣을 수 있다. 편집기는 선택하지 않은 도구를 목록과 저장값에서 뺀다. 반영 시에도 모든 목록을 검사한다(`Subagent Tool Filter may only list tools selected in this preset`). DSH는 자식 필터에 상속받을 수 없는 이름이 있으면 시작을 거절하므로 반영 단계에서 실패하게 했다. `subagent_role`을 선택하지 않은 프리셋에서는 편집할 수 없다.
-- 반영하면 roles 플러그인 `toolFilter`에 기본값을, 역할 설정에 역할 목록을 넣는다. policy 플러그인 `childToolFilter`에는 기본값과 모든 역할 목록의 합집합(숨길 수 있는 도구)을 넣는다. `subagent_role`은 호출한 역할의 목록을 fresh·fork 요청의 `toolFilter`로 넘기고, DSH가 `tools.restrict()`로 자식을 제한하며 재개를 위해 기록한다. `dsh-tool-subagent`의 `toolFilter` Config와 같은 경로다.
+- 반영하면 roles 플러그인 `toolFilter`에 기본값을, 역할 설정에 역할 목록을 넣는다. policy 플러그인 `childToolFilter`에는 기본값과 모든 역할의 실제 목록(모드 적용 후)의 합집합(숨길 수 있는 도구)을 넣는다. `subagent_role`은 호출한 역할의 목록을 fresh·fork 요청의 `toolFilter`로 넘기고, DSH가 `tools.restrict()`로 자식을 제한하며 재개를 위해 기록한다. `dsh-tool-subagent`의 `toolFilter` Config와 같은 경로다.
 - 자식은 부모 프리셋에 붙어 같은 policy를 받는다. policy는 숨길 수 있는 도구 중 **이 자식에게 보이지 않고 프리셋은 여전히 제공하는 도구**만 빼서 자식용 policy를 설치한다. 역할마다 다른 목록을 policy가 따로 알 필요가 없다. 숨길 수 있는 도구가 아닌데 빠진 도구, 또는 프리셋 자체가 잃은 도구는 그대로 남아 `selected tools unavailable`로 실패한다.
 - 자식용 policy는 뺀 도구만 쓰던 사용 지침 섹션(`tool:bash`, `tool:jobs`, `tool:goal`, `tool:workflow` 등)을 빈 문자열로 덮는다. 같은 섹션을 쓰는 도구가 하나라도 남으면 유지한다. 덮어쓰기는 자식 scope에만 등록되어 부모 프롬프트와 편집한 사용 지침은 바뀌지 않는다. DSH는 빈 섹션을 조립에서 뺀다(0.2.0-rc.2 확인). Studio 추가 지침(`studio:additional`)은 자유 텍스트라 그대로 들어간다.
 - 실행 설정에서 `@deepseek-ai/dsh-tool-subagent`와 roles 플러그인 Config는 비활성화한다. 반영 시 그 행을 지우므로 효과가 없었다. 이미 켠 값은 끌 수만 있다.
