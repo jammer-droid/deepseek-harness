@@ -1,6 +1,42 @@
-# DSH Studio
+<p align="center">
+  <img src="docs/images/icon.png" width="96" height="96" alt="DSH Studio icon">
+</p>
 
-A [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) plugin for building agent presets in the web GUI: choose tools, edit prompts and tool descriptions, override plugin Configs, define role-based subagents, preview the assembled system prompt, and apply the result as a DSH agent preset.
+<h1 align="center">DSH Studio</h1>
+
+<p align="center"><b>See it, tune it, ship it — agent presets for DeepSeek Harness, without editing YAML.</b></p>
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/@matamt-dbg/dsh-studio"><img src="https://img.shields.io/npm/v/@matamt-dbg/dsh-studio" alt="npm version"></a>
+  <img src="https://img.shields.io/badge/DSH-0.2.0--rc.2%20%7C%200.2.1--alpha.2-4f6bff" alt="Supported DSH versions">
+  <img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT license">
+</p>
+
+DSH Studio is a plugin for [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) that turns preset building into a visual workflow in the web GUI.
+
+## Why
+
+DeepSeek Harness exposes a lot to configure — which tools an agent gets, how each tool is described to the model, the system prompt sections, plugin settings, and how work is delegated to subagents. But all of it only takes effect through an **agent preset**, and building one by hand means editing composition files without seeing what the model will actually receive.
+
+Studio closes that loop:
+
+- **Make the configuration visible.** Pick tools, edit instructions and tool descriptions, and override plugin settings on one screen.
+- **Check before you run.** Preview the exact system prompt and tool schemas a preset produces, without starting an agent.
+- **Apply in one click.** Register the preset with DSH and choose it for a new session.
+
+## Direction: less noise, better use of DSH
+
+Studio also ships **Optimized**, a starting preset built on a simple idea: an agent works better when it sees fewer, clearer tools and knows how DSH expects them to be used.
+
+Compared with the stock setup, Optimized
+
+- **trims the tool surface** to 22 everyday tools, dropping goal/todo tracking, runtime introspection and plugin management tools that rarely help a coding task (they stay available in Studio Master);
+- **folds delegation into one tool**, `subagent_role`, instead of several generic subagent tools;
+- **adds working instructions and tunes tool descriptions** so the model batches independent reads, waits for background work instead of polling it, collects the jobs it starts, and keeps checks proportional before reporting.
+
+In our early internal benchmarks this preset performed noticeably better than stock DSH. Detailed measurements are still in progress and will be published once they are complete. Treat Optimized as a starting point: copy it and tune it for your own work.
+
+> DSH Studio is a community project. It is not affiliated with, endorsed by, or supported by DeepSeek.
 
 ## Install
 

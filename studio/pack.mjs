@@ -18,6 +18,7 @@ const readme = ['release/README.md', 'README.md'].map(file => path.join(root, fi
 const repository = manifest.repository?.url?.replace(/^git\+/, '').replace(/\.git$/, '');
 const readmeText = await readFile(readme, 'utf8');
 await writeFile(path.join(staging, 'README.md'), repository ? readmeText
+  .replace(/src="(docs\/images\/[^"]+)"/g, (_, file) => `src="${repository.replace('https://github.com/', 'https://raw.githubusercontent.com/')}/main/${file}"`)
   .replace(/\]\((docs\/images\/[^)]+)\)/g, (_, file) => `](${repository.replace('https://github.com/', 'https://raw.githubusercontent.com/')}/main/${file})`)
   .replace(/\]\((docs\/[^)]+)\)/g, (_, file) => `](${repository}/blob/main/${file})`) : readmeText);
 await cp(path.join(root, 'LICENSE'), path.join(staging, 'LICENSE'));
