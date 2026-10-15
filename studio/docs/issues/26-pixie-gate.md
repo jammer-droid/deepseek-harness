@@ -375,6 +375,16 @@ interface GateResult {
 - 책임: Pixie 설정의 `게이트` 페이지(게이트 목록, 지점·match·실패 정책 선택, 단계 1–5개 추가·삭제·순서 변경·종류(명령/일반)·역할·프롬프트·명령 편집, 시작·종료 훅 명령, `forward` 선택, 프리셋 연결, 샘플 텍스트 시험 실행과 단계별 결과 표시), Pixie 탭의 게이트 실행 카드(통과·교체·거부·교정·오류 `Badge`, 거부 카드의 수정해서 보내기). 디자인 시스템과 ko·en·zh 문구를 따른다.
 - 검증: UI 단위 테스트, Web 배포 후 라이트·다크·좁은 폭 확인.
 
+#### S7 부분 진행 — 결과 표시 부품 (설정·탭 연결 전)
+
+- [GateResultDetails](../../src/pixie-gate-result.tsx)를 추가했다. 시험 실행과 카드 상세에서 공유할 원문·최종 텍스트, 최종 verdict, 단계별 verdict Badge·text·reason·error·소요 시간, 시작/종료 훅, forward·append contexts·forwardError를 표시한다. applied 상태를 verdict에서 추론하지 않으며 사용량은 표시하지 않는다.
+- `skipped` 배열 또는 `data.skipped`를 별도 Badge로 표시한다. 명령 생략과 forward 오류가 함께 있으면 “시험 실행에서 명령 단계를 건너뛰어 전달 결과를 계산할 수 없음” 안내와 실제 오류를 함께 남긴다. ko·en·zh 문구를 제공한다.
+- 기존 공용 스타일만 사용하여 스타일/HTML 스냅샷 변경은 없다. jsdom 4개 추가: 생략된 pass와 전달 오류, 훅·단계·append 표시/사용량 비표시, 중국어와 명시적 skipped, 일반 forward 오류의 잘못된 생략 안내 방지.
+- 검증: `npm --prefix studio run typecheck`, `npm --prefix studio test` (319개 통과), `git diff --check`. 초기 JSX 런타임 import 문제는 수정 후 전체 재검증했다.
+- **S7 미완료:** 부품은 아직 설정이나 탭에 연결하지 않았다. 게이트 목록·편집·필드 검증·프리셋 연결·저장, 시험 실행 호출/취소, 실행 카드 및 followGates 재연결, 거부 처리 모두 다음 작업이다. 화면 구성/새 게이트 탭 선택은 아직 확정하지 않았다.
+- **수정해서 보내기 미구현:** Client Inspect 조사도 아직 하지 않았다. 사용자 GUI 무접근 조건을 지키기 위해 향후 격리 GUI가 연결된 Inspect에서 공개 입력 API를 조사하고, 불가하면 복사 + 실제 전송이 아닌 보냈음 표시(resent)로 구현한다.
+- **미검증:** 격리 서버 시각 확인·스크린샷, 독립 설치, 사용자 앱 배포, 사용자 시각 확인 모두 미실시. 사용자 GUI(19387)와 desktop 프로필은 접근/변경하지 않았다. S1 표는 변경하지 않았다.
+
 ### S8 — 판정 단계 연결
 
 - 선행: S2, S7.

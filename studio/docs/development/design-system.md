@@ -59,6 +59,7 @@ Studio 화면은 DSH 기본 디자인 시스템의 톤을 따른다. 색·선·�
 | --- | --- | --- |
 | [ui-styles.ts](../../src/ui-styles.ts) | 토큰 어댑터와 `.studio-ui` 범위 스타일 | 모든 규칙은 `.studio-ui`로 시작 |
 | [ui.tsx](../../src/ui.tsx) | Studio 소유 부품 | primitives를 import하지 않음. Node 단위 테스트에서 불러도 됨 |
+| [pixie-gate-result.tsx](../../src/pixie-gate-result.tsx) | `GateResultDetails`: 시험 실행·실행 카드 상세용 결과 표시 | 기존 SectionHead·Badge·Notice 재사용. 판정과 적용 동작을 혼동하지 않으며 사용량은 표시하지 않음. Node/jsdom에서 로드 가능 |
 | [ui-host.tsx](../../src/ui-host.tsx) | primitives 재수출과 primitives 기반 부품 | primitives를 직접 import하는 유일한 모듈. Node 테스트가 불러오면 안 됨 |
 
 primitives는 CSS 모듈을 함께 불러오므로 Node 단위 테스트에서 로드할 수 없다. 그래서 기능 모듈은 primitives를 `ui-host.tsx`에서 가져오고, 테스트 대상 모듈은 `ui-host.tsx`에 닿지 않는다. 런타임에서는 셸이 primitives를 플랫폼 모듈로 공유하고 Client 번들은 이를 외부 모듈로 둔다.
