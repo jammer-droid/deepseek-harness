@@ -28,6 +28,7 @@ Studio는 특정 기능(양식 검증, 번역, 검색 요약, 선압축)을 직�
 - **S2 구현·로컬 검증 완료:** 게이트 계약·command/converse 실행기·순차 파이프라인, 내부 결과 분리 및 회귀 테스트를 구현했다. `npm --prefix studio run typecheck`, `npm --prefix studio test`(빌드 포함), `git diff --check` 통과. Studio **219개 테스트 통과**(게이트 파이프라인 39개 + Pixie 선택 타임아웃 1개 포함). 이번 보강에서 회귀 8개를 추가했다. Node deprecation 및 기존 React DOM nesting 경고는 있으나 실패는 없다. 설치 앱·실제 모델·GUI 검증을 대신하지 않는다.
 - **S3 구현·로컬 검증 완료:** 공유 `GateRun` 계약, `PixieGateStore`와 내부 `PixieGateRecorder`, Remote `gateRuns`·`resolveGateRejection`·`followGates`를 구현했다. 세션별 직렬화·임시 파일 rename, 한 번만 정착·늦은 결과 폐기, 재시작 running→cancelled, 보존·prune, 거부 상태 전이, sync·진행 중 재전송, 독립 사용량을 검증했다. `npm --prefix studio run typecheck`, `npm --prefix studio test`(빌드 포함), `git diff --check` 통과: **234개 테스트 통과**(S3 회귀 15개 추가). 기존 Node deprecation·React DOM nesting 경고는 남아 있다. 생산자·DSH 이벤트·UI·실제 모델·독립 설치 검증은 이번 범위가 아니다.
 - **S3 리뷰 보강:** 저장 경로를 요청 sessionId로 고정하고 envelope 객체·runs 배열 및 envelope/각 run의 sessionId를 검증하여 손상 시 fail-closed로 쓰기를 거부한다. live를 저장 전에 예약하고 실패 시 rollback하며, Remote 세션 ID는 정규식 전에 문자열 타입을 검증한다. rename 직후 읽기·저장 실패·save/prune 큐 경합·손상 파일·Remote 입력 회귀를 보강했다.
+- **S3 구독 재리뷰 보강:** read/prune용 소유권 예약과 follow용 커밋된 running 집합을 분리했다. 저장 성공 후 재전송 집합 갱신·publish 및 구독 snapshot·등록을 각각 await 없이 처리하여 저장 전 노출·실패 후 유령 running·snapshot/publish 중복을 방지하며, A/B/C 회귀 테스트로 검증한다.
 - **수용한 S3 tradeoff:** running/pending 보호 기록이 해소되지 않으면 200건 상한을 넘어 계속 성장할 수 있다. 엄격한 용량 상한보다 진행 중 소유권과 미처리 원문 보존을 우선한다.
 - **다음 단계 S4:** 입력 연결. S5 턴 종료 연결, S6 도구 연결, S7 UI, S8 judge 연결, S9 독립 설치 검증은 대기한다. S1 미확인 사항은 관련 연결 단계에서 확인해야 하며 완료로 간주하지 않는다.
 

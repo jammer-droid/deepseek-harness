@@ -20,7 +20,8 @@ export interface PixieGateRecorder {
 export class PixieGateStore implements PixieGateRecorder {
   private readonly root: string;
   private queues = new Map<string, Promise<unknown>>();
-  private live = new Map<string, GateRun>();
+  private owned = new Map<string, GateRun>();
+  private committed = new Map<string, GateRun>();
   private listeners = new Map<string, Set<(frame: GateRunFrame) => void>>();
   constructor(pixieRoot: string) { this.root = join(pixieRoot, 'gates'); }
 
@@ -36,7 +37,7 @@ export class PixieGateStore implements PixieGateRecorder {
       || record.runs.some(run => !run || typeof run !== 'object' || Array.isArray(run) || run.sessionId !== sessionId)) {
       throw new Error(`Invalid Pixie Gate record for session ${sessionId}`);
     }
-    for (const run of record.runs) if (run.status === 'running' && !this.live.has(run.id)) run.status = 'cancelled';
+    for (const run of record.runs) if (run.status === 'running' && !this.owned.has(run.id)) run.status = 'cancelled';
     return record;
   }
 
@@ -48,9 +49,11 @@ export class PixieGateStore implements PixieGateRecorder {
         startedAt: Date.now(), original, finalText: original, applied: 'none', usage: { inputTokens: 0, outputTokens: 0 }, status: 'running' };
       record.runs.push(run);
       // Reserve ownership before rename exposes the running record to concurrent readers.
-      this.live.set(run.id, run);
+      this.owned.set(run.id, run);
       try { await this.save(sessionId, record); }
-      catch (error) { this.live.delete(run.id); throw error; }
+      catch (error) { this.owned.delete(run.id); throw error; }
+      // Replay visibility and publish are synchronous: followers see either snapshot or event, never both.
+      this.committed.set(run.id, run);
       this.publish(run);
       return structuredClone(run);
     });
@@ -73,7 +76,8 @@ export class PixieGateStore implements PixieGateRecorder {
       }
       if (value.rejection) run.rejection = { ...value.rejection, original: run.original, status: 'pending' };
       await this.save(sessionId, record);
-      this.live.delete(runId);
+      this.owned.delete(runId);
+      this.committed.delete(runId);
       this.publish(run);
       return true;
     });
@@ -92,10 +96,10 @@ export class PixieGateStore implements PixieGateRecorder {
     });
   }
 
-  /** Sync means refetch durable history; only live executions are replayed. No await between snapshot and subscribe. */
+  /** Sync means refetch durable history; only committed running executions are replayed. No await between snapshot and subscribe. */
   async *follow(sessionId: string, signal: AbortSignal): AsyncIterable<GateRunFrame> {
     this.file(sessionId);
-    const queue: GateRunFrame[] = [{ type: 'sync' }, ...[...this.live.values()].filter(run => run.sessionId === sessionId).map(run => ({ type: 'run' as const, run: structuredClone(run) }))];
+    const queue: GateRunFrame[] = [{ type: 'sync' }, ...[...this.committed.values()].filter(run => run.sessionId === sessionId).map(run => ({ type: 'run' as const, run: structuredClone(run) }))];
     let wake: (() => void) | undefined;
     const listener = (frame: GateRunFrame) => { queue.push(frame); wake?.(); };
     const listeners = this.listeners.get(sessionId) ?? new Set();
@@ -132,7 +136,7 @@ export class PixieGateStore implements PixieGateRecorder {
       if (!SESSION_ID.test(id) || existing.has(id)) continue;
       await this.enqueue(id, async () => {
         // Do not remove a record that a producer still owns; a later prune retries it.
-        if ([...this.live.values()].some(run => run.sessionId === id)) return;
+        if ([...this.owned.values()].some(run => run.sessionId === id)) return;
         await rm(this.file(id), { force: true });
         removed.push(id);
       });

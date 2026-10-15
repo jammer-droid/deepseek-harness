@@ -189,6 +189,46 @@ function interceptRename(t, target, hook) {
   t.after(() => { t.mock.restoreAll(); syncBuiltinESMExports(); });
 }
 
+for (const scenario of ['A: pending start is not replayed', 'B: failed start leaves no ghost running', 'C: committed start is delivered exactly once']) {
+  test(`follow ${scenario}`, async t => {
+    const dir = await root(); const store = new PixieGateStore(dir);
+    const entered = deferred(); const release = deferred();
+    const fail = scenario.startsWith('B:');
+    interceptRename(t, join(dir, 'gates', 's.json'), async (from, to, rename) => {
+      entered.resolve(); await release.promise;
+      if (fail) throw Error('injected rename failure');
+      await rename(from, to);
+    });
+    const abort = new AbortController();
+    const frames = []; let consuming;
+    const starting = store.start('s', gate, 'original').then(run => ({ run }), error => ({ error }));
+    try {
+      await entered.promise;
+      const stream = store.follow('s', abort.signal);
+      frames.push((await stream.next()).value);
+      consuming = (async () => { for await (const frame of stream) frames.push(frame); })();
+      // Drain subscriber microtasks while rename is explicitly blocked, without a timing race.
+      await new Promise(resolve => setImmediate(resolve));
+      assert.deepEqual((await store.read('s')).runs, []);
+      if (scenario.startsWith('A:')) assert.deepEqual(frames, [{ type: 'sync' }]);
+      release.resolve();
+      const outcome = await starting;
+      await new Promise(resolve => setImmediate(resolve));
+      if (fail) {
+        assert.match(outcome.error.message, /injected rename failure/);
+        assert.deepEqual(frames, [{ type: 'sync' }]);
+        assert.deepEqual((await store.read('s')).runs, []);
+      } else {
+        assert.deepEqual(frames, [{ type: 'sync' }, { type: 'run', run: outcome.run }]);
+        assert.equal((await store.read('s')).runs[0].status, 'running');
+      }
+    } finally {
+      release.resolve(); await starting;
+      abort.abort(); await consuming;
+    }
+  });
+}
+
 test('published start stays running while save cleanup is delayed', async t => {
   const dir = await root(); const store = new PixieGateStore(dir);
   const published = deferred(); const release = deferred();
