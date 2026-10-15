@@ -385,6 +385,15 @@ interface GateResult {
 - **수정해서 보내기 미구현:** Client Inspect 조사도 아직 하지 않았다. 사용자 GUI 무접근 조건을 지키기 위해 향후 격리 GUI가 연결된 Inspect에서 공개 입력 API를 조사하고, 불가하면 복사 + 실제 전송이 아닌 보냈음 표시(resent)로 구현한다.
 - **미검증:** 격리 서버 시각 확인·스크린샷, 독립 설치, 사용자 앱 배포, 사용자 시각 확인 모두 미실시. 사용자 GUI(19387)와 desktop 프로필은 접근/변경하지 않았다. S1 표는 변경하지 않았다.
 
+#### S7 부분 진행 — 설정 게이트 편집기
+
+- Pixie 설정의 DetailLayout에 `게이트` 페이지를 연결했다. 목록(이름·지점·켜짐·프리셋 수·단계 수), 추가·복제·삭제, match/정책/forward/limits/훅/Studio 프리셋 연결과 단계 편집을 제공한다. 복제본은 활성 중복을 피하도록 꺼진 상태로 만든다.
+- 단계는 1–5개이며 추가 상한 사유, 최소 삭제 제한, 위/아래 이동, 명령/일반 편집, 판정 비활성, 모델 기본값 및 앞 단계 ID 기반 변수 안내를 제공한다. 지점 변경으로 금지된 revise는 check로, forward는 original로 정리하고 Notice로 명시한다. 보이지 않는 불법 값을 남겨 저장을 막는 대신 변경 내용을 즉시 알려 주는 선택이다.
+- `validateGateDefinition`의 첫 오류를 locale 문구와 필드 주소로 매핑한다. 목록 전체를 검증한 뒤 `saveGateDefinitions`로 교체한다. 저장 중 편집을 잠그고, 변경 없음/변경/저장 중 버튼 상태 및 Host 오류 Notice·편집 유지·재시도를 제공한다. 기존 공용 부품/스타일만 사용하여 디자인 시스템 표와 HTML 스타일 스냅샷 변경은 없다.
+- 검증: `npm --prefix studio run typecheck`, `npm --prefix studio test` **326개 통과**(신규 jsdom 7개), `git diff --check`. Node deprecation 및 기존 RoleEditor heading nesting 경고는 남아 있다. 코드 리뷰는 요청대로 S9 이후로 미룬다.
+- **이번 범위의 미완료:** 시간 예산에 따라 편집기를 우선 커밋한다. 시험 실행 패널, trialGate Remote descriptor/취소 연결, GateResultDetails 연결, 현재 세션 공개 API 확인 및 명령 실행 옵션·payload 테스트는 다음 작업이다. 현재 세션을 추측하거나 사용자 GUI Client Inspect를 호출하지 않았다.
+- **S7 남은 것:** Pixie 탭 실행 카드/followGates, 거부 카드의 수정해서 보내기, 격리 GUI 라이트·다크·좁은 폭 시각 확인. 사용자 GUI(19387)·desktop 프로필 접근 및 배포, 독립 설치는 하지 않았다. S1 표는 변경하지 않았다.
+
 ### S8 — 판정 단계 연결
 
 - 선행: S2, S7.

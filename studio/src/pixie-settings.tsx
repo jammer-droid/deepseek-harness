@@ -2,6 +2,8 @@
  * Uses the same {@link DetailLayout} frame as the preset service so every Studio service looks alike.
  */
 import React from 'react';
+import { GateEditor, type GateEditorActions } from './pixie-gate-editor.tsx';
+import { gateEditorText } from './pixie-gate-editor-locale.ts';
 import { Button, Notice, PageHead, Segmented, SettingsRow, Toggle } from './ui.tsx';
 import { DetailLayout } from './detail-layout.tsx';
 import type { PixieContextMode, PixieSettings } from './pixie-contracts.ts';
@@ -20,9 +22,9 @@ export interface PixieSettingsActions {
 }
 
 const SEP = '\u0000';
-type PageId = 'model' | 'threads' | 'prompt';
+type PageId = 'model' | 'threads' | 'prompt' | 'gates';
 
-export function PixieSettingsPage({ actions, locale, navFooter }: { actions: PixieSettingsActions; locale: string; navFooter?: React.ReactNode }) {
+export function PixieSettingsPage({ actions, gateActions, locale, navFooter }: { actions: PixieSettingsActions; gateActions?: GateEditorActions; locale: string; navFooter?: React.ReactNode }) {
   const t = (key: PixieTextKey) => pixieText(locale, key);
   const [page, setPage] = React.useState<PageId>('model');
   const [draft, setDraft] = React.useState<PixieSettings>();
@@ -116,5 +118,6 @@ export function PixieSettingsPage({ actions, locale, navFooter }: { actions: Pix
     { id: 'model', group: t('settingsGroup'), label: t('pageModel'), content: modelPage },
     { id: 'threads', group: t('settingsGroup'), label: t('pageThreads'), content: threadsPage },
     { id: 'prompt', group: t('settingsGroup'), label: t('pagePrompt'), content: promptPage },
+    ...(gateActions ? [{ id: 'gates', group: t('settingsGroup'), label: gateEditorText(locale, 'title'), content: <GateEditor actions={gateActions} locale={locale} /> }] : []),
   ]} />;
 }

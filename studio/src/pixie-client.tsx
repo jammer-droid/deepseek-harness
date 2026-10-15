@@ -2,6 +2,7 @@
  * The tab registers only where the right sidebar exists, so Studio still loads without it.
  */
 import React from 'react';
+import type { GateEntry, GateEditorActions } from './pixie-gate-editor.tsx';
 import type { StudioContext } from './contracts.js';
 import { PACKAGE_NAME } from './package-name.ts';
 import { StudioSurface } from './ui.tsx';
@@ -31,6 +32,8 @@ interface PixieRemote {
   ask(sessionId: string, payload: string): RemoteValue<{ threadId: string; turnId: string }>;
   cancel(sessionId: string): RemoteValue<boolean>;
   follow(sessionId: string): AsyncIterable<PixieAskFrame> & { dispose(): void };
+  gateDefinitions(): RemoteValue<GateEntry[]>;
+  saveGateDefinitions(payload: string): RemoteValue<unknown>;
   readSettings(): RemoteValue<PixieSettings>;
   saveSettings(payload: string): RemoteValue<PixieSettings>;
   models(): RemoteValue<unknown>;
@@ -59,6 +62,8 @@ export function pixieDescriptors() {
     descriptor('ask', ['sessionId', 'payload']),
     descriptor('cancel', ['sessionId']),
     descriptor('follow', ['sessionId'], { mode: 'stream', cancellation: { parameter: 'signal' } }),
+    descriptor('gateDefinitions', []),
+    descriptor('saveGateDefinitions', ['payload']),
     descriptor('readSettings', []),
     descriptor('saveSettings', ['payload']),
     descriptor('models', []),
@@ -81,10 +86,19 @@ export function mountPixie(ctx: StudioContext, options: { navFooter?: (locale: s
     save: settings => unwrap(remote().saveSettings(JSON.stringify(settings))),
     models: () => unwrap(remote().models()) as ReturnType<PixieSettingsActions['models']>,
   };
+  const gateActions: GateEditorActions = {
+    read: () => unwrap(remote().gateDefinitions()),
+    save: entries => unwrap(remote().saveGateDefinitions(JSON.stringify(entries))),
+    models: settingsActions.models,
+    presets: () => {
+      const catalog = ctx.get('remote.studioCatalog' as never) as unknown as { listPresets(): RemoteValue<{ id: string; name: string }[]> };
+      return unwrap(catalog.listPresets());
+    },
+  };
   function SettingsPage() {
     const active = useLocale();
     // Rendered inside the shell surface, like the preset service, so both services share one frame.
-    return <PixieSettingsPage actions={settingsActions} locale={active} navFooter={options.navFooter?.(active)} />;
+    return <PixieSettingsPage actions={settingsActions} gateActions={gateActions} locale={active} navFooter={options.navFooter?.(active)} />;
   }
   ctx.slots.inject('local.dsh-studio.services', () => ctx.slots.register({
     name: 'local.dsh-studio.services', id: 'pixie', order: 10, label: () => pixieText(locale(), 'settingsTitle'),
