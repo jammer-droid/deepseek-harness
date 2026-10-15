@@ -79,6 +79,7 @@ export interface GateRun {
   usage: PixieUsage;
   status: GateRunStatus;
   rejection?: GateRejection;
+  hooksInput?: 'observed' | 'unverified';
 }
 export interface GateRunRecord { sessionId: string; runs: GateRun[] }
 export type GateRunFrame = { type: 'sync' } | { type: 'run'; run: GateRun };

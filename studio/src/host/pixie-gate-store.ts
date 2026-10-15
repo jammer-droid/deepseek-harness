@@ -6,7 +6,7 @@ import type { PixieUsage } from '../pixie-contracts.ts';
 
 export const MAX_GATE_RUNS = 200;
 const SESSION_ID = /^[\w-]{1,200}$/;
-type Settlement = { status: Exclude<GateRunStatus, 'running'>; result?: GateResult; applied: GateApplied; rejection?: { reason: string; suggestion?: string } };
+type Settlement = { status: Exclude<GateRunStatus, 'running'>; result?: GateResult; applied: GateApplied; hooksInput?: 'observed' | 'unverified'; rejection?: { reason: string; suggestion?: string } };
 
 /** Internal producer port for S4–S6. Persist start before applying destructive decisions.
  * End hooks preserve the verdict on external cancellation: check signal before applying an action.
@@ -70,6 +70,7 @@ export class PixieGateStore implements PixieGateRecorder {
       if (value.applied === 'rejected' && (run.point !== 'input' || !value.rejection)) throw new Error('Rejected input requires rejection details');
       if (value.result && value.result.original !== run.original) throw new Error('Gate original cannot change');
       run.status = value.status; run.applied = value.applied; run.endedAt = Date.now();
+      if (value.hooksInput) run.hooksInput = value.hooksInput;
       if (value.result) {
         run.result = value.result; run.finalText = value.result.subject;
         run.usage = gateUsage(value.result);
@@ -174,7 +175,7 @@ export class PixieGateStore implements PixieGateRecorder {
 }
 
 /** records and stages reference the same calls; count records only, never command hooks. */
-function gateUsage(result: GateResult): PixieUsage {
+export function gateUsage(result: GateResult): PixieUsage {
   const total: PixieUsage = { inputTokens: 0, outputTokens: 0 };
   for (const { result: stage } of result.records) if (stage.usage) {
     for (const key of ['inputTokens', 'outputTokens', 'cacheReadTokens', 'cacheWriteTokens', 'reasoningTokens'] as const) {

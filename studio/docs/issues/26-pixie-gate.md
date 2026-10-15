@@ -30,7 +30,20 @@ Studio는 특정 기능(양식 검증, 번역, 검색 요약, 선압축)을 직�
 - **S3 리뷰 보강:** 저장 경로를 요청 sessionId로 고정하고 envelope 객체·runs 배열 및 envelope/각 run의 sessionId를 검증하여 손상 시 fail-closed로 쓰기를 거부한다. live를 저장 전에 예약하고 실패 시 rollback하며, Remote 세션 ID는 정규식 전에 문자열 타입을 검증한다. rename 직후 읽기·저장 실패·save/prune 큐 경합·손상 파일·Remote 입력 회귀를 보강했다.
 - **S3 구독 재리뷰 보강:** read/prune용 소유권 예약과 follow용 커밋된 running 집합을 분리했다. 저장 성공 후 재전송 집합 갱신·publish 및 구독 snapshot·등록을 각각 await 없이 처리하여 저장 전 노출·실패 후 유령 running·snapshot/publish 중복을 방지하며, A/B/C 회귀 테스트로 검증한다.
 - **수용한 S3 tradeoff:** running/pending 보호 기록이 해소되지 않으면 200건 상한을 넘어 계속 성장할 수 있다. 엄격한 용량 상한보다 진행 중 소유권과 미처리 원문 보존을 우선한다.
-- **다음 단계 S4:** 입력 연결. S5 턴 종료 연결, S6 도구 연결, S7 UI, S8 judge 연결, S9 독립 설치 검증은 대기한다. S1 미확인 사항은 관련 연결 단계에서 확인해야 하며 완료로 간주하지 않는다.
+- **S3 완료 기준:** 구독 수정 커밋 `3e155af79b`를 포함한다. 사용자 결정에 따라 코드 리뷰는 **S9 이후 일괄 진행**하며 단계별 리뷰를 기다리지 않는다.
+- **S4 구현·로컬 검증 완료:** 프리셋 연결 정의 저장소, Remote 조회·저장, input waterfall 바인딩, 명령/모델 어댑터, 실행 기록·관찰 이벤트를 연결했다. 타입 검사·Studio 빌드 포함 전체 테스트 **272개 통과**(이번 S4 20개 추가), `git diff --check` 통과. 실제 모델·실제 훅 브리지 Loader·독립 설치는 미검증이므로 S4 전체 수용 완료와 구별한다.
+- **다음 단계 S5:** 턴 종료 연결. S6 도구 연결, S7 UI, S8 judge 연결, S9 독립 설치 검증은 대기한다. S1 미확인 사항은 관련 연결 단계에서 확인해야 하며 완료로 간주하지 않는다.
+
+### S4 구현 결과와 남은 검증
+
+- 정의는 `<pixie root>/gates.json`의 `{ definition, presetIds }[]`로 저장한다. 전체 목록을 검증·정규화한 뒤 직렬화된 임시 파일 rename으로 교체하며 검증/저장 오류는 Remote에 반환한다. `gateDefinitions()`·`saveGateDefinitions(payload)`는 S7 편집기용이다. 같은 프리셋·지점의 활성 게이트 중복은 거부한다(복수 게이트 실행 순서는 후속). 실행 기록 디렉터리 `gates/`와 충돌하지 않는다.
+- 프리셋 판별은 공개 `agentPresets.composedPreset(agent.ctx)`를 매 호출 사용한다. `preset-policy`의 scope ancestry 방식과 달리 연결 id 목록을 직접 대조하므로 재선택/recompose 후 별도 리스너 재설치가 필요 없다. root/child는 공개 `agents.roots()`의 현재 runtime 소유 관계이며 durable parent lineage를 추정하지 않는다.
+- 대상 메시지는 각각 실행하여 원래 source 객체(중계 sender/form 포함)와 비텍스트 content를 보존한다. 원문 text 블록은 줄바꿈으로 합쳐 전달하고 교체 시 첫 text 위치에 결과를 넣는다. runtime-context/model-selection/일반 훅/게이트 컨텍스트는 대상에서 제외한다. 여러 메시지 결과는 하나의 enter/reject로 적용하며 뒤의 거부가 앞의 교체를 폐기하면 앞 run은 applied=none이다.
+- append는 pipeline forward를 따른다. note만 있어 pipeline verdict가 pass여도 명시적 append가 있으면 원문과 `studio-pixie-gate` 컨텍스트를 보낸다(기준 자막 레시피). 순수 pass/original은 next 결과 객체 그대로다. confirmRevision인 revise는 pending 거부와 제안으로 남긴다.
+- Host Inspect에서 `agent/pre-step`, `shell`, `agentPresets`, `agents`, `sandboxPolicy` 계약을 조회했다. 명령은 `agent.session.header.cwd`, `sandboxPolicy.resolve({ session: agent.session })`를 공개 shell resolve→execute→result에 명시 전달한다. 정책이나 cwd/shell이 없으면 명령을 실행하지 않고 error→onError로 처리한다. 모델은 기존 Pixie llm stream 경로와 S2 stageTimeoutMs를 사용한다.
+- prepend 등록 후 next 결과를 읽는다. 나중 prepend는 더 바깥이므로 영구 최외곽 보장은 없다. hooks-claude-code/hooks-codex 메시지를 실제 관측한 run은 `hooksInput: observed`, 없으면 `unverified`다. observed도 모든 바깥 리스너 관측을 보장하지 않는다. start/end 관찰 emit의 payload는 GateRun 스냅샷이며 end에 result·applied·usage를 담는다.
+- 가짜 agent/session/next와 실제 Cordis plugin composition으로 pass/replace/append/reject/confirm/error pass·block/단계 및 end 훅 취소, 다른 리스너 reject, source 보존, root/child/프리셋 필터, 다중 메시지, usage, 정의 오류, 공개 shell 정책 전달·정책 부재 시 미실행을 검증했다. 기존 Studio 테스트에 실제 Loader 배포 조합 패턴은 없어 **Cordis 조합을 Loader 검증으로 부르지 않는다**.
+- 환경의 DEEPSEEK_API_KEY/OPENAI_API_KEY/ANTHROPIC_API_KEY 존재 여부만 검사했고 모두 없었다. 사용자 프로필의 자격 증명은 조회하지 않았다. 실제 모델 호출과 19391 서버 실행은 생략했으며 사용자 GUI 19387·프로필은 변경하지 않았다. 실제 브리지 활성 순서, 모델 선택 생성 시점, 실제 sendMessage relay/화면, enforcing sandbox의 실제 deny/허용, rc.2·alpha.2 독립 설치는 S9까지 확인해야 한다. 기존 Node deprecation·React DOM nesting 경고는 남아 있다.
 
 ### S3 설계 확정 및 명세와 달라진 점
 
