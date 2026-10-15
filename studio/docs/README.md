@@ -30,6 +30,7 @@
 - [디자인 시스템](development/design-system.md)
 - [프리셋 런타임 수명 조사](development/preset-runtime-lifecycle.md)
 - [런타임 카탈로그 API 조사](development/runtime-catalog-api.md)
+- [DSH 런타임 제어 지점 조사](research/dsh-runtime-control-points.md): 다섯 핵심 개입 지점의 Native 플러그인·커맨드 훅 지원 범위와 서브에이전트·최종 답변 제어의 한계.
 - [개발 안내](../development.ko.md)
 - [배포 가이드](release.md): fork → 공개 레포 스냅샷 → npm 공개 절차
 - [이슈 명세 색인](issues/README.md)
