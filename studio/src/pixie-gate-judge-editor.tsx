@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, CheckOption, Notice, SectionHead, SettingsRow } from './ui.tsx';
+import { Button, IconButton, CheckOption, Notice, SectionHead, SettingsRow } from './ui.tsx';
 import { validateGateDefinition, type GateDefinition, type JudgePassCondition, type StageDefinition } from './pixie-gate-contracts.ts';
 import type { JudgeQuestion } from './pixie-contracts.ts';
 import { judgeText, type JudgeTextKey } from './pixie-gate-judge-locale.ts';
@@ -23,6 +23,8 @@ export function GateJudgeEditor({ stage, definition, index, onChange, locale }: 
   };
   const row = (key: JudgeTextKey, control: React.ReactNode) => <SettingsRow title={t(key)}>{control}</SettingsRow>;
   const input = (key: JudgeTextKey, value: string, change: (value: string) => void) => row(key, <input aria-label={t(key)} value={value} onChange={e => change(e.target.value)} />);
+  const compactInput = (key: JudgeTextKey, value: string, change: (value: string) => void) => <label className="studio-field"><span>{t(key)}</span><input aria-label={t(key)} value={value} onChange={e => change(e.target.value)} /></label>;
+  const deleteIcon = <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 4h10M6 4V2h4v2M5 6v7h6V6" fill="none" stroke="currentColor" /></svg>;
   const updateQuestion = (id: string, question: JudgeQuestion) => onChange({ ...stage, questions: { ...stage.questions, [id]: question } });
   const conditionChange = (i: number, condition: JudgePassCondition) => onChange({ ...stage, pass: { ...stage.pass, conditions: stage.pass.conditions.map((value, n) => i === n ? condition : value) } });
   const unique = (ids: string[], prefix: string) => { let n = 1; while (ids.includes(`${prefix}${n}`)) n++; return `${prefix}${n}`; };
@@ -37,18 +39,18 @@ export function GateJudgeEditor({ stage, definition, index, onChange, locale }: 
         {duplicate === `question-${qi}` && <Notice>{t('duplicate')}</Notice>}
         {row('type', <select aria-label={t('type')} value={q.type} onChange={e => updateQuestion(id, initialQuestion(e.target.value as JudgeQuestion['type']))}>{(['choice', 'score', 'noul'] as const).map(type => <option key={type} value={type}>{t(type)}</option>)}</select>)}
         {q.type === 'choice' && <>
-          {Object.entries(q.options).map(([option, label], oi) => <div className="studio-form-section" key={oi} data-judge-option={oi}>
-            {input('optionId', option, next => { if (next !== option && Object.hasOwn(q.options, next)) { setDuplicate(`option-${qi}-${oi}`); return; } setDuplicate(''); updateQuestion(id, { ...q, options: Object.fromEntries(Object.entries(q.options).map(([key, value]) => [key === option ? next : key, value])) }); })}
+          {Object.entries(q.options).map(([option, label], oi) => <div className="studio-inline-actions studio-edit-row" key={oi} data-judge-option={oi}>
+            {compactInput('optionId', option, next => { if (next !== option && Object.hasOwn(q.options, next)) { setDuplicate(`option-${qi}-${oi}`); return; } setDuplicate(''); updateQuestion(id, { ...q, options: Object.fromEntries(Object.entries(q.options).map(([key, value]) => [key === option ? next : key, value])) }); })}
             {duplicate === `option-${qi}-${oi}` && <Notice>{t('duplicate')}</Notice>}
-            {input('label', label, value => updateQuestion(id, { ...q, options: { ...q.options, [option]: value } }))}
-            <Button onClick={() => { const options = { ...q.options }; delete options[option]; updateQuestion(id, { ...q, options }); }}>{remove}</Button>
+            {compactInput('label', label, value => updateQuestion(id, { ...q, options: { ...q.options, [option]: value } }))}
+            <IconButton label={remove} onClick={() => { const options = { ...q.options }; delete options[option]; updateQuestion(id, { ...q, options }); }}>{deleteIcon}</IconButton>
           </div>)}
           <Button onClick={() => updateQuestion(id, { ...q, options: { ...q.options, [unique(Object.keys(q.options), 'option')]: '' } })}>{t('addOption')}</Button>
         </>}
         {q.type === 'score' && <>
-          {q.levels.map((level, li) => <div key={li} className="studio-form-section">
-            {input('level', level, value => updateQuestion(id, { ...q, levels: q.levels.map((item, n) => n === li ? value : item) }))}
-            <Button disabled={q.levels.length <= 2} onClick={() => updateQuestion(id, { ...q, levels: q.levels.filter((_, n) => n !== li) })}>{remove}</Button>
+          {q.levels.map((level, li) => <div key={li} className="studio-inline-actions studio-edit-row">
+            {compactInput('level', level, value => updateQuestion(id, { ...q, levels: q.levels.map((item, n) => n === li ? value : item) }))}
+            <IconButton label={remove} disabled={q.levels.length <= 2} onClick={() => updateQuestion(id, { ...q, levels: q.levels.filter((_, n) => n !== li) })}>{deleteIcon}</IconButton>
           </div>)}
           <Button disabled={q.levels.length >= 10} onClick={() => updateQuestion(id, { ...q, levels: [...q.levels, ''] })}>{t('addLevel')}</Button>
         </>}
@@ -70,7 +72,7 @@ export function GateJudgeEditor({ stage, definition, index, onChange, locale }: 
         {row('selectQuestion', <select aria-label={t('selectQuestion')} value={q && q.type !== c.type ? '' : c.question} onChange={e => conditionChange(ci, initialCondition(e.target.value, stage.questions[e.target.value]))}>
           {q && q.type !== c.type && <option value="" disabled>{t('selectQuestion')}</option>}
           {!q && <option value={c.question}>{c.question || t('selectQuestion')}</option>}
-          {Object.keys(stage.questions).map(id => <option value={id} key={id}>{id}</option>)}
+          {Object.entries(stage.questions).map(([id, question]) => { const preview = (question.type === 'noul' ? question.question : question.type === 'choice' ? Object.values(question.options).join(' / ') : question.levels.join(' / ')).slice(0, 60); return <option value={id} key={id}>{id} · {t(question.type)}{preview ? ` — ${preview}` : ''}</option>; })}
         </select>)}
         {c.type === 'noul' && row('threshold', <input aria-label={t('threshold')} type="number" min={0} max={1} step="any" value={c.threshold} onChange={e => conditionChange(ci, { ...c, threshold: e.target.value === '' ? NaN : Number(e.target.value) })} />)}
         {c.type === 'score' && row('min', <select aria-label={t('min')} value={c.min} onChange={e => conditionChange(ci, { ...c, min: Number(e.target.value) })}>

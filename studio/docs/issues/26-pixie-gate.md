@@ -447,6 +447,10 @@ interface GateResult {
 - **S8 미완료 / UI 인계:** 단계 종류 판정 활성화, 질문·유형별 옵션/levels/기준 편집, 통과 규칙/모델 편집, `GateResultDetails` answers 요약, 설정 페이지 판정 모델/시스템 프롬프트와 기존 저장 버튼 상태, 관련 jsdom 테스트가 남아 있다. 현재 편집기는 judge 선택을 계속 비활성화한다. 후속 UI는 위 계약을 그대로 사용한다.
 - 실제 모델 호출은 미실시이며 키 존재 여부도 확인하지 않았고 키 값은 열람하지 않았다. 사용자 GUI·프로필 접근/배포 및 Client Inspect 없음. 독립 설치·시각 확인 미검증. S1 표 불변, 리뷰는 S9 이후.
 
+#### S8 UI/UX 다듬기
+
+- 기존 reason은 유지하고 구조화 실패 조건 `data.failedConditions`를 추가하여 ko·en·zh 결과 문구·질문/옵션/점수 라벨과 구기록 fallback을 지원했다. 조건 질문 식별 문구, choice·score 압축 편집 행, 오른쪽 정렬 보조 초기화 버튼을 반영했다. Studio typecheck·전체 테스트 369개 2회 연속·diff 검사 통과, 격리 19391에서 라이트·다크 × 1440·520 16장 확인([INDEX](</tmp/pixie-gate-s8-shots-v2/INDEX.md>)). 사용자 GUI·프로필 및 Client Inspect 미접근, S1 표 불변, 실제 모델·S9·일괄 리뷰는 후속이다.
+
 #### S8 UI 구현·로컬 검증
 
 - 판정 단계 선택을 활성화했다. 선택 모델(판정 기본 모델 fallback), check 고정 안내, choice 옵션 ID/문구·score 2–10단계·noul 질문/참/거짓 기준, 질문 추가/삭제와 ID 편집, all/any 및 유형별 통과 조건을 편집한다. 기존 변수 안내와 CheckOption을 재사용한다. 질문 유형 변경·ID 변경·옵션/질문 삭제로 깨진 조건은 자동 삭제하지 않고 유지하며 공유 `validateGateDefinition` 오류를 질문/조건 옆에 표시한다.

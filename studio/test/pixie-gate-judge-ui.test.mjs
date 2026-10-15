@@ -10,7 +10,7 @@ import { PixieSettingsPage } from '../src/pixie-settings.tsx';
 import { makeJudgeStage } from '../src/pixie-gate-judge-editor.tsx';
 const dom = new JSDOM('<!doctype html><body></body>');
 globalThis.window = dom.window; globalThis.document = dom.window.document; globalThis.IS_REACT_ACT_ENVIRONMENT = true;
-const button = (h, name) => [...h.querySelectorAll('button')].find(b => b.textContent === name);
+const button = (h, name) => [...h.querySelectorAll('button')].find(b => (b.getAttribute('aria-label') || b.textContent) === name);
 const input = (h, label) => h.querySelector(`[aria-label="${label}"]`);
 const click = async el => { assert.ok(el); await act(async () => el.click()); };
 const change = async (el, value) => { assert.ok(el); await act(async () => { el.value = value; Simulate.change(el); }); };
@@ -28,7 +28,7 @@ async function editor(t) {
 test('judge creation hides role, edits noul and submits judge draft in trial payload', async t => {
   const { host, saves, trials } = await editor(t);
   assert.equal(input(host, 'Role'), null); assert.match(host.textContent, /only decide pass or fail/);
-  await change(input(host, 'Question text'), 'Is {{subject}} safe?'); await change(input(host, 'True criterion'), 'safe'); await change(input(host, 'False criterion'), 'unsafe');
+  await change(input(host, 'Question text'), 'Is {{subject}} safe?'); assert.match(input(host, 'Select question').textContent, /question1 · Noul — Is/); await change(input(host, 'True criterion'), 'safe'); await change(input(host, 'False criterion'), 'unsafe');
   await change(input(host, 'Threshold (0–1)'), '0.8'); await change(input(host, 'Condition mode'), 'any');
   await click(button(host, 'Save'));
   const stage = saves[0][0].definition.stages[0]; assert.equal(stage.role, undefined); assert.deepEqual(stage.questions.question1.criteria, { true: 'safe', false: 'unsafe' }); assert.equal(stage.pass.conditions[0].threshold, 0.8); assert.equal(stage.pass.mode, 'any');
@@ -79,4 +79,15 @@ test('judge settings legacy fields, save states, model fallback and reset', asyn
   await act(async () => resolve()); assert.equal(button(page, 'Saved').disabled, true); assert.equal(saves[0].systemPrompt, 'original'); assert.deepEqual(saves[0].judgeModel, { provider: 'p', model: 'm' });
   await click(button(page, 'Restore default')); await change(input(page, 'Judge model'), ''); await click(button(page, 'Save')); await act(async () => resolve());
   assert.equal(Object.hasOwn(saves[1], 'judgeSystemPrompt'), false); assert.equal(Object.hasOwn(saves[1], 'judgeModel'), false);
+});
+
+test('structured failures localize all types and fall back to ids without definitions', async t => {
+  const stage = { ...makeJudgeStage('first'), questions: { n: { type: 'noul', question: '안전한가?' }, s: { type: 'score', levels: ['미흡', '충분'] }, c: { type: 'choice', options: { no: '거부', yes: '승인' } } } };
+  const result = { verdict: 'fail', original: 'a', subject: 'a', notes: [], records: [], hooks: {}, forward: { kind: 'none' }, stages: { first: { verdict: 'fail', reason: 'legacy raw reason', data: { failedConditions: [{ question: 'n', type: 'noul', threshold: 0.5, actual: 0.2 }, { question: 's', type: 'score', min: 1, actual: 0 }, { question: 'c', type: 'choice', allowed: ['yes'], actual: 'no' }] } } } };
+  const host = await render(t, GateResultDetails, { locale: 'ko', result, definition: { ...definition(), stages: [stage] } });
+  assert.match(host.textContent, /질문 "안전한가\?": 예 확률 0.2 < 기준 0.5/);
+  assert.match(host.textContent, /점수 미흡 < 최소 충분/); assert.match(host.textContent, /선택 거부이 허용 옵션 아님/); assert.doesNotMatch(host.textContent, /legacy raw reason/);
+  const fallback = await render(t, GateResultDetails, { result });
+  assert.match(fallback.textContent, /Question "n": yes probability 0.2 < threshold 0.5/); assert.match(fallback.textContent, /score 0 < minimum 1/); assert.match(fallback.textContent, /selection no is not allowed/);
+  const chinese = await render(t, GateResultDetails, { result, locale: 'zh' }); assert.match(chinese.textContent, /阈值 0.5/);
 });

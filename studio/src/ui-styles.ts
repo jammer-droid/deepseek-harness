@@ -170,6 +170,9 @@ ${adapter}.studio-ui *, .studio-ui *::before, .studio-ui *::after { box-sizing: 
 .studio-ui select:not([multiple]) { appearance: none; -webkit-appearance: none; padding-inline-end: 34px; background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%); background-position: right 17px top 50%, right 12px top 50%; background-size: 5px 5px, 5px 5px; background-repeat: no-repeat; text-overflow: ellipsis; }
 .studio-ui textarea { min-height: 144px; resize: vertical; }
 .studio-ui .studio-field { display: grid; gap: 6px; margin: 12px 0; }
+.studio-ui .studio-edit-row { align-items: flex-end; }
+.studio-ui .studio-edit-row > .studio-field { flex: 1 1 180px; min-width: 0; margin: 0; }
+.studio-ui .studio-edit-row > .studio-notice-row { flex-basis: 100%; }
 .studio-ui .studio-field-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: 0 var(--studio-gap); }
 
 /* Prompt assembly map and native multi-select transfer lists. */

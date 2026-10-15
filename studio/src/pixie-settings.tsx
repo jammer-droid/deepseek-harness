@@ -130,7 +130,7 @@ export function PixieSettingsPage({ actions, gateActions, locale, navFooter }: {
       }}><option value="">{gateEditorText(locale, 'defaultModel')}</option>{catalog.groups.map(group => <optgroup key={group.id} label={group.name}>{group.models.map(model => <option key={model.id} value={JSON.stringify([group.id, model.id])}>{model.name}</option>)}</optgroup>)}</select>} />
       <SettingsRow title={jt('prompt')} description={jt('promptHint')}>
         <textarea className="studio-pixie-prompt" aria-label={jt('prompt')} placeholder={DEFAULT_JUDGE_SYSTEM_PROMPT} value={draft.judgeSystemPrompt ?? ''} onChange={e => { const { judgeSystemPrompt: _, ...rest } = draft; replace(e.target.value ? { ...rest, judgeSystemPrompt: e.target.value } : rest); }} />
-        <Button disabled={!draft.judgeSystemPrompt} onClick={() => { const { judgeSystemPrompt: _, ...rest } = draft; replace(rest); }}>{jt('reset')}</Button>
+        <div className="studio-inline-actions studio-pixie-actions"><Button disabled={!draft.judgeSystemPrompt || draft.judgeSystemPrompt === DEFAULT_JUDGE_SYSTEM_PROMPT} onClick={() => { const { judgeSystemPrompt: _, ...rest } = draft; replace(rest); }}>{jt('reset')}</Button></div>
       </SettingsRow>
     </fieldset>}
   </div>;

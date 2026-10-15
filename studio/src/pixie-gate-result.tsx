@@ -1,7 +1,7 @@
 import React from 'react';
 import { judgeText } from './pixie-gate-judge-locale.ts';
 import type { JudgeAnswer } from './pixie-contracts.ts';
-import type { GateDefinition, GateResult, StageResult } from './pixie-gate-contracts.ts';
+import type { GateDefinition, GateResult, StageResult, JudgeFailedCondition } from './pixie-gate-contracts.ts';
 import { gateText } from './pixie-gate-locale.ts';
 import { Badge, Notice, SectionHead } from './ui.tsx';
 
@@ -18,10 +18,20 @@ export function GateResultDetails({ result, locale, durations = {}, skipped = []
   const duration = (ms: number) => ms < 1 ? t('milliseconds').replace('{value}', '<1') : ms < 1000 ? t('milliseconds').replace('{value}', String(Math.round(ms))) : t('seconds').replace('{value}', (ms / 1000).toFixed(1));
   const stage = (id: string, value: StageResult, label = id) => {
     const omitted = skipped.includes(id) || wasSkipped(value);
+    const judge = definition?.stages.find(stage => stage.id === id);
+    const failures = value.data && typeof value.data === 'object' && 'failedConditions' in value.data && Array.isArray(value.data.failedConditions) ? value.data.failedConditions as JudgeFailedCondition[] : [];
+    const reason = failures.length ? failures.map(condition => {
+      const q = judge?.kind === 'judge' ? judge.questions[condition.question] : undefined;
+      const question = q?.type === 'noul' ? q.question || condition.question : condition.question;
+      const actual = condition.type === 'choice' && q?.type === 'choice' ? q.options[condition.actual] ?? condition.actual : condition.type === 'score' && q?.type === 'score' ? q.levels[condition.actual] ?? condition.actual : condition.actual;
+      const text = judgeText(locale, condition.type === 'noul' ? 'failedNoul' : condition.type === 'score' ? 'failedScore' : 'failedChoice');
+      const values: Record<string, string | number> = { question, actual, threshold: condition.type === 'noul' ? condition.threshold : '', min: condition.type === 'score' ? (q?.type === 'score' ? q.levels[condition.min] ?? condition.min : condition.min) : '' };
+      return text.replace(/\{(question|actual|threshold|min)\}/g, (_, key: string) => String(values[key]));
+    }).join('; ') : value.reason;
     return <section key={id} className="studio-pixie-turn" data-gate-stage={id}>
       <SectionHead title={label} actions={<Badge tone={!omitted && (value.verdict === 'error' || value.verdict === 'fail') ? 'warning' : 'neutral'}>{t(omitted ? 'skipped' : value.verdict)}</Badge>} />
       {value.text !== undefined && <p className="studio-pixie-answer">{value.text}</p>}
-      {(value.reason || omitted) && <p className="studio-pixie-answer">{t('reason')}: {omitted && (!value.reason || value.reason === 'skipped: 시험 실행에서 명령 미실행') ? t('skippedCommand') : value.reason}</p>}
+      {(reason || omitted) && <p className="studio-pixie-answer">{t('reason')}: {omitted && (!value.reason || value.reason === 'skipped: 시험 실행에서 명령 미실행') ? t('skippedCommand') : reason}</p>}
       {!!value.data && typeof value.data === 'object' && 'answers' in value.data && !!value.data.answers && typeof value.data.answers === 'object' && <section aria-label={judgeText(locale, 'answers')}>
         <SectionHead title={judgeText(locale, 'answers')} />
         {Object.entries(value.data.answers as Record<string, JudgeAnswer>).map(([questionId, answer]) => {

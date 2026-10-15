@@ -13,6 +13,9 @@ const messages = {
   settingsDescription: ['판정 기본값을 설정합니다. Pixie의 수동 판정 탭도 이 설정을 사용합니다.', 'Set judge defaults. The manual Judge tab in Pixie also uses these settings.', '设置判定默认值。Pixie 的手动判定标签页也使用这些设置'],
   model: ['판정 모델', 'Judge model', '判定模型'], modelHint: ['비우면 Pixie 기본 모델을 사용합니다.', 'Leave empty to use the Pixie default model.', '留空使用 Pixie 默认模型'],
   prompt: ['판정 시스템 프롬프트', 'Judge system prompt', '判定系统提示'], promptHint: ['비우면 기본 Jev JSON 지시문을 사용합니다.', 'Leave empty to use the default Jev JSON instructions.', '留空使用默认 Jev JSON 指令'], reset: ['기본값으로 되돌리기', 'Restore default', '恢复默认'],
+  failedNoul: ['질문 "{question}": 예 확률 {actual} < 기준 {threshold}', 'Question "{question}": yes probability {actual} < threshold {threshold}', '问题“{question}”：是的概率 {actual} < 阈值 {threshold}'],
+  failedScore: ['질문 "{question}": 점수 {actual} < 최소 {min}', 'Question "{question}": score {actual} < minimum {min}', '问题“{question}”：评分 {actual} < 最低 {min}'],
+  failedChoice: ['질문 "{question}": 선택 {actual}이 허용 옵션 아님', 'Question "{question}": selection {actual} is not allowed', '问题“{question}”：选择 {actual} 不在允许选项中'],
   answers: ['판정 답변', 'Judge answers', '判定回答'], probability: ['확률', 'Probability', '概率'], confidence: ['신뢰도', 'Confidence', '置信度'],
 } as const;
 export type JudgeTextKey = keyof typeof messages;

@@ -36,7 +36,8 @@ test('all/any pass rules include boundaries and explain every failed condition',
   answers.n.noul = 0.699; answers.s.score = 0.999;
   const failed = evaluateJudgePass({ mode: 'all', conditions }, answers); assert.equal(failed.pass, false); assert.match(failed.reason, /n:.*s:/);
   assert.equal(evaluateJudgePass({ mode: 'any', conditions }, answers).pass, true);
-  answers.c.choice = 'no'; assert.equal(evaluateJudgePass({ mode: 'any', conditions }, answers).pass, false);
+  answers.c.choice = 'no'; const allFailed = evaluateJudgePass({ mode: 'any', conditions }, answers); assert.equal(allFailed.pass, false);
+  assert.deepEqual(allFailed.failedConditions, [{ ...conditions[0], actual: 0.699 }, { ...conditions[1], actual: 0.999 }, { ...conditions[2], actual: 'no' }]);
   assert.throws(() => evaluateJudgePass({ mode: 'any', conditions }, {}), /answer/);
 });
 
@@ -60,6 +61,7 @@ test('bad judge output remains error and failing thresholds report conditions', 
     const result = await run(gate(), setup([text]).runner); assert.equal(result.verdict, 'error'); assert.equal(result.stages.j.verdict, 'error'); assert.equal(result.appliedPolicy, 'pass');
   }
   const failed = await run(gate(), setup([answer(0.69)]).runner); assert.equal(failed.verdict, 'fail'); assert.match(failed.stages.j.reason, /safe: noul must be >= 0.7/);
+  assert.deepEqual(failed.stages.j.data.failedConditions, [{ question: 'safe', type: 'noul', threshold: 0.7, actual: 0.69 }]);
 });
 
 test('judge timeout and cancellation settle even if the llm ignores abort', async () => {

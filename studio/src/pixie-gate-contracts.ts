@@ -17,15 +17,21 @@ export function validateJudgePassRule(value: unknown, questions: Record<string, 
 }
 
 /** Missing or mismatched answers are errors, never a successful any-rule fallback. */
-export function evaluateJudgePass(rule: JudgePassRule, answers: Record<string, JudgeAnswer>): { pass: boolean; reason?: string } {
+export function evaluateJudgePass(rule: JudgePassRule, answers: Record<string, JudgeAnswer>): { pass: boolean; reason?: string; failedConditions?: JudgeFailedCondition[] } {
+  const failedConditions: JudgeFailedCondition[] = [];
   const failed = rule.conditions.flatMap(condition => {
     const answer = answers[condition.question];
     if (!answer || answer.type !== condition.type) throw new Error(`Missing or mismatched judge answer: ${condition.question}`);
     const passed = condition.type === 'noul' && answer.type === 'noul' ? answer.noul >= condition.threshold : condition.type === 'score' && answer.type === 'score' ? answer.score >= condition.min : condition.type === 'choice' && answer.type === 'choice' && condition.allowed.includes(answer.choice);
+    if (!passed) {
+      if (condition.type === 'choice' && answer.type === 'choice') failedConditions.push({ ...condition, actual: answer.choice });
+      if (condition.type === 'score' && answer.type === 'score') failedConditions.push({ ...condition, actual: answer.score });
+      if (condition.type === 'noul' && answer.type === 'noul') failedConditions.push({ ...condition, actual: answer.noul });
+    }
     return passed ? [] : [condition.type === 'choice' ? `${condition.question}: choice must be in [${condition.allowed.join(', ')}]` : condition.type === 'noul' ? `${condition.question}: noul must be >= ${condition.threshold}` : `${condition.question}: score must be >= ${condition.min}`];
   });
   const pass = rule.mode === 'all' ? failed.length === 0 : failed.length < rule.conditions.length;
-  return { pass, ...(!pass ? { reason: failed.join('; ') } : {}) };
+  return { pass, ...(!pass ? { reason: failed.join('; '), failedConditions } : {}) };
 }
 
 export const MAX_GATE_STAGES = 5;
@@ -42,6 +48,9 @@ export type JudgePassCondition =
   | { question: string; type: 'noul'; threshold: number }
   | { question: string; type: 'score'; min: number }
   | { question: string; type: 'choice'; allowed: string[] };
+export type JudgeFailedCondition =
+  | (Extract<JudgePassCondition, { type: 'noul' | 'score' }> & { actual: number })
+  | (Extract<JudgePassCondition, { type: 'choice' }> & { actual: string });
 export interface JudgePassRule { mode: 'all' | 'any'; conditions: JudgePassCondition[] }
 export type StageDefinition =
   | { id: string; kind: 'command'; role: StageRole; command: CommandSpec }

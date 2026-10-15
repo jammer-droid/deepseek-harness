@@ -97,7 +97,7 @@ export class DefaultStageRunner<Spec = GateShellRequest> implements StageRunner,
         const result = await engine.judge({ state: { subject: context.subject, original: context.original, stages: context.stages, hooks: context.hooks ?? { context: [], decision: 'none' } }, questions }, context.signal);
         if (!result.ok) return errorResult(result.error);
         const evaluation = evaluateJudgePass(stage.pass, result.answers);
-        return { verdict: evaluation.pass ? 'pass' : 'fail', ...(evaluation.reason ? { reason: evaluation.reason } : {}), data: { answers: result.answers } };
+        return { verdict: evaluation.pass ? 'pass' : 'fail', ...(evaluation.reason ? { reason: evaluation.reason } : {}), data: { answers: result.answers, ...(evaluation.failedConditions ? { failedConditions: evaluation.failedConditions } : {}) } };
       }
       const model = stage.model ?? this.deps.model;
       if (!model) throw new Error('No Pixie model configured');
