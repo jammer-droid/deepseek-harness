@@ -30,7 +30,8 @@ export async function apply(ctx: StudioContext) {
         id: `${PACKAGE_NAME}#studioCatalog/${method}`, service: 'studioCatalog', namespace: 'studioCatalog', method,
         invocation: { kind: 'direct' }, parameters: ['listPresets', 'readExtensions', 'roleModels'].includes(method) ? [] : [{ name: ['savePreset', 'saveExtensions'].includes(method) ? 'payload' : 'id', wire: ['savePreset', 'saveExtensions'].includes(method) ? 'payload' : 'id', source: 'json', codec: { mode: 'strict', typeSymbol: 'string', create: () => ({ parse: (value: unknown) => { if (typeof value !== 'string') throw new TypeError('Expected a string'); return value; } }) } }], result: { mode: 'src-json' },
     })), ...pixieDescriptors()] });
-    mountPixie(ctx);
+    // `updates` is created below; the footer reads it only when the page renders.
+    mountPixie(ctx, { navFooter: locale => <VersionFooter store={updates} locale={locale} /> });
     ctx.effect(() => ctx.locale.addLanguage({ id: 'ko', label: '한국어', fallback: 'en' }));
     const serviceListeners = new Set<() => void>();
     let services: readonly StudioServiceItem[] = [];

@@ -1,4 +1,4 @@
-/** Pixie tab: thread list, streaming answer, cancel, usage, and the judge trial, rendered with fake actions. */
+/** Pixie tab: thread overview, open thread, streaming answer, cancel, and the judge trial, rendered with fake actions. */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import React, { act } from 'react';
@@ -47,23 +47,23 @@ const type = async (el, value) => {
   await act(async () => { el.value = value; Simulate.change(el); });
 };
 
-test('shows threads, the active conversation, and usage with the model limit', async () => {
+test('shows every thread at a glance with the open conversation and no usage text', async () => {
   const view = { record: { sessionId: 's1', activeThreadId: 'a', threads: [thread('a', 'Thread 1', [done]), thread('b', 'Thread 2')] }, total: { requests: 1, inputTokens: 100, outputTokens: 20, cacheReadTokens: 50, cacheWriteTokens: 0, reasoningTokens: 5 }, running: false, frames: [], settings, contextWindow: 1000 };
   const { host } = await render(React.createElement(PixieTab, { locale: 'en', actions: fakeActions(view).actions }));
-  const text = host.textContent;
-  assert.match(text, /Thread 1/);
-  assert.match(text, /Thread 2/);
-  assert.match(text, /what\?/);
-  assert.match(text, /that\./);
-  // context = input + cache read + cache write + output of the last turn
-  assert.match(text, /170 \/ 1,000/);
-  assert.match(text, /In 100/);
-  assert.match(text, /Out 20/);
-  assert.match(text, /Cache 50/);
-  assert.match(text, /Reasoning 5/);
-  assert.doesNotMatch(host.querySelector('.studio-pixie-turns').textContent, /In 100|Out 20/);
-  assert.doesNotMatch(text, /Not in the agent/);
-  assert.match(host.querySelector('.studio-pixie-total').textContent, /In 100/);
+  const cards = [...host.querySelectorAll('.studio-pixie-thread')];
+  // Newest first; each card shows its last question or an empty state, and the /pixie target.
+  assert.deepEqual(cards.map(card => card.querySelector('strong').textContent), ['Thread 2', 'Thread 1']);
+  assert.match(cards[1].textContent, /what\?/);
+  // The /pixie target is a pin icon on the card, not a text badge; the context origin is meta text.
+  assert.equal(cards[1].querySelector('[role=img]').getAttribute('aria-label'), '/pixie sends here');
+  assert.equal(cards[0].querySelector('[role=img]'), null);
+  assert.match(cards[1].textContent, /Empty start/);
+  assert.equal(host.querySelector('.studio-pixie-detail-head [aria-pressed=true]').getAttribute('aria-label'), '/pixie sends here');
+  assert.match(cards[0].textContent, /No questions yet/);
+  assert.equal(cards[1].getAttribute('aria-current'), 'true');
+  assert.match(host.querySelector('.studio-pixie-detail').textContent, /that\./);
+  assert.doesNotMatch(host.textContent, /In 100|Out 20|Session total|Context|1,000/);
+  assert.equal(host.querySelector('.studio-pixie-total'), null);
 });
 
 test('asking streams the answer and the running request can be cancelled', async () => {
@@ -81,19 +81,33 @@ test('asking streams the answer and the running request can be cancelled', async
   assert.deepEqual(fake.calls.at(-1), ['cancel']);
 });
 
-test('thread switching, creating, and deleting call the service', async () => {
+test('opening, targeting, creating, and deleting threads call the service', async () => {
   const view = { record: { sessionId: 's1', activeThreadId: 'a', threads: [thread('a', 'Thread 1'), thread('b', 'Thread 2')] }, total: { requests: 0, inputTokens: 0, outputTokens: 0 }, running: false, frames: [], settings };
   const fake = fakeActions(view);
   const { host } = await render(React.createElement(PixieTab, { locale: 'en', actions: fake.actions }));
-  const { Simulate } = await import('react-dom/test-utils');
-  const select = host.querySelector('select[aria-label="Pixie threads"]');
-  await act(async () => { select.value = 'b'; Simulate.change(select); });
+  const card = name => [...host.querySelectorAll('.studio-pixie-thread')].find(item => item.querySelector('strong').textContent === name);
+  // Opening a thread only shows it; it does not change the /pixie target.
+  await act(async () => { card('Thread 2').click(); });
+  assert.equal(card('Thread 2').getAttribute('aria-current'), 'true');
+  assert.equal(host.querySelector('.studio-pixie-threads').dataset.open, 'true');
+  assert.equal(fake.calls.length, 0);
+  await type(host.querySelector('textarea'), 'here');
+  await act(async () => { button(host, 'Ask').click(); });
+  assert.deepEqual(fake.calls.at(-1), ['ask', 'here', 'b']);
+  await act(async () => { button(host, 'Send /pixie here').click(); });
   assert.deepEqual(fake.calls.at(-1), ['activate', 'b']);
+  // The pressed pin of the current target does nothing.
+  const callsBefore = fake.calls.length;
+  await act(async () => { card('Thread 1').click(); });
+  await act(async () => { button(host, '/pixie sends here').click(); });
+  assert.equal(fake.calls.length, callsBefore);
+  await act(async () => { card('Thread 2').click(); });
   await act(async () => { button(host, 'New thread').click(); });
   const fork = [...host.querySelectorAll('[role=radio]')].find(item => item.textContent === 'Continue');
   await act(async () => { fork.click(); });
   await act(async () => { button(host, 'Create').click(); });
   assert.deepEqual(fake.calls.find(call => call[0] === 'createThread'), ['createThread', { mode: 'fork' }]);
+  await act(async () => { card('Thread 1').click(); });
   await act(async () => { button(host, 'Delete thread').click(); });
   assert.deepEqual(fake.calls.at(-1), ['deleteThread', 'a']);
 });
@@ -126,21 +140,50 @@ test('settings page saves the chosen model, effort, and mode', async () => {
     save: async value => { saved.push(value); return value; },
     models: async () => ({ groups: [{ id: 'p', name: 'P', models: [{ id: 'm', name: 'M', reasoning: { efforts: [{ id: 'high', name: 'High' }] } }] }], failures: [] }),
   };
-  const { host } = await render(React.createElement(PixieSettingsPage, { actions, locale: 'en' }));
+  const { host } = await render(React.createElement(PixieSettingsPage, { actions, locale: 'en', navFooter: React.createElement('span', { className: 'footer' }, 'v1') }));
   const { Simulate } = await import('react-dom/test-utils');
+  // Same frame as the preset service: grouped left menu, pages, and the shared footer; no service title.
+  assert.deepEqual([...host.querySelectorAll('nav.studio-nav .studio-nav-item')].map(item => item.textContent), ['Model', 'Threads', 'System prompt']);
+  assert.ok(host.querySelector('nav.studio-nav .footer'));
+  assert.equal(host.querySelector('.studio-nav-title'), null);
+  const saveButton = () => [...host.querySelectorAll('section:not([hidden]) button.studio-primary')][0];
+  // Nothing to save until something changes.
+  assert.equal(saveButton().disabled, true);
   const [modelSelect] = host.querySelectorAll('select');
   await act(async () => { modelSelect.value = 'p\u0000m'; Simulate.change(modelSelect); });
+  assert.equal(saveButton().disabled, false);
+  assert.doesNotMatch(host.textContent, /unsaved changes/);
   const effort = host.querySelectorAll('select')[1];
   await act(async () => { effort.value = 'high'; Simulate.change(effort); });
+  await act(async () => { [...host.querySelectorAll('nav.studio-nav .studio-nav-item')][1].click(); });
   const fork = [...host.querySelectorAll('[role=radio]')].find(item => item.textContent === 'Continue');
   await act(async () => { fork.click(); });
   assert.equal(fork.getAttribute('aria-checked'), 'true');
   const toggle = host.querySelector('[role=switch]');
   await act(async () => { toggle.click(); });
   await act(async () => { toggle.click(); });
-  await act(async () => { button(host, 'Save').click(); });
+  await act(async () => { [...host.querySelectorAll('section:not([hidden]) button')].find(b => b.textContent === 'Save').click(); });
   assert.deepEqual(saved[0], { contextMode: 'fork', systemPrompt: 'S', allowThreadModel: true, model: { provider: 'p', model: 'm', reasoningEffort: 'high' } });
-  assert.match(host.textContent, /Saved\./);
+  // The button itself confirms the save; no extra notice line.
+  assert.doesNotMatch(host.textContent, /unsaved changes|New Pixie requests/);
+  assert.equal(saveButton().textContent, 'Saved');
+  assert.equal(saveButton().disabled, true);
+});
+
+test('a failed settings save keeps the edits and says so', async () => {
+  const { PixieSettingsPage } = await import('../src/pixie-settings.tsx');
+  const actions = {
+    read: async () => ({ contextMode: 'fresh', systemPrompt: 'S', allowThreadModel: true }),
+    save: async () => { throw new Error('disk full'); },
+    models: async () => ({ groups: [], failures: [] }),
+  };
+  const { host } = await render(React.createElement(PixieSettingsPage, { actions, locale: 'en' }));
+  await act(async () => { [...host.querySelectorAll('nav.studio-nav .studio-nav-item')][2].click(); });
+  await type(host.querySelector('textarea'), 'New prompt');
+  await act(async () => { [...host.querySelectorAll('section:not([hidden]) button.studio-primary')][0].click(); });
+  assert.match(host.textContent, /Could not save Pixie settings\. Your edits remain on this screen\. \(disk full\)/);
+  assert.equal(host.querySelector('textarea').value, 'New prompt');
+  assert.equal([...host.querySelectorAll('section:not([hidden]) button.studio-primary')][0].disabled, false);
 });
 
 test('the /pixie row streams its own answer, ignores other requests, and opens the tab', async () => {

@@ -66,8 +66,8 @@ export function pixieDescriptors() {
   ];
 }
 
-/** Register Pixie's settings page, right-sidebar tab, and /pixie row. Call after the shell mounted {@link pixieDescriptors}. */
-export function mountPixie(ctx: StudioContext): void {
+/** Register Pixie's settings service (with the shared Studio menu footer), right-sidebar tab, and /pixie row. Call after the shell mounted {@link pixieDescriptors}. */
+export function mountPixie(ctx: StudioContext, options: { navFooter?: (locale: string) => React.ReactNode } = {}): void {
   const remote = () => {
     const service = ctx.get(`remote.${NAMESPACE}` as never) as unknown as PixieRemote | undefined;
     if (!service) throw new Error('Pixie API unavailable');
@@ -83,7 +83,8 @@ export function mountPixie(ctx: StudioContext): void {
   };
   function SettingsPage() {
     const active = useLocale();
-    return <StudioSurface className="studio-pixie-settings"><PixieSettingsPage actions={settingsActions} locale={active} /></StudioSurface>;
+    // Rendered inside the shell surface, like the preset service, so both services share one frame.
+    return <PixieSettingsPage actions={settingsActions} locale={active} navFooter={options.navFooter?.(active)} />;
   }
   ctx.slots.inject('local.dsh-studio.services', () => ctx.slots.register({
     name: 'local.dsh-studio.services', id: 'pixie', order: 10, label: () => pixieText(locale(), 'settingsTitle'),
