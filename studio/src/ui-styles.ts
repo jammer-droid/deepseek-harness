@@ -232,6 +232,7 @@ ${adapter}.studio-ui *, .studio-ui *::before, .studio-ui *::after { box-sizing: 
 /* Design mock: cards, lists, and tables. */
 .studio-ui .studio-inline-state { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; }
 .studio-ui .studio-notice-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+.studio-ui .studio-notice-info { margin: 0; padding: 8px 12px; border-inline-start: 2px solid var(--studio-info); color: var(--studio-ink); background: var(--studio-hover); }
 .studio-ui .studio-cards { display: grid; gap: 8px; }
 .studio-ui .studio-component { min-width: 0; border: .5px solid var(--studio-line); border-radius: var(--studio-radius); background: var(--studio-surface); }
 .studio-ui .studio-component-flat { padding: 4px 16px 16px; }

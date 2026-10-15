@@ -75,7 +75,8 @@ primitives는 CSS 모듈을 함께 불러오므로 Node 단위 테스트에서 �
 | `SectionHead` | 페이지 안의 제목 행과 우측 동작. 입력 필드를 담을 때 `field` |
 | `ChangeIndicator` | 도구·Config 카드의 원본 대비 변경 표시. 값이 원본과 같거나 초기화되면 숨김 |
 | `Note` | 페이지 범위 안내 띠 (목업·미리보기 표시 등) |
-| `Notice` | 화면에 묶인 문제와 복구 동작. 상태가 풀릴 때까지 유지 |
+| `Notice` | 화면에 묶인 문제와 복구 동작. 기본 `tone="error"`는 alert, `tone="info"` 안내는 status. 상태가 풀릴 때까지 유지 |
+| `CheckOption` | label과 native checkbox로 된 Node-testable 공용 다중 선택 항목. 입력 출처·연결 프리셋 목록에서 사용 |
 | `TabBar`, `TabPanel` | 고정 밑줄 탭과 탭 내용. 탭을 바꿔도 탭 줄이 보이는 위치에 남는다 |
 | `MasterDetail`, `ListItem`, `ListGroup` | 왼쪽 목록과 오른쪽 상세. 본문이 좁으면 위아래로 쌓인다 |
 | `Tile` | 그리드 안의 요약 카드. 누르면 상세로 이동 |

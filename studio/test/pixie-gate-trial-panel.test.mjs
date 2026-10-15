@@ -82,6 +82,7 @@ test('disabled gate trial shows warning above results and inline command explana
   assert.ok(toggle.closest('.studio-settings-row-control'));
   await change(input(host, 'Sample input (required)'), 'sample');
   await click(button(host, 'Run trial'));
-  assert.match(host.querySelector('[role=alert]').textContent, /This gate is off/);
+  assert.match(host.querySelector('[role=status].studio-notice-info').textContent, /This gate is off/);
+  assert.equal(host.querySelector('[role=alert]'), null);
   assert.ok(host.querySelector('[data-gate-stage=check]'));
 });

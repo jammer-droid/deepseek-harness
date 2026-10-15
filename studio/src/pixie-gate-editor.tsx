@@ -1,6 +1,6 @@
 import React from 'react';
 import { GateTrialPanel, type GateTrialAction } from './pixie-gate-trial-panel.tsx';
-import { Button, Notice, PageHead, SectionHead, SettingsRow, Toggle } from './ui.tsx';
+import { Button, CheckOption, Notice, PageHead, SectionHead, SettingsRow, Toggle } from './ui.tsx';
 import { MAX_GATE_STAGES, validateGateDefinition, type GateDefinition, type StageDefinition } from './pixie-gate-contracts.ts';
 import { gateEditorText, type GateEditorKey } from './pixie-gate-editor-locale.ts';
 import type { PixieSettingsCatalog } from './pixie-settings.tsx';
@@ -96,11 +96,11 @@ export function GateEditor({ actions, locale }: { actions: GateEditorActions; lo
           const cleaned = restricted && (g.forward.kind !== 'original' || g.stages.some(s => s.kind !== 'judge' && s.role === 'revise'));
           update({ point: point as GateDefinition['point'], ...(restricted ? { forward: { kind: 'original' }, stages: g.stages.map(s => s.kind !== 'judge' && s.role === 'revise' ? { ...s, role: 'check' } : s) } : {}) }); setNotice(cleaned ? t('cleaned') : '');
         })}
-        {field('presets', <select multiple aria-label={t('presets')} value={entry.presetIds} onChange={e => { const presetIds = [...e.target.selectedOptions].map(o => o.value); setEntries(entries.map(item => item === entry ? { ...item, presetIds } : item)); }}>{[...presets, ...entry.presetIds.filter(id => !presets.some(p => p.id === id)).map(id => ({ id, name: id }))].map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select>)}
+        {field('presets', <div role="group" aria-label={t('presets')}>{[...presets, ...entry.presetIds.filter(id => !presets.some(p => p.id === id)).map(id => ({ id, name: id }))].map(p => <CheckOption key={p.id} label={p.name} checked={entry.presetIds.includes(p.id)} onChange={checked => { const presetIds = checked ? [...entry.presetIds, p.id] : entry.presetIds.filter(id => id !== p.id); setEntries(entries.map(item => item === entry ? { ...item, presetIds } : item)); }} />)}</div>)}
         </section>
         <section className="studio-settings-card" aria-label={t('target')}><SectionHead title={t('target')} />
         {select('agents', g.match.agents ?? 'root', ['root', 'child', 'any'], agents => update({ match: { ...g.match, agents: agents as 'root' | 'child' | 'any' } }))}
-        {g.point === 'input' && field('sources', <>{(['user', 'agent-message'] as const).map(source => <label key={source}><input type="checkbox" checked={(g.match.sources ?? ['user']).includes(source)} onChange={e => update({ match: { ...g.match, sources: e.target.checked ? [...(g.match.sources ?? ['user']), source] : (g.match.sources ?? ['user']).filter(s => s !== source) } })} />{t(source)}</label>)}</>)}
+        {g.point === 'input' && field('sources', <>{(['user', 'agent-message'] as const).map(source => <CheckOption key={source} label={t(source)} checked={(g.match.sources ?? ['user']).includes(source)} onChange={checked => update({ match: { ...g.match, sources: checked ? [...(g.match.sources ?? ['user']), source] : (g.match.sources ?? ['user']).filter(s => s !== source) } })} />)}</>)}
         {g.point.startsWith('tool-') && text('tools', g.match.tools?.join(', ') ?? '', value => update({ match: { ...g.match, tools: value.split(',').map(s => s.trim()).filter(Boolean) } }))}
         </section>
         <section className="studio-settings-card" aria-label={t('handling')}><SectionHead title={t('handling')} />

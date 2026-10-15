@@ -419,6 +419,13 @@ interface GateResult {
 
 - 지점 ko·en·zh 공용 표시, 단계별 건너뜀 Badge·이유, 자연스러운 목록 메타, 유효하지 않은 시각 `—`, 편집기 섹션 분리·모델 select 통일, 명령 실행 인라인 스위치, pending 단일 Badge·거부 상세 제목을 반영했다. 시험 실행은 꺼진 게이트도 정의 사본의 `enabled=true`로 평가하고 결과 위에 실제 실행 미적용 안내를 표시하며, 저장 상태와 런타임 input의 비활성 필터는 유지한다. 검증: Studio typecheck 및 테스트 **347개 통과**, `git diff --check`; 격리 19391에서 라이트·다크 × 1440·520 캡처(`/tmp/pixie-gate-s7-shots-v2/INDEX.md`). 기존 실행 기록을 사용하고 누락된 정의 2개만 승인 후 복구, pending 시각은 0으로 조정했다. 사용자 GUI·desktop 프로필 미접근, S1 표 불변, 코드 리뷰는 S9 이후.
 
+#### S7 UI/UX 2차 다듬기
+
+- 소요 시간은 1ms 미만 `<1 ms`, 그 외 정수 ms, 1000ms 이상 소수 한 자리 초로 ko·en·zh 표시한다. 건너뛴 단계는 중복 없이 집계하여 전체 판정 옆에 보조 표시하며 판정 값은 유지한다.
+- 비활성 게이트 시험 안내는 공용 Notice의 `tone="info"`(status)로 표시한다. 기존 기본 error/alert 호출부는 그대로 유지한다. 프리셋 다중 선택은 입력 출처와 공유하는 Node-testable `CheckOption` 체크박스 목록으로 바꾸며 누락된 프리셋 ID도 제거 가능하게 유지한다.
+- 검증: `npm --prefix studio run typecheck`, `npm --prefix studio test`(빌드 포함) **350개 통과**, `git diff --check`. 시간 경계·locale·건너뜀 집계·정보 Notice·다중 선택 jsdom 회귀를 확인했다. 기존 Node deprecation/React nesting 경고는 남아 있다.
+- `roles-ui.expected.html`과 생성기는 현재 저장소에 없으므로 재생성하지 못했다(#24에도 같은 제약 기록). 기존 디자인 규칙·스타일 격리 테스트는 통과했다. 이번 변경의 GUI 시각 확인·독립 설치·실제 모델은 미검증이며 사용자 GUI/프로필에는 접근하지 않았다. S1 표 불변, 코드 리뷰는 S9 이후.
+
 ### S8 — 판정 단계 연결
 
 - 선행: S2, S7.

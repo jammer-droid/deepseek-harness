@@ -28,7 +28,8 @@ test('trial distinguishes skipped pass from executed pass and explains missing f
     const stage = host.querySelector('[data-gate-stage=command]');
     assert.doesNotMatch(stage.textContent, /통과/);
     assert.match(stage.textContent, /건너뜀/);
-    assert.match(stage.textContent, /0 ms/);
+    assert.match(stage.textContent, /<1 ms/);
+    assert.match(host.textContent, /건너뛴 단계 1개 포함/);
     assert.match(host.textContent, /시험 실행에서 명령 단계를 건너뛰어 전달 결과를 계산할 수 없음/);
     assert.match(host.textContent, /Missing stage text/);
     assert.equal(host.querySelector('script'), null);
@@ -51,6 +52,24 @@ test('supports explicit skipped ids and Chinese copy without changing verdict', 
   const result = base(); result.stages.command = { verdict: 'pass' };
   await render({ result, locale: 'zh-CN', skipped: ['command'] }, host => {
     assert.match(host.querySelector('[data-gate-stage=command]').textContent, /已跳过/);
+  });
+});
+
+test('durations round milliseconds and localize seconds at the boundary', async () => {
+  for (const [ms, expected] of [[0.004458000010345131, '<1 ms'], [1, '1 ms'], [12.6, '13 ms'], [999, '999 ms'], [1000, '1.0 s'], [1456, '1.5 s']]) {
+    const result = base(); result.stages.check = { verdict: 'pass' };
+    await render({ result, durations: { check: ms } }, host => assert.ok(host.textContent.includes(expected)));
+  }
+  for (const [locale, expected] of [['ko', '1.0초'], ['zh', '1.0 秒']]) {
+    const result = base(); result.stages.check = { verdict: 'pass' };
+    await render({ result, locale, durations: { check: 1000 } }, host => assert.ok(host.textContent.includes(expected)));
+  }
+});
+
+test('skipped summary deduplicates ids and preserves passed verdict', async () => {
+  const result = base(); result.stages.command = { verdict: 'pass', data: { skipped: true } };
+  await render({ result, skipped: ['command', 'hooks.start'] }, host => {
+    assert.match(host.firstElementChild.textContent, /PassedIncludes 1 skipped stages/);
   });
 });
 

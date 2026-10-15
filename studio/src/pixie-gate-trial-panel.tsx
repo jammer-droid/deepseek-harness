@@ -66,6 +66,6 @@ export function GateTrialPanel({ definition, trial, locale, sessionId }: {
     {running && <p role="status" className="studio-muted">{t('trialRunning')}</p>}
     {cancelled && <p role="status" className="studio-muted">{t('trialCancelled')}</p>}
     {error && <Notice>{t('trialError')}: {error}</Notice>}
-    {result && <>{!definition.enabled && <Notice>{t('disabledTrial')}</Notice>}<GateResultDetails {...result} locale={locale} /></>}
+    {result && <>{!definition.enabled && <Notice tone="info">{t('disabledTrial')}</Notice>}<GateResultDetails {...result} locale={locale} /></>}
   </section>;
 }

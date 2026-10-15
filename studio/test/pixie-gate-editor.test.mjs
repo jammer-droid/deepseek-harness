@@ -36,6 +36,18 @@ test('gate list supports add, duplicate disabled copy, delete and preset summary
   await click(button(host, 'Save'));
   assert.deepEqual(saves[1].map(e => e.definition.name), ['Guard', 'New']);
 });
+test('preset checkboxes support multiple selection, removal and unknown saved ids', async t => {
+  const entry = seed(); entry.presetIds.push('missing');
+  const { host, saves } = await setup(t, { read: async () => [entry], presets: async () => [{ id: 'p', name: 'Preset' }, { id: 'q', name: 'Second' }] });
+  const group = input(host, 'Connected presets');
+  assert.equal(host.querySelector('select[multiple]'), null);
+  const boxes = group.querySelectorAll('input[type=checkbox]');
+  assert.deepEqual([...boxes].map(box => box.checked), [true, false, true]);
+  await click(boxes[1]); await click(boxes[0]);
+  await click(button(host, 'Save'));
+  assert.deepEqual(saves[0][0].presetIds, ['missing', 'q']);
+});
+
 test('stage controls enforce 1–5 stages and disable judge; order follows explicit moves', async t => {
   const { host } = await setup(t);
   assert.equal(host.querySelector('[data-gate-editor-stage] button:last-child').disabled, true);
