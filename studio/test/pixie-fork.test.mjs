@@ -17,8 +17,8 @@ test('keeps user and assistant text in order and drops everything else', () => {
   ];
   assert.deepEqual(forkSnapshot(events), [
     { role: 'user', text: 'question' },
-    { role: 'assistant', text: 'answer' },
-    { role: 'assistant', text: 'final' },
+    { role: 'assistant', text: 'answer', provider: 'p', model: 'm' },
+    { role: 'assistant', text: 'final', provider: 'p', model: 'm' },
   ]);
 });
 

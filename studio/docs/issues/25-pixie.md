@@ -21,12 +21,19 @@ Pixie는 사용자와 세션 에이전트·서브에이전트(이하 **주요 �
 - 런타임 제약: DSH는 패키지당 Remote contribution을 하나만 받는다. 두 번째 `$mount`는 Client 활성화를 실패시키므로 Pixie 서술자는 셸의 한 번의 `$mount`에 합친다(`lean-shell` 테스트가 회귀를 막는다).
 - 검증: Studio 타입 검사·빌드·전체 테스트 통과. 브라우저(headless Chrome)로 Studio → Pixie 설정, `/pixie` 커맨드 실행, 오른쪽 Pixie 탭(대화·판정)을 라이트·다크·좁은 폭에서 확인했다. 격리 프로필에 모델 API 키가 없어 **실제 모델 답변 스트리밍은 확인하지 못했다**. 키 없음 오류가 실패 턴으로 기록·표시되는 것까지 확인했다. 사용자의 시각 확인은 별도다.
 
+### 후속 수정 (사용자 피드백)
+
+- 두 번째 요청부터 `Cannot read properties of undefined (reading 'replayState')`가 나던 문제: 이전 답변을 `source` 없는 assistant 메시지로 보내 어댑터의 replay 검사가 실패했다. 이제 이전 답변은 답한 모델의 `{ kind: 'model', provider, model }` source를 가진 완전한 메시지로 보낸다. 격리 프로필에서 실제 모델로 2턴 대화(기억한 숫자 되묻기)가 정상 동작함을 확인했다.
+- 스레드 삭제를 추가했다. 답변 중인 스레드는 지울 수 없고, 지우면 남은 마지막 스레드가 활성이 된다.
+- `/pixie`의 답변을 대화창 행에도 보여 준다(G1 확장). 답변은 Pixie 기록에서 커맨드 id로 찾아 표시하며 세션 로그와 모델 컨텍스트에는 여전히 들어가지 않는다. 이 변경 전 기록에는 커맨드 id가 없어 "답변은 Pixie 탭에 있습니다"로 표시한다.
+- 설정 화면을 DSH 설정처럼 카드 하나와 행(왼쪽 설명, 오른쪽 컨트롤)으로 바꿨다. 모드는 분할 선택, 스레드별 모델은 스위치다. Pixie 탭의 스레드 목록은 작은 선택 상자와 새 스레드·삭제 아이콘으로, 입력 영역은 DSH 입력창 형태로 줄였다.
+
 ### 명세와 달라진 점
 
 - fork 스냅샷은 `sessionController.page()` 대신 `inspect()`의 이벤트를 쓴다. `page()`는 화면용 레코드 묶음이라 surface 교체(compaction) 재생에 필요한 `surfaceOp`를 그대로 쓰기 어렵다. 둘 다 Agent를 활성화하지 않는다.
 - 세션 삭제 추적(G2)은 `api-session/removed`를 쓰지 않는다. 이 이벤트는 실행 중인 세션이 레지스트리에서 빠질 때(`session/disposed`)도 발생해 삭제와 구분할 수 없다. 대신 `sessionController.list()`(보관 세션 포함)에 없는 세션의 기록을 시작 시와 10분마다 지운다. 목록 조회가 실패하면 아무것도 지우지 않는다.
 - 대화형 엔진은 별도 `ConverseEngine` 클래스 대신 `PixieRuntime`이 `llm.stream`을 직접 호출한다. 판정형은 `JudgeEngine` 포트와 `LlmJudgeEngine`으로 분리했다. Jev 엔진은 같은 포트를 구현하면 된다.
-- 탭 kind는 다른 플러그인과 겹치지 않도록 `studio-pixie`다. `/pixie` 행은 질문·상태·"Pixie 열기" 버튼을 보여 주며, 커맨드 실행만으로 탭을 자동으로 열지는 않는다(커맨드 핸들러는 Host에서 실행되어 Client 탭을 직접 열 수 없다).
+- 탭 kind는 다른 플러그인과 겹치지 않도록 `studio-pixie`다. `/pixie` 행은 질문·답변·"Pixie 열기" 버튼을 보여 주며, 커맨드 실행만으로 탭을 자동으로 열지는 않는다(커맨드 핸들러는 Host에서 실행되어 Client 탭을 직접 열 수 없다).
 - 파일 배치는 `src/pixie-*.ts(x)`, `src/host/pixie-*.ts` 평면 구조다(테스트·tsconfig include 규칙에 맞춤).
 
 ### 남은 제한 (후속)

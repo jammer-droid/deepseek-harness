@@ -5,7 +5,7 @@ import React from 'react';
 import type { StudioContext } from './contracts.js';
 import { PACKAGE_NAME } from './package-name.ts';
 import { StudioSurface } from './ui.tsx';
-import { PixieCommandRow, PixieTab, type PixieTabActions } from './pixie-tab.tsx';
+import { PixieCommandRow, PixieTab, type PixieCommandRowActions, type PixieTabActions } from './pixie-tab.tsx';
 import { PixieSettingsPage, type PixieSettingsActions } from './pixie-settings.tsx';
 import { pixieText } from './pixie-locale.ts';
 import type { JudgeResult, PixieAskFrame, PixieSettings, PixieThread } from './pixie-contracts.ts';
@@ -26,6 +26,8 @@ interface PixieRemote {
   view(sessionId: string): RemoteValue<import('./pixie-tab.tsx').PixieViewValue>;
   createThread(sessionId: string, payload: string): RemoteValue<PixieThread>;
   activate(sessionId: string, threadId: string): RemoteValue<boolean>;
+  deleteThread(sessionId: string, threadId: string): RemoteValue<boolean>;
+  commandTurn(sessionId: string, commandId: string): RemoteValue<import('./pixie-contracts.ts').PixieTurn | null>;
   ask(sessionId: string, payload: string): RemoteValue<{ threadId: string; turnId: string }>;
   cancel(sessionId: string): RemoteValue<boolean>;
   follow(sessionId: string): AsyncIterable<PixieAskFrame> & { dispose(): void };
@@ -52,6 +54,8 @@ export function pixieDescriptors() {
     descriptor('view', ['sessionId']),
     descriptor('createThread', ['sessionId', 'payload']),
     descriptor('activate', ['sessionId', 'threadId']),
+    descriptor('deleteThread', ['sessionId', 'threadId']),
+    descriptor('commandTurn', ['sessionId', 'commandId']),
     descriptor('ask', ['sessionId', 'payload']),
     descriptor('cancel', ['sessionId']),
     descriptor('follow', ['sessionId'], { mode: 'stream', cancellation: { parameter: 'signal' } }),
@@ -107,6 +111,7 @@ export function mountPixie(ctx: StudioContext): void {
     cancel: () => unwrap(remote().cancel(sessionId)),
     createThread: options => unwrap(remote().createThread(sessionId, JSON.stringify(options))),
     activate: threadId => unwrap(remote().activate(sessionId, threadId)),
+    deleteThread: threadId => unwrap(remote().deleteThread(sessionId, threadId)),
     models: () => unwrap(remote().models()) as ReturnType<PixieTabActions['models']>,
     judge: request => unwrap(remote().judge(JSON.stringify(request))),
   });
@@ -127,10 +132,14 @@ export function mountPixie(ctx: StudioContext): void {
     scope.slots.inject('sidebar.right.pane.tab' as never, () => scope.slots.register({ name: 'sidebar.right.pane.tab', key: TAB_ID } as never, Body as never));
     // The /pixie row shows the question, the status line, and a button that opens this tab.
     const openTab = () => { right.openTab(KIND, { revealIfOpened: true }); };
-    function CommandRow({ node }: { node: { args: string | null; outcome: { kind: 'success' | 'error'; text?: string } | null } }) {
+    function CommandRow({ node, sessionId }: { sessionId: string; node: { commandId: string; args: string | null; outcome: { kind: 'success' | 'error'; text?: string } | null } }) {
       const active = useLocale();
+      const rowActions = React.useMemo<PixieCommandRowActions>(() => {
+        const tab = tabActions(sessionId);
+        return { commandId: node.commandId, follow: tab.follow, commandTurn: () => unwrap(remote().commandTurn(sessionId, node.commandId)) };
+      }, [sessionId, node.commandId]);
       return <StudioSurface className="studio-pixie-command">
-        <PixieCommandRow question={node.args?.trim() ?? ''} outcome={node.outcome} locale={active} onOpen={openTab} />
+        <PixieCommandRow question={node.args?.trim() ?? ''} outcome={node.outcome} locale={active} onOpen={openTab} actions={rowActions} />
       </StudioSurface>;
     }
     scope.slots.inject('conversation.chat.commandview' as never, () => scope.slots.register({ name: 'conversation.chat.commandview', key: 'pixie' } as never, CommandRow as never));

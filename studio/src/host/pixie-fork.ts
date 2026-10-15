@@ -24,8 +24,11 @@ function project(event: ForkEvent): PixieMessage | undefined {
     return text ? { role: 'user', text } : undefined;
   }
   if (event.type === 'assistant/message') {
-    const text = textOf((data?.message as { content?: unknown } | undefined)?.content);
-    return text ? { role: 'assistant', text } : undefined;
+    const message = data?.message as { content?: unknown; source?: { provider?: unknown; model?: unknown } } | undefined;
+    const text = textOf(message?.content);
+    if (!text) return undefined;
+    const { provider, model } = message?.source ?? {};
+    return typeof provider === 'string' && typeof model === 'string' ? { role: 'assistant', text, provider, model } : { role: 'assistant', text };
   }
   return undefined;
 }

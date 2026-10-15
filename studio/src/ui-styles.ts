@@ -519,30 +519,61 @@ ${adapter}.studio-ui *, .studio-ui *::before, .studio-ui *::after { box-sizing: 
   .studio-ui .studio-component-summary { display: none; }
   .studio-ui .studio-facts { grid-template-columns: 1fr; gap: 4px; }
 }
-/* Pixie: settings check rows and the right-sidebar tab. */
+/* Settings card rows, segmented choice, and switch (shapes follow DSH Settings, SegmentedControl, and Switch). */
+.studio-ui .studio-settings-card { padding: 4px 20px; border: .5px solid var(--studio-line); border-radius: var(--studio-radius); background: var(--studio-surface); }
+.studio-ui .studio-settings-row { display: grid; gap: 10px; padding: 14px 0; border-bottom: .5px solid var(--studio-line); }
+.studio-ui .studio-settings-row:last-child { border-bottom: 0; }
+.studio-ui .studio-settings-row-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 24px; }
+.studio-ui .studio-settings-row-text { display: grid; gap: 2px; min-width: 0; flex: 1 1 220px; }
+.studio-ui .studio-settings-row-text .studio-muted { font-size: 12px; }
+.studio-ui .studio-settings-row-control { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 6px; min-width: 0; }
+.studio-ui .studio-settings-row-control select, .studio-ui .studio-settings-row-control input:not([type=checkbox]) { width: auto; min-width: 160px; max-width: 260px; }
+.studio-ui .studio-segmented { display: inline-flex; gap: 2px; padding: 2px; border-radius: var(--studio-control-radius); background: var(--studio-hover); }
+.studio-ui .studio-segmented button { padding: 3px 10px; border: 0; border-radius: var(--studio-small-radius); background: none; color: var(--studio-muted); font: inherit; font-size: 12px; line-height: 18px; white-space: nowrap; cursor: pointer; }
+.studio-ui .studio-segmented button[aria-checked=true] { background: var(--studio-surface); color: var(--studio-ink); box-shadow: 0 0 0 .5px var(--studio-control-line); }
+.studio-ui .studio-toggle { position: relative; flex: none; width: 32px; height: 18px; padding: 0; border: 0; border-radius: 999px; background: var(--studio-control-line); cursor: pointer; }
+.studio-ui .studio-toggle > span { position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: var(--studio-surface); }
+.studio-ui .studio-toggle[aria-checked=true] { background: var(--studio-primary-fill); }
+.studio-ui .studio-toggle[aria-checked=true] > span { left: 16px; background: var(--studio-on-primary); }
+/* Compact selects: small text, tight padding, used in dense panels. */
+.studio-ui select.studio-compact, .studio-ui input.studio-compact { min-height: 28px; padding: 3px 26px 3px 8px; font-size: 12px; background-position: right 13px top 50%, right 9px top 50%; background-size: 4px 4px, 4px 4px; }
+.studio-ui input.studio-compact { padding-inline-end: 8px; }
+/* Pixie: settings page and the right-sidebar tab. */
+.studio-ui .studio-pixie-prompt { min-height: 96px; font-size: 12px; }
 .studio-ui.studio-pixie-settings { max-width: 960px; margin: 0 auto; padding: 24px clamp(16px, 3vw, 40px) 48px; }
 .studio-ui.studio-pixie { display: flex; flex-direction: column; height: 100%; min-height: 0; padding: 0 12px 12px; overflow-y: auto; background: var(--studio-bg); }
 .studio-ui.studio-pixie > * { flex-shrink: 0; }
 .studio-ui.studio-pixie .studio-tab-panel { min-height: 0; }
-.studio-ui .studio-pixie-chat, .studio-ui .studio-pixie-judge { display: grid; gap: 10px; padding-top: 10px; }
-.studio-ui .studio-pixie-threads { display: flex; flex-wrap: wrap; gap: 4px; }
-.studio-ui .studio-pixie-new { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
-.studio-ui .studio-pixie-new select { width: auto; flex: 1 1 140px; }
-.studio-ui .studio-pixie-status { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; font-size: 12px; }
-.studio-ui .studio-pixie-turns { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
-.studio-ui .studio-pixie-turn { display: grid; gap: 6px; padding-bottom: 12px; border-bottom: .5px solid var(--studio-line); }
-.studio-ui .studio-pixie-question { margin: 0; padding: 6px 10px; border-radius: var(--studio-control-radius); background: var(--studio-hover); white-space: pre-wrap; }
+.studio-ui .studio-pixie-chat, .studio-ui .studio-pixie-judge { display: grid; gap: 8px; padding-top: 8px; }
+.studio-ui .studio-pixie-toolbar { display: flex; align-items: center; gap: 4px; }
+.studio-ui .studio-pixie-toolbar .studio-pixie-thread-select { flex: 1 1 auto; width: auto; }
+.studio-ui .studio-pixie-toolbar .studio-icon-button { color: var(--studio-muted); }
+.studio-ui .studio-pixie-toolbar .studio-icon-button[data-tone=error]:hover:not(:disabled) { color: var(--studio-error); }
+.studio-ui .studio-pixie-new { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 8px; border-radius: var(--studio-control-radius); background: var(--studio-hover); }
+.studio-ui .studio-pixie-new select { width: auto; flex: 1 1 120px; }
+.studio-ui .studio-pixie-status { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2px 12px; font-size: 11px; }
+.studio-ui .studio-pixie-turns { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.studio-ui .studio-pixie-turn { display: grid; gap: 4px; padding-bottom: 10px; border-bottom: .5px solid var(--studio-line); }
+.studio-ui .studio-pixie-question { justify-self: end; max-width: 85%; margin: 0; padding: 4px 10px; border-radius: var(--studio-control-radius); background: var(--studio-hover); white-space: pre-wrap; }
 .studio-ui .studio-pixie-answer { margin: 0; white-space: pre-wrap; }
 .studio-ui .studio-pixie-turn-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
-.studio-ui .studio-pixie-usage, .studio-ui .studio-pixie-total { font-size: 12px; margin: 0; }
+.studio-ui .studio-pixie-usage, .studio-ui .studio-pixie-total { font-size: 11px; margin: 0; }
 .studio-ui .studio-pixie-error { margin: 0; color: var(--studio-error); font-size: 12px; }
-.studio-ui .studio-pixie-compose { display: grid; gap: 6px; }
-.studio-ui .studio-pixie-compose textarea, .studio-ui .studio-pixie-judge textarea { min-height: 72px; }
-.studio-ui :is(.studio-pixie-compose .studio-inline-actions, .studio-pixie-actions) { justify-content: flex-end; }
+.studio-ui .studio-pixie-compose { display: grid; gap: 0; border: .5px solid var(--studio-control-line); border-radius: var(--studio-radius); background: var(--studio-bg); }
+.studio-ui .studio-pixie-compose textarea { min-height: 52px; border: 0; background: none; resize: none; }
+.studio-ui .studio-pixie-compose textarea:focus-visible { outline: 0; }
+.studio-ui .studio-pixie-compose:focus-within { border-color: var(--studio-ink); }
+.studio-ui .studio-pixie-compose-bar { display: flex; align-items: center; justify-content: flex-end; gap: 6px; padding: 4px 6px 6px 10px; }
+.studio-ui .studio-pixie-compose-bar .studio-muted { margin-inline-end: auto; font-size: 11px; }
+.studio-ui .studio-pixie-judge textarea { min-height: 64px; font-size: 12px; }
+.studio-ui .studio-pixie-actions { justify-content: flex-end; }
 .studio-ui .studio-pixie-answers { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin: 0; }
 .studio-ui .studio-pixie-answers dd { margin: 0; }
-.studio-ui .studio-pixie-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 6px 0; font-size: 13px; }
-.studio-ui .studio-pixie-row-question { min-width: 0; flex: 1 1 160px; white-space: pre-wrap; }
+.studio-ui.studio-pixie-command { margin: 4px 0; }
+.studio-ui .studio-pixie-row { display: grid; gap: 6px; padding: 10px 12px; border: .5px solid var(--studio-line); border-radius: var(--studio-radius); background: var(--studio-surface); font-size: 13px; }
+.studio-ui .studio-pixie-row-head { display: flex; align-items: center; gap: 8px; }
+.studio-ui .studio-pixie-row-question { min-width: 0; flex: 1 1 auto; color: var(--studio-muted); white-space: pre-wrap; }
+.studio-ui .studio-pixie-row p { margin: 0; }
 @media (max-width: 480px) {
   .studio-ui .studio-card, .studio-ui article, .studio-ui .studio-agents { padding: 12px; }
   .studio-ui dl { grid-template-columns: 1fr; gap: 4px; }

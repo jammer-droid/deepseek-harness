@@ -92,3 +92,26 @@ test('settings default when missing, round-trip, and reject malformed values', a
   await assert.rejects(store.save({ model: { provider: '', model: 'm' }, contextMode: 'fresh', systemPrompt: '', allowThreadModel: true }), /provider/);
   await assert.rejects(store.save({ model: { provider: 'p', model: 'm', maxTokens: -1 }, contextMode: 'fresh', systemPrompt: '', allowThreadModel: true }), /maxTokens/);
 });
+
+test('deleting a thread removes it and moves the active thread to the latest remaining one', async () => {
+  const store = new PixieStore(await dir());
+  const a = await store.createThread('s1', { mode: 'fresh', model });
+  const b = await store.createThread('s1', { mode: 'fresh', model });
+  await store.deleteThread('s1', b.id);
+  let record = await store.read('s1');
+  assert.deepEqual(record.threads.map(thread => thread.id), [a.id]);
+  assert.equal(record.activeThreadId, a.id);
+  await store.deleteThread('s1', a.id);
+  record = await store.read('s1');
+  assert.deepEqual(record.threads, []);
+  assert.equal(record.activeThreadId, undefined);
+  await assert.rejects(store.deleteThread('s1', 'nope'), /Unknown Pixie thread/);
+});
+
+test('turns record the command that started them', async () => {
+  const store = new PixieStore(await dir());
+  const thread = await store.createThread('s1', { mode: 'fresh', model });
+  const turn = await store.startTurn('s1', thread.id, 'q', 'cmd-1');
+  assert.equal((await store.read('s1')).threads[0].turns[0].commandId, 'cmd-1');
+  assert.equal(turn.commandId, 'cmd-1');
+});

@@ -45,10 +45,22 @@ export class PixieStore {
     return this.mutate(sessionId, record => { this.thread(record, threadId); record.activeThreadId = threadId; });
   }
 
-  startTurn(sessionId: string, threadId: string, question: string): Promise<PixieTurn> {
+  /** Delete a thread; the latest remaining thread becomes active when the deleted one was. */
+  deleteThread(sessionId: string, threadId: string): Promise<void> {
+    return this.mutate(sessionId, record => {
+      this.thread(record, threadId);
+      record.threads = record.threads.filter(thread => thread.id !== threadId);
+      if (record.activeThreadId === threadId) {
+        const next = record.threads.at(-1)?.id;
+        if (next) record.activeThreadId = next; else delete record.activeThreadId;
+      }
+    });
+  }
+
+  startTurn(sessionId: string, threadId: string, question: string, commandId?: string): Promise<PixieTurn> {
     return this.mutate(sessionId, record => {
       const thread = this.thread(record, threadId);
-      const turn: PixieTurn = { id: randomUUID(), question, answer: '', status: 'streaming', model: thread.model, startedAt: Date.now() };
+      const turn: PixieTurn = { id: randomUUID(), question, answer: '', status: 'streaming', model: thread.model, ...(commandId ? { commandId } : {}), startedAt: Date.now() };
       thread.turns.push(turn);
       this.live.add(turn.id);
       return turn;
@@ -111,7 +123,8 @@ export class PixieStore {
       await rename(temporary, file);
       return value;
     });
-    const tracked = next.finally(() => { if (this.queues.get(sessionId) === tracked) this.queues.delete(sessionId); });
+    // The queue entry only orders later writes; the caller observes the failure through `next`.
+    const tracked = next.catch(() => {}).finally(() => { if (this.queues.get(sessionId) === tracked) this.queues.delete(sessionId); });
     this.queues.set(sessionId, tracked);
     return next;
   }

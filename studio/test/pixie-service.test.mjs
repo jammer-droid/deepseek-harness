@@ -69,3 +69,18 @@ test('a failed session listing prunes nothing', async () => {
   assert.deepEqual(await readdir(join(h.dataDir, 'pixie')), ['x.json']);
   await fiber.dispose();
 });
+
+test('a /pixie turn can be read by command id, and threads can be deleted', async () => {
+  const h = await harness();
+  const fiber = await start(h);
+  const service = h.ctx.get('studioPixie');
+  await service.saveSettings(JSON.stringify({ model: { provider: 'p', model: 'm' }, contextMode: 'fresh', systemPrompt: '', allowThreadModel: true }));
+  await h.commands.get('pixie').handler({ commandId: 'cmd-9', agent: { id: 's1' }, rawInput: ' ping', attachments: [], signal: new AbortController().signal });
+  await until(async () => (await service.commandTurn('s1', 'cmd-9'))?.status === 'done');
+  assert.equal((await service.commandTurn('s1', 'cmd-9')).answer, 'pong');
+  assert.equal(await service.commandTurn('s1', 'other'), null);
+  const threadId = (await service.view('s1')).record.threads[0].id;
+  await service.deleteThread('s1', threadId);
+  assert.deepEqual((await service.view('s1')).record.threads, []);
+  await fiber.dispose();
+});

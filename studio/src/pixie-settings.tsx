@@ -1,6 +1,6 @@
 /** Studio → Pixie settings page: default model and request options, separate from presets. Node-testable. */
 import React from 'react';
-import { Button, Notice, PageHead, PickOption } from './ui.tsx';
+import { Button, Notice, PageHead, Segmented, SettingsRow, Toggle } from './ui.tsx';
 import type { PixieContextMode, PixieSettings } from './pixie-contracts.ts';
 import { pixieText, type PixieTextKey } from './pixie-locale.ts';
 
@@ -50,9 +50,9 @@ export function PixieSettingsPage({ actions, locale }: { actions: PixieSettingsA
     {status === 'saved' && <p role="status" className="studio-muted">{t('saved')}</p>}
     {error && <Notice>{error}</Notice>}
     {catalog.failures && catalog.failures.length > 0 && <Notice>{`${t('catalogFailed')} ${catalog.failures.map(failure => failure.name).join(', ')}`}</Notice>}
-    <div className="studio-field-grid">
-      <label className="studio-field"><span>{t('settingsModel')}</span>
-        <select value={draft.model ? `${draft.model.provider}${SEP}${draft.model.model}` : ''} onChange={event => {
+    <section className="studio-settings-card">
+      <SettingsRow title={t('settingsModel')} description={t('settingsModelHint')} control={
+        <select className="studio-compact" aria-label={t('settingsModel')} value={draft.model ? `${draft.model.provider}${SEP}${draft.model.model}` : ''} onChange={event => {
           const [provider, model] = event.target.value.split(SEP);
           const { model: _previous, ...rest } = draft;
           replace(provider && model ? { ...rest, model: { provider, model } } : rest);
@@ -61,43 +61,31 @@ export function PixieSettingsPage({ actions, locale }: { actions: PixieSettingsA
           {catalog.groups.map(group => <optgroup key={group.id} label={group.name}>
             {group.models.map(model => <option key={model.id} value={`${group.id}${SEP}${model.id}`}>{model.name}</option>)}
           </optgroup>)}
-        </select>
-      </label>
-      <label className="studio-field"><span>{t('settingsEffort')}</span>
-        <select disabled={!draft.model || efforts.length === 0} value={draft.model?.reasoningEffort ?? ''} onChange={event => {
+        </select>} />
+      <SettingsRow title={t('settingsEffort')} control={
+        <select className="studio-compact" aria-label={t('settingsEffort')} disabled={!draft.model || efforts.length === 0} value={draft.model?.reasoningEffort ?? ''} onChange={event => {
           if (!draft.model) return;
           const { reasoningEffort: _previous, ...model } = draft.model;
           update({ model: event.target.value ? { ...model, reasoningEffort: event.target.value } : model });
         }}>
           <option value="">{t('settingsEffortDefault')}</option>
           {efforts.map(effort => <option key={effort.id} value={effort.id}>{effort.name}</option>)}
-        </select>
-      </label>
-      <label className="studio-field"><span>{t('settingsMaxTokens')}</span>
-        <input type="number" min={1} step={1} disabled={!draft.model} placeholder={t('settingsMaxTokensHint')} value={draft.model?.maxTokens ?? ''} onChange={event => {
+        </select>} />
+      <SettingsRow title={t('settingsMaxTokens')} description={t('settingsMaxTokensHint')} control={
+        <input className="studio-compact" aria-label={t('settingsMaxTokens')} type="number" min={1} step={1} disabled={!draft.model} placeholder={t('settingsEffortDefault')} value={draft.model?.maxTokens ?? ''} onChange={event => {
           if (!draft.model) return;
           const { maxTokens: _previous, ...model } = draft.model;
           const value = Number(event.target.value);
           update({ model: event.target.value && Number.isInteger(value) && value > 0 ? { ...model, maxTokens: value } : model });
-        }} />
-      </label>
-    </div>
-    <div className="studio-field" role="radiogroup" aria-label={t('settingsMode')}>
-      <span>{t('settingsMode')}</span>
-      <div className="studio-pick-list">
-        {(['fresh', 'fork'] as PixieContextMode[]).map(mode => <PickOption key={mode} checked={draft.contextMode === mode}
-          title={t(mode)} description={t(mode === 'fresh' ? 'settingsModeFresh' : 'settingsModeFork')} onClick={() => update({ contextMode: mode })} />)}
-      </div>
-    </div>
-    <div className="studio-field" role="radiogroup" aria-label={t('settingsAllowThreadModel')}>
-      <span>{t('settingsAllowThreadModel')}</span>
-      <div className="studio-pick-list">
-        <PickOption checked={draft.allowThreadModel} title={t('settingsThreadModelOn')} description={t('settingsThreadModelOnHint')} onClick={() => update({ allowThreadModel: true })} />
-        <PickOption checked={!draft.allowThreadModel} title={t('settingsThreadModelOff')} description={t('settingsThreadModelOffHint')} onClick={() => update({ allowThreadModel: false })} />
-      </div>
-    </div>
-    <label className="studio-field"><span>{t('settingsPrompt')}</span>
-      <textarea value={draft.systemPrompt} onChange={event => update({ systemPrompt: event.target.value })} />
-    </label>
+        }} />} />
+      <SettingsRow title={t('settingsMode')} description={t(draft.contextMode === 'fresh' ? 'settingsModeFresh' : 'settingsModeFork')} control={
+        <Segmented label={t('settingsMode')} value={draft.contextMode} onChange={(mode: PixieContextMode) => update({ contextMode: mode })}
+          options={[{ value: 'fresh', label: t('fresh') }, { value: 'fork', label: t('fork') }]} />} />
+      <SettingsRow title={t('settingsAllowThreadModel')} description={t(draft.allowThreadModel ? 'settingsThreadModelOnHint' : 'settingsThreadModelOffHint')} control={
+        <Toggle label={t('settingsAllowThreadModel')} checked={draft.allowThreadModel} onChange={allowThreadModel => update({ allowThreadModel })} />} />
+      <SettingsRow title={t('settingsPrompt')}>
+        <textarea className="studio-pixie-prompt" aria-label={t('settingsPrompt')} value={draft.systemPrompt} onChange={event => update({ systemPrompt: event.target.value })} />
+      </SettingsRow>
+    </section>
   </div>;
 }

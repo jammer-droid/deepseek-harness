@@ -248,3 +248,38 @@ export function PickOption({ title, description, checked, onClick }: { title: Re
     <span className="studio-muted">{description}</span>
   </button>;
 }
+
+/** One row of a settings card: title and description on the left, a compact control on the right (DSH Settings row).
+ * @param props Title, optional description, optional control, and an optional full-width body below.
+ * @returns Settings row separated by a hairline.
+ */
+export function SettingsRow({ title, description, control, children }: React.PropsWithChildren<{ title: React.ReactNode; description?: React.ReactNode; control?: React.ReactNode }>) {
+  return <div className="studio-settings-row">
+    <div className="studio-settings-row-head">
+      <div className="studio-settings-row-text"><span className="studio-settings-row-title">{title}</span>{description && <span className="studio-muted">{description}</span>}</div>
+      {control && <div className="studio-settings-row-control">{control}</div>}
+    </div>
+    {children}
+  </div>;
+}
+
+/** One choice of a {@link Segmented} control. */
+export interface SegmentedOption<Value extends string> { value: Value; label: string }
+
+/** Compact segmented choice styled like the DSH SegmentedControl; Node-testable.
+ * @param props Accessible label, options, selection, and change callback.
+ * @returns Radio group of segments.
+ */
+export function Segmented<Value extends string>({ label, options, value, onChange }: { label: string; options: readonly SegmentedOption<Value>[]; value: Value; onChange: (value: Value) => void }) {
+  return <span className="studio-segmented" role="radiogroup" aria-label={label}>
+    {options.map(option => <button key={option.value} type="button" role="radio" aria-checked={option.value === value} onClick={() => onChange(option.value)}>{option.label}</button>)}
+  </span>;
+}
+
+/** Compact on/off switch styled like the DSH Switch; Node-testable.
+ * @param props Accessible label, state, and change callback.
+ * @returns Switch button.
+ */
+export function Toggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: (checked: boolean) => void }) {
+  return <button type="button" role="switch" className="studio-toggle" aria-label={label} aria-checked={checked} onClick={() => onChange(!checked)}><span aria-hidden="true" /></button>;
+}

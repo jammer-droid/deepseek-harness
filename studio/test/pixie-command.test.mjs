@@ -80,3 +80,26 @@ test('cancel (회수) ends a running request as cancelled and frees the session'
   assert.equal(turn.status, 'cancelled');
   assert.equal(turn.answer, 'part');
 });
+
+test('a /pixie answer is findable by its command id for the conversation row', async () => {
+  const { command, live, store } = await setup();
+  await invoke(command, ' ping');
+  await live.idle('s1');
+  const turn = (await store.read('s1')).threads[0].turns[0];
+  assert.equal(turn.commandId, 'c1');
+  assert.equal(turn.answer, 'pong');
+});
+
+test('a thread with a running request cannot be deleted', async () => {
+  const store = new PixieStore(await mkdtemp(join(tmpdir(), 'studio-pixie-cmd-')));
+  const llm = { stream: async function* (options) {
+    yield { type: 'text-delta', index: 0, text: 'x' };
+    await new Promise((resolve, reject) => options.signal.addEventListener('abort', () => reject(options.signal.reason)));
+  } };
+  const live = new PixieLive(new PixieRuntime({ store, llm, settings: async () => ({ model, contextMode: 'fresh', systemPrompt: '', allowThreadModel: true }), sessionEvents: async () => [] }));
+  const { threadId } = await live.start('s1', { question: 'q' });
+  await assert.rejects(live.deleteThread('s1', threadId), /pixie\/busy/);
+  live.cancel('s1'); await live.idle('s1');
+  await live.deleteThread('s1', threadId);
+  assert.deepEqual((await store.read('s1')).threads, []);
+});

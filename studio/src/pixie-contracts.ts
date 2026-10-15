@@ -23,7 +23,8 @@ export interface PixieModel {
 export type PixieContextMode = 'fresh' | 'fork';
 
 /** One plain-text message in a thread. */
-export interface PixieMessage { role: 'user' | 'assistant'; text: string }
+/** One plain-text message in a thread; assistant text keeps the route that produced it when known. */
+export interface PixieMessage { role: 'user' | 'assistant'; text: string; provider?: string; model?: string }
 
 /** Terminal state of one Pixie request. */
 export type PixieTurnStatus = 'streaming' | 'done' | 'cancelled' | 'error';
@@ -39,6 +40,8 @@ export interface PixieTurn {
   error?: string;
   usage?: PixieUsage;
   model: PixieModel;
+  /** The `/pixie` command that started this turn, so the conversation row can show its answer. */
+  commandId?: string;
   startedAt: number;
   endedAt?: number;
 }
@@ -81,7 +84,7 @@ export interface PixieUsageTotal extends PixieUsage { requests: number }
 
 /** One streamed item the Host sends for an ask. */
 export type PixieAskFrame =
-  | { type: 'start'; threadId: string; turnId: string; question: string }
+  | { type: 'start'; threadId: string; turnId: string; question: string; commandId?: string }
   | { type: 'text'; text: string }
   | { type: 'usage'; usage: PixieUsage }
   | { type: 'end'; status: Exclude<PixieTurnStatus, 'streaming'>; error?: string; truncated?: true };
@@ -106,7 +109,7 @@ export function threadMessages(thread: PixieThread): PixieMessage[] {
   const messages = [...thread.forked];
   for (const turn of thread.turns) {
     if (turn.status !== 'done') continue;
-    messages.push({ role: 'user', text: turn.question }, { role: 'assistant', text: turn.answer });
+    messages.push({ role: 'user', text: turn.question }, { role: 'assistant', text: turn.answer, provider: turn.model.provider, model: turn.model.model });
   }
   return messages;
 }

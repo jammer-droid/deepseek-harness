@@ -150,3 +150,15 @@ test('a per-thread model keeps the token limit, and the effort only on the same 
   const own = await runtime.createThread('s1', { model: { provider: 'p', model: 'm2', reasoningEffort: 'low', maxTokens: 10 } });
   assert.deepEqual(own.model, { provider: 'p', model: 'm2', reasoningEffort: 'low', maxTokens: 10 });
 });
+
+test('history sent to the model carries complete assistant messages (id and model source)', async () => {
+  const llm = fakeLlm((_o, n) => chunks(text(`a${n}`), finish));
+  const { runtime } = await setup(llm);
+  await collect(runtime.ask('s1', { question: 'q1' }, new AbortController().signal));
+  await collect(runtime.ask('s1', { question: 'q2' }, new AbortController().signal));
+  const assistant = llm.calls[1].messages.find(message => message.role === 'assistant');
+  assert.equal(typeof assistant.id, 'string');
+  assert.deepEqual(assistant.source, { kind: 'model', provider: 'p', model: 'm' });
+  // user inputs stay plain request inputs
+  assert.equal(llm.calls[1].messages.at(-1).source, undefined);
+});

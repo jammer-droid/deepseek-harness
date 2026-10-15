@@ -17,7 +17,7 @@ export class PixieLive {
   /** Start an ask and resolve once its turn exists; the answer streams to subscribers.
    * @returns the thread and turn ids.
    */
-  start(sessionId: string, request: { question: string; threadId?: string }): Promise<{ threadId: string; turnId: string }> {
+  start(sessionId: string, request: { question: string; threadId?: string; commandId?: string }): Promise<{ threadId: string; turnId: string }> {
     if (this.running.has(sessionId)) return Promise.reject(new Error('[pixie/busy] A Pixie request is already running in this session'));
     const controller = new AbortController();
     const entry: Running = { controller, frames: [], done: Promise.resolve() };
@@ -38,6 +38,13 @@ export class PixieLive {
         }
       })();
     });
+  }
+
+  /** Delete a thread unless it is answering now. */
+  async deleteThread(sessionId: string, threadId: string): Promise<void> {
+    const running = this.running.get(sessionId)?.frames.find(frame => frame.type === 'start');
+    if (running?.type === 'start' && running.threadId === threadId) throw new Error('[pixie/busy] Pixie is still answering in this thread');
+    await this.store.deleteThread(sessionId, threadId);
   }
 
   /** Frames already emitted by the running request, for a view that opens mid-stream. */

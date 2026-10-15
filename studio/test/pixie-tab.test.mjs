@@ -28,6 +28,7 @@ function fakeActions(view) {
       cancel: async () => { calls.push(['cancel']); return true; },
       createThread: async options => { calls.push(['createThread', options]); return thread('t9', 'Thread 9'); },
       activate: async id => { calls.push(['activate', id]); return true; },
+      deleteThread: async id => { calls.push(['deleteThread', id]); return true; },
       models: async () => ({ groups: [{ id: 'p', name: 'P', models: [{ id: 'm', name: 'M' }] }] }),
       judge: async request => { calls.push(['judge', request]); return { ok: true, answers: { clear: { type: 'noul', noul: 0.7 } } }; },
     },
@@ -77,14 +78,21 @@ test('asking streams the answer and the running request can be cancelled', async
   assert.deepEqual(fake.calls.at(-1), ['cancel']);
 });
 
-test('new thread and thread switching call the service', async () => {
+test('thread switching, creating, and deleting call the service', async () => {
   const view = { record: { sessionId: 's1', activeThreadId: 'a', threads: [thread('a', 'Thread 1'), thread('b', 'Thread 2')] }, total: { requests: 0, inputTokens: 0, outputTokens: 0 }, running: false, frames: [], settings };
   const fake = fakeActions(view);
   const { host } = await render(React.createElement(PixieTab, { locale: 'en', actions: fake.actions }));
-  await act(async () => { button(host, 'Thread 2').click(); });
+  const { Simulate } = await import('react-dom/test-utils');
+  const select = host.querySelector('select[aria-label="Pixie threads"]');
+  await act(async () => { select.value = 'b'; Simulate.change(select); });
   assert.deepEqual(fake.calls.at(-1), ['activate', 'b']);
   await act(async () => { button(host, 'New thread').click(); });
-  assert.equal(fake.calls.at(-1)[0], 'createThread');
+  const fork = [...host.querySelectorAll('[role=radio]')].find(item => item.textContent === 'Continue');
+  await act(async () => { fork.click(); });
+  await act(async () => { button(host, 'Create').click(); });
+  assert.deepEqual(fake.calls.find(call => call[0] === 'createThread'), ['createThread', { mode: 'fork' }]);
+  await act(async () => { button(host, 'Delete thread').click(); });
+  assert.deepEqual(fake.calls.at(-1), ['deleteThread', 'a']);
 });
 
 test('without a configured model the tab says so and offers no ask', async () => {
@@ -121,20 +129,35 @@ test('settings page saves the chosen model, effort, and mode', async () => {
   await act(async () => { modelSelect.value = 'p\u0000m'; Simulate.change(modelSelect); });
   const effort = host.querySelectorAll('select')[1];
   await act(async () => { effort.value = 'high'; Simulate.change(effort); });
-  const fork = [...host.querySelectorAll('[role=radio]')].find(item => /Continue this conversation/.test(item.textContent));
+  const fork = [...host.querySelectorAll('[role=radio]')].find(item => item.textContent === 'Continue');
   await act(async () => { fork.click(); });
   assert.equal(fork.getAttribute('aria-checked'), 'true');
+  const toggle = host.querySelector('[role=switch]');
+  await act(async () => { toggle.click(); });
+  await act(async () => { toggle.click(); });
   await act(async () => { button(host, 'Save').click(); });
   assert.deepEqual(saved[0], { contextMode: 'fork', systemPrompt: 'S', allowThreadModel: true, model: { provider: 'p', model: 'm', reasoningEffort: 'high' } });
   assert.match(host.textContent, /Saved\./);
 });
 
-test('the /pixie row shows the question and status, never an answer, and opens the tab', async () => {
+test('the /pixie row streams its own answer, ignores other requests, and opens the tab', async () => {
   const { PixieCommandRow } = await import('../src/pixie-tab.tsx');
   let opened = 0;
-  const { host } = await render(React.createElement(PixieCommandRow, { question: 'why?', outcome: { kind: 'success', text: 'Asked Pixie · Thread 1' }, locale: 'en', onOpen: () => { opened++; } }));
+  let push;
+  // The command returns after its turn is written, so the row first sees a streaming turn.
+  let recorded = { ...done, id: 't', question: 'why?', answer: '', status: 'streaming', usage: undefined, commandId: 'c1' };
+  const actions = { commandId: 'c1', commandTurn: async () => recorded, follow: listener => { push = listener; return () => {}; } };
+  const { host } = await render(React.createElement(PixieCommandRow, { question: 'why?', outcome: { kind: 'success', text: 'Asked Pixie · Thread 1' }, locale: 'en', onOpen: () => { opened++; }, actions }));
   assert.match(host.textContent, /why\?/);
-  assert.match(host.textContent, /Pixie tab/);
+  assert.match(host.textContent, /answering/);
+  await act(async () => { push({ type: 'start', threadId: 'a', turnId: 'o', question: 'other', commandId: 'c2' }); push({ type: 'text', text: 'NOT MINE' }); push({ type: 'end', status: 'done' }); });
+  assert.doesNotMatch(host.textContent, /NOT MINE/);
+  await act(async () => { push({ type: 'start', threadId: 'a', turnId: 't', question: 'why?', commandId: 'c1' }); push({ type: 'text', text: 'because' }); });
+  assert.match(host.textContent, /because/);
+  recorded = { ...done, id: 't', question: 'why?', answer: 'because.', commandId: 'c1' };
+  await act(async () => { push({ type: 'end', status: 'done' }); await new Promise(r => setTimeout(r, 0)); });
+  assert.match(host.textContent, /because\./);
+  assert.match(host.textContent, /In 100/);
   await act(async () => { button(host, 'Open Pixie').click(); });
   assert.equal(opened, 1);
 });
@@ -153,4 +176,12 @@ test('a truncated answer is labeled', async () => {
   const view = { record: { sessionId: 's1', activeThreadId: 'a', threads: [thread('a', 'Thread 1', [{ ...done, truncated: true }])] }, total: { requests: 0, inputTokens: 0, outputTokens: 0 }, running: false, frames: [], settings };
   const { host } = await render(React.createElement(PixieTab, { locale: 'en', actions: fakeActions(view).actions }));
   assert.match(host.textContent, /token limit/);
+});
+
+test('a /pixie row with no linked answer points to the tab instead of waiting', async () => {
+  const { PixieCommandRow } = await import('../src/pixie-tab.tsx');
+  const actions = { commandId: 'old', commandTurn: async () => null, follow: () => () => {} };
+  const { host } = await render(React.createElement(PixieCommandRow, { question: 'old', outcome: { kind: 'success' }, locale: 'en', onOpen: () => {}, actions }));
+  assert.match(host.textContent, /answer is in the Pixie tab/);
+  assert.doesNotMatch(host.textContent, /answering/);
 });

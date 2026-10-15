@@ -1,7 +1,7 @@
 import type { Context } from '@deepseek-ai/cordis';
 import { Remote, TypertRemoteService } from '@deepseek-ai/dsh-typert-protocol';
 import { join } from 'node:path';
-import type { JudgeRequest, PixieAskFrame, PixieContextMode, PixieSessionRecord, PixieSettings, PixieUsageTotal } from '../pixie-contracts.ts';
+import type { JudgeRequest, PixieAskFrame, PixieContextMode, PixieSessionRecord, PixieSettings, PixieTurn, PixieUsageTotal } from '../pixie-contracts.ts';
 import { totalUsage } from '../pixie-contracts.ts';
 import { pixieCommand } from './pixie-command.ts';
 import { LlmJudgeEngine } from './pixie-judge.ts';
@@ -101,6 +101,17 @@ export class PixieService extends TypertRemoteService {
 
   @Remote
   async activate(sessionId: string, threadId: string) { await this.store.activate(sessionId, threadId); return true; }
+
+  @Remote
+  async deleteThread(sessionId: string, threadId: string) { await this.live.deleteThread(sessionId, threadId); return true; }
+
+  /** The turn a `/pixie` command started, for the conversation row; undefined while it is not recorded yet. */
+  @Remote
+  async commandTurn(sessionId: string, commandId: string): Promise<PixieTurn | null> {
+    const record = await this.store.read(sessionId);
+    for (const thread of record.threads) for (const turn of thread.turns) if (turn.commandId === commandId) return turn;
+    return null;
+  }
 
   /** Start a request; the answer arrives through `follow`. Payload `{ question, threadId? }`. */
   @Remote

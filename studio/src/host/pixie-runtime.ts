@@ -1,4 +1,4 @@
-import type { PixieAskFrame, PixieContextMode, PixieModel, PixieSettings, PixieThread, PixieUsage } from '../pixie-contracts.ts';
+import type { PixieAskFrame, PixieContextMode, PixieMessage, PixieModel, PixieSettings, PixieThread, PixieUsage } from '../pixie-contracts.ts';
 import { threadMessages } from '../pixie-contracts.ts';
 import { forkSnapshot, type ForkEvent } from './pixie-fork.ts';
 import type { PixieStore } from './pixie-store.ts';
@@ -7,9 +7,23 @@ import type { PixieStore } from './pixie-store.ts';
 export interface PixieLlm {
   stream(options: {
     provider: string; model: string; reasoningEffort?: string; maxTokens?: number; system?: string;
-    messages: { role: 'user' | 'assistant'; content: { type: 'text'; text: string }[] }[];
+    messages: PixieRequestMessage[];
     signal?: AbortSignal;
   }): AsyncIterable<{ type: string; [key: string]: unknown }>;
+}
+
+/** A user input (no identity) or a complete assistant message, as `llm.stream` requires. */
+export type PixieRequestMessage =
+  | { role: 'user'; content: { type: 'text'; text: string }[] }
+  | { role: 'assistant'; id: string; source: { kind: 'model'; provider: string; model: string }; content: { type: 'text'; text: string }[] };
+
+/** Build request messages. Adapters read `source` on assistant history (replay state), so assistant entries
+ * are complete messages attributed to the route that produced them, or the current route when unknown.
+ */
+export function requestMessages(messages: readonly PixieMessage[], route: { provider: string; model: string }): PixieRequestMessage[] {
+  return messages.map((message, index) => message.role === 'user'
+    ? { role: 'user', content: [{ type: 'text', text: message.text }] }
+    : { role: 'assistant', id: `pixie-history-${index}`, source: { kind: 'model', provider: message.provider ?? route.provider, model: message.model ?? route.model }, content: [{ type: 'text', text: message.text }] });
 }
 
 export interface PixieRuntimeDeps {
@@ -41,7 +55,7 @@ export class PixieRuntime {
    * Yields a start frame, text deltas, usage, and one end frame. Cancellation ends with `cancelled`;
    * provider failures end with `error` and are never recorded as answers.
    */
-  async *ask(sessionId: string, request: { question: string; threadId?: string }, signal: AbortSignal): AsyncIterable<PixieAskFrame> {
+  async *ask(sessionId: string, request: { question: string; threadId?: string; commandId?: string }, signal: AbortSignal): AsyncIterable<PixieAskFrame> {
     const settings = await this.deps.settings();
     let record = await this.deps.store.read(sessionId);
     let threadId = request.threadId ?? record.activeThreadId;
@@ -53,8 +67,8 @@ export class PixieRuntime {
     }
     const thread = record.threads.find(item => item.id === threadId)!;
     const history = threadMessages(thread);
-    const turn = await this.deps.store.startTurn(sessionId, thread.id, request.question);
-    yield { type: 'start', threadId: thread.id, turnId: turn.id, question: request.question };
+    const turn = await this.deps.store.startTurn(sessionId, thread.id, request.question, request.commandId);
+    yield { type: 'start', threadId: thread.id, turnId: turn.id, question: request.question, ...(request.commandId ? { commandId: request.commandId } : {}) };
     let answer = '';
     let usage: PixieUsage | undefined;
     let finished = false;
@@ -68,7 +82,7 @@ export class PixieRuntime {
         ...(thread.model.reasoningEffort ? { reasoningEffort: thread.model.reasoningEffort } : {}),
         ...(thread.model.maxTokens ? { maxTokens: thread.model.maxTokens } : {}),
         ...(settings.systemPrompt.trim() ? { system: settings.systemPrompt } : {}),
-        messages: [...history, { role: 'user' as const, text: request.question }].map(message => ({ role: message.role, content: [{ type: 'text' as const, text: message.text }] })),
+        messages: requestMessages([...history, { role: 'user', text: request.question }], thread.model),
         signal,
       });
       for await (const chunk of untilAborted(stream, signal)) {

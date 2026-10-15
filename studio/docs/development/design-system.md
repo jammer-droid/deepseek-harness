@@ -78,7 +78,8 @@ primitives는 CSS 모듈을 함께 불러오므로 Node 단위 테스트에서 �
 | `TabBar`, `TabPanel` | 고정 밑줄 탭과 탭 내용. 탭을 바꿔도 탭 줄이 보이는 위치에 남는다 |
 | `MasterDetail`, `ListItem`, `ListGroup` | 왼쪽 목록과 오른쪽 상세. 본문이 좁으면 위아래로 쌓인다 |
 | `Tile` | 그리드 안의 요약 카드. 누르면 상세로 이동 |
-| `PickOption` | 대화상자·설정 화면의 선택지. `checked`를 주면 라디오로 동작. 예: Pixie 설정의 컨텍스트 모드와 스레드별 모델 |
+| `SettingsRow`, `Segmented`, `Toggle` | 설정 카드(`studio-settings-card`) 안의 행: 왼쪽 제목·설명, 오른쪽 작은 컨트롤. 몇 개 안 되는 모드는 `Segmented`, 켜고 끄기는 `Toggle`. 예: Pixie 설정 |
+| `PickOption` | 대화상자 안의 선택지. `checked`를 주면 라디오로 동작 |
 | `IconButton` | 아이콘만 있는 작은 버튼. 문구는 `label`(툴팁·접근 이름)로만 준다. 톤은 `info`·`success`·`error`. 예: 메뉴 하단 버전 옆 업데이트 |
 | `Badge` | 카드 제목 옆 상태 캡슐. DSH `Tag`와 같은 모양이며 Node 테스트 대상 모듈에서도 쓸 수 있다. 톤은 `success`(반영됨), `warning`(재반영 필요), `info`(기본 제공), `outline`(읽기 전용·실행 방식), `neutral`(미반영) |
 | `DetailDialog` | 한 항목의 설정을 여는 모달. `wide`는 프롬프트 미리보기처럼 본문과 오른쪽 목록을 함께 보여줄 때 쓴다. 머리(제목·보조 문구·닫기), 스크롤되는 본문, 선택적 하단 동작으로 구성한다. 닫으면 연 버튼으로 포커스를 돌려준다. 페이지 안에서 카드를 펼쳐 편집하지 않고 이 모달을 쓴다 |
