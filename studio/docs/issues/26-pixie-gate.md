@@ -22,7 +22,11 @@ Studio는 특정 기능(양식 검증, 번역, 검색 요약, 선압축)을 직�
 
 ## 현재 진행 상황
 
-`ready`. 사용자 결정 U1–U8을 [확정된 결정](#확정된-결정)에 기록했다. 첫 단계는 **S1(설치 런타임 계약 확인)**이다. GitHub 이슈는 아직 만들지 않았다.
+`ready`. 사용자 결정 U1–U8을 [확정된 결정](#확정된-결정)에 기록했다. GitHub 이슈는 아직 만들지 않았다.
+
+- **S1 부분 확인:** rc.2 설치 모듈 + 가짜 모델 수준이며 전체 통과가 아니다. 미확인 목록은 [S1 결과 표](#s1-확인-결과)를 참조한다. 실험 스크립트·로그가 삭제되어 표는 재현 가능한 첨부 증거가 아닌 작업자 기록 수준이다. 표 내용은 그대로 보존한다.
+- **S2 구현·로컬 검증 완료:** 게이트 계약·command/converse 실행기·순차 파이프라인, 내부 결과 분리 및 회귀 테스트를 구현했다. `npm --prefix studio run typecheck`, `npm --prefix studio test`(빌드 포함), `git diff --check` 통과. Studio **219개 테스트 통과**(게이트 파이프라인 39개 + Pixie 선택 타임아웃 1개 포함). 이번 보강에서 회귀 8개를 추가했다. Node deprecation 및 기존 React DOM nesting 경고는 있으나 실패는 없다. 설치 앱·실제 모델·GUI 검증을 대신하지 않는다.
+- **다음 단계 S3:** 실행 기록 저장소. S4 입력 연결, S5 턴 종료 연결, S6 도구 연결, S7 UI, S8 judge 연결, S9 독립 설치 검증은 대기한다. S1 미확인 사항은 관련 연결 단계에서 확인해야 하며 완료로 간주하지 않는다.
 
 ## 사용자 목표와 레시피
 
@@ -63,7 +67,7 @@ R1·R2는 같은 지점, R3는 출력 쪽, R4·R5는 데이터 준비(인덱스�
 | 압축 요약은 `ctx.llm.stream({ purpose: 'compaction', sessionId, … })` 한 번으로 만든다. `llm/stream` waterfall은 자기 청크를 yield해 short-circuit할 수 있다. | R5는 압축 서비스를 교체하지 않고 `llm/stream`에서 미리 만든 요약을 돌려주는 방식이 가능해 보인다. 요청 메시지 범위가 사전 요약 범위와 정확히 같을 때만 쓴다. | [summarizer](<../../../packages/compaction/compaction-basic/src/summarizer.ts#L140-L176>), [llm/stream 계약](<../../../packages/llm/llm/src/index.ts#L62-L75>) |
 | 공개 `ctx.shell`(`resolve` → `execute` → `result()`)이 명령·stdin·workdir·timeout·signal·env를 받고 exit code·stdout·stderr·timedOut을 돌려준다. 실패한 종료도 결과로 돌아오며 인프라 오류만 reject한다. Claude Code·Codex 훅 브리지도 같은 서비스로 명령 훅을 실행한다. | 명령 단계는 이 서비스로 만든다. 훅 브리지 패키지(`dsh-hook-protocol`)는 Studio peer가 아니므로 가져오지 않고 같은 규칙을 Studio에서 구현한다. | Host Inspect `shell`, [훅 실행기](<../../../packages/experimental/hook-protocol/src/runner.ts#L75-L110>) |
 | 같은 지점의 리스너는 Cordis waterfall 순서(등록 순서, `prepend`는 앞)로 감싼다. Claude Code 브리지의 `pre-step`은 `next()` 결과 뒤에 자기 컨텍스트 메시지(source `hooks-claude-code`)를 붙이고, deny면 `next()` 없이 `reject`한다. `post-execute`는 `additionalContexts`에 붙인다. | 게이트가 바깥쪽에 있으면 `next()` 결과에서 일반 훅의 결정·컨텍스트를 **입력으로 읽을 수 있다**. 순서는 로드 순서에 달려 있어 S1에서 확인한다. | [Claude 브리지 pre-step·tool](<../../../packages/experimental/hooks-claude-code/src/index.ts#L225-L270>), [waterfall](<../../../vendor/cordis/src/events.ts#L225-L260>) |
-| waterfall 리스너는 모델 요청을 기다리는 동안 에이전트를 붙잡는다. #25 Pixie 요청에는 타임아웃이 없다. | 게이트 단계에는 **타임아웃·예산이 반드시** 있어야 한다. 이번 이슈에서 Pixie 호출 타임아웃을 함께 넣는다. | [#25 남은 제한](25-pixie.md#남은-제한-후속) |
+| waterfall 리스너는 모델 요청을 기다리는 동안 에이전트를 붙잡는다. #25 `/pixie` 요청은 기본 타임아웃 없이 취소 가능하며, 런타임의 선택 `timeoutMs` 포트는 service 생성 경로에 연결하지 않는다. | 게이트 단계의 모델 호출은 필수 `stageTimeoutMs`로 제한한다. `/pixie` 기본 동작은 유지한다. | [#25 남은 제한](25-pixie.md#남은-제한-후속) |
 
 ## 용어
 
@@ -115,17 +119,44 @@ type StageDefinition =
 
 /** 단계 결과는 종류와 상관없이 같은 모양이다. 파이프라인은 이 모양만 본다. */
 interface StageResult {
-  verdict: 'pass' | 'fail' | 'revise' | 'note'
+  verdict: 'pass' | 'fail' | 'revise' | 'note' | 'error'
   text?: string          // revise: 새 작업 텍스트, note: 덧붙일 내용, fail: 교정 지시·이유
   reason?: string
   data?: unknown         // check JSON 원본, judge answers
   error?: string         // 오류·타임아웃·잘못된 출력
+  usage?: PixieUsage
+}
+interface StageRecord {
+  id: string
+  result: StageResult
+  appliedPolicy?: 'pass' | 'block'   // error 판정과 실제 적용 정책을 분리
+  subjectBytes: number
+  textBytes: number
+}
+type GateForward =
+  | { kind: 'none' }
+  | { kind: 'original'; text: string }
+  | { kind: 'replace'; text: string }
+  | { kind: 'append'; text: string; contexts: string[]; source: 'studio-pixie-gate' }
+interface GateResult {
+  verdict: 'pass' | 'revise' | 'fail' | 'error' | 'skip' | 'cancelled'
+  original: string
+  subject: string
+  notes: string[]
+  stages: Record<string, StageResult>   // 실행된 사용자 정의 단계만
+  records: StageRecord[]               // 사용자 단계의 크기·적용 정책
+  appliedPolicy?: 'pass' | 'block'
+  forward: GateForward
+  hooks: { start?: StageResult; end?: StageResult }
+  forwardError?: StageResult           // forward 계산 오류; 단계 맵과 분리
 }
 ```
 
 - **조립 방식:** 단계 1–5개를 사용자가 정한 순서대로 실행한다. 각 단계는 직전까지의 작업 텍스트를 받는다. `revise`는 작업 텍스트를 바꾸고, `note`는 결과만 쌓고, `fail`은 그 자리에서 파이프라인을 멈춘다. 모든 단계가 끝나면 원문과 최종 텍스트가 다르면 `revise`, 아니면 `pass`로 정리하고 쌓인 `note`를 함께 넘긴다.
+- **오류·건너뛰기:** `error`는 즉시 파이프라인을 중단한다. `onError: pass`(fail-open)는 원문만 전달하며 앞 단계의 `revise`·`note`를 적용하지 않는다(중간 subject·notes는 관찰 기록으로 보존). `block` 오류·`fail`·단계 실행 취소는 `forward: none`. 비활성(`enabled: false`) 게이트는 단계와 start/end 훅을 실행하지 않고 `skip` + 원문 전달이다.
+- **단계 ID:** 영문자로 시작하는 영문자·숫자·`_`·`-`만 허용하고 중복은 거부한다. 예약 ID는 `start`, `forward`, `subject`, `__proto__`, `constructor`, `prototype`이다. 내부 결과는 `hooks.start/end`·`forwardError`에만 기록한다. `appliedPolicy`는 `StageResult` verdict를 바꾸지 않고 `StageRecord`와 `GateResult`에 둔다.
 - **프롬프트 변수:** `{{subject}}`(현재 작업 텍스트), `{{original}}`(원문), `{{stages.<id>.text}}`, `{{stages.<id>.reason}}`, `{{stages.<id>.data}}`(JSON 문자열), `{{hooks.context}}`(일반 훅이 붙인 컨텍스트). 알 수 없는 변수는 저장 시 오류다.
-- **게이트 출력(`forward`):** 파이프라인이 `fail`이면 `forward`와 상관없이 지점의 fail 동작을 한다. 통과하면 `forward`가 다음 모델 입력을 정한다. `append`는 원문 메시지를 그대로 두고 단계 텍스트를 별도 컨텍스트 메시지(source `studio-pixie-gate`)로 붙인다. `replace`는 대상 메시지 텍스트만 바꾼다. 지점이 지원하지 않는 `forward`(예: `turn-end`의 `replace`)는 저장 시 거부한다.
+- **게이트 출력(`forward`):** 파이프라인이 `fail`이면 `forward`와 상관없이 지점의 fail 동작을 한다. 통과하면 `forward`가 다음 모델 입력을 정한다. `append`는 원문 메시지를 그대로 두고 단계 텍스트를 별도 컨텍스트 메시지(source `studio-pixie-gate`)로 붙인다. `replace`는 대상 메시지 텍스트만 바꾼다. `turn-end`·`tool-before`의 `forward`는 `original`만 허용하며 `replace`·`append`는 저장 시 거부한다. 지정 단계에 text가 없어 forward 계산이 실패하면 `forwardError`에 기록하고 `onError`를 적용한다.
 - **converse `check` 출력:** JSON `{ "pass": boolean, "reason"?: string, "fix"?: string }`을 요구하고 엄격히 검증한다. 잘못된 출력은 `error`이며 통과로 바꾸지 않는다(#25 판정 검증과 같은 원칙). `fix`는 fail일 때 교정 지시·다시 쓰기 제안으로 쓴다.
 - **judge 단계(확장):** #25 `JudgeEngine.judge({ state, questions })`를 그대로 쓴다. `state`는 `{ subject, original, stages }`. `pass` 규칙(예: noul ≥ 0.7, choice ∈ 허용 목록, score ≥ n)이 answers를 `pass`/`fail`로 바꾼다. 파이프라인은 `StageResult`만 보므로 judge 추가가 파이프라인·지점 매핑을 바꾸지 않는다. S8 전까지 정의 검증은 judge 단계를 "아직 지원하지 않음"으로 거부한다.
 - 조건부 건너뛰기, 병렬 그룹, 분기 그래프는 후속이다.
@@ -156,14 +187,14 @@ interface StageResult {
 | 종료 | 의미 |
 |---|---|
 | exit 0, stdout 비었음 | `pass` (`note` 역할이면 텍스트 없음) |
-| exit 0, stdout이 JSON 아님 | 텍스트 결과: `revise`면 새 작업 텍스트, `note`면 덧붙일 텍스트, `check`면 오류(형식 위반) |
+| exit 0, stdout이 일반 텍스트 | `revise`면 새 작업 텍스트, `note`면 덧붙일 텍스트, `check`면 오류(형식 위반). 공백 뒤 `{`·`[`로 시작하는 잘못된 JSON은 **모든 역할에서 오류**이며 텍스트로 우회하지 않는다 |
 | exit 0, stdout JSON | `{ "verdict"?: "pass"\|"fail"\|"revise"\|"note", "text"?: string, "reason"?: string, "data"?: unknown }`. 역할이 허용하지 않는 verdict는 오류 |
 | exit 2 | `fail`, stderr가 이유 |
 | 그 밖의 exit, 타임아웃, 실행 불가 | 오류 → `onError` 정책 |
 
-- **start 훅:** 단계 실행 전에 한 번. `fail`이면 단계를 실행하지 않고 게이트 `fail`. `{"verdict":"pass","data":{"skip":true}}`이면 게이트를 건너뛰고 지점의 `next()` 결과를 그대로 돌려준다. `data`는 `{{stages.start.data}}`로 단계에 넘어간다.
-- **end 훅:** 결과 동작을 적용하기 직전에 한 번. stdin에 최종 `result`가 들어간다. 관찰·알림용이며 결과를 바꾸지 않는다(결과를 바꾸려면 마지막 단계를 명령 단계로 둔다). 실패는 기록만 한다.
-- **실행 환경:** `ctx.shell`로 에이전트 작업 디렉터리에서 실행하며 세션의 샌드박스 정책을 따른다. 기본 타임아웃은 게이트 `stageTimeoutMs`. 환경 변수 `DSH_PIXIE_GATE_ID`, `DSH_SESSION_ID`를 준다. 명령은 사용자가 Studio에서 직접 정의한 신뢰된 설정으로 취급한다(프리셋 공유 시 경고 표시).
+- **start 훅:** 단계 실행 전에 한 번. `fail`이면 단계를 실행하지 않고 게이트 `fail`. `{"verdict":"pass","data":{"skip":true}}`이면 게이트를 건너뛰고 지점의 `next()` 결과를 그대로 돌려준다. 결과는 `GateResult.hooks.start`에 보존한다. `data`는 기존 `{{stages.start.data}}` 계약을 유지하도록 실행 컨텍스트의 `stages.start` 별칭으로 단계 프롬프트·명령 stdin에만 제공하며, `GateResult.stages`·`records`에는 넣지 않는다.
+- **end 훅:** 결과 동작을 적용하기 직전에 한 번. stdin에 최종 `result`가 들어간다. 관찰·알림용이며 결과를 바꾸지 않는다(결과를 바꾸려면 마지막 단계를 명령 단계로 둔다). 실패·end 훅 자체 타임아웃·실행 중 취소는 `GateResult.hooks.end`에 기록만 하고 이미 결정된 verdict·forward·단계 결과를 바꾸지 않는다. end 훅 시작 전에 취소되었다면 훅을 시작하지 않는다.
+- **실행 환경:** `ctx.shell`로 에이전트 작업 디렉터리에서 실행한다. 호출자는 세션에서 구한 `sandboxPolicy`(mode·workspaceRoot·sessionId)를 명령 요청에 **명시적으로 전달**해야 한다. 정책 누락, 유효하지 않은 mode·workspaceRoot, sessionId 불일치는 실행 전 오류다. `ctx.shell`의 기본 정책에 기대거나 비샌드박스 실행으로 대체하지 않는다. 기본 타임아웃은 게이트 `stageTimeoutMs`. 환경 변수 `DSH_PIXIE_GATE_ID`, `DSH_SESSION_ID`를 준다. 명령은 사용자가 Studio에서 직접 정의한 신뢰된 설정으로 취급한다(프리셋 공유 시 경고 표시).
 - **출력 상한:** stdout은 상한(초안 256KB)을 넘으면 오류다. `subject`·`text`는 다음 단계 프롬프트에 그대로 들어가므로 크기를 기록에 남긴다.
 
 ### 일반 훅과의 연결
@@ -232,10 +263,29 @@ interface StageResult {
 - 수용: 각 항목의 결과와 버전 차이를 이 문서에 기록한다. 불가능한 항목은 해당 레시피·지점을 범위 밖으로 옮긴다.
 - 검증: 격리 프로필 + 최소 시험 리스너(커밋하지 않는 실험 또는 테스트 전용).
 
+### S1 확인 결과
+
+2026-10-15, 기준 checkout `1f401ddc02`. **부분 확인이며 S1 전체 통과가 아니다.** 아래의 ‘확인’은 명시한 층위에만 적용된다. Host Inspect는 현재 Host의 공개 계약 조회이며 격리 서버에 실험 리스너를 설치했다는 증거는 아니다. 실제 모델/API 키를 사용하지 않고, 설치 앱 ASAR의 rc.2 모듈을 Electron Node 모드에서 직접 로드한 별도 최소 Context + 가짜 `LlmAdapter`로 실행했다. 사용자 GUI/프로필에는 리스너를 설치하지 않았다.
+
+| 항목 | 결과 | 관찰·근거 | 명세 영향 / 남은 확인 |
+|---|---|---|---|
+| 설치 버전 | **확인: rc.2 / 미확인: alpha.2 실행** | `dsh --version` → `0.2.0-rc.2`. `/usr/local/bin/dsh`는 앱의 `Contents/Resources/runtime/cli/bin/dsh`를 가리키며 앱 ASAR runtime manifest도 rc.2. `npm view @deepseek-ai/dsh@0.2.1-alpha.2 version` → `0.2.1-alpha.2`(배포 존재 확인). | alpha.2는 구할 수 없는 버전이 아니라 **이번에 별도 설치·실행하지 않은 버전**이다. rc.2 결과를 alpha.2 호환 통과로 간주하지 않는다. 최초 잘못된 이름 `@deepseek/dsh` 조회는 404였고 정확한 이름으로 정정했다. |
+| 1a. pre-step 등록·reject 기록 | **확인: 설치 모듈 / 미확인: 화면** | Host Inspect `Event.listEvents(agent/pre-step)`는 waterfall. 실제 `ctx.on(..., { prepend: true })` 등록 후 reject하면 `turn/end.reason.kind = blocked`, `user/message` 없음. **하지만 raw `agent/inbox/spliced` inserted에는 `ORIGINAL` 원문이 남는다.** | 위 런타임 사실의 ‘원문이 사라진다’는 **대화 surface 기록이 만들어지지 않는다**는 뜻으로 한정해야 한다. raw 로그에서 완전히 삭제되는 것이 아니다. U3 별도 원문 카드 보존은 유지한다. 브라우저에서 낙관적 입력 행이 사라지는 시점은 미확인. |
+| 1b. source·교체 | **확인: user·교체 로그 / 미확인: 실제 agent-message 전달·화면** | 가짜 모델 실험에서 입력 source `{kind:'user'}`. 같은 source로 만든 `REPLACED`가 `user/message` + `surfaceOp:'append'`로 기록되고 모델 요청으로 진행. 원문은 inbox splice 기록에만 남음. agent-message 형태는 [공개 소스](<../../../packages/subagent/subagent/src/continuation-messages.ts#L13-L71>)의 `{kind:'agent-message', form:'relay', senderSessionId}`이며 본문에는 sender 접두 텍스트도 포함. | 교체가 기존 user/message 이벤트의 수정은 아니다. S4에서 실제 sendMessage 경로·relay 표시를 추가 검증한다. |
+| 2. 마지막 assistant·다른 steer | **확인: 설치 모듈** | `agent.session.deriveMessages().filter(m => m.role === 'assistant').at(-1)`의 text content에서 `FAKE ANSWER`를 읽었다. 먼저 등록한 stopping 리스너가 `agent.steer(...)`한 뒤 다음 리스너의 `agent.inbox.nextStep`에서 `STEER`를 읽고 두 번째 step까지 완료했다. [공개 Inbox](<../../../packages/core/agent/src/runtime-types.ts#L47-L52>), Host Inspect stopping mode `serial`. | `agent.inbox` 전체 JSON 직렬화는 Cordis proxy의 `toJSON` 접근 오류를 일으켰으므로 **공개 `nextStep` 배열만** 읽는다. 뒤에 실행될 리스너의 steer를 미리 알 수는 없다. turn-end에 `prepend`를 일괄 적용하면 기존 steer 관찰 목적과 충돌한다. 마지막 text 블록만 모으고 reasoning/tool-call은 제외한다. |
+| 3. post-execute content | **확인: 설치 모듈 / 미확인: 모델 tool-call 종단간** | Host Inspect `tools/post-execute`의 accept-content 계약 확인. 설치 ToolRuntime의 실제 `execute`에서 `BEFORE` → `AFTER` 교체, `isError:false`, 원래 `value:'BEFORE'` 유지. | content와 value는 같은 것이 아니다. content 교체로 원래 구조화 value까지 바뀐다고 가정하지 않는다. callId 기록 유지의 종단간은 [기존 회귀 테스트 소스](<../../../packages/core/agent-loop/tests/contract-regressions.spec.ts#L1239-L1279>)만 확인(이번 실행 아님). |
+| 4. 프리셋 scope | **확인: 설치 scope primitive / 미확인: 실제 프리셋 Loader 조합** | 설치 `createScope`로 A/B 및 A의 자식 scope를 구성하고 `scopeTarget` serial dispatch → A 리스너만 호출(`['A']`), B 미호출. [scopeTarget 필터](<../../../packages/core/scope/src/index.ts#L158-L184>), [Studio ancestry 처리](<../../src/host/preset-policy.ts#L177-L190>) 참고. | 프리셋 ancestry가 실제 연결된 경우만 제한된다. unscoped root 등록은 전역이다. preset 선택/recompose까지의 격리 Loader 시나리오는 미확인. |
+| 5. prepend·브리지·model-selection | **확인: 설치 waterfall primitive / 미확인: 실제 브리지 활성 조합** | 일반 listener → model 역할 prepend → gate 역할 prepend 순으로 등록한 실제 Cordis 결과: `gate-in, model-in, bridge-in, default, bridge-out, model-out, gate-out`. 이는 역할을 모사한 리스너이며 실제 브리지를 켠 결과가 아니다. [브리지 next/deny](<../../../packages/experimental/hooks-claude-code/src/index.ts#L225-L240>), [model-selection도 prepend](<../../../packages/core/agent/src/model-selection.ts#L113-L125>), [등록 unshift](<../../../vendor/cordis/src/events.ts#L254-L259>). | **prepend만으로 영구 최외곽 보장 불가**: 나중 prepend가 더 바깥이다. 브리지를 격리 프로필에 활성화하지 않았으므로 실제 순서는 미확인으로 유지. S4에서 모델 선택 생성 시점·게이트 등록 시점까지 검증해야 한다. |
+| 6. shell cwd·stdin·sandbox | **확인: 설치 LocalBash cwd/stdin / 미확인: 세션 sandbox 강제 실행** | 설치 `subprocess-local` + `bash-local`, `resolve → execute → result()`로 `pwd; read -r line; printf ...` 실행: exit 0, 지정 임시 cwd 및 stdin JSON 반환, timeout 2000ms. Host Inspect `shell`/`sandboxPolicy` 계약 확인. [sandbox executor 기본 resolve](<../../../packages/shell/bash-sandbox/src/index.ts#L85-L90>)는 세션 없이 fallback policy를 구한다. | **설계 보강 필요:** command 포트는 `workdir`뿐 아니라 `sandboxPolicy: ctx.sandboxPolicy.resolve({session: agent.session})`를 명시적으로 전달해야 세션 mode/cwd 경계를 적용할 수 있다. `ctx.shell` 호출만으로 자동 적용된다고 쓰면 안 된다. enforcing sandbox provider 아래 deny/허용 시험은 미확인. 서비스가 없을 때 몰래 비샌드박스 실행으로 대체하지 않는다. |
+| 7. 오래 기다리는 pre-step UI | **확인: 실행 상태 / 미확인: 장기 대기 UI** | 리스너 안 `agent.status`는 `running`. 지정 격리 서버 실행·HTTP 응답까지만 확인(토큰 없는 요청 401, 정상 인증 경계). 실제 장시간 지연을 걸고 입력창/중지 버튼/상태 문구를 관찰하지 않았다. | `running`을 특정 UI 문구·disabled 상태의 증거로 사용하지 않는다. S7에서 실제 대기 화면 확인 필요. |
+| 8. compaction short-circuit (기록만) | **확인: 설치 stream 경계 / 미확인: 압축 종단간** | Host Inspect `llm/stream`은 waterfall, `purpose`에 `compaction` 있음. 설치 `ctx.llm.stream({purpose:'compaction', ...})`에 next 없이 자체 chunk를 yield하여 `CACHED` 수신. | 가짜 요청 + 최소 text-delta 경계 시험이다. 실제 summarizer에 유효한 전체 청크 시퀀스/범위 일치/취소/usage까지 검증한 것은 아니다. R5 후속 유지. |
+
+**실행·정리 기록:** `node studio/dev.mjs --skip-test --port 19391`를 관리형 background job으로 실행하여 Studio 타입 검사·빌드, 격리 프로필 tarball 설치 및 `dsh web: http://127.0.0.1:19391/` 시작을 확인했다. 이 서버에는 시험 리스너를 배포하지 않았다. 별도 실험은 `/tmp/pixie-s1.KxmaAw/probe.cjs`에서 `ELECTRON_RUN_AS_NODE=1 '/Applications/DeepSeek Harness.app/Contents/MacOS/DeepSeek Harness' <probe>`로 실행했으며, 설치 `app.asar/dsh/package.json` 기준 `createRequire`로 모듈을 해석했다(workspace 코어 아님). 최종 실험 exit 0, 결과는 위 표에 옮겼다. 초기 실험의 proxy 직렬화·존재하지 않는 Context dispose/stop·도구 output 선언 누락 오류는 수정 후 재실행했으며 실패 실행을 통과 증거로 쓰지 않았다. 실험 스크립트·로그는 삭제했으며 보존 증거는 이 표다. background job 종료 결과 `killed`를 수집했고 `lsof -nP -iTCP:19391 -sTCP:LISTEN`에 listener가 없음을 확인했다. 임시 디렉터리의 realpath를 확인한 뒤 해당 디렉터리만 삭제했다. `git diff --check` 통과. 기존 격리 프로필과 지정 dev 명령이 생성한 빌드/패키지는 보존했다. 이 작업자는 Studio 소스/테스트와 DSH 본체를 수정하거나 커밋하지 않았다(최종 status의 Studio 코드 변경은 병행 S2 작업자 소유).
+
 ### S2 — 게이트 계약과 파이프라인 실행기
 
 - 선행: S1.
-- 책임: `GateDefinition`·`StageDefinition`·`StageResult` 계약과 정의 검증(단계 1–5개, 지점별 허용 역할, 프롬프트 변수), 단계 실행기 포트(`StageRunner`: command·converse 구현, judge 자리), 훅 계약(stdin 생성, exit code·stdout 해석, 출력 상한), start/end 게이트 훅, `forward` 처리, 순차 파이프라인 실행기, check JSON 엄격 검증, 단계 타임아웃·취소, `onError` 처리. #25 Pixie 호출 경로에 타임아웃을 추가한다.
+- 책임: `GateDefinition`·`StageDefinition`·`StageResult` 계약과 정의 검증(단계 1–5개, 지점별 허용 역할, 프롬프트 변수), 단계 실행기 포트(`StageRunner`: command·converse 구현, judge 자리), 훅 계약(stdin 생성, exit code·stdout 해석, 출력 상한), start/end 게이트 훅, `forward` 처리, 순차 파이프라인 실행기, check JSON 엄격 검증, 단계 타임아웃·취소, `onError` 처리. 게이트 단계의 모델 호출은 필수 `stageTimeoutMs`로 제한한다. #25 Pixie 런타임에는 선택 `timeoutMs` 포트만 추가하며 `/pixie` 기본 동작(타임아웃 없음, 취소 가능)은 유지한다. service 생성 경로에는 연결하지 않는다.
 - 수용: 자막 번역 예시(명령 → check → note → append)를 가짜 shell·llm으로 실행해 단계별 결과와 forward 결과가 맞는다. exit 0/2/기타/타임아웃, 잘못된 JSON, 역할에 맞지 않는 verdict, start 훅 skip·fail이 기대대로 처리된다. 1개·3개·5개 단계 파이프라인을 가짜 llm으로 실행해 pass/revise/fail/note와 fail 즉시 중단, 오류·타임아웃·취소 결과가 기대대로 나온다. 6개 단계와 judge 단계는 저장 시 거부된다. 가짜 `StageRunner`로 judge 자리에 다른 실행기를 넣어도 파이프라인 코드가 바뀌지 않음을 테스트한다.
 - 검증: Node 단위 테스트.
 
