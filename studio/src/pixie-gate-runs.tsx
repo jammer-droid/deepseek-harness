@@ -20,13 +20,6 @@ export function gateRunStatus(run: GateRun): GateTextKey {
 export function GateRunsPanel({ actions, locale }: { actions: GateRunActions; locale: string }) {
   const t = (key: GateTextKey) => gateText(locale, key);
   const [runs, setRuns] = React.useState<GateRun[]>([]);
-  const [definitions, setDefinitions] = React.useState<GateDefinition[]>([]);
-  React.useEffect(() => {
-    let active = true;
-    setDefinitions([]);
-    void actions.gateDefinitions?.().then(entries => { if (active) setDefinitions(entries.map(entry => entry.definition)); }, () => { /* Historical runs remain readable by id without definitions. */ });
-    return () => { active = false; };
-  }, [actions]);
   const [openId, setOpenId] = React.useState<string>();
   const [error, setError] = React.useState('');
   const [busy, setBusy] = React.useState(false);
@@ -98,7 +91,7 @@ export function GateRunsPanel({ actions, locale }: { actions: GateRunActions; lo
             <Button small disabled={busy} onClick={() => { void resolve(shown, 'dismissed'); }}>{t('dismissed')}</Button>
           </div></>}
         </section>}
-        {shown.result ? <GateResultDetails result={shown.result} definition={definitions.find(definition => definition.id === shown.gateId)} locale={locale} /> : <p className="studio-pixie-answer">{shown.original}</p>}
+        {shown.result ? <GateResultDetails result={shown.result} locale={locale} /> : <p className="studio-pixie-answer">{shown.original}</p>}
       </div>}
     </div>
   </div>;

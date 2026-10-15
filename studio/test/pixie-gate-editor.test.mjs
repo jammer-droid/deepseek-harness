@@ -94,6 +94,9 @@ test('save transitions through saving; failure preserves draft and retry becomes
   await act(async () => reject(new Error('disk failure')));
   assert.match(host.querySelector('[role=alert]').textContent, /Save failed.*disk failure/);
   assert.equal(input(host, 'Name').value, 'Edited');
+  await click(button(host.querySelector('[role=alert]'), 'Close'));
+  assert.equal(host.querySelector('[role=alert]'), null);
+  assert.equal(input(host, 'Name').value, 'Edited');
   await click(button(host, 'Save')); await act(async () => resolve());
   assert.equal(calls, 2); assert.equal(button(host, 'Saved').disabled, true);
 });

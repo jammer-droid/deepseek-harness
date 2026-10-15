@@ -78,7 +78,7 @@ export function GateEditor({ actions, locale }: { actions: GateEditorActions; lo
   const add = (copy = false) => { const item = copy && entry ? structuredClone(entry) : makeGate(t('title')); if (copy) { item.definition.id = crypto.randomUUID(); item.definition.name += ` (${t('duplicate')})`; item.definition.enabled = false; } setEntries(old => [...old!, item]); setSelected(item.definition.id); setProblem(undefined); };
   return <div className="studio-page-stack">
     <PageHead title={t('title')} description={t('description')} actions={entries && <Button primary disabled={saving || !dirty} onClick={() => void save()}>{saving ? t('saving') : dirty ? t('save') : t('saved')}</Button>} />
-    {error && <Notice action={!entries ? <Button onClick={() => void load()}>{t('retry')}</Button> : undefined}>{error}</Notice>}
+    {error && <Notice action={<>{!entries && <Button onClick={() => void load()}>{t('retry')}</Button>}<Button onClick={() => setError('')}>{t('close')}</Button></>}>{error}</Notice>}
     {notice && <Notice>{notice}</Notice>}
     {problem?.field === '' && <Notice>{t(problem.key)}</Notice>}
     {!entries && !error && <p role="status">{t('loading')}</p>}

@@ -1,4 +1,17 @@
 const messages = {
+  validation_questions: ['질문을 하나 이상 추가하세요', 'Add at least one question', '请至少添加一个问题'],
+  validation_questionId: ['질문 ID를 확인하세요', 'Check question ID', '请检查问题 ID'],
+  validation_options: ['옵션 문구가 있는 선택지를 두 개 이상 입력하세요', 'Choice needs at least two options with descriptions', '请输入至少两个非空选项描述'],
+  validation_levels: ['점수 단계를 2–10개 입력하세요', 'Score needs 2–10 levels', '请输入 2–10 个评分等级'],
+  validation_question: ['질문 내용을 입력하세요', 'Enter question text', '请输入问题内容'],
+  validation_criteria: ['참·거짓 기준을 확인하세요', 'Check criteria', '请检查真假标准'],
+  validation_questionType: ['질문 유형을 확인하세요', 'Check question type', '请检查问题类型'],
+  validation_conditions: ['통과 조건을 하나 이상 설정하세요', 'Set nonempty conditions and all/any mode', '请设置至少一个通过条件及模式'],
+  validation_unknownQuestion: ['조건이 참조하는 질문을 확인하세요', 'Condition references unknown question', '请检查条件引用的问题'],
+  validation_conditionType: ['조건과 질문의 유형이 같아야 합니다', 'Condition type must match question', '条件与问题类型必须一致'],
+  validation_allowed: ['허용 옵션을 현재 선택지에서 선택하세요', 'Condition needs known allowed choices', '请从现有选项中选择允许的选项'],
+  validation_range: ['기준값이 허용 범위를 벗어났습니다', 'Condition threshold out of range', '阈值超出允许范围'],
+
   judge: ['판정', 'Judge', '判定'],
   fixedRole: ['판정 단계는 통과/실패만 결정합니다', 'Judge stages only decide pass or fail.', '判定阶段仅决定通过或失败'],
   defaultModel: ['판정 기본 모델', 'Default judge model', '默认判定模型'],
@@ -20,3 +33,8 @@ const messages = {
 } as const;
 export type JudgeTextKey = keyof typeof messages;
 export function judgeText(locale: string, key: JudgeTextKey): string { return messages[key][locale.startsWith('ko') ? 0 : locale.startsWith('zh') ? 2 : 1]; }
+
+export function judgeValidationText(locale: string, code: string): string {
+  const key = `validation_${code}`;
+  return judgeText(locale, key in messages ? key as JudgeTextKey : 'invalid');
+}

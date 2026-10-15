@@ -25,6 +25,28 @@ async function editor(t) {
   const host = await render(t, GateEditor, { actions: { read: async () => [{ definition: definition(), presetIds: [] }], presets: async () => [], models: async () => ({ groups: [] }), save: async entries => saves.push(structuredClone(entries)), trial: request => { trials.push(request); return { result: Promise.resolve({ result: { verdict: 'pass', original: request.text, subject: request.text, notes: [], stages: {}, records: [], hooks: {}, forward: { kind: 'original', text: request.text } }, durations: {}, skipped: [] }), cancel() {} }; } } });
   await change(input(host, 'Kind'), 'judge'); return { host, saves, trials };
 }
+test('judge validation notices localize ordinary invalid drafts in ko en zh', async t => {
+  const { GateJudgeEditor } = await import('../src/pixie-gate-judge-editor.tsx');
+  for (const [locale, expected] of [['ko', ['옵션', '질문', '범위']], ['en', ['options', 'question', 'range']], ['zh', ['选项', '问题', '范围']]]) {
+    const cases = [
+      { questions: { q: { type: 'choice', options: { a: '', b: 'B' } } }, pass: { mode: 'all', conditions: [{ question: 'q', type: 'choice', allowed: ['a'] }] } },
+      { questions: { q: { type: 'noul', question: 'Q' } }, pass: { mode: 'all', conditions: [{ question: 'missing', type: 'noul', threshold: 0.5 }] } },
+      { questions: { q: { type: 'noul', question: 'Q' } }, pass: { mode: 'all', conditions: [{ question: 'q', type: 'noul', threshold: 2 }] } },
+    ];
+    const duplicateStage = { id: 'judge', kind: 'judge', questions: { q: { type: 'noul', question: 'Q' }, other: { type: 'noul', question: 'Other' } }, pass: { mode: 'all', conditions: [{ question: 'q', type: 'noul', threshold: 0.5 }] } };
+    const duplicateHost = await render(t, GateJudgeEditor, { stage: duplicateStage, definition: { ...definition(), stages: [duplicateStage] }, index: 0, onChange() {}, locale });
+    await change(duplicateHost.querySelector('[data-judge-question] input'), 'other');
+    assert.match(duplicateHost.querySelector('[role=alert]').textContent, locale === 'ko' ? /고유/ : locale === 'zh' ? /唯一/ : /unique/);
+    for (const [i, value] of cases.entries()) {
+      const stage = { id: 'judge', kind: 'judge', ...value };
+      const host = await render(t, GateJudgeEditor, { stage, definition: { ...definition(), stages: [stage] }, index: 0, onChange() {}, locale });
+      const notices = [...host.querySelectorAll('[role=alert]')].map(n => n.textContent).join(' ');
+      assert.ok(notices.includes(expected[i]), notices);
+      if (locale !== 'en') assert.doesNotMatch(notices, /Judge|Choice|needs|unknown|out of range/);
+    }
+  }
+});
+
 test('judge creation hides role, edits noul and submits judge draft in trial payload', async t => {
   const { host, saves, trials } = await editor(t);
   assert.equal(input(host, 'Role'), null); assert.match(host.textContent, /only decide pass or fail/);
@@ -38,9 +60,11 @@ test('judge creation hides role, edits noul and submits judge draft in trial pay
 test('choice edits options and allows multi-select while deleted options keep invalid conditions', async t => {
   const { host, saves } = await editor(t);
   await change(input(host, 'Question type'), 'choice');
+  for (const el of host.querySelectorAll('[aria-label="Option label"]')) await change(el, 'Option');
   assert.match(host.querySelector('[data-judge-condition]').textContent, /type must match/);
   await change(input(host, 'Select question'), 'question1');
   await change(input(host, 'Option label'), 'Approved'); await click(button(host, 'Add option'));
+  await change([...host.querySelectorAll('[aria-label="Option label"]')].at(-1), 'Other');
   const boxes = input(host, 'Allowed options').querySelectorAll('input'); await click(boxes[1]);
   await click(button(host, 'Save')); assert.deepEqual(saves[0][0].definition.stages[0].pass.conditions[0].allowed, ['yes', 'no']);
   await click(button(host.querySelector('[data-judge-option="0"]'), 'Delete'));
@@ -62,11 +86,13 @@ test('score levels enforce 2–10 and removed questions remain as broken conditi
   await click(button(host, 'Add condition')); assert.equal(host.querySelectorAll('[data-judge-condition]').length, 2);
   await click(button(host.querySelector('[data-judge-condition="0"]'), 'Delete')); await click(button(host, 'Save')); assert.equal(saves.length, 2);
 });
-test('judge answer summary uses definition labels, falls back to ids and keeps failure reason', async t => {
+test('judge answer summary uses recorded labels, falls back to ids and keeps failure reason', async t => {
   const stage = { ...makeJudgeStage('first'), questions: { c: { type: 'choice', options: { yes: 'Approved', no: 'Rejected' } }, s: { type: 'score', levels: ['Low', 'High'] }, n: { type: 'noul', question: 'Safe?' } } };
   const result = { verdict: 'fail', original: 'a', subject: 'a', notes: [], records: [], hooks: {}, forward: { kind: 'none' }, stages: { first: { verdict: 'fail', reason: 'n: noul must be >= 0.8', data: { answers: { c: { type: 'choice', choice: 'yes', probabilities: { yes: 0.9, no: 0.1 }, confidence: 0.8 }, s: { type: 'score', score: 1, probabilities: [0, 1], confidence: 1 }, n: { type: 'noul', noul: 0.2 } } } } } };
+  result.stages.first.data.questions = stage.questions;
   const host = await render(t, GateResultDetails, { result, definition: { ...definition(), stages: [stage] } });
-  assert.match(host.textContent, /Approved · Probability: 90% · Confidence: 80%/); assert.match(host.textContent, /High · Confidence: 100%/); assert.match(host.textContent, /n: 0.2/); assert.match(host.textContent, /n: noul must be >= 0.8/);
+  assert.match(host.textContent, /Approved · Probability: 90% · Confidence: 80%/); assert.match(host.textContent, /High · Confidence: 100%/); assert.match(host.textContent, /Safe\?: 0.2/); assert.match(host.textContent, /n: noul must be >= 0.8/);
+  delete result.stages.first.data.questions;
   const fallback = await render(t, GateResultDetails, { result }); assert.match(fallback.textContent, /c: yes/); assert.match(fallback.textContent, /s: 1/);
 });
 test('judge settings legacy fields, save states, model fallback and reset', async t => {
@@ -84,9 +110,11 @@ test('judge settings legacy fields, save states, model fallback and reset', asyn
 test('structured failures localize all types and fall back to ids without definitions', async t => {
   const stage = { ...makeJudgeStage('first'), questions: { n: { type: 'noul', question: '안전한가?' }, s: { type: 'score', levels: ['미흡', '충분'] }, c: { type: 'choice', options: { no: '거부', yes: '승인' } } } };
   const result = { verdict: 'fail', original: 'a', subject: 'a', notes: [], records: [], hooks: {}, forward: { kind: 'none' }, stages: { first: { verdict: 'fail', reason: 'legacy raw reason', data: { failedConditions: [{ question: 'n', type: 'noul', threshold: 0.5, actual: 0.2 }, { question: 's', type: 'score', min: 1, actual: 0 }, { question: 'c', type: 'choice', allowed: ['yes'], actual: 'no' }] } } } };
+  result.stages.first.data.questions = stage.questions;
   const host = await render(t, GateResultDetails, { locale: 'ko', result, definition: { ...definition(), stages: [stage] } });
   assert.match(host.textContent, /질문 "안전한가\?": 예 확률 0.2 < 기준 0.5/);
   assert.match(host.textContent, /점수 미흡 < 최소 충분/); assert.match(host.textContent, /선택 거부이 허용 옵션 아님/); assert.doesNotMatch(host.textContent, /legacy raw reason/);
+  delete result.stages.first.data.questions;
   const fallback = await render(t, GateResultDetails, { result });
   assert.match(fallback.textContent, /Question "n": yes probability 0.2 < threshold 0.5/); assert.match(fallback.textContent, /score 0 < minimum 1/); assert.match(fallback.textContent, /selection no is not allowed/);
   const chinese = await render(t, GateResultDetails, { result, locale: 'zh' }); assert.match(chinese.textContent, /阈值 0.5/);

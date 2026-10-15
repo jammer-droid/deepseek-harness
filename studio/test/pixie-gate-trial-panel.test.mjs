@@ -35,6 +35,17 @@ test('editor trial submits unsaved draft and displays result and skipped stage',
   assert.equal(calls[0].executeCommands, false); assert.equal(calls[0].sessionId, undefined);
   assert.match(host.textContent, /trial output/); assert.match(host.querySelector('[data-gate-stage=check]').textContent, /Skipped/);
 });
+test('completed trial retains submitted enabled state and recorded labels after draft edits', async t => {
+  const draft = { ...definition(), enabled: false };
+  const trial = () => { const value = response(); value.result.stages.check = { verdict: 'pass', data: { questions: { n: { type: 'noul', question: 'Recorded sample' } }, answers: { n: { type: 'noul', noul: 1 } } } }; return { result: Promise.resolve(value), cancel() {} }; };
+  const { host, root } = await setup(t, { definition: draft, trial });
+  await change(input(host, 'Sample input (required)'), 'sample'); await click(button(host, 'Run trial'));
+  draft.enabled = true; draft.name = 'Changed';
+  await act(async () => root.render(React.createElement(GateTrialPanel, { definition: draft, trial, locale: 'en' })));
+  assert.match(host.textContent, /This gate is off/);
+  assert.match(host.textContent, /Recorded sample/);
+});
+
 test('settings trial disables commands without session policy context', async t => {
   const { host } = await setup(t);
   assert.equal(input(host, 'Execute commands').matches(':disabled'), true);

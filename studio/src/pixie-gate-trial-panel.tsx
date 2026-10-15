@@ -28,7 +28,7 @@ export function GateTrialPanel({ definition, trial, locale, sessionId }: {
   const [running, setRunning] = React.useState(false);
   const [cancelled, setCancelled] = React.useState(false);
   const [error, setError] = React.useState('');
-  const [result, setResult] = React.useState<GateTrialResponse>();
+  const [result, setResult] = React.useState<GateTrialResponse & { definition: GateDefinition }>();
   const active = React.useRef<GateTrialHandle>();
   React.useEffect(() => () => { const handle = active.current; active.current = undefined; handle?.cancel(); }, [trial, sessionId]);
   const tool = definition.point === 'tool-before' || definition.point === 'tool-after';
@@ -42,13 +42,14 @@ export function GateTrialPanel({ definition, trial, locale, sessionId }: {
     let handle: GateTrialHandle | undefined;
     try {
       validateGateDefinition(definition);
-      handle = trial({ definition: structuredClone(definition), text,
+      const submitted = structuredClone(definition);
+      handle = trial({ definition: submitted, text,
         ...(tool ? { toolName } : {}), ...(hooksContext ? { hooksContext } : {}),
         executeCommands: commands && !!sessionId, ...(commands && sessionId ? { sessionId } : {}),
       });
       active.current = handle; setRunning(true);
       const response = await handle.result;
-      if (active.current === handle) setResult(response);
+      if (active.current === handle) setResult({ ...response, definition: submitted });
     } catch (reason) {
       if (!handle || active.current === handle) setError(reason instanceof Error ? reason.message : String(reason));
     } finally {
@@ -66,6 +67,6 @@ export function GateTrialPanel({ definition, trial, locale, sessionId }: {
     {running && <p role="status" className="studio-muted">{t('trialRunning')}</p>}
     {cancelled && <p role="status" className="studio-muted">{t('trialCancelled')}</p>}
     {error && <Notice>{t('trialError')}: {error}</Notice>}
-    {result && <>{!definition.enabled && <Notice tone="info">{t('disabledTrial')}</Notice>}<GateResultDetails {...result} definition={definition} locale={locale} /></>}
+    {result && <>{!result.definition.enabled && <Notice tone="info">{t('disabledTrial')}</Notice>}<GateResultDetails {...result} definition={result.definition} locale={locale} /></>}
   </section>;
 }

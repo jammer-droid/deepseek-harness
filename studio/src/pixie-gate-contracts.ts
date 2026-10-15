@@ -1,17 +1,17 @@
-import { validateJudgeRequest, type JudgeAnswer, type JudgeQuestion, type PixieModel, type PixieUsage } from './pixie-contracts.ts';
+import { JudgeValidationError, validateJudgeRequest, type JudgeAnswer, type JudgeQuestion, type PixieModel, type PixieUsage } from './pixie-contracts.ts';
 
 export function validateJudgePassRule(value: unknown, questions: Record<string, JudgeQuestion>): asserts value is JudgePassRule {
-  if (!object(value) || !['all', 'any'].includes(value.mode as string) || !Array.isArray(value.conditions) || !value.conditions.length) throw new Error('Judge pass needs all/any and nonempty conditions');
+  if (!object(value) || !['all', 'any'].includes(value.mode as string) || !Array.isArray(value.conditions) || !value.conditions.length) throw new JudgeValidationError('conditions', 'Judge pass needs all/any and nonempty conditions');
   for (const condition of value.conditions) {
-    if (!object(condition) || typeof condition.question !== 'string' || !Object.hasOwn(questions, condition.question)) throw new Error('Judge condition references unknown question');
+    if (!object(condition) || typeof condition.question !== 'string' || !Object.hasOwn(questions, condition.question)) throw new JudgeValidationError('unknownQuestion', 'Judge condition references unknown question');
     const question = questions[condition.question]!;
-    if (condition.type !== question.type) throw new Error('Judge condition type must match question');
+    if (condition.type !== question.type) throw new JudgeValidationError('conditionType', 'Judge condition type must match question');
     if (condition.type === 'choice') {
-      if (question.type !== 'choice' || !Array.isArray(condition.allowed) || !condition.allowed.length || condition.allowed.some(key => typeof key !== 'string' || !Object.hasOwn(question.options, key))) throw new Error('Judge condition needs known allowed choices');
+      if (question.type !== 'choice' || !Array.isArray(condition.allowed) || !condition.allowed.length || condition.allowed.some(key => typeof key !== 'string' || !Object.hasOwn(question.options, key))) throw new JudgeValidationError('allowed', 'Judge condition needs known allowed choices');
     } else {
       const number = condition.type === 'noul' ? condition.threshold : condition.min;
       const max = question.type === 'score' ? question.levels.length - 1 : 1;
-      if (typeof number !== 'number' || !Number.isFinite(number) || number < 0 || number > max) throw new Error('Judge condition threshold out of range');
+      if (typeof number !== 'number' || !Number.isFinite(number) || number < 0 || number > max) throw new JudgeValidationError('range', 'Judge condition threshold out of range');
     }
   }
 }

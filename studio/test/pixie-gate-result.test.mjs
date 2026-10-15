@@ -9,6 +9,23 @@ const dom = new JSDOM('<!doctype html><body></body>');
 globalThis.window = dom.window;
 globalThis.document = dom.window.document;
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+test('recorded judge labels ignore edited definitions and legacy runs use ids', async () => {
+  const questions = { c: { type: 'choice', options: { yes: 'Recorded option' } }, s: { type: 'score', levels: ['Recorded low', 'Recorded high'] }, n: { type: 'noul', question: 'Rendered sample question' } };
+  const definition = { stages: [{ id: 'judge', kind: 'judge', questions: { c: { type: 'choice', options: { yes: 'Changed option' } }, s: { type: 'score', levels: ['Changed low', 'Changed high'] }, n: { type: 'noul', question: '{{subject}}' } } }] };
+  const data = { questions, answers: { c: { type: 'choice', choice: 'yes', probabilities: { yes: 1 }, confidence: 1 }, s: { type: 'score', score: 0, confidence: 1 }, n: { type: 'noul', noul: 0.2 } }, failedConditions: [{ question: 'n', type: 'noul', actual: 0.2, threshold: 0.5 }, { question: 's', type: 'score', actual: 0, min: 1 }] };
+  const result = { ...base(), stages: { judge: { verdict: 'fail', data } } };
+  await render({ result, definition }, host => {
+    for (const label of ['Recorded option', 'Recorded low', 'Recorded high', 'Rendered sample question']) assert.ok(host.textContent.includes(label), label);
+    assert.doesNotMatch(host.textContent, /Changed|\{\{subject\}\}/);
+  });
+  delete data.questions;
+  await render({ result, definition }, host => {
+    assert.doesNotMatch(host.textContent, /Recorded|Changed|\{\{subject\}\}/);
+    assert.match(host.textContent, /c: yes/);
+    assert.match(host.textContent, /s: 0/);
+  });
+});
+
 const base = () => ({ verdict: 'pass', original: '<script>original</script>', subject: 'final', notes: [], stages: {}, records: [], forward: { kind: 'original', text: 'forwarded' }, hooks: {} });
 async function render(props, check) {
   const host = document.createElement('div'); document.body.append(host);

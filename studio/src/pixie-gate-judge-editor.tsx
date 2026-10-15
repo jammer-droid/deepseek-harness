@@ -1,8 +1,8 @@
 import React from 'react';
 import { Button, IconButton, CheckOption, Notice, SectionHead, SettingsRow } from './ui.tsx';
 import { validateGateDefinition, type GateDefinition, type JudgePassCondition, type StageDefinition } from './pixie-gate-contracts.ts';
-import type { JudgeQuestion } from './pixie-contracts.ts';
-import { judgeText, type JudgeTextKey } from './pixie-gate-judge-locale.ts';
+import { JudgeValidationError, type JudgeQuestion } from './pixie-contracts.ts';
+import { judgeValidationText, judgeText, type JudgeTextKey } from './pixie-gate-judge-locale.ts';
 import { gateEditorText } from './pixie-gate-editor-locale.ts';
 
 type JudgeStage = Extract<StageDefinition, { kind: 'judge' }>;
@@ -19,7 +19,7 @@ export function GateJudgeEditor({ stage, definition, index, onChange, locale }: 
   const [duplicate, setDuplicate] = React.useState('');
   const validate = (candidate: JudgeStage) => {
     try { validateGateDefinition({ ...definition, stages: [...definition.stages.slice(0, index), candidate], forward: { kind: 'original' } }); return ''; }
-    catch (error) { return error instanceof Error ? error.message : String(error); }
+    catch (error) { return error instanceof JudgeValidationError ? judgeValidationText(locale, error.code) : t('invalid'); }
   };
   const row = (key: JudgeTextKey, control: React.ReactNode) => <SettingsRow title={t(key)}>{control}</SettingsRow>;
   const input = (key: JudgeTextKey, value: string, change: (value: string) => void) => row(key, <input aria-label={t(key)} value={value} onChange={e => change(e.target.value)} />);
