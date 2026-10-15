@@ -1,5 +1,7 @@
 /** Pixie tab body for the Trajectory right sidebar. Node-testable: no host primitives. */
 import React from 'react';
+import { GateRunsPanel, type GateRunActions } from './pixie-gate-runs.tsx';
+import { gateText } from './pixie-gate-locale.ts';
 import { Badge, Button, IconButton, Notice, Note, Segmented, StudioSurface, TabBar, TabPanel } from './ui.tsx';
 import type { JudgeRequest, JudgeResult, PixieAskFrame, PixieContextMode, PixieModel, PixieSessionRecord, PixieSettings, PixieThread, PixieTurn, PixieUsageTotal } from './pixie-contracts.ts';
 import { pixieError, pixieText, type PixieTextKey } from './pixie-locale.ts';
@@ -18,7 +20,7 @@ export interface PixieViewValue {
 export interface PixieModelCatalog { groups?: readonly { id: string; name: string; models: readonly { id: string; name: string }[] }[] }
 
 /** Session-bound Pixie operations the tab uses. */
-export interface PixieTabActions {
+export interface PixieTabActions extends GateRunActions {
   view(): Promise<PixieViewValue>;
   follow(listener: (frame: PixieAskFrame) => void): () => void;
   ask(question: string, threadId?: string): Promise<{ threadId: string; turnId: string }>;
@@ -115,7 +117,7 @@ export function PixieTab({ actions, locale }: { actions: PixieTabActions; locale
   const [actionError, setActionError] = React.useState('');
   const [question, setQuestion] = React.useState('');
   const [live, setLive] = React.useState<Live>();
-  const [section, setSection] = React.useState<'chat' | 'judge'>('chat');
+  const [section, setSection] = React.useState<'chat' | 'judge' | 'gates'>('chat');
   // The thread shown in detail; undefined shows the overview on narrow panes and the /pixie target on wide ones.
   const [openId, setOpenId] = React.useState<string>();
   const [newMode, setNewMode] = React.useState<PixieContextMode | ''>('');
@@ -254,9 +256,9 @@ export function PixieTab({ actions, locale }: { actions: PixieTabActions; locale
   </div>;
 
   return <StudioSurface className="studio-pixie">
-    <TabBar label={t('title')} value={section} onChange={setSection} items={[{ value: 'chat', label: t('chat') }, { value: 'judge', label: t('judge') }]} />
+    <TabBar label={t('title')} value={section} onChange={setSection} items={[{ value: 'chat', label: t('chat') }, { value: 'judge', label: t('judge') }, { value: 'gates', label: gateText(locale, 'gates') }]} />
     <TabPanel>
-      {section === 'judge' ? (configured ? <JudgePanel actions={actions} locale={locale} /> : <Note>{t('noModel')}</Note>) : <div className="studio-pixie-chat">
+      {section === 'gates' ? <GateRunsPanel actions={actions} locale={locale} /> : section === 'judge' ? (configured ? <JudgePanel actions={actions} locale={locale} /> : <Note>{t('noModel')}</Note>) : <div className="studio-pixie-chat">
         {!configured && <Note>{t('noModel')}</Note>}
         {actionError && <p className="studio-pixie-error" role="alert">{pixieError(locale, actionError)}</p>}
         <div className="studio-pixie-threads" data-open={opened ? 'true' : 'false'}>

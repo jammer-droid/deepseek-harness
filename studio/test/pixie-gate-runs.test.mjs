@@ -1,0 +1,117 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import React, { act } from 'react';
+import { createRoot } from 'react-dom/client';
+import { JSDOM } from 'jsdom';
+import { GateRunsPanel } from '../src/pixie-gate-runs.tsx';
+import { PixieTab } from '../src/pixie-tab.tsx';
+import { studioStyles } from '../src/ui-styles.ts';
+import { followPixieStream, pixieDescriptors, mountPixie } from '../src/pixie-client.tsx';
+const dom = new JSDOM('<!doctype html><body></body>');
+globalThis.window = dom.window; globalThis.document = dom.window.document;
+globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+const run = (id, extra = {}) => ({ id, gateId: id, gateName: `Gate ${id}`, point: 'input', sessionId: 's', startedAt: 1, original: `original ${id}`, finalText: '', applied: 'none', status: 'done', usage: { inputTokens: 98765 }, ...extra });
+const pending = () => run('pending', { applied: 'rejected', rejection: { original: 'retained original', reason: 'failure reason', suggestion: 'suggested draft', status: 'pending' }, hooksInput: 'unverified' });
+const button = (host, text) => [...host.querySelectorAll('button')].find(b => b.textContent === text || b.getAttribute('aria-label') === text);
+async function setup(runs = [], extra = {}, Component = GateRunsPanel) {
+  let listener; let reads = 0; let stops = 0; const calls = [];
+  const actions = {
+    gateRuns: async () => { reads++; return { sessionId: 's', runs }; },
+    followGates: callback => { listener = callback; return () => { stops++; }; },
+    resolveGateRejection: async (...args) => { calls.push(args); },
+    fillDraft: text => calls.push(['draft', text]), ...extra,
+  };
+  const host = document.createElement('div'); document.body.append(host); const root = createRoot(host);
+  await act(async () => root.render(React.createElement(Component, { actions, locale: 'en' })));
+  return { host, calls, emit: async frame => act(async () => listener(frame)), reads: () => reads, stops: () => stops, close: async () => act(async () => root.unmount()) };
+}
+test('gate tab opens empty list without a configured model', async () => {
+  const f = await setup([], { view: async () => ({ record: { threads: [] }, settings: {}, frames: [] }), follow: () => () => {} }, PixieTab);
+  await act(async () => button(f.host, 'Gates').click());
+  assert.match(f.host.textContent, /No gate runs yet/); await f.close();
+});
+test('cards map every applied action and no-action lifecycle without inferring verdict', async () => {
+  const labels = { pass: 'Passed', replaced: 'Replaced', appended: 'Appended', rejected: 'Rejected', steered: 'Steered', blocked: 'Blocked', denied: 'Blocked', none: 'None' };
+  const f = await setup([...Object.keys(labels).map(applied => run(applied, { applied })), ...['running', 'error', 'cancelled'].map(status => run(status, { status }))]);
+  const cards = [...f.host.querySelectorAll('.studio-pixie-thread')];
+  for (const [id, label] of Object.entries({ ...labels, running: 'Running', error: 'Error', cancelled: 'Cancelled' })) assert.match(cards.find(c => c.textContent.includes(`Gate ${id}`)).querySelector('.studio-badge').textContent, new RegExp(label));
+  assert.doesNotMatch(f.host.textContent, /98765/); await f.close();
+});
+test('pending sorts first, fills suggestion without resolving, and explicitly marks sent', async () => {
+  const f = await setup([run('newer', { startedAt: 100 }), pending()]);
+  assert.match(f.host.querySelector('.studio-pixie-thread').textContent, /Gate pending.*Pending rejection/);
+  assert.match(f.host.textContent, /Hook input unverified/);
+  assert.match(f.host.querySelector('.studio-pixie-detail').textContent, /retained original.*failure reason.*suggested draft/);
+  await act(async () => button(f.host, 'Edit and send').click());
+  assert.deepEqual(f.calls, [['draft', 'suggested draft']]);
+  assert.match(f.host.textContent, /does not send/);
+  await act(async () => button(f.host, 'Mark as sent').click());
+  assert.deepEqual(f.calls[1], ['pending', 'resent']);
+  assert.equal(button(f.host, 'Mark as sent'), undefined); await f.close();
+});
+test('original fallback, dismiss arguments and failed resolution keep pending actions', async () => {
+  const p = pending(); delete p.rejection.suggestion;
+  const f = await setup([p]);
+  await act(async () => button(f.host, 'Edit and send').click());
+  await act(async () => button(f.host, 'Dismiss').click());
+  assert.deepEqual(f.calls, [['draft', 'retained original'], ['pending', 'dismissed']]); await f.close();
+  const failed = await setup([pending()], { resolveGateRejection: async () => { throw Error('offline'); }, fillDraft: () => { throw Error('missing'); } });
+  await act(async () => button(failed.host, 'Dismiss').click());
+  assert.match(failed.host.querySelector('[role=alert]').textContent, /offline/);
+  await act(async () => button(failed.host, 'Edit and send').click());
+  assert.match(failed.host.textContent, /Session composer unavailable/);
+  assert.ok(button(failed.host, 'Mark as sent')); await failed.close();
+});
+test('sync rereads, run upserts, detail fields and narrow navigation reuse container CSS', async () => {
+  const f = await setup([run('turn', { point: 'turn-end', turn: 4, steerCount: 2, reason: 'cap reached', applied: 'steered' })]);
+  assert.match(f.host.textContent, /Turn: 4.*Steer count: 2/);
+  await f.emit({ type: 'sync' }); assert.equal(f.reads(), 2);
+  await f.emit({ type: 'run', run: run('tool', { point: 'tool-before', startedAt: 2, tool: { name: 'bash', callId: 'call-42' } }) });
+  const cards = f.host.querySelectorAll('.studio-pixie-thread'); assert.equal(cards.length, 2);
+  await act(async () => cards[0].click());
+  assert.equal(f.host.querySelector('[data-open]').dataset.open, 'true');
+  assert.match(f.host.querySelector('.studio-pixie-detail').textContent, /Tool: bash.*Call ID: call-42/);
+  await act(async () => button(f.host, 'All gate runs').click());
+  assert.equal(f.host.querySelector('[data-open]').dataset.open, 'false');
+  assert.match(studioStyles, /@container studio-pixie \(max-width: 560px\)/);
+  await f.close(); assert.equal(f.stops(), 1);
+});
+test('run frames win over in-flight snapshot and shared result details render', async () => {
+  let finish;
+  const f = await setup([], { gateRuns: () => new Promise(resolve => { finish = resolve; }) });
+  const result = { original: 'raw', subject: 'final subject', verdict: 'pass', notes: [], stages: {}, records: [], hooks: {}, forward: { kind: 'original', text: 'forwarded' } };
+  await f.emit({ type: 'run', run: run('race', { result, applied: 'replaced' }) });
+  await act(async () => finish({ runs: [run('race')] }));
+  assert.match(f.host.textContent, /Replaced/); assert.match(f.host.textContent, /final subject/); await f.close();
+});
+test('shared follow reconnects to sync and disposes on unmount', async () => {
+  let connects = 0; let disposed = 0; let end;
+  const frames = [];
+  const stop = followPixieStream(() => {
+    connects++;
+    const connection = connects;
+    return { dispose() { disposed++; end?.(); }, async *[Symbol.asyncIterator]() { yield { type: 'sync' }; if (connection === 1) throw Error('lost'); await new Promise(resolve => { end = resolve; }); } };
+  }, frame => frames.push(frame));
+  await new Promise(resolve => setTimeout(resolve, 1100));
+  assert.equal(connects, 2); assert.equal(frames.length, 2); stop();
+  await new Promise(resolve => setTimeout(resolve, 0)); assert.ok(disposed >= 2);
+});
+test('Remote descriptors and session-bound composer use public scopes without auto-send', async () => {
+  const descriptors = pixieDescriptors();
+  for (const name of ['gateRuns', 'followGates', 'resolveGateRejection']) assert.equal(descriptors.filter(d => d.method === name).length, 1);
+  assert.equal(descriptors.find(d => d.method === 'followGates').mode, 'stream');
+  let Body; const calls = []; const input = { setDraft: text => calls.push(['draft', text]), focus: () => calls.push(['focus']) };
+  const actx = { get: name => name === 'conversation' ? { input: { for: scope => { assert.equal(scope, actx); return input; } } } : undefined };
+  const remote = { view: async () => ({ ok: true, value: { record: { threads: [] }, settings: {}, frames: [] } }), gateRuns: async () => ({ ok: true, value: { runs: [pending()] } }), follow: () => stream(), followGates: () => stream(), resolveGateRejection: async (...args) => { calls.push(args); return { ok: true, value: true }; } };
+  function stream() { let done; return { dispose: () => done?.(), async *[Symbol.asyncIterator]() { yield { type: 'sync' }; await new Promise(r => { done = r; }); } }; }
+  const slots = { inject: (_name, callback) => callback(), register: (definition, component) => { if (definition.name === 'sidebar.right.pane.tab') Body = component; } };
+  const ctx = { get: name => name === 'sessions' ? { scope: id => { assert.equal(id, 's'); return actx; } } : remote, slots, locale: { getLocale: () => ({ active: 'en' }), subscribe: () => () => {} }, inject: (_names, callback) => callback({ slots, sidebarRightTabs: { register: () => () => {} }, sidebarRight: {}, effect: fn => fn() }) };
+  mountPixie(ctx);
+  const host = document.createElement('div'); const root = createRoot(host);
+  await act(async () => root.render(React.createElement(Body, { sessionId: 's' })));
+  await act(async () => button(host, 'Gates').click());
+  await act(async () => button(host, 'Edit and send').click());
+  assert.deepEqual(calls, [['draft', 'suggested draft'], ['focus']]);
+  await act(async () => button(host, 'Dismiss').click()); assert.deepEqual(calls[2], ['s', 'pending', 'dismissed']);
+  await act(async () => root.unmount());
+});

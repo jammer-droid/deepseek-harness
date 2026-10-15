@@ -2,6 +2,7 @@
  * The tab registers only where the right sidebar exists, so Studio still loads without it.
  */
 import React from 'react';
+import type { GateRunFrame, GateRunRecord } from './pixie-gate-contracts.ts';
 import type { GateTrialResponse } from './pixie-gate-trial-panel.tsx';
 import type { GateEntry, GateEditorActions } from './pixie-gate-editor.tsx';
 import type { StudioContext } from './contracts.js';
@@ -25,6 +26,9 @@ const descriptor = (method: string, parameters: string[], extra: Record<string, 
 
 type RemoteValue<T> = Promise<{ ok: true; value: T } | { ok: false; error: { message: string } }>;
 interface PixieRemote {
+  gateRuns(sessionId: string): RemoteValue<GateRunRecord>;
+  followGates(sessionId: string): AsyncIterable<GateRunFrame> & { dispose(): void };
+  resolveGateRejection(sessionId: string, runId: string, status: string): RemoteValue<unknown>;
   view(sessionId: string): RemoteValue<import('./pixie-tab.tsx').PixieViewValue>;
   createThread(sessionId: string, payload: string): RemoteValue<PixieThread>;
   activate(sessionId: string, threadId: string): RemoteValue<boolean>;
@@ -56,6 +60,9 @@ interface SidebarServices {
 /** Pixie Remote descriptors. The runtime accepts one contribution per package, so the shell mounts these with its own. */
 export function pixieDescriptors() {
   return [
+    descriptor('gateRuns', ['sessionId']),
+    descriptor('followGates', ['sessionId'], { mode: 'stream', cancellation: { parameter: 'signal' } }),
+    descriptor('resolveGateRejection', ['sessionId', 'runId', 'status']),
     descriptor('view', ['sessionId']),
     descriptor('createThread', ['sessionId', 'payload']),
     descriptor('activate', ['sessionId', 'threadId']),
@@ -72,6 +79,26 @@ export function pixieDescriptors() {
     descriptor('models', []),
     descriptor('judge', ['payload'], { cancellation: { parameter: 'signal' } }),
   ];
+}
+
+/** Shared #25 stream lifecycle: the Host emits sync on each new connection. */
+export function followPixieStream<T>(connect: () => AsyncIterable<T> & { dispose(): void }, listener: (frame: T) => void): () => void {
+  let stopped = false;
+  let handle: (AsyncIterable<T> & { dispose(): void }) | undefined;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  let wake: (() => void) | undefined;
+  const run = async () => {
+    while (!stopped) {
+      try {
+        handle = connect();
+        for await (const frame of handle) { if (stopped) break; listener(frame); }
+      } catch { /* carrier loss: reconnect and receive a fresh sync */ }
+      finally { handle?.dispose(); handle = undefined; }
+      if (!stopped) await new Promise<void>(resolve => { wake = resolve; timer = setTimeout(resolve, 1000); });
+    }
+  };
+  void run();
+  return () => { stopped = true; handle?.dispose(); clearTimeout(timer); wake?.(); };
 }
 
 /** Register Pixie's settings service (with the shared Studio menu footer), right-sidebar tab, and /pixie row. Call after the shell mounted {@link pixieDescriptors}. */
@@ -113,21 +140,18 @@ export function mountPixie(ctx: StudioContext, options: { navFooter?: (locale: s
 
   const tabActions = (sessionId: string): PixieTabActions => ({
     view: () => unwrap(remote().view(sessionId)),
-    follow: listener => {
-      let stopped = false;
-      let handle: (AsyncIterable<PixieAskFrame> & { dispose(): void }) | undefined;
-      const run = async () => {
-        // Reconnect after a carrier loss while the tab stays open.
-        while (!stopped) {
-          try {
-            handle = remote().follow(sessionId);
-            for await (const frame of handle) { if (stopped) break; listener(frame); }
-          } catch { /* fall through to retry */ }
-          if (!stopped) await new Promise(resolve => setTimeout(resolve, 1000));
-        }
-      };
-      void run();
-      return () => { stopped = true; handle?.dispose(); };
+    follow: listener => followPixieStream(() => remote().follow(sessionId), listener),
+    gateRuns: () => unwrap(remote().gateRuns(sessionId)),
+    followGates: listener => followPixieStream(() => remote().followGates(sessionId), listener),
+    resolveGateRejection: (runId, status) => unwrap(remote().resolveGateRejection(sessionId, runId, status)),
+    fillDraft: text => {
+      const sessions = ctx.get('sessions' as never) as unknown as { scope(id: string): { get(name: string): unknown } | undefined } | undefined;
+      const actx = sessions?.scope(sessionId);
+      const conversation = actx?.get('conversation') as { input: { for(scope: unknown): { setDraft(text: string): void; focus(): void } } } | undefined;
+      if (!actx || !conversation) throw new Error('Session composer unavailable');
+      const input = conversation.input.for(actx);
+      input.setDraft(text);
+      input.focus();
     },
     ask: (question, threadId) => unwrap(remote().ask(sessionId, JSON.stringify({ question, ...(threadId ? { threadId } : {}) }))),
     cancel: () => unwrap(remote().cancel(sessionId)),
