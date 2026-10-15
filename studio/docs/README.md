@@ -37,6 +37,8 @@
 
 ## 개선 계획
 
+- [프리셋 카탈로그 스냅샷과 DSH 기본 실행 흐름](plans/preset-catalog-snapshot-policy.md): Master 재수집, Optimized 고정 기준, 추가·제거 안내와 삭제 규칙, 동적 도구 실행을 DSH에 맡기는 후속 작업 합의. 미구현.
+
 - [UI·UX 개선 백로그](plans/ui-ux-backlog.md): 상태 구분, 오류 복구, 모델 선택, 실효 도구 표시, 편집·접근성 개선. 각 항목에 근거·우선순위·수용 조건을 기록한다.
 
 ## 검증 이력
