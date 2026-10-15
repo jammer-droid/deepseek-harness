@@ -11,6 +11,10 @@ description: "Studio 이슈별 구현 명세의 색인."
 
 이슈별 결정과 구현 단계는 이 디렉터리에 누적한다. 작성·검증·완료 절차는 [Studio 이슈 작업 절차](../design-workflow.md)를 따른다. 진행 상태는 GitHub 이슈와 각 명세를 확인한다.
 
+## 보조 모델
+
+- [#25 Pixie — 주요 컨텍스트와 분리된 보조 모델](25-pixie.md): `/pixie`·Pixie 탭으로 따로 묻기(MVP), Judge 엔진 분리와 LLM 판정 시험. S1–S5 구현, rc.2 격리 설치에서 UI·커맨드 확인(실제 모델 답변 미확인).
+
 ## 프리셋 구성 설계 기록
 
 - [#24 minimal 기반 프리셋 구성과 선택적 덮어쓰기](24-preset-composition.md): 현재 셸 기반 신규 설계. 도구·프롬프트 제공자 선택, persona 편집, scoped override, 통합 미리보기 및 독립 배포. `draft`; 첫 단계 S1은 공개 API·구성 계약 확정.

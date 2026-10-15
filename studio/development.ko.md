@@ -27,6 +27,8 @@ npm --prefix studio run pack:bundle
 - `src/ui.tsx`, `src/ui-host.tsx`, `src/ui-styles.ts`: 기존 디자인 시스템.
 - `packages/shell`: 공개 패키지. 셸 진입점과 번들 패치(`cordis.patch.yml`)를 함께 담는다.
 
+DSH는 패키지당 Remote contribution을 하나만 받는다(`$mount`를 두 번 하면 "Remote package is already registered"로 Client 활성화가 실패한다). 그래서 기능별 Remote 서술자는 기능 모듈이 내보내고(예: `pixieDescriptors()`), `src/shell.tsx`의 한 번의 `$mount`에 합친다. 셸은 서술자를 합치는 일만 하며 기능 로직은 기능 모듈에 둔다.
+
 새 기능은 `local.dsh-studio.services`에 등록한다. 슬롯의 `active` 값을 받아 비활성 화면의 부수 효과를 제어한다. 제품 문구는 ko·en를 제공하고 [디자인 시스템](docs/development/design-system.md)을 따른다.
 
 ## 패키징·배포 경계

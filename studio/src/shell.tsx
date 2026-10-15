@@ -10,6 +10,7 @@ import type { StudioContext, IconProps } from "./contracts.js";
 import { PACKAGE_NAME, STUDIO_VERSION } from './package-name.ts';
 import { createUpdateStore, type UpdateActions } from './update-store.ts';
 import { SidebarIcon, VersionFooter } from './update-indicator.tsx';
+import { mountPixie, pixieDescriptors } from './pixie-client.tsx';
 
 export const inject = ["slots", "locale", "remote"];
 const panel = "local-dsh-studio";
@@ -28,7 +29,8 @@ export async function apply(ctx: StudioContext) {
     })), ...['listPresets', 'savePreset', 'applyPreset', 'unapplyPreset', 'roleModels', 'deletePreset', 'readExtensions', 'saveExtensions'].map(method => ({
         id: `${PACKAGE_NAME}#studioCatalog/${method}`, service: 'studioCatalog', namespace: 'studioCatalog', method,
         invocation: { kind: 'direct' }, parameters: ['listPresets', 'readExtensions', 'roleModels'].includes(method) ? [] : [{ name: ['savePreset', 'saveExtensions'].includes(method) ? 'payload' : 'id', wire: ['savePreset', 'saveExtensions'].includes(method) ? 'payload' : 'id', source: 'json', codec: { mode: 'strict', typeSymbol: 'string', create: () => ({ parse: (value: unknown) => { if (typeof value !== 'string') throw new TypeError('Expected a string'); return value; } }) } }], result: { mode: 'src-json' },
-    }))] });
+    })), ...pixieDescriptors()] });
+    mountPixie(ctx);
     ctx.effect(() => ctx.locale.addLanguage({ id: 'ko', label: '한국어', fallback: 'en' }));
     const serviceListeners = new Set<() => void>();
     let services: readonly StudioServiceItem[] = [];

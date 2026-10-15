@@ -17,6 +17,7 @@ import { executionCapabilities } from '../execution-capabilities.ts';
 import { PresetStore, studioStorePath } from './preset-store.ts';
 import { MASTER_PRESET_ID, MASTER_PRESET_NAME } from '../master-preset.ts';
 import { StudioUpdater } from './studio-update.ts';
+import { PixieService } from './pixie-service.ts';
 
 
 /** Catalog reads and temporary composition previews; no Agents or model calls. */
@@ -35,6 +36,8 @@ export default class StudioCatalog extends TypertRemoteService {
     const storePath = studioStorePath(process.env, ctx.get('profileContext'));
     this.extensions = new MasterExtensions(join(dirname(storePath), 'master-extensions.json'));
     this.store = new PresetStore(ctx, storePath);
+    // Pixie is optional: it starts only where llm, sessionController, and commands exist.
+    ctx.plugin(PixieService, dirname(storePath));
     // Do not return this task from a Cordis activation effect: Loader awaits us.
     this.snapshot = new Promise<void>(resolve => { setImmediate(resolve); }).then(() => this.capture());
     // Keep failure observable to RPC callers without an unhandled rejection.
