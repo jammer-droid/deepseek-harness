@@ -6,6 +6,8 @@ import { totalUsage } from '../pixie-contracts.ts';
 import { pixieCommand } from './pixie-command.ts';
 import { LlmJudgeEngine } from './pixie-judge.ts';
 import { PixieLive } from './pixie-live.ts';
+import { PixieGateStore, type PixieGateRecorder } from './pixie-gate-store.ts';
+import type { GateRejection, GateRunFrame } from '../pixie-gate-contracts.ts';
 import { PixieRuntime, type PixieLlm } from './pixie-runtime.ts';
 import { parsePixieModel, PixieSettingsStore, PixieStore } from './pixie-store.ts';
 import type { ForkEvent } from './pixie-fork.ts';
@@ -45,9 +47,13 @@ export class PixieService extends TypertRemoteService {
   private settings: PixieSettingsStore;
   private runtime: PixieRuntime;
   private live: PixieLive;
+  private gates: PixieGateStore;
+  /** Internal producer API, intentionally not Remote. */
+  get gateRecorder(): PixieGateRecorder { return this.gates; }
   constructor(ctx: Context, dataDir: string) {
     super(ctx, 'studioPixie');
     this.store = new PixieStore(join(dataDir, 'pixie'));
+    this.gates = new PixieGateStore(join(dataDir, 'pixie'));
     this.settings = new PixieSettingsStore(join(dataDir, 'pixie-settings.json'));
     const sessions = () => ctx.get('sessionController') as unknown as SessionControllerSlice;
     this.runtime = new PixieRuntime({
@@ -70,6 +76,7 @@ export class PixieService extends TypertRemoteService {
           const listed = await sessions().list({}, lifetime.signal);
           const existing = new Set(listed.items.map(item => item.sessionId));
           await this.store.prune(async sessionId => existing.has(sessionId));
+          await this.gates.prune(async () => listed.items);
         })().catch(error => { if (!lifetime.signal.aborted) ctx.logger?.warn?.(`studio pixie: prune skipped: ${String(error)}`); });
       };
       const first = setTimeout(prune, 0);
@@ -143,6 +150,20 @@ export class PixieService extends TypertRemoteService {
         wake = undefined;
       }
     } finally { stop(); signal.removeEventListener('abort', onAbort); }
+  }
+
+  @Remote
+  async gateRuns(sessionId: string) { return this.gates.read(sessionId); }
+
+  /** Marks an already resent/dismissed card; this method does not send input. */
+  @Remote
+  async resolveGateRejection(sessionId: string, runId: string, status: Exclude<GateRejection['status'], 'pending'>) {
+    return this.gates.resolveRejection(sessionId, runId, status);
+  }
+
+  @Remote({ mode: 'stream' })
+  async *followGates(sessionId: string, signal: AbortSignal): AsyncIterable<GateRunFrame> {
+    yield* this.gates.follow(sessionId, signal);
   }
 
   @Remote

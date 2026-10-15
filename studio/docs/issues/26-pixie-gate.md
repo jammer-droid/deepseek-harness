@@ -26,7 +26,17 @@ Studio는 특정 기능(양식 검증, 번역, 검색 요약, 선압축)을 직�
 
 - **S1 부분 확인:** rc.2 설치 모듈 + 가짜 모델 수준이며 전체 통과가 아니다. 미확인 목록은 [S1 결과 표](#s1-확인-결과)를 참조한다. 실험 스크립트·로그가 삭제되어 표는 재현 가능한 첨부 증거가 아닌 작업자 기록 수준이다. 표 내용은 그대로 보존한다.
 - **S2 구현·로컬 검증 완료:** 게이트 계약·command/converse 실행기·순차 파이프라인, 내부 결과 분리 및 회귀 테스트를 구현했다. `npm --prefix studio run typecheck`, `npm --prefix studio test`(빌드 포함), `git diff --check` 통과. Studio **219개 테스트 통과**(게이트 파이프라인 39개 + Pixie 선택 타임아웃 1개 포함). 이번 보강에서 회귀 8개를 추가했다. Node deprecation 및 기존 React DOM nesting 경고는 있으나 실패는 없다. 설치 앱·실제 모델·GUI 검증을 대신하지 않는다.
-- **다음 단계 S3:** 실행 기록 저장소. S4 입력 연결, S5 턴 종료 연결, S6 도구 연결, S7 UI, S8 judge 연결, S9 독립 설치 검증은 대기한다. S1 미확인 사항은 관련 연결 단계에서 확인해야 하며 완료로 간주하지 않는다.
+- **S3 구현·로컬 검증 완료:** 공유 `GateRun` 계약, `PixieGateStore`와 내부 `PixieGateRecorder`, Remote `gateRuns`·`resolveGateRejection`·`followGates`를 구현했다. 세션별 직렬화·임시 파일 rename, 한 번만 정착·늦은 결과 폐기, 재시작 running→cancelled, 보존·prune, 거부 상태 전이, sync·진행 중 재전송, 독립 사용량을 검증했다. `npm --prefix studio run typecheck`, `npm --prefix studio test`(빌드 포함), `git diff --check` 통과: **234개 테스트 통과**(S3 회귀 15개 추가). 기존 Node deprecation·React DOM nesting 경고는 남아 있다. 생산자·DSH 이벤트·UI·실제 모델·독립 설치 검증은 이번 범위가 아니다.
+- **다음 단계 S4:** 입력 연결. S5 턴 종료 연결, S6 도구 연결, S7 UI, S8 judge 연결, S9 독립 설치 검증은 대기한다. S1 미확인 사항은 관련 연결 단계에서 확인해야 하며 완료로 간주하지 않는다.
+
+### S3 설계 확정 및 명세와 달라진 점
+
+- 저장 경로는 `<pixie root>/gates/<sessionId>.json`. 기록은 id·gateId·이름/point 스냅샷·sessionId·시각·원문·최종 텍스트·전체 GateResult·실제 적용 동작·usage·상태를 가진다. 실행 전에는 result·endedAt이 없다. 재시작 중단 기록은 #25처럼 읽을 때 cancelled로 정규화하며 알 수 없는 종료 시각을 만들지 않는다.
+- `MAX_GATE_RUNS = 200`: 최근 실행을 기본 보존한다. 오래된 것부터 삭제하되 **running 및 pending 거부는 보호**하여 미처리 원문과 진행 중 소유권을 잃지 않는다. 보호 기록만으로 200건을 넘으면 일시 초과를 허용하고 다음 저장/거부 처리 때 다시 정리한다. 이는 엄격한 상한보다 U3 원문 복구를 우선한 선택이다.
+- `applied`: `pass/replaced/appended/rejected/steered/blocked/denied/none`. 판정에서 추론하지 않고 S4–S6 호출자가 채운다. 상태는 `running/done/cancelled/error`. 거부는 원문·이유·선택 제안과 `pending/resent/dismissed`를 보존하며 `pending → resent|dismissed`만 허용한다. `resent` 변경 자체는 입력 전송이 아니다.
+- `GateResult.records[].result.usage`가 이미 converse 사용량을 노출하므로 별도 GateResult 집계 필드는 추가하지 않았다. 저장 시 records만 합산해 stages와 중복 계산하지 않는다. runner는 출력 검증 오류에도 이미 받은 usage를 보존하도록 최소 보강했다. 취소/타임아웃 뒤 늦은 결과·usage는 폐기하며 관측하지 못한 사용량은 추정하지 않는다. 기록별 합계이며 보존 한도 밖까지 누적하는 청구 장부는 아니다.
+- 삭제 추적은 #25 실제 구현처럼 시작 시·10분마다 `sessionController.list()` 대조를 사용한다. 보관 세션은 유지하고 목록 실패 시 아무것도 지우지 않는다. 진행 중 실행이 있는 삭제 세션은 정착 후 다음 prune에서 제거한다. 삭제 이벤트를 추가하지 않는다.
+- 구독은 `sync`(조회 재요청 신호) → 현재 running 실행의 `run` 프레임 → 저장 완료된 변경의 `run` 프레임이다. snapshot/구독 등록 사이 await가 없어 중복 재전송하지 않는다. 재접속 시 완료 기록은 `gateRuns` 조회로 복구한다. Remote 생산자와 화면은 아직 연결하지 않았다.
 
 ## 사용자 목표와 레시피
 
@@ -299,6 +309,7 @@ interface GateResult {
 
 - 선행: S3.
 - 책임: `agent/pre-step` 바인딩(바깥쪽 등록), source·에이전트 필터, `next()` 결과에서 일반 훅 컨텍스트 읽기, 대상 메시지 교체·append·거부, `pixie-gate/start`·`end` 이벤트, 프리셋 범위 적용.
+- 호출자 책임(S4–S6): end 훅 도중 외부 취소에도 GateResult 판정은 유지되므로 실제 동작 적용 직전에 `signal.aborted`를 확인한다.
 - 수용: 자막 번역 예시와 양식 레시피로 통과·교체·append·거부가 모두 동작하고, Claude Code 훅 브리지를 함께 켠 경우 그 컨텍스트가 `hooks.context`로 들어가며 그 reject는 그대로 유지된다. 그리고 거부된 원문이 실행 기록에 남는다. 다른 리스너의 메시지(런타임 컨텍스트 등)는 보존된다.
 - 검증: Loader 조합 테스트 + 격리 프로필 실제 모델 1회.
 

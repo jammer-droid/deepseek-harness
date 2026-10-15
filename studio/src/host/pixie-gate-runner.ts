@@ -79,6 +79,7 @@ export function parseCheckOutput(text: string): StageResult {
 export class DefaultStageRunner<Spec = GateShellRequest> implements StageRunner, GateHookRunner {
   constructor(private readonly deps: { shell: GateShell<Spec>; llm: PixieLlm; model?: PixieModel }) {}
   async run(stage: StageDefinition, context: StageContext): Promise<StageResult> {
+    let usage: StageResult['usage'];
     try {
       context.signal.throwIfAborted();
       if (stage.kind === 'command') return await this.command(stage.command, stage.role, 'stage', context);
@@ -90,7 +91,7 @@ export class DefaultStageRunner<Spec = GateShellRequest> implements StageRunner,
         system: renderGatePrompt(stage.system ?? '', context) + instructions,
         messages: [{ role: 'user', content: [{ type: 'text', text: renderGatePrompt(stage.prompt, context) }] }], signal: context.signal,
       });
-      let text = ''; let finished = false; let usage: StageResult['usage'];
+      let text = ''; let finished = false;
       for await (const chunk of untilAborted(stream, context.signal)) {
         if (chunk.type === 'text-delta' && typeof chunk.text === 'string') text += chunk.text;
         if (chunk.type === 'usage' && chunk.usage && typeof chunk.usage === 'object') {
@@ -106,7 +107,7 @@ export class DefaultStageRunner<Spec = GateShellRequest> implements StageRunner,
       }
       if (!finished) throw new Error('Gate model stream ended without a finish');
       return { ...(stage.role === 'check' ? parseCheckOutput(text) : { verdict: stage.role, text }), ...(usage ? { usage } : {}) };
-    } catch (error) { return errorResult(error); }
+    } catch (error) { return { ...errorResult(error), ...(usage ? { usage } : {}) }; }
   }
   async runHook(command: CommandSpec, event: 'start' | 'end', context: StageContext, result?: GateResult): Promise<StageResult> {
     try { return await this.command(command, 'check', event, context, result); }

@@ -58,6 +58,31 @@ export interface GateResult {
   forwardError?: StageResult;
 }
 
+/** Applied by S4–S6, never inferred from the pipeline verdict.
+ * End-hook cancellation preserves GateResult: callers must check signal before applying actions.
+ */
+export type GateApplied = 'pass' | 'replaced' | 'appended' | 'rejected' | 'steered' | 'blocked' | 'denied' | 'none';
+export type GateRunStatus = 'running' | 'done' | 'cancelled' | 'error';
+export interface GateRejection {
+  original: string;
+  reason: string;
+  suggestion?: string;
+  status: 'pending' | 'resent' | 'dismissed';
+}
+export interface GateRun {
+  id: string; gateId: string; gateName: string; point: GatePoint; sessionId: string;
+  startedAt: number; endedAt?: number;
+  original: string; finalText: string;
+  result?: GateResult;
+  applied: GateApplied;
+  /** Gate calls only, independent of ordinary Pixie and DSH session usage. */
+  usage: PixieUsage;
+  status: GateRunStatus;
+  rejection?: GateRejection;
+}
+export interface GateRunRecord { sessionId: string; runs: GateRun[] }
+export type GateRunFrame = { type: 'sync' } | { type: 'run'; run: GateRun };
+
 const object = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
 function command(value: unknown): void {
   if (!object(value) || typeof value.command !== 'string' || !value.command.trim()) throw new Error('Command needs command text');

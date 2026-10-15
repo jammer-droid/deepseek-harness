@@ -1,0 +1,158 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { mkdtemp, readFile, readdir, stat } from 'node:fs/promises';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
+import { PixieGateStore, MAX_GATE_RUNS } from '../src/host/pixie-gate-store.ts';
+import { PixieStore } from '../src/host/pixie-store.ts';
+import { totalUsage } from '../src/pixie-contracts.ts';
+import { DefaultStageRunner } from '../src/host/pixie-gate-runner.ts';
+import { runGate } from '../src/host/pixie-gate-pipeline.ts';
+
+const gate = { id: 'g', name: 'Gate snapshot', point: 'input' };
+const root = () => mkdtemp(join(tmpdir(), 'studio-gate-store-'));
+const result = () => ({ verdict: 'revise', original: 'original', subject: 'final', notes: [], stages: {}, records: [], hooks: {}, forward: { kind: 'replace', text: 'final' } });
+const done = { status: 'done', applied: 'replaced', result: result() };
+const rejected = { status: 'done', applied: 'rejected', result: result(), rejection: { reason: 'reason', suggestion: 'suggestion' } };
+
+test('gate commits replace the file atomically and leave no temporary files', async () => {
+  const dir = await root(); const store = new PixieGateStore(dir);
+  const run = await store.start('s', gate, 'original');
+  const path = join(dir, 'gates', 's.json'); const before = await stat(path);
+  const finishing = store.finish('s', run.id, done);
+  for (let i = 0; i < 20; i++) {
+    const record = JSON.parse(await readFile(path, 'utf8'));
+    assert.ok(['running', 'done'].includes(record.runs[0].status));
+  }
+  await finishing;
+  assert.notEqual((await stat(path)).ino, before.ino);
+  assert.deepEqual(await readdir(join(dir, 'gates')), ['s.json']);
+  assert.equal((await store.read('s')).runs[0].finalText, 'final');
+});
+
+test('concurrent starts and finishes serialize without lost records and snapshots are detached', async () => {
+  const store = new PixieGateStore(await root());
+  const runs = await Promise.all(Array.from({ length: 30 }, () => store.start('s', gate, 'original')));
+  runs[0].original = 'mutated';
+  await Promise.all(runs.map(run => store.finish('s', run.id, done)));
+  const record = await store.read('s');
+  assert.equal(record.runs.length, 30);
+  assert.ok(record.runs.every(run => run.status === 'done' && run.original === 'original' && run.gateName === gate.name));
+});
+
+test('first settlement wins and late answers do not overwrite cancellation', async () => {
+  const store = new PixieGateStore(await root()); const run = await store.start('s', gate, 'original');
+  assert.deepEqual(await Promise.all([
+    store.finish('s', run.id, { status: 'cancelled', applied: 'none' }), store.finish('s', run.id, done),
+  ]), [true, false]);
+  const saved = (await store.read('s')).runs[0];
+  assert.equal(saved.status, 'cancelled'); assert.equal(saved.finalText, 'original'); assert.ok(saved.endedAt);
+});
+
+test('restart reads interrupted work as cancelled and refuses late settlement', async () => {
+  const dir = await root(); const store = new PixieGateStore(dir); const run = await store.start('s', gate, 'original');
+  const restarted = new PixieGateStore(dir);
+  assert.equal((await store.read('s')).runs[0].status, 'running');
+  assert.equal((await restarted.read('s')).runs[0].status, 'cancelled');
+  assert.equal(await restarted.finish('s', run.id, done), false);
+});
+
+test('retention removes oldest eligible records but protects pending input and running work', async () => {
+  const store = new PixieGateStore(await root());
+  const pending = await store.start('s', gate, 'original'); await store.finish('s', pending.id, rejected);
+  const running = await store.start('s', gate, 'original');
+  const ids = [];
+  for (let i = 0; i < MAX_GATE_RUNS + 2; i++) {
+    const run = await store.start('s', gate, 'original'); ids.push(run.id); await store.finish('s', run.id, done);
+  }
+  const runs = (await store.read('s')).runs;
+  assert.equal(runs.length, MAX_GATE_RUNS);
+  assert.ok(runs.some(run => run.id === pending.id)); assert.ok(runs.some(run => run.id === running.id));
+  assert.ok(!runs.some(run => run.id === ids[0])); assert.equal(runs.at(-1).id, ids.at(-1));
+});
+
+test('protected records may exceed the cap until pending rejection is resolved', async () => {
+  const store = new PixieGateStore(await root());
+  const runs = await Promise.all(Array.from({ length: MAX_GATE_RUNS + 1 }, () => store.start('s', gate, 'original')));
+  await Promise.all(runs.map(run => store.finish('s', run.id, rejected)));
+  assert.equal((await store.read('s')).runs.length, MAX_GATE_RUNS + 1);
+  await store.resolveRejection('s', runs[0].id, 'dismissed');
+  assert.equal((await store.read('s')).runs.length, MAX_GATE_RUNS);
+});
+
+test('prune preserves archived and live sessions and failed listing deletes nothing', async () => {
+  const store = new PixieGateStore(await root());
+  for (const id of ['archived', 'gone', 'live']) {
+    const run = await store.start(id, gate, 'original'); if (id !== 'live') await store.finish(id, run.id, done);
+  }
+  assert.deepEqual(await store.prune(async () => { throw Error('offline'); }), []);
+  assert.equal((await store.read('gone')).runs.length, 1);
+  assert.deepEqual(await store.prune(async () => [{ sessionId: 'archived' }]), ['gone']);
+  assert.equal((await store.read('archived')).runs.length, 1); assert.equal((await store.read('live')).runs.length, 1);
+  const live = (await store.read('live')).runs[0]; await store.finish('live', live.id, done);
+  assert.deepEqual(await store.prune(async () => [{ sessionId: 'archived' }]), ['live']);
+});
+
+test('rejections preserve original, reason and suggestion; only pending to resent/dismissed is legal', async () => {
+  const store = new PixieGateStore(await root());
+  for (const status of ['resent', 'dismissed']) {
+    const run = await store.start('s', gate, 'original'); await store.finish('s', run.id, rejected);
+    await assert.rejects(store.resolveRejection('s', run.id, 'pending'), /transition/);
+    const resolved = await store.resolveRejection('s', run.id, status);
+    assert.deepEqual(resolved.rejection, { original: 'original', reason: 'reason', suggestion: 'suggestion', status });
+    await assert.rejects(store.resolveRejection('s', run.id, status), /not pending/);
+  }
+  const run = await store.start('s', gate, 'original');
+  await assert.rejects(store.finish('s', run.id, { ...rejected, applied: 'pass' }), /rejected input/);
+  await assert.rejects(store.resolveRejection('s', run.id, 'resent'), /not pending/);
+  await assert.rejects(store.finish('s', run.id, { status: 'done', applied: 'rejected' }), /requires rejection details/);
+});
+
+test('follow sync, in-flight replay and committed events have no duplicates', async () => {
+  const store = new PixieGateStore(await root()); const run = await store.start('s', gate, 'original');
+  await store.start('other', gate, 'original');
+  const abort = new AbortController(); const stream = store.follow('s', abort.signal);
+  assert.deepEqual((await stream.next()).value, { type: 'sync' });
+  await store.finish('s', run.id, rejected);
+  assert.equal((await stream.next()).value.run.status, 'running');
+  assert.equal((await stream.next()).value.run.status, 'done');
+  await store.resolveRejection('s', run.id, 'dismissed');
+  assert.equal((await stream.next()).value.run.rejection.status, 'dismissed');
+  await store.finish('s', run.id, done);
+  const waiting = stream.next(); abort.abort(); assert.equal((await waiting).done, true);
+  const reconnectAbort = new AbortController(); const reconnect = store.follow('s', reconnectAbort.signal);
+  assert.equal((await reconnect.next()).value.type, 'sync');
+  const empty = reconnect.next(); reconnectAbort.abort(); assert.equal((await empty).done, true);
+});
+
+test('gate usage sums calls once, preserving optional fields and never touching #25 usage', async () => {
+  const dir = await root(); const store = new PixieGateStore(dir); const pixie = new PixieStore(dir);
+  const thread = await pixie.createThread('s', { mode: 'fresh', model: { provider: 'p', model: 'm' } });
+  const turn = await pixie.startTurn('s', thread.id, 'question');
+  await pixie.finishTurn('s', thread.id, turn.id, { status: 'done', answer: 'answer', usage: { inputTokens: 100, outputTokens: 50 } });
+  const runner = new DefaultStageRunner({ model: { provider: 'p', model: 'm' }, shell: {}, llm: { async *stream() {
+    yield { type: 'text-delta', text: 'note' }; yield { type: 'usage', usage: { inputTokens: 2, outputTokens: 3, cacheReadTokens: 1 } }; yield { type: 'finish', reason: { kind: 'stop' } };
+  } } });
+  const definition = { ...gate, enabled: true, stages: ['a', 'b'].map(id => ({ id, kind: 'converse', role: 'note', prompt: '{{subject}}' })), limits: { stageTimeoutMs: 1000 }, forward: { kind: 'original' } };
+  const outcome = await runGate(definition, { sessionId: 's', original: 'original' }, runner, { signal: new AbortController().signal });
+  const run = await store.start('s', gate, 'original'); await store.finish('s', run.id, { ...done, result: outcome });
+  assert.deepEqual((await store.read('s')).runs[0].usage, { inputTokens: 4, outputTokens: 6, cacheReadTokens: 2 });
+  assert.equal(totalUsage(await pixie.read('s')).inputTokens, 100);
+});
+
+test('invalid converse output retains reported usage in its error result', async () => {
+  const runner = new DefaultStageRunner({ model: { provider: 'p', model: 'm' }, shell: {}, llm: { async *stream() {
+    yield { type: 'text-delta', text: 'not JSON' }; yield { type: 'usage', usage: { inputTokens: 2, outputTokens: 3 } }; yield { type: 'finish', reason: { kind: 'stop' } };
+  } } });
+  const value = await runner.run({ kind: 'converse', role: 'check', prompt: '{{subject}}' }, { subject: 'x', signal: new AbortController().signal });
+  assert.equal(value.verdict, 'error'); assert.deepEqual(value.usage, { inputTokens: 2, outputTokens: 3 });
+});
+
+test('invalid session ids are rejected at every file boundary', async () => {
+  const store = new PixieGateStore(await root());
+  for (const id of ['../escape', '', 'a/b', 'x'.repeat(201)]) {
+    await assert.rejects(store.start(id, gate, 'original'), /Invalid session id/);
+    await assert.rejects(store.read(id), /Invalid session id/);
+    await assert.rejects(store.follow(id, new AbortController().signal).next(), /Invalid session id/);
+  }
+});
