@@ -1,4 +1,8 @@
+import { gatePointText } from './pixie-gate-locale.ts';
 const messages = {
+  basic: ['기본', 'Basic', '基本'], target: ['대상', 'Target', '目标'], handling: ['결과 처리', 'Result handling', '结果处理'], hooks: ['훅', 'Hooks', '钩子'],
+  presetCount: ['프리셋 {count}개', '{count} presets', '{count} 个预设'], stageCount: ['단계 {count}개', '{count} stages', '{count} 个阶段'],
+  disabledTrial: ['이 게이트는 꺼져 있습니다. 저장된 상태로는 실제 실행에 적용되지 않습니다.', 'This gate is off. Its saved state does not apply to live runs.', '此门控已关闭。保存的状态不会应用于实际运行。'],
   trial: ['시험 실행', 'Trial run', '试运行'], trialDraft: ['저장하지 않은 현재 편집 내용으로 실행합니다. 결과는 세션에 적용하지 않습니다.', 'Run the unsaved draft without applying results to a session.', '试运行未保存的编辑内容，不将结果应用于会话。'],
   sample: ['샘플 입력 (필수)', 'Sample input (required)', '示例输入（必填）'], sampleTool: ['도구 이름', 'Tool name', '工具名称'], sampleHooks: ['일반 훅 컨텍스트 (선택)', 'Hook context (optional)', '钩子上下文（可选）'],
   executeCommands: ['명령 실행', 'Execute commands', '执行命令'], noSession: ['설정 화면에서는 세션 정책을 알 수 없어 명령 단계를 실행하지 않습니다', 'Command stages are disabled because session policy is unavailable in settings.', '设置页面无法获知会话策略，因此不执行命令阶段。'],
@@ -8,7 +12,6 @@ const messages = {
   add: ['게이트 추가', 'Add gate', '添加门控'], duplicate: ['복제', 'Duplicate', '复制'], remove: ['삭제', 'Delete', '删除'],
   name: ['이름', 'Name', '名称'], enabled: ['켜짐', 'Enabled', '启用'], point: ['지점', 'Point', '触发点'], agents: ['에이전트', 'Agents', '代理'],
   root: ['루트', 'Root', '根代理'], child: ['하위', 'Child', '子代理'], any: ['모두', 'Any', '全部'],
-  input: ['입력', 'Input', '输入'], 'tool-before': ['도구 실행 전', 'Before tool', '工具执行前'], 'tool-after': ['도구 실행 후', 'After tool', '工具执行后'], 'turn-end': ['턴 종료', 'Turn end', '轮次结束'],
   sources: ['입력 출처', 'Input sources', '输入来源'], user: ['사용자', 'User', '用户'], 'agent-message': ['에이전트 메시지', 'Agent message', '代理消息'],
   tools: ['도구 이름 (쉼표로 구분)', 'Tool names (comma separated)', '工具名称（逗号分隔）'], onError: ['오류 정책', 'Error policy', '错误策略'], pass: ['통과', 'Pass', '通过'], block: ['차단', 'Block', '阻止'],
   confirm: ['수정 확인', 'Confirm revision', '确认修改'], forward: ['전달', 'Forward', '传递'], original: ['원문', 'Original', '原文'], replace: ['교체', 'Replace', '替换'], append: ['덧붙임', 'Append', '追加'], from: ['전달할 단계', 'Forward from', '传递来源'], subject: ['최종 텍스트', 'Final text', '最终文本'],
@@ -18,5 +21,5 @@ const messages = {
   save: ['저장', 'Save', '保存'], saved: ['저장됨', 'Saved', '已保存'], saving: ['저장 중…', 'Saving…', '保存中…'], loading: ['불러오는 중…', 'Loading…', '加载中…'], retry: ['다시 시도', 'Retry', '重试'], failed: ['저장 실패 — 편집 내용은 유지됩니다.', 'Save failed — edits are preserved.', '保存失败 — 编辑内容已保留。'],
   invalid: ['설정을 확인하세요.', 'Check this setting.', '请检查此设置。'], invalidName: ['이름을 입력하세요.', 'Enter a name.', '请输入名称。'], invalidId: ['단계 ID는 고유한 영문자로 시작해야 하며 예약어를 사용할 수 없습니다.', 'Stage IDs must be unique, start with a letter, and not be reserved.', '阶段 ID 必须唯一、以字母开头且不能使用保留字。'], invalidCommand: ['명령과 양수 제한 시간을 확인하세요.', 'Check command text and positive timeout.', '请检查命令内容和正数超时。'], invalidLimits: ['제한 시간은 양수, 교정 상한은 0 이상의 정수여야 합니다.', 'Timeout must be positive; steer limit must be a nonnegative integer.', '超时必须为正数，引导上限必须为非负整数。'], invalidPrompt: ['변수는 기본 변수 또는 앞 단계 ID만 참조할 수 있습니다.', 'Variables may reference only built-ins or preceding stage IDs.', '变量只能引用内置变量或前序阶段 ID。'], invalidForward: ['현재 단계에 해당하는 전달 대상을 선택하세요.', 'Select forwarding sources from current stages.', '请选择当前阶段中的传递来源。'], empty: ['게이트가 없습니다.', 'No gates yet.', '暂无门控。'],
 } as const;
-export type GateEditorKey = keyof typeof messages;
-export function gateEditorText(locale: string, key: GateEditorKey): string { return messages[key][locale.startsWith('ko') ? 0 : locale.startsWith('zh') ? 2 : 1]; }
+export type GateEditorKey = keyof typeof messages | Parameters<typeof gatePointText>[1];
+export function gateEditorText(locale: string, key: GateEditorKey): string { if (key === 'input' || key === 'tool-before' || key === 'tool-after' || key === 'turn-end') return gatePointText(locale, key); return messages[key][locale.startsWith('ko') ? 0 : locale.startsWith('zh') ? 2 : 1]; }

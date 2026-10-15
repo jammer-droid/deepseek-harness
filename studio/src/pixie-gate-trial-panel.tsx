@@ -61,12 +61,11 @@ export function GateTrialPanel({ definition, trial, locale, sessionId }: {
     <SettingsRow title={t('sample')}><textarea aria-label={t('sample')} required value={text} disabled={running} onChange={e => setText(e.target.value)} /></SettingsRow>
     {tool && <SettingsRow title={t('sampleTool')}><input aria-label={t('sampleTool')} required value={toolName} disabled={running} onChange={e => setToolName(e.target.value)} /></SettingsRow>}
     <SettingsRow title={t('sampleHooks')}><textarea aria-label={t('sampleHooks')} value={hooksContext} disabled={running} onChange={e => setHooksContext(e.target.value)} /></SettingsRow>
-    <SettingsRow title={t('executeCommands')}><fieldset className="studio-fieldset" disabled={!sessionId || running}><Toggle label={t('executeCommands')} checked={commands && !!sessionId} onChange={setCommands} /></fieldset></SettingsRow>
-    {!sessionId && <p className="studio-muted">{t('noSession')}</p>}
+    <SettingsRow title={t('executeCommands')} description={!sessionId ? t('noSession') : undefined} control={<Toggle label={t('executeCommands')} disabled={!sessionId || running} checked={commands && !!sessionId} onChange={setCommands} />} />
     <div className="studio-actions"><Button primary disabled={running || !text.trim() || (tool && !toolName.trim())} onClick={() => { void run(); }}>{t('runTrial')}</Button><Button disabled={!running} onClick={cancel}>{t('cancelTrial')}</Button></div>
     {running && <p role="status" className="studio-muted">{t('trialRunning')}</p>}
     {cancelled && <p role="status" className="studio-muted">{t('trialCancelled')}</p>}
     {error && <Notice>{t('trialError')}: {error}</Notice>}
-    {result && <GateResultDetails {...result} locale={locale} />}
+    {result && <>{!definition.enabled && <Notice>{t('disabledTrial')}</Notice>}<GateResultDetails {...result} locale={locale} /></>}
   </section>;
 }

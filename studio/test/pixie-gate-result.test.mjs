@@ -26,7 +26,7 @@ test('trial distinguishes skipped pass from executed pass and explains missing f
   result.forwardError = { verdict: 'error', error: 'Missing stage text' };
   await render({ result, durations: { command: 0 }, locale: 'ko' }, host => {
     const stage = host.querySelector('[data-gate-stage=command]');
-    assert.match(stage.textContent, /통과/);
+    assert.doesNotMatch(stage.textContent, /통과/);
     assert.match(stage.textContent, /건너뜀/);
     assert.match(stage.textContent, /0 ms/);
     assert.match(host.textContent, /시험 실행에서 명령 단계를 건너뛰어 전달 결과를 계산할 수 없음/);
@@ -50,7 +50,7 @@ test('shows stage text, reason, errors, hook results and append contexts without
 test('supports explicit skipped ids and Chinese copy without changing verdict', async () => {
   const result = base(); result.stages.command = { verdict: 'pass' };
   await render({ result, locale: 'zh-CN', skipped: ['command'] }, host => {
-    assert.match(host.querySelector('[data-gate-stage=command]').textContent, /通过已跳过/);
+    assert.match(host.querySelector('[data-gate-stage=command]').textContent, /已跳过/);
   });
 });
 
@@ -60,4 +60,17 @@ test('a real forward error does not claim commands were skipped', async () => {
     assert.match(host.textContent, /Forward error/);
     assert.doesNotMatch(host.textContent, /command stages were skipped/);
   });
+});
+
+test('skipped-only response renders a localized reason and one badge per missing stage', async () => {
+  for (const [locale, label, reason] of [['ko', '건너뜀', '시험 실행에서 명령을 실행하지 않았습니다.'], ['en', 'Skipped', 'Command was not executed in this trial.'], ['zh', '已跳过', '本次试运行未执行命令。']]) {
+    await render({ result: base(), skipped: ['first', 'second'], locale }, host => {
+      for (const id of ['first', 'second']) {
+        const row = host.querySelector(`[data-gate-stage="${id}"]`);
+        assert.equal(row.querySelectorAll('.studio-badge').length, 1);
+        assert.equal(row.querySelector('.studio-badge').textContent, label);
+        assert.ok(row.textContent.includes(reason));
+      }
+    });
+  }
 });

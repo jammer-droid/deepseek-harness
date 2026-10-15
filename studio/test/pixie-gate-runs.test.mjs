@@ -13,7 +13,7 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 const run = (id, extra = {}) => ({ id, gateId: id, gateName: `Gate ${id}`, point: 'input', sessionId: 's', startedAt: 1, original: `original ${id}`, finalText: '', applied: 'none', status: 'done', usage: { inputTokens: 98765 }, ...extra });
 const pending = () => run('pending', { applied: 'rejected', rejection: { original: 'retained original', reason: 'failure reason', suggestion: 'suggested draft', status: 'pending' }, hooksInput: 'unverified' });
 const button = (host, text) => [...host.querySelectorAll('button')].find(b => b.textContent === text || b.getAttribute('aria-label') === text);
-async function setup(runs = [], extra = {}, Component = GateRunsPanel) {
+async function setup(runs = [], extra = {}, Component = GateRunsPanel, locale = 'en') {
   let listener; let reads = 0; let stops = 0; const calls = [];
   const actions = {
     gateRuns: async () => { reads++; return { sessionId: 's', runs }; },
@@ -22,7 +22,7 @@ async function setup(runs = [], extra = {}, Component = GateRunsPanel) {
     fillDraft: text => calls.push(['draft', text]), ...extra,
   };
   const host = document.createElement('div'); document.body.append(host); const root = createRoot(host);
-  await act(async () => root.render(React.createElement(Component, { actions, locale: 'en' })));
+  await act(async () => root.render(React.createElement(Component, { actions, locale })));
   return { host, calls, emit: async frame => act(async () => listener(frame)), reads: () => reads, stops: () => stops, close: async () => act(async () => root.unmount()) };
 }
 test('gate tab opens empty list without a configured model', async () => {
@@ -114,4 +114,27 @@ test('Remote descriptors and session-bound composer use public scopes without au
   assert.deepEqual(calls, [['draft', 'suggested draft'], ['focus']]);
   await act(async () => button(host, 'Dismiss').click()); assert.deepEqual(calls[2], ['s', 'pending', 'dismissed']);
   await act(async () => root.unmount());
+});
+
+test('run points localize in cards and details in all supported locales', async () => {
+  for (const [locale, labels] of [['ko', ['입력', '턴 종료', '도구 실행 전', '도구 실행 후']], ['en', ['Input', 'Turn end', 'Before tool', 'After tool']], ['zh', ['输入', '轮次结束', '工具执行前', '工具执行后']]]) {
+    for (const [i, point] of ['input', 'turn-end', 'tool-before', 'tool-after'].entries()) {
+      const f = await setup([run('point', { point })], {}, GateRunsPanel, locale);
+      assert.ok(f.host.querySelector('.studio-pixie-thread .studio-card-meta').textContent.startsWith(labels[i]));
+      assert.ok(f.host.querySelector('.studio-pixie-detail > .studio-card-meta').textContent.startsWith(labels[i]));
+      await f.close();
+    }
+  }
+});
+test('missing, zero and invalid timestamps use dash, pending has one status badge', async () => {
+  for (const startedAt of [undefined, 0, -1, NaN, Infinity, 9e20]) {
+    const f = await setup([{ ...pending(), startedAt }]);
+    const card = f.host.querySelector('.studio-pixie-thread');
+    assert.equal(card.querySelector('.studio-card-meta').textContent, 'Input · —');
+    assert.equal(card.querySelectorAll('.studio-badge').length, 1);
+    assert.equal(card.querySelector('.studio-badge').textContent, 'Pending rejection');
+    assert.equal(f.host.querySelector('.studio-pixie-detail-head').querySelectorAll('.studio-badge').length, 1);
+    for (const title of ['Original', 'Reason', 'Suggestion']) assert.ok([...f.host.querySelectorAll('h3')].some(h => h.textContent === title));
+    await f.close();
+  }
 });

@@ -44,7 +44,7 @@ export async function trialGate(payload: unknown, deps: {
       return await run();
     } finally { durations[id] = Math.max(0, performance.now() - start); }
   };
-  const result = await runGate(definition, input, {
+  const result = await runGate({ ...definition, enabled: true }, input, {
     run: (stage, context) => timed(stage.id, stage.kind === 'command', () => runner.run(stage, context)),
   }, { signal, hooks: {
     runHook: (command, event, context, result) => timed(`hooks.${event}`, true, () => runner.runHook(command, event, context, result)),

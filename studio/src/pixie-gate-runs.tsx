@@ -1,8 +1,8 @@
 import React from 'react';
 import type { GateRun, GateRunFrame, GateRunRecord } from './pixie-gate-contracts.ts';
-import { gateText, type GateTextKey } from './pixie-gate-locale.ts';
+import { gateText, gatePointText, type GateTextKey } from './pixie-gate-locale.ts';
 import { GateResultDetails } from './pixie-gate-result.tsx';
-import { Badge, Button, IconButton, Notice, Note } from './ui.tsx';
+import { Badge, Button, IconButton, SectionHead, Notice, Note } from './ui.tsx';
 
 export interface GateRunActions {
   gateRuns(): Promise<GateRunRecord>;
@@ -50,7 +50,7 @@ export function GateRunsPanel({ actions, locale }: { actions: GateRunActions; lo
   const sorted = [...runs].sort((a, b) => Number(b.rejection?.status === 'pending') - Number(a.rejection?.status === 'pending') || b.startedAt - a.startedAt);
   const opened = sorted.find(run => run.id === openId);
   const shown = opened ?? sorted[0];
-  const badges = (run: GateRun) => <><Badge tone={run.rejection?.status === 'pending' || run.status === 'error' ? 'warning' : 'neutral'}>{t(gateRunStatus(run))}</Badge>{run.rejection?.status === 'pending' && <Badge tone="warning">{t('pending')}</Badge>}</>;
+  const badges = (run: GateRun) => <><Badge tone={run.rejection?.status === 'pending' || run.status === 'error' ? 'warning' : 'neutral'}>{t(run.rejection?.status === 'pending' ? 'pending' : gateRunStatus(run))}</Badge></>;
   const resolve = async (run: GateRun, status: 'resent' | 'dismissed') => {
     setBusy(true); setError('');
     try {
@@ -68,7 +68,7 @@ export function GateRunsPanel({ actions, locale }: { actions: GateRunActions; lo
         <ul className="studio-pixie-thread-list">{sorted.map(run => <li key={run.id}>
           <button type="button" className="studio-pixie-thread" aria-current={shown?.id === run.id ? 'true' : undefined} onClick={() => setOpenId(run.id)}>
             <span className="studio-card-head"><strong>{run.gateName}</strong>{badges(run)}</span>
-            <span className="studio-card-meta">{run.point} · {new Date(run.startedAt).toLocaleString(locale)}</span>
+            <span className="studio-card-meta">{gatePointText(locale, run.point)} · {Number.isFinite(run.startedAt) && run.startedAt > 0 && Number.isFinite(new Date(run.startedAt).getTime()) ? new Date(run.startedAt).toLocaleString(locale) : '—'}</span>
             <span className="studio-pixie-thread-preview">{run.original}</span>
             {run.hooksInput === 'unverified' && <span className="studio-card-meta">{t('unverified')}</span>}
           </button>
@@ -76,14 +76,14 @@ export function GateRunsPanel({ actions, locale }: { actions: GateRunActions; lo
       </div>
       {shown && <div className="studio-pixie-detail">
         <div className="studio-pixie-detail-head"><span className="studio-pixie-back"><IconButton label={t('allRuns')} onClick={() => setOpenId(undefined)}><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5L5.5 8l4.5 4.5" fill="none" stroke="currentColor" strokeWidth="1.4" /></svg></IconButton></span><strong>{shown.gateName}</strong>{badges(shown)}</div>
-        <p className="studio-card-meta">{shown.point} · {t('applied')}: {t(shown.applied)}{shown.hooksInput === 'unverified' ? ` · ${t('unverified')}` : ''}</p>
+        <p className="studio-card-meta">{gatePointText(locale, shown.point)} · {t('applied')}: {t(shown.applied)}{shown.hooksInput === 'unverified' ? ` · ${t('unverified')}` : ''}</p>
         {shown.reason && <p className="studio-pixie-answer">{t('reason')}: {shown.reason}</p>}
         {shown.point === 'turn-end' && <p className="studio-card-meta">{t('turn')}: {shown.turn ?? '—'} · {t('steerCount')}: {shown.steerCount ?? '—'}</p>}
         {shown.point.startsWith('tool-') && shown.tool && <p className="studio-card-meta">{t('tool')}: {shown.tool.name} · {t('callId')}: {shown.tool.callId}</p>}
         {shown.rejection && <section>
-          <p className="studio-pixie-answer">{t('original')}: {shown.rejection.original}</p>
-          <p className="studio-pixie-answer">{t('reason')}: {shown.rejection.reason}</p>
-          {shown.rejection.suggestion && <p className="studio-pixie-answer">{t('suggestion')}: {shown.rejection.suggestion}</p>}
+          <section><SectionHead title={t('original')} /><p className="studio-pixie-answer">{shown.rejection.original}</p></section>
+          <section><SectionHead title={t('reason')} /><p className="studio-pixie-answer">{shown.rejection.reason}</p></section>
+          {shown.rejection.suggestion && <section><SectionHead title={t('suggestion')} /><p className="studio-pixie-answer">{shown.rejection.suggestion}</p></section>}
           {shown.rejection.status === 'pending' && <><Note>{t('draftNote')}</Note><div className="studio-inline-actions">
             <Button small disabled={busy} onClick={() => { try { actions.fillDraft(shown.rejection!.suggestion ?? shown.rejection!.original); setError(''); } catch { setError(t('composerUnavailable')); } }}>{t('editSend')}</Button>
             <Button small disabled={busy} onClick={() => { void resolve(shown, 'resent'); }}>{t('resent')}</Button>

@@ -80,12 +80,15 @@ export function GateEditor({ actions, locale }: { actions: GateEditorActions; lo
     {notice && <Notice>{notice}</Notice>}
     {problem?.field === '' && <Notice>{t(problem.key)}</Notice>}
     {!entries && !error && <p role="status">{t('loading')}</p>}
-    {entries && <fieldset disabled={saving}>
+    {entries && <fieldset disabled={saving} className="studio-config-root studio-page-stack">
+      <section className="studio-settings-card" aria-label={t('title')}>
       <SectionHead title={t('title')} actions={<Button onClick={() => add()}>{t('add')}</Button>} />
       {!entries.length && <p className="studio-muted">{t('empty')}</p>}
-      {entries.map(item => <div key={item.definition.id} className="studio-catalog-row"><Button aria-pressed={selected === item.definition.id} onClick={() => { setSelected(item.definition.id); setProblem(undefined); }}>{item.definition.name}</Button><span className="studio-muted"> {t(item.definition.point)} · {t('enabled')}: {t(item.definition.enabled ? 'yes' : 'no')} · {t('presets')}: {item.presetIds.length} · {t('stages')}: {item.definition.stages.length}</span></div>)}
+      {entries.map(item => <div key={item.definition.id} className="studio-catalog-row"><Button aria-pressed={selected === item.definition.id} onClick={() => { setSelected(item.definition.id); setProblem(undefined); }}>{item.definition.name}</Button><span className="studio-muted"> {t(item.definition.point)} · {t(item.definition.enabled ? 'yes' : 'no')} · {t('presetCount').replace('{count}', String(item.presetIds.length))} · {t('stageCount').replace('{count}', String(item.definition.stages.length))}</span></div>)}
+      </section>
       {g && entry && <>
         <SectionHead title={g.name} actions={<><Button onClick={() => add(true)}>{t('duplicate')}</Button><Button onClick={() => { const next = entries.filter(item => item.definition.id !== selected); setEntries(next); setSelected(next[0]?.definition.id ?? ''); setProblem(undefined); }}>{t('remove')}</Button></>} />
+        <section className="studio-settings-card" aria-label={t('basic')}><SectionHead title={t('basic')} />
         {text('name', g.name, name => update({ name }))}
         {field('enabled', <Toggle label={t('enabled')} checked={g.enabled} onChange={enabled => update({ enabled })} />)}
         {select('point', g.point, ['input', 'tool-before', 'tool-after', 'turn-end'], point => {
@@ -93,18 +96,26 @@ export function GateEditor({ actions, locale }: { actions: GateEditorActions; lo
           const cleaned = restricted && (g.forward.kind !== 'original' || g.stages.some(s => s.kind !== 'judge' && s.role === 'revise'));
           update({ point: point as GateDefinition['point'], ...(restricted ? { forward: { kind: 'original' }, stages: g.stages.map(s => s.kind !== 'judge' && s.role === 'revise' ? { ...s, role: 'check' } : s) } : {}) }); setNotice(cleaned ? t('cleaned') : '');
         })}
+        {field('presets', <select multiple aria-label={t('presets')} value={entry.presetIds} onChange={e => { const presetIds = [...e.target.selectedOptions].map(o => o.value); setEntries(entries.map(item => item === entry ? { ...item, presetIds } : item)); }}>{[...presets, ...entry.presetIds.filter(id => !presets.some(p => p.id === id)).map(id => ({ id, name: id }))].map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select>)}
+        </section>
+        <section className="studio-settings-card" aria-label={t('target')}><SectionHead title={t('target')} />
         {select('agents', g.match.agents ?? 'root', ['root', 'child', 'any'], agents => update({ match: { ...g.match, agents: agents as 'root' | 'child' | 'any' } }))}
         {g.point === 'input' && field('sources', <>{(['user', 'agent-message'] as const).map(source => <label key={source}><input type="checkbox" checked={(g.match.sources ?? ['user']).includes(source)} onChange={e => update({ match: { ...g.match, sources: e.target.checked ? [...(g.match.sources ?? ['user']), source] : (g.match.sources ?? ['user']).filter(s => s !== source) } })} />{t(source)}</label>)}</>)}
         {g.point.startsWith('tool-') && text('tools', g.match.tools?.join(', ') ?? '', value => update({ match: { ...g.match, tools: value.split(',').map(s => s.trim()).filter(Boolean) } }))}
+        </section>
+        <section className="studio-settings-card" aria-label={t('handling')}><SectionHead title={t('handling')} />
         {select('onError', g.onError, ['pass', 'block'], onError => update({ onError: onError as 'pass' | 'block' }))}
         {g.point === 'input' && field('confirm', <Toggle label={t('confirm')} checked={g.confirmRevision} onChange={confirmRevision => update({ confirmRevision })} />)}
         {select('forward', g.forward.kind, g.point === 'input' || g.point === 'tool-after' ? ['original', 'replace', 'append'] : ['original'], kind => update({ forward: kind === 'replace' ? { kind, from: 'subject' } : kind === 'append' ? { kind, from: [] } : { kind: 'original' } }))}
-        {g.forward.kind === 'replace' && field('from', <select aria-label={t('from')} value={g.forward.from} onChange={e => update({ forward: { kind: 'replace', from: e.target.value } })}><option value="subject">{t('subject')}</option>{g.stages.map(s => <option key={s.id} value={s.id}>{s.id}</option>)}</select>)}
+        {g.forward.kind === 'replace' && field('from', <select className="studio-compact" aria-label={t('from')} value={g.forward.from} onChange={e => update({ forward: { kind: 'replace', from: e.target.value } })}><option value="subject">{t('subject')}</option>{g.stages.map(s => <option key={s.id} value={s.id}>{s.id}</option>)}</select>)}
         {g.forward.kind === 'append' && field('from', <select multiple aria-label={t('from')} value={g.forward.from} onChange={e => update({ forward: { kind: 'append', from: [...e.target.selectedOptions].map(o => o.value) } })}>{g.stages.map(s => <option key={s.id} value={s.id}>{s.id}</option>)}</select>)}
         {text('timeout', g.limits.stageTimeoutMs, v => update({ limits: { ...g.limits, stageTimeoutMs: Number(v) } }), 'timeout', true)}
         {g.point === 'turn-end' && text('steers', g.limits.maxSteersPerTurn, v => update({ limits: { ...g.limits, maxSteersPerTurn: Number(v) } }), 'timeout', true)}
+        </section>
+        <section className="studio-settings-card" aria-label={t('hooks')}><SectionHead title={t('hooks')} />
         {(['start', 'end'] as const).map(hook => <React.Fragment key={hook}>{text(hook, g.hooks?.[hook]?.command ?? '', command => { const hooks = { ...g.hooks }; if (command) hooks[hook] = { ...hooks[hook], command }; else delete hooks[hook]; update({ hooks }); })}</React.Fragment>)}
-        {field('presets', <select multiple aria-label={t('presets')} value={entry.presetIds} onChange={e => { const presetIds = [...e.target.selectedOptions].map(o => o.value); setEntries(entries.map(item => item === entry ? { ...item, presetIds } : item)); }}>{[...presets, ...entry.presetIds.filter(id => !presets.some(p => p.id === id)).map(id => ({ id, name: id }))].map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select>)}
+        </section>
+        <section className="studio-page-stack" aria-label={t('stages')}>
         <SectionHead title={t('stages')} actions={<Button disabled={g.stages.length >= MAX_GATE_STAGES} title={g.stages.length >= MAX_GATE_STAGES ? t('maxStages') : undefined} onClick={() => { let n = 1; while (g.stages.some(s => s.id === `stage${n}`)) n++; update({ stages: [...g.stages, makeStage(`stage${n}`)] }); }}>{t('addStage')}</Button>} />
         {g.stages.length >= MAX_GATE_STAGES && <p className="studio-muted">{t('maxStages')}</p>}
         {g.stages.map((s, i) => <section className="studio-settings-card" key={i} data-gate-editor-stage={i}>
@@ -114,12 +125,13 @@ export function GateEditor({ actions, locale }: { actions: GateEditorActions; lo
           {s.kind !== 'judge' && select('role', s.role, g.point === 'input' || g.point === 'tool-after' ? ['check', 'revise', 'note'] : ['check', 'note'], role => stageUpdate(i, { ...s, role: role as 'check' | 'revise' | 'note' }), `stage-${i}-role`)}
           {s.kind === 'command' && <>{text('command', s.command.command, command => stageUpdate(i, { ...s, command: { ...s.command, command } }), `stage-${i}-command`)}{text('commandTimeout', s.command.timeoutMs ?? '', value => { const { timeoutMs: _, ...command } = s.command; stageUpdate(i, { ...s, command: value ? { ...command, timeoutMs: Number(value) } : command }); }, `stage-${i}-command`, true)}</>}
           {s.kind === 'converse' && <>
-            {field('model', <select aria-label={t('model')} value={s.model ? JSON.stringify([s.model.provider, s.model.model]) : ''} onChange={e => { const { model: _, ...rest } = s; const v = e.target.value ? JSON.parse(e.target.value) as string[] : undefined; stageUpdate(i, v ? { ...rest, model: { provider: v[0]!, model: v[1]! } } : rest); }}><option value="">{t('defaultModel')}</option>{models.groups.map(group => <optgroup key={group.id} label={group.name}>{group.models.map(m => <option key={m.id} value={JSON.stringify([group.id, m.id])}>{m.name}</option>)}</optgroup>)}</select>)}
+            {field('model', <select className="studio-compact" aria-label={t('model')} value={s.model ? JSON.stringify([s.model.provider, s.model.model]) : ''} onChange={e => { const { model: _, ...rest } = s; const v = e.target.value ? JSON.parse(e.target.value) as string[] : undefined; stageUpdate(i, v ? { ...rest, model: { provider: v[0]!, model: v[1]! } } : rest); }}><option value="">{t('defaultModel')}</option>{models.groups.map(group => <optgroup key={group.id} label={group.name}>{group.models.map(m => <option key={m.id} value={JSON.stringify([group.id, m.id])}>{m.name}</option>)}</optgroup>)}</select>)}
             {field('system', <textarea aria-label={t('system')} value={s.system ?? ''} onChange={e => stageUpdate(i, { ...s, system: e.target.value })} />, `stage-${i}-prompt`)}
             {field('prompt', <textarea aria-label={t('prompt')} value={s.prompt} onChange={e => stageUpdate(i, { ...s, prompt: e.target.value })} />, `stage-${i}-prompt`)}
             <p className="studio-muted">{t('variables')}: {['{{subject}}', '{{original}}', '{{hooks.context}}', ...(g.hooks?.start ? ['start'] : []), ...g.stages.slice(0, i).map(s => s.id)].flatMap(v => v.startsWith('{{') ? [v] : ['text', 'reason', 'data'].map(part => `{{stages.${v}.${part}}}`)).join(', ')}</p>
           </>}
         </section>)}
+        </section>
       </>}
     </fieldset>}
     {g && <GateTrialPanel key={g.id} definition={g} trial={actions.trial} locale={locale} />}

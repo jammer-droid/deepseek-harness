@@ -415,6 +415,10 @@ interface GateResult {
 - **Client Inspect 미사용:** 목록 조회 후 Host `Service/listService(studioPixie)`는 미등록 오류였으며 런타임 확인 증거로 삼지 않았다. Client query는 사용자 GUI로 전달되므로 호출하지 않았고 공개 소스로 대체했다. 사용자 GUI(19387)·desktop 프로필 접근/배포, 독립 설치, 코드 리뷰는 수행하지 않았다. S1 표 불변, 리뷰는 S9 이후 일괄이다.
 - **다음 워커: 격리 시각 확인·스크린샷.** 라이트/다크 × 넓은 폭/560px 이하에서 (1) 빈 게이트 탭, (2) 전체 적용 상태 카드와 pending 상단 정렬·unverified, (3) 거부 원문/이유/제안·초안 채우기·보냈음/무시, (4) turn-end 상한 reason/횟수, (5) tool-before/after 이름/callId·공유 단계/훅 결과, (6) running→완료 및 연결 끊김→sync 복구, (7) 기존 스레드/판정 탭 회귀를 확인한다. 데이터 모양은 [신규 테스트](../../test/pixie-gate-runs.test.mjs)의 run/pending/result fixture를 사용한다. 격리 scaffold는 GateRunsPanel/GateRunActions에 fixture·sync/run을 공급하면 모델 없이 화면을 준비할 수 있다. 실제 composer/재연결 확인은 별도 격리 런타임에 Studio를 설치하고 세션을 만든 뒤 게이트 정의를 연결하여 실행한다. 사용자의 프로필/GUI를 데이터 준비에 사용하지 않는다. S7은 이 시각 검증이 남아 미완료이며 S8–S9는 대기한다.
 
+#### S7 UI/UX 검토 반영
+
+- 지점 ko·en·zh 공용 표시, 단계별 건너뜀 Badge·이유, 자연스러운 목록 메타, 유효하지 않은 시각 `—`, 편집기 섹션 분리·모델 select 통일, 명령 실행 인라인 스위치, pending 단일 Badge·거부 상세 제목을 반영했다. 시험 실행은 꺼진 게이트도 정의 사본의 `enabled=true`로 평가하고 결과 위에 실제 실행 미적용 안내를 표시하며, 저장 상태와 런타임 input의 비활성 필터는 유지한다. 검증: Studio typecheck 및 테스트 **347개 통과**, `git diff --check`; 격리 19391에서 라이트·다크 × 1440·520 캡처(`/tmp/pixie-gate-s7-shots-v2/INDEX.md`). 기존 실행 기록을 사용하고 누락된 정의 2개만 승인 후 복구, pending 시각은 0으로 조정했다. 사용자 GUI·desktop 프로필 미접근, S1 표 불변, 코드 리뷰는 S9 이후.
+
 ### S8 — 판정 단계 연결
 
 - 선행: S2, S7.

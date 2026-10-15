@@ -69,7 +69,7 @@ test('downstream rejection is returned without consulting gate definitions', asy
   const h = await harness({ verdict: 'fail' }); const reject = { kind: 'reject' };
   assert.equal(await h.invoke(async () => reject), reject); assert.equal(h.events.length, 0);
 });
-for (const [name, patch, options] of [['outside preset', {}, { preset: 'outside' }], ['root only', { match: { agents: 'root' } }, { root: false }], ['child only', { match: { agents: 'child' } }, { root: true }], ['source', { match: { agents: 'any', sources: ['agent-message'] } }, {}]]) test(`filter ${name}`, async () => {
+for (const [name, patch, options] of [['disabled gate', { enabled: false }, {}], ['outside preset', {}, { preset: 'outside' }], ['root only', { match: { agents: 'root' } }, { root: false }], ['child only', { match: { agents: 'child' } }, { root: true }], ['source', { match: { agents: 'any', sources: ['agent-message'] } }, {}]]) test(`filter ${name}`, async () => {
   const h = await harness({ verdict: 'fail' }, patch, options); assert.equal(await h.invoke(), h.decision); assert.equal(h.events.length, 0);
 });
 test('per-message processing preserves relay source metadata, attachments and usage', async () => {

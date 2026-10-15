@@ -24,7 +24,7 @@ async function setup(t, overrides = {}, locale = 'en') {
 }
 test('gate list supports add, duplicate disabled copy, delete and preset summary', async t => {
   const { host, saves } = await setup(t);
-  assert.match(host.textContent, /Connected presets: 1/);
+  assert.match(host.textContent, /1 presets/);
   assert.equal(button(host, 'Saved').disabled, true);
   await click(button(host, 'Duplicate'));
   assert.equal(input(host, 'Name').value, 'Guard (Duplicate)');
@@ -99,4 +99,16 @@ test('Chinese localization and command validation use localized inline feedback'
   await change(input(host, '类型'), 'command');
   await click(button(host, '保存'));
   assert.match(input(host, '命令').parentElement.textContent, /请检查命令内容/);
+});
+
+test('editor separates localized sections, list summary, selection and compact model', async t => {
+  const { host } = await setup(t, {}, 'ko');
+  for (const label of ['게이트', '기본', '대상', '결과 처리', '훅', '단계', '시험 실행']) assert.ok(host.querySelector(`section[aria-label="${label}"]`));
+  const list = host.querySelector('section[aria-label="게이트"]');
+  assert.match(list.textContent, /입력 · 켜짐 · 프리셋 1개 · 단계 1개/);
+  assert.doesNotMatch(list.textContent, /켜짐:/);
+  assert.equal(list.querySelector('button[aria-pressed="true"]').textContent, 'Guard');
+  assert.equal(list.contains(input(host, '이름')), false);
+  assert.ok(host.querySelector('section[aria-label="기본"]').contains(input(host, '연결 프리셋')));
+  assert.equal(input(host, '모델').className, input(host, '종류').className);
 });

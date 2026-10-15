@@ -72,3 +72,16 @@ test('unmount cancels pending preview', async t => {
   await change(input(host, 'Sample input (required)'), 'sample'); await click(button(host, 'Run trial'));
   await act(async () => root.render(null)); assert.equal(cancelled, 1);
 });
+
+test('disabled gate trial shows warning above results and inline command explanation', async t => {
+  const { host } = await setup(t, { definition: { ...definition(), enabled: false } });
+  const toggle = input(host, 'Execute commands');
+  const row = toggle.closest('.studio-settings-row');
+  assert.match(row.textContent, /session policy is unavailable/);
+  assert.equal(toggle.closest('fieldset'), null);
+  assert.ok(toggle.closest('.studio-settings-row-control'));
+  await change(input(host, 'Sample input (required)'), 'sample');
+  await click(button(host, 'Run trial'));
+  assert.match(host.querySelector('[role=alert]').textContent, /This gate is off/);
+  assert.ok(host.querySelector('[data-gate-stage=check]'));
+});

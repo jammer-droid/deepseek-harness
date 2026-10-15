@@ -280,6 +280,6 @@ export function Segmented<Value extends string>({ label, options, value, onChang
  * @param props Accessible label, state, and change callback.
  * @returns Switch button.
  */
-export function Toggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: (checked: boolean) => void }) {
-  return <button type="button" role="switch" className="studio-toggle" aria-label={label} aria-checked={checked} onClick={() => onChange(!checked)}><span aria-hidden="true" /></button>;
+export function Toggle({ label, checked, onChange, disabled = false }: { label: string; checked: boolean; onChange: (checked: boolean) => void; disabled?: boolean }) {
+  return <button type="button" role="switch" disabled={disabled} className="studio-toggle" aria-label={label} aria-checked={checked} onClick={() => onChange(!checked)}><span aria-hidden="true" /></button>;
 }

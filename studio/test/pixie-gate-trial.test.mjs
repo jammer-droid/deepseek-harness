@@ -52,3 +52,16 @@ test('trial preserves pipeline errors and cancellation rather than applying resu
   const abort = new AbortController(); abort.abort();
   assert.equal((await trialGate({ definition: gate, text: 'original' }, deps, abort.signal)).result.verdict, 'cancelled');
 });
+
+test('trial runs disabled draft without mutating saved enabled state', async () => {
+  const draft = { ...definition(), enabled: false };
+  const calls = [];
+  const response = await trialGate({ definition: draft, text: 'sample' }, {
+    session: () => { throw Error('no session'); },
+    runner: async () => ({ run: async stage => { calls.push(stage.kind); return { verdict: 'note', text: 'fake model output' }; }, runHook: async () => { throw Error('no command'); } }),
+  }, signal());
+  assert.equal(draft.enabled, false);
+  assert.deepEqual(calls, ['converse']);
+  assert.equal(response.result.stages.note.text, 'fake model output');
+  assert.deepEqual(response.skipped, ['hooks.start', 'check', 'hooks.end']);
+});

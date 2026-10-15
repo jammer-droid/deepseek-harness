@@ -15,9 +15,9 @@ export function GateResultDetails({ result, locale, durations = {}, skipped = []
   const stage = (id: string, value: StageResult, label = id) => {
     const omitted = skipped.includes(id) || wasSkipped(value);
     return <section key={id} className="studio-pixie-turn" data-gate-stage={id}>
-      <SectionHead title={label} actions={<><Badge tone={value.verdict === 'error' || value.verdict === 'fail' ? 'warning' : 'neutral'}>{t(value.verdict)}</Badge>{omitted && <Badge>{t('skipped')}</Badge>}</>} />
+      <SectionHead title={label} actions={<Badge tone={!omitted && (value.verdict === 'error' || value.verdict === 'fail') ? 'warning' : 'neutral'}>{t(omitted ? 'skipped' : value.verdict)}</Badge>} />
       {value.text !== undefined && <p className="studio-pixie-answer">{value.text}</p>}
-      {value.reason && <p className="studio-pixie-answer">{t('reason')}: {omitted && value.reason === 'skipped: 시험 실행에서 명령 미실행' ? t('skippedCommand') : value.reason}</p>}
+      {(value.reason || omitted) && <p className="studio-pixie-answer">{t('reason')}: {omitted && (!value.reason || value.reason === 'skipped: 시험 실행에서 명령 미실행') ? t('skippedCommand') : value.reason}</p>}
       {value.error && <Notice>{t('error')}: {value.error}</Notice>}
       {durations[id] !== undefined && <p className="studio-muted">{t('elapsed')}: {durations[id]} ms</p>}
     </section>;
@@ -29,6 +29,7 @@ export function GateResultDetails({ result, locale, durations = {}, skipped = []
     {result.hooks.start && stage('start', result.hooks.start, t('start'))}
     <SectionHead title={t('stages')} />
     {Object.entries(result.stages).map(([id, value]) => stage(id, value))}
+    {skipped.filter(id => !id.startsWith('hooks.') && !result.stages[id]).map(id => stage(id, { verdict: 'pass' }))}
     <SectionHead title={t('forward')} actions={<Badge>{t(result.forward.kind)}</Badge>} />
     {result.forward.kind !== 'none' && <p className="studio-pixie-answer">{result.forward.text}</p>}
     {result.forward.kind === 'append' && result.forward.contexts.map((text, index) => <p key={index} className="studio-pixie-answer">{text}</p>)}
