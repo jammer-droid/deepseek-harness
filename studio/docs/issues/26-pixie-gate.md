@@ -466,6 +466,39 @@ interface GateResult {
 - 선행: S1–S8.
 - 책임: 수정하지 않은 지정 DSH 버전 격리 프로필에서 R1–R3 흐름 확인. 버전·경로·명령·결과 기록.
 
+#### S9 실행 기록 — 2026-10-16
+
+**현재 진행: 부분 검증, 전체 완료 아님.** rc.2 독립 설치의 명령 기반 R1·샌드박스·저장 수명을 확인했다. alpha.2도 별도 npm 설치 및 실제 Loader/R1 거부까지 확인했다. R2/R3/tool 전후/판정의 모델 응답 종단간은 미검증이다. S1 표 및 S4–S8의 과거 기록은 변경하지 않는다. 코드 결함 수정·본체 수정·사용자 GUI(19387)/desktop 프로필 접근·배포·Client Inspect·키 값 열람·하위 위임은 하지 않았다.
+
+| 항목 | 버전·경로·명령·결과 |
+|---|---|
+| 기준 | `studio/feat/workflow`, 시작 HEAD `53c882b69e1eb1ebafcee96e515d90f9bd05aace`, 시작 `git status --short` 빈 출력 |
+| rc.2 | `dsh --version` 및 앱 Info.plist `CFBundleShortVersionString` 모두 `0.2.0-rc.2`. `/usr/local/bin/dsh` → `/Applications/DeepSeek Harness.app/Contents/Resources/runtime/cli/bin/dsh`. 앱/코어 수정·재빌드 없음 |
+| alpha.2 | `npm view @deepseek-ai/dsh@0.2.1-alpha.2 version` 확인 후 `npm install --prefix /tmp/pixie-gate-s9-alpha2 @deepseek-ai/dsh@0.2.1-alpha.2`; `/tmp/pixie-gate-s9-alpha2/node_modules/.bin/dsh --version` → `0.2.1-alpha.2` |
+| Studio 패키지 | `npm --prefix studio run build`(타입 검사 포함) 통과; `STUDIO_PACK_DIST=/tmp/pixie-gate-s9-rc2/pack node studio/pack.mjs`. [tarball](</tmp/pixie-gate-s9-rc2/pack/matamt-dbg-dsh-studio-0.2.9.tgz>) `0.2.9`, SHA256 `a25e3612fe84f4790efa3270108a2ff4b5126d489cf176cead1cab024059c80d`. pack의 삭제 대상 staging은 새 격리 경로 `/tmp/pixie-gate-s9-rc2/pack/package`로 한정 |
+| 설치 명령 | 각 버전의 실행 파일로 `DSH_HOME=<격리 root>/home <dsh> --profile lean-agent-web --from-default-profile web --dump-config`, 이어 `DSH_HOME=<격리 root>/home <dsh> plugin --profile lean-agent-web add /tmp/pixie-gate-s9-rc2/pack/matamt-dbg-dsh-studio-0.2.9.tgz`. 둘 다 exit 0. peer 경고는 있었으나 Loader 및 Studio UI가 실제 동작 |
+| 실행 명령 | `DSH_HOME=/tmp/pixie-gate-s9-rc2/home dsh --profile lean-agent-web --host 127.0.0.1 --port 19391 --no-open`; alpha는 home 및 실행 파일을 위 alpha 경로로, 포트 19392. 둘 다 관리형 job. workspace 코어/개발 scaffold를 실행하지 않음 |
+| dev.mjs와 차이 | #25의 default dev 경로는 build/test → start-web → tarball install → 설치 dsh 실행이다. 실제 구현은 tarball을 설치하지만 주석에는 preview가 tarball install test가 아니라고도 적혀 있다. start-web은 DSH_HOME을 `studio/.dsh-home`으로 강제한다. 이번에는 기존 격리 데이터 재사용 없이 같은 pack/plugin add 절차를 명시 실행하여 `/tmp`의 새 DSH_HOME을 사용했다. OS HOME까지 바꾸지는 않았으며 default workspace는 `/Users/home/Documents/deepseek-harness/default-workspace`였다(명령은 그곳에 쓰지 않음) |
+| 브라우저/증거 | 임시 Chrome `--headless=new --remote-debugging-port=19402 --user-data-dir=/tmp/pixie-gate-s9-rc2/chrome`, 기존 S7 방식의 절대 playwright-core 경로 사용. 라이트 1440×1000 [스크린샷 INDEX](</tmp/pixie-gate-s9-shots/INDEX.md>) 및 [자동화](</tmp/pixie-gate-s9-shots/action.cjs>). 비동기 초기 빈 목록은 최종 결과와 구분 |
+
+| 흐름 | 결과 | 관찰·근거 |
+|---|---|---|
+| rc.2 Loader·UI 저장/연결/활성 | **통과** | Studio v0.2.9 → Pixie → 게이트 추가, command/check, Optimized 체크, 켜짐, 저장. 이후 모든 정의 변경도 UI에서 실행. 정의 직접 주입 없음 |
+| R1 입력 거부 | **통과** | `printf '양식 누락\\n' >&2; exit 2`, 원문 `S9 원문 양식 없는 요청`. 세션 `056bc08e-2e8e-462f-867b-2102b860195c`의 실제 로그 `turn/end.reason.kind=blocked`, `user/message` 및 모델 실행 이벤트 없음. 실제 run `rejected/fail`, 원문·이유·pending 보존. UI 카드 `거부 처리 대기` 확인 |
+| 수정해서 보내기 / 무시 | **통과** | 클릭 뒤 composer 초안이 원문과 일치(자동 전송 아님). 무시 뒤 dismissed 저장·pending 해소. 스크린샷 06–08. `보냈음 표시` 별도 클릭은 미검증 |
+| R1 replace | **통과(게이트) / 실패(모델)** | command/revise `printf 'S9 REPLACED'`, forward replace/subject. 세션 `0fd98497-af11-470c-b29a-acc8ca71019e`의 source user `user/message`가 `S9 REPLACED`; run은 원문과 replaced 보존. 모델은 `MISSING_CREDENTIAL` 실패이며 모델 응답 성공으로 보지 않음 |
+| R1 append | **통과(게이트) / 실패(모델)** | command/revise `printf 'S9 APPENDED'`, forward append/stage1. 세션 `0e33ecea-74cc-4572-a1b0-a27d0c34bee0`의 source user는 `S9 append original`, 별도 source `studio-pixie-gate`의 `user/message`는 `S9 APPENDED`. 모델은 같은 키 없음 오류 |
+| 명령 샌드박스 | **통과(쓰기 거부)** | UI에서 세션 Read Only 선택, command/check `printf test > /tmp/pixie-gate-s9-rc2/readonly-probe.txt`. 세션 `7930f6c0-9973-4183-a0e8-144bf837817a`의 stage error `exit 1 … Operation not permitted`, 파일 미생성. onError pass로 원문 전달, 카드에 판정 오류와 적용 통과를 구분. 정책 객체 전 필드 계측 및 허용 대조 실행은 미검증 |
+| 모델 경로 | **실패 / 테스트 모델 없음 확인 범위 제한** | rc.2 실제 호출 `llm-deepseek: no API key … MISSING_CREDENTIAL`. 키 값/환경/자격 증명 파일 미열람. Host Inspect `Service/listService(sessionController)`로 modelCatalog 공개 계약만 확인(현재 Host 계약이지 격리 catalog 결과 아님). 격리 GUI model catalog에는 DeepSeek-V41-Flash/V4-Pro만 보임; testLLM 없음. 숨은 설치 모듈 전체 탐색이나 가짜 provider 추가는 하지 않음 |
+| R2 agent-message, R3 turn-end, tool-before/after | **미검증** | 이용 가능한 테스트 모델 경로를 발견하지 못했고 실 모델은 키 없음. relay/steer 상한/도구 call ID의 실제 모델 종단간, 브리지 활성 순서와 장기 pre-step UI도 이번 증거에 포함하지 않음 |
+| 판정 단계 | **미검증** | 같은 모델 제약. S8 단위/합성 결과로 실제 판정 응답을 대신하지 않음 |
+| rc.2 재시작·prune | **통과(정의·완료 기록)** | 서버 종료/재시작 뒤 새 경로 `<profile>/studio-data/pixie-gate/definitions.json` 및 실제 run 4건 유지. 별도 빈 고아 envelope `pixie/session-s9-orphan.json`만 추가하고 다시 시작: startup prune이 고아를 삭제, 정의와 실제 4건은 유지. 합성 고아는 prune 실행 확인용이며 게이트 흐름 증거가 아님. running→cancelled 재시작은 미검증 |
+| alpha.2 독립 설치 | **통과(제한된 흐름)** | 별도 npm 런타임 + 같은 tarball, UI 정의 `S9 alpha reject` → Optimized → 입력. 세션 `3e514d35-b25b-4d4c-a288-779f21a31009` blocked, user/message 없음; pending·원문·이유 및 수정해서 보내기 초안 복구 확인(17–19). replace/append/sandbox/재시작/무시/모델 필요 흐름은 alpha에서 미검증 |
+
+**관찰된 표시 불일치(수정하지 않음):** 두 설치 버전에서 위 R1 거부를 재현하면 raw 로그는 `blocked`인데 메인 대화 상태는 `Completed`/`Completed in 1s`로 표시되고 원문 대화 행은 남지 않는다. Studio Pixie 카드에서는 거부·원문·이유를 정상 확인할 수 있다. 재현: command/check exit 2 게이트를 Optimized에 활성 연결 → Optimized 새 세션에서 메시지 전송 → Chat 상태와 Pixie pending 카드를 대조(스크린샷 03/06, alpha 18). DSH 상태 라벨의 의미/의도는 확정하지 않았으며 Studio 입력 거부 동작 실패로 바꾸어 기록하지 않는다. 코드 변경 없음. 설치 peer 경고 및 Node deprecation도 남아 있다.
+
+**증거·정리:** rc.2 데이터는 `/tmp/pixie-gate-s9-rc2/home`, alpha는 `/tmp/pixie-gate-s9-alpha2/home`; profile은 각각 `profiles/lean-agent-web`. 실제 run은 `<profile>/studio-data/pixie/gates/session-<위 ID>.json`. `zstd -dc`로 추출한 rc.2 [거부 로그](</tmp/pixie-gate-s9-rc2/session-056bc08e-2e8e-462f-867b-2102b860195c.jsonl>), [교체 로그](</tmp/pixie-gate-s9-rc2/session-0fd98497-af11-470c-b29a-acc8ca71019e.jsonl>), [덧붙임 로그](</tmp/pixie-gate-s9-rc2/session-0e33ecea-74cc-4572-a1b0-a27d0c34bee0.jsonl>), [sandbox 로그](</tmp/pixie-gate-s9-rc2/session-7930f6c0-9973-4183-a0e8-144bf837817a.jsonl>)를 보존했다. 모든 시작 job(서버 743/776/793/797, Chrome 744)은 종료 결과를 수집했다. `lsof -nP -iTCP:19391 -iTCP:19392 -iTCP:19402 -sTCP:LISTEN`에 listener 없음. 패키지·격리 데이터·스크린샷은 재현용으로 보존한다. 이번에는 Studio 빌드/타입 검사와 독립 실행만 수행했고 전체 단위 테스트를 재실행하지 않았다.
+
 ## 범위 밖 (후속)
 
 - `JevJudgeEngine`(HTTP)과 자격 증명.
