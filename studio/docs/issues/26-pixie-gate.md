@@ -22,7 +22,9 @@ Studio는 특정 기능(양식 검증, 번역, 검색 요약, 선압축)을 직�
 
 ## 현재 진행 상황
 
-`ready`. 사용자 결정 U1–U8을 [확정된 결정](#확정된-결정)에 기록했다. GitHub 이슈는 아직 만들지 않았다.
+`ready`. 사용자 결정 U1–U8을 [확정된 결정](#확정된-결정)에 기록했다.
+
+- **일괄 리뷰 완료·수정 반영:** Host `db8499c716`, Client `dbdd703856`. [리뷰 수정 기록](#일괄-리뷰-수정-기록)을 참조한다. S9는 부분 검증이며 전체 완료가 아니다. 남은 미검증은 모델이 필요한 R2/R3/tool/판정 실제 호출 및 alpha.2의 일부 흐름이다. 아래 단계별 과거 기록과 S1 표는 당시 증거로 보존한다.
 
 - **S1 부분 확인:** rc.2 설치 모듈 + 가짜 모델 수준이며 전체 통과가 아니다. 미확인 목록은 [S1 결과 표](#s1-확인-결과)를 참조한다. 실험 스크립트·로그가 삭제되어 표는 재현 가능한 첨부 증거가 아닌 작업자 기록 수준이다. 표 내용은 그대로 보존한다.
 - **S2 구현·로컬 검증 완료:** 게이트 계약·command/converse 실행기·순차 파이프라인, 내부 결과 분리 및 회귀 테스트를 구현했다. `npm --prefix studio run typecheck`, `npm --prefix studio test`(빌드 포함), `git diff --check` 통과. Studio **219개 테스트 통과**(게이트 파이프라인 39개 + Pixie 선택 타임아웃 1개 포함). 이번 보강에서 회귀 8개를 추가했다. Node deprecation 및 기존 React DOM nesting 경고는 있으나 실패는 없다. 설치 앱·실제 모델·GUI 검증을 대신하지 않는다.
@@ -459,7 +461,17 @@ interface GateResult {
 - ko·en·zh 문구 제공. 새 공용 부품 및 CSS 변경이 없어 디자인 시스템 부품 표/스타일 스냅샷 변경은 없다.
 - 검증: `npm --prefix studio run typecheck`, `npm --prefix studio test` **368개 2회 연속 통과**, `git diff --check`. 신규 jsdom 5개는 단계 생성/noul·trial payload, choice 편집/깨진 옵션, score/깨진 질문, answers·ID fallback, 설정 저장/복원/하위 호환을 다룬다. 기존 테스트의 judge 선택 가능·판정 설정 탐색 기대값 및 실행 카드 Remote mock을 새 계약에 맞췄다. 첫 전체 실행의 기존 테스트 2개 실패는 탐색 기대값/Remote mock 누락이었으며 수정 후 연속 2회 통과했다. 기존 Node deprecation/RoleEditor nesting 경고는 남는다.
 - 격리 서버 19391 및 임시 Chrome 프로필로 라이트·다크 × 1440·520에서 질문 3유형·통과 조건·판정 설정·판정 결과를 24장 촬영했다. [스크린샷 INDEX](</tmp/pixie-gate-s8-shots/INDEX.md>). 결과는 격리 프로필에만 추가한 합성 실행 기록 1개이며 기존 기록은 보존했다. 사용자 GUI 19387·desktop 프로필 접근/배포 및 Client Inspect 없음.
-- **남은 항목:** 실제 모델 1회 확인 — 키 미열람. 실행 기록에 판정 질문 라벨 스냅샷 없음(정의 변경 시 id 표시). S9 독립 설치 종단간 검증과 코드 리뷰는 후속이다. S1 표 불변.
+- **리뷰 후 갱신:** 판정 라벨 스냅샷 제한은 `db8499c716`·`dbdd703856`으로 해결했다. 렌더된 질문·기준·옵션·점수 문구를 실행 기록에 보관하고, 결과와 실패 조건은 기록만 사용한다. 스냅샷 없는 구기록은 현재 정의가 아니라 id·숫자로 표시한다. 실제 모델 호출은 여전히 미검증이며, S9 부분 검증과 일괄 리뷰 결과는 아래 기록을 참조한다. S1 표 불변.
+
+### 일괄 리뷰 수정 기록
+
+- 리뷰 자료: [/tmp/pixie-gate-review-all/](</tmp/pixie-gate-review-all/>). 재현 red 근거는 [before.txt](</tmp/pixie-gate-review-fix/before.txt>), [additional-red.txt](</tmp/pixie-gate-review-fix/additional-red.txt>), [client-red.txt](</tmp/pixie-gate-review-fix/client-red.txt>)다. `additional-before.txt`에는 fixture 오류가 섞였으므로 결함 근거로 사용하지 않는다.
+- **Host A — `db8499c716`:** 실제 교체되는 forward 텍스트 기준으로 수정 확인·제안을 결정하며 동일 텍스트는 불필요하게 거부하지 않는다. 명령 JSON의 명시적 null/잘못된 verdict는 오류로 처리한다. 판정 사용량을 성공·잘못된 모델 출력 모두 기록하고, `StageResult.data.questions`에 렌더된 질문(noul 질문·기준, choice 옵션 라벨, score 단계 문구)을 저장한다.
+- **Client B — `dbdd703856`:** C1 결과·실패 조건 라벨은 저장된 질문만 사용하고 구기록은 id·숫자로 표시한다. 실행 카드의 현재 정의 조회를 제거했다. C2 시험 실행은 제출한 정의 사본을 결과와 보관하여 draft 변경 후에도 꺼진 게이트 안내와 결과가 바뀌지 않는다. C3 공유 `JudgeValidationError.code`를 ko·en·zh 문구에 매핑하고 빈 옵션 문구·깨진 조건·범위 밖 기준값·중복 질문 ID를 검증한다. 기존 throw 메시지는 유지한다. C4 저장 실패 Notice에 닫기 동작을 추가하고 draft는 유지한다.
+- **회귀 증거:** C1 기록 라벨 누락, C2 draft 변경 후 꺼짐 안내 소실, C3 빈 옵션 검증 안내 누락, C4 닫기 버튼 부재를 각각 red로 확인한 뒤 수정했다. ko·zh 영문 validator 원문 비노출과 중복 ID 문구도 검증했다. B 커밋 전 typecheck, Studio 전체 테스트 **411개 × 2회 연속**, `git diff --check` 통과. [1회 로그](</tmp/pixie-gate-review-fix/client-test-1.txt>), [2회 로그](</tmp/pixie-gate-review-fix/client-test-2.txt>).
+- **문서 정렬:** Studio 작업 지침의 삭제된 역할 UI 스냅샷 재생성 문구를 디자인 시스템의 공용 부품 테스트·새 기능 UI 스냅샷 규칙으로 맞췄다. #24 명세 및 S1 표는 변경하지 않았다.
+- **S9 본체 표시 제한:** 실제 `turn/end.reason.kind=blocked`인데 Chat이 Completed 계열로 표시하는 것은 DSH [TurnProcessNodeView.tsx:20–32](../../../packages/client/ui-chat/src/client/chat/TurnProcessNodeView.tsx#L20-L32)가 aborted/error 이외의 blocked도 완료 계열로 표시하기 때문이다. Studio reject는 정상이며 **Pixie 게이트 카드로 확인**한다. 본체 수정 범위가 아니므로 변경하지 않는다.
+- **남은 검증:** 모델이 필요한 R2/R3/tool 전후/판정 실제 호출, alpha.2 replace/append/sandbox/재시작/무시 및 모델 필요 흐름. 이번 수정의 사용자 GUI(19387)·프로필 접근·배포·Client Inspect는 수행하지 않았고 로컬 테스트를 독립 배포 검증으로 간주하지 않는다.
 
 ### S9 — 독립 설치 검증
 
