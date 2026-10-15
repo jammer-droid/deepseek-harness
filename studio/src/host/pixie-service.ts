@@ -12,7 +12,8 @@ import { PixieRuntime, type PixieLlm } from './pixie-runtime.ts';
 import { parsePixieModel, PixieSettingsStore, PixieStore } from './pixie-store.ts';
 import type { ForkEvent } from './pixie-fork.ts';
 import { PixieGateDefinitions } from './pixie-gate-definitions.ts';
-import { gateInput } from './pixie-gate-input.ts';
+import { gateInput, type GateInputDeps } from './pixie-gate-input.ts';
+import { gateTurn } from './pixie-gate-turn.ts';
 import { DefaultStageRunner, type GateShell } from './pixie-gate-runner.ts';
 import type { GateInput } from '../pixie-gate-contracts.ts';
 
@@ -61,7 +62,7 @@ export class PixieService extends TypertRemoteService {
     this.gates = new PixieGateStore(join(dataDir, 'pixie'));
     this.settings = new PixieSettingsStore(join(dataDir, 'pixie-settings.json'));
     this.definitions = new PixieGateDefinitions(join(dataDir, 'pixie', 'gates.json'));
-    ctx.on('agent/pre-step', gateInput({
+    const gateDeps: GateInputDeps = {
       definitions: () => this.definitions.read(),
       preset: agent => ctx.get('agentPresets')?.composedPreset(agent.ctx),
       isRoot: agent => ctx.get('agents')?.roots().some(root => root.id === agent.id) ?? false,
@@ -87,7 +88,9 @@ export class PixieService extends TypertRemoteService {
       },
       recorder: this.gates,
       emit: (event, run) => ctx.emit(event, run),
-    }), { prepend: true });
+    };
+    ctx.on('agent/pre-step', gateInput(gateDeps), { prepend: true });
+    ctx.on('agent/turn-stopping', gateTurn(gateDeps));
     const sessions = () => ctx.get('sessionController') as unknown as SessionControllerSlice;
     this.runtime = new PixieRuntime({
       store: this.store,

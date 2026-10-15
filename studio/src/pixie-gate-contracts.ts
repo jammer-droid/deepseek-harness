@@ -80,6 +80,9 @@ export interface GateRun {
   status: GateRunStatus;
   rejection?: GateRejection;
   hooksInput?: 'observed' | 'unverified';
+  reason?: string;
+  turn?: number;
+  steerCount?: number;
 }
 export interface GateRunRecord { sessionId: string; runs: GateRun[] }
 export type GateRunFrame = { type: 'sync' } | { type: 'run'; run: GateRun };

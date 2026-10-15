@@ -32,7 +32,15 @@ Studio는 특정 기능(양식 검증, 번역, 검색 요약, 선압축)을 직�
 - **수용한 S3 tradeoff:** running/pending 보호 기록이 해소되지 않으면 200건 상한을 넘어 계속 성장할 수 있다. 엄격한 용량 상한보다 진행 중 소유권과 미처리 원문 보존을 우선한다.
 - **S3 완료 기준:** 구독 수정 커밋 `3e155af79b`를 포함한다. 사용자 결정에 따라 코드 리뷰는 **S9 이후 일괄 진행**하며 단계별 리뷰를 기다리지 않는다.
 - **S4 구현·로컬 검증 완료:** 프리셋 연결 정의 저장소, Remote 조회·저장, input waterfall 바인딩, 명령/모델 어댑터, 실행 기록·관찰 이벤트를 연결했다. 타입 검사·Studio 빌드 포함 전체 테스트 **272개 통과**(이번 S4 20개 추가), `git diff --check` 통과. 실제 모델·실제 훅 브리지 Loader·독립 설치는 미검증이므로 S4 전체 수용 완료와 구별한다.
-- **다음 단계 S5:** 턴 종료 연결. S6 도구 연결, S7 UI, S8 judge 연결, S9 독립 설치 검증은 대기한다. S1 미확인 사항은 관련 연결 단계에서 확인해야 하며 완료로 간주하지 않는다.
+- **S5 구현·로컬 검증 완료:** turn-stopping 뒤 등록, 마지막 assistant text 수집, 기존 steer 관찰, 게이트·턴별 상한을 연결했다. 타입 검사·Studio 테스트(빌드 포함) **285개 통과**, diff 검사 통과. 다음은 S6이며 S7–S9는 대기한다. S1 미확인 사항은 완료로 간주하지 않는다.
+
+### S5 구현 결과와 남은 검증
+
+- `prepend` 없이 serial 리스너를 등록한다. `nextStep`이 있더라도 검사는 실행하여 note/실패 기록을 남기되 `hooks.decision: steer`, context로 알리고 중복 steer하지 않는다. 뒤 리스너의 미래 steer까지 관측한다는 보장은 없다.
+- 마지막 assistant의 text만 합친다. pass/note는 applied none, fail 및 onError block은 교정 메시지(source `studio-pixie-gate`)로 이어간다. 원 답변은 교체/숨김하지 않는다.
+- Agent WeakMap에 현재 turn과 gateId별 누적 횟수를 보관하여 같은 턴의 반복 stopping에서도 상한이 유지된다. 다음 턴은 초기화한다. `reason`, `turn`, `steerCount`를 기록하며 기존 steering/상한은 applied none이다.
+- 단일 확정점 뒤 finish→emit→steer 순서를 유지한다. finish 중 취소는 확정 결정을 바꾸지 않는다. applied는 게이트가 확정한 동작이지 이후 루프의 실제 소비 보장이 아니다.
+- 신규 단위 테스트 11개: pass/note/fail, 반복 상한·다음 턴 초기화, 기존 steer 관찰, 확정 전/finish 중 취소, 프리셋/root/child 필터. 실제 모델, Loader 종단간 continuation, 독립 설치 및 UI 카드는 미검증(S7/S9 인계).
 
 ### S4 취소 경합 보강 (A)
 
