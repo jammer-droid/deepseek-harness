@@ -32,6 +32,10 @@ export class PixieGateStore implements PixieGateRecorder {
       if ((error as NodeJS.ErrnoException).code === 'ENOENT') return { sessionId, runs: [] };
       throw error;
     }
+    if (!record || typeof record !== 'object' || Array.isArray(record) || record.sessionId !== sessionId || !Array.isArray(record.runs)
+      || record.runs.some(run => !run || typeof run !== 'object' || Array.isArray(run) || run.sessionId !== sessionId)) {
+      throw new Error(`Invalid Pixie Gate record for session ${sessionId}`);
+    }
     for (const run of record.runs) if (run.status === 'running' && !this.live.has(run.id)) run.status = 'cancelled';
     return record;
   }
@@ -43,8 +47,10 @@ export class PixieGateStore implements PixieGateRecorder {
       const run: GateRun = { id: randomUUID(), gateId: snapshot.id, gateName: snapshot.name, point: snapshot.point, sessionId,
         startedAt: Date.now(), original, finalText: original, applied: 'none', usage: { inputTokens: 0, outputTokens: 0 }, status: 'running' };
       record.runs.push(run);
-      await this.save(record);
+      // Reserve ownership before rename exposes the running record to concurrent readers.
       this.live.set(run.id, run);
+      try { await this.save(sessionId, record); }
+      catch (error) { this.live.delete(run.id); throw error; }
       this.publish(run);
       return structuredClone(run);
     });
@@ -66,7 +72,7 @@ export class PixieGateStore implements PixieGateRecorder {
         run.usage = gateUsage(value.result);
       }
       if (value.rejection) run.rejection = { ...value.rejection, original: run.original, status: 'pending' };
-      await this.save(record);
+      await this.save(sessionId, record);
       this.live.delete(runId);
       this.publish(run);
       return true;
@@ -80,7 +86,7 @@ export class PixieGateStore implements PixieGateRecorder {
       const run = record.runs.find(item => item.id === runId);
       if (!run?.rejection || run.rejection.status !== 'pending') throw new Error('Rejection is not pending');
       run.rejection.status = status;
-      await this.save(record);
+      await this.save(sessionId, record);
       this.publish(run);
       return structuredClone(run);
     });
@@ -135,13 +141,13 @@ export class PixieGateStore implements PixieGateRecorder {
   }
 
   private file(sessionId: string): string {
-    if (!SESSION_ID.test(sessionId)) throw new Error(`Invalid session id for Pixie Gate: ${JSON.stringify(sessionId)}`);
+    if (typeof sessionId !== 'string' || !SESSION_ID.test(sessionId)) throw new Error(`Invalid session id for Pixie Gate: ${JSON.stringify(sessionId)}`);
     return join(this.root, `${sessionId}.json`);
   }
   private publish(run: GateRun): void {
     for (const listener of this.listeners.get(run.sessionId) ?? []) listener({ type: 'run', run: structuredClone(run) });
   }
-  private async save(record: GateRunRecord): Promise<void> {
+  private async save(sessionId: string, record: GateRunRecord): Promise<void> {
     let excess = record.runs.length - MAX_GATE_RUNS;
     // Insertion order is execution start order. Pending input and running work must never disappear.
     record.runs = record.runs.filter(run => {
@@ -149,7 +155,7 @@ export class PixieGateStore implements PixieGateRecorder {
       return true;
     });
     await mkdir(this.root, { recursive: true });
-    const file = this.file(record.sessionId);
+    const file = this.file(sessionId);
     const temporary = `${file}.${randomUUID()}.tmp`;
     try { await writeFile(temporary, JSON.stringify(record)); await rename(temporary, file); }
     finally { await rm(temporary, { force: true }); }

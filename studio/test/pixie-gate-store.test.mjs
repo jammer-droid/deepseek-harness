@@ -1,6 +1,8 @@
 import { test } from 'node:test';
+import fs from 'node:fs/promises';
+import { syncBuiltinESMExports } from 'node:module';
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, readdir, stat } from 'node:fs/promises';
+import { mkdtemp, readFile, readdir, stat, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { PixieGateStore, MAX_GATE_RUNS } from '../src/host/pixie-gate-store.ts';
@@ -155,4 +157,86 @@ test('invalid session ids are rejected at every file boundary', async () => {
     await assert.rejects(store.read(id), /Invalid session id/);
     await assert.rejects(store.follow(id, new AbortController().signal).next(), /Invalid session id/);
   }
+});
+
+for (const [label, content] of [
+  ['envelope mismatch', JSON.stringify({ sessionId: 'b', runs: [] })],
+  ['run session mismatch', JSON.stringify({ sessionId: 'a', runs: [{ id: 'r', sessionId: 'b', status: 'done' }] })],
+  ['non-array runs', JSON.stringify({ sessionId: 'a', runs: {} })],
+  ['null envelope', 'null'], ['array envelope', '[]'], ['null run', JSON.stringify({ sessionId: 'a', runs: [null] })],
+  ['broken JSON', '{'],
+]) test(`corrupt records fail closed without touching either session: ${label}`, async () => {
+  const dir = await root(); const store = new PixieGateStore(dir);
+  const other = await store.start('b', gate, 'original'); await store.finish('b', other.id, done);
+  const a = join(dir, 'gates', 'a.json'); const b = join(dir, 'gates', 'b.json');
+  await writeFile(a, content); const before = await readFile(b, 'utf8');
+  await assert.rejects(store.read('a'));
+  await assert.rejects(store.start('a', gate, 'original'));
+  await assert.rejects(store.finish('a', 'r', done));
+  await assert.rejects(store.resolveRejection('a', 'r', 'dismissed'));
+  assert.equal(await readFile(a, 'utf8'), content);
+  assert.equal(await readFile(b, 'utf8'), before);
+  assert.deepEqual((await readdir(join(dir, 'gates'))).sort(), ['a.json', 'b.json']);
+});
+
+function deferred() { let resolve; const promise = new Promise(r => { resolve = r; }); return { promise, resolve }; }
+
+// Intercept only the chosen file; restore the builtin binding even when an assertion fails.
+function interceptRename(t, target, hook) {
+  const rename = fs.rename;
+  t.mock.method(fs, 'rename', async (from, to) => to === target ? hook(from, to, rename) : rename(from, to));
+  syncBuiltinESMExports();
+  t.after(() => { t.mock.restoreAll(); syncBuiltinESMExports(); });
+}
+
+test('published start stays running while save cleanup is delayed', async t => {
+  const dir = await root(); const store = new PixieGateStore(dir);
+  const published = deferred(); const release = deferred();
+  interceptRename(t, join(dir, 'gates', 's.json'), async (from, to, rename) => {
+    await rename(from, to); published.resolve(); await release.promise;
+  });
+  const starting = store.start('s', gate, 'original');
+  try {
+    await published.promise;
+    assert.equal((await store.read('s')).runs[0].status, 'running');
+  } finally { release.resolve(); await starting; }
+});
+
+test('failed start rolls back live reservation and permits retry', async t => {
+  const dir = await root(); const store = new PixieGateStore(dir); const path = join(dir, 'gates', 's.json');
+  let failedRecord;
+  interceptRename(t, path, async from => { failedRecord = await readFile(from, 'utf8'); throw Error('injected save failure'); });
+  await assert.rejects(store.start('s', gate, 'original'), /injected save failure/);
+  // A disk remnant must not be mistaken for a live run after a failed start.
+  await writeFile(path, failedRecord);
+  assert.equal((await store.read('s')).runs[0].status, 'cancelled');
+  const abort = new AbortController(); const stream = store.follow('s', abort.signal);
+  assert.equal((await stream.next()).value.type, 'sync');
+  const next = stream.next(); abort.abort(); assert.equal((await next).done, true);
+  assert.deepEqual(await store.prune(async () => []), ['s']);
+  t.mock.restoreAll(); syncBuiltinESMExports();
+  assert.equal((await store.start('s', gate, 'original')).status, 'running');
+});
+
+test('prune waits behind an in-flight save in the same session queue', async t => {
+  const dir = await root(); const store = new PixieGateStore(dir);
+  const run = await store.start('s', gate, 'original');
+  const saving = deferred(); const release = deferred(); const listed = deferred();
+  interceptRename(t, join(dir, 'gates', 's.json'), async (from, to, rename) => {
+    saving.resolve(); await release.promise; await rename(from, to);
+  });
+  const readdir = fs.readdir;
+  t.mock.method(fs, 'readdir', async path => { const names = await readdir(path); listed.resolve(); return names; });
+  syncBuiltinESMExports();
+  const finishing = store.finish('s', run.id, done); await saving.promise;
+  let settled = false;
+  const pruning = store.prune(async () => []).then(value => { settled = true; return value; });
+  try {
+    await listed.promise;
+    await new Promise(resolve => setImmediate(resolve));
+    assert.equal(settled, false);
+  } finally { release.resolve(); await finishing; }
+  assert.deepEqual(await pruning, ['s']);
+  assert.deepEqual((await store.read('s')).runs, []);
+  assert.deepEqual(await readdir(join(dir, 'gates')), []);
 });

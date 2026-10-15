@@ -51,3 +51,16 @@ for (const fails of [false, true]) test(`service startup prune includes gates; l
   assert.equal((await store.read('archived')).runs.length, 1);
   assert.equal((await store.read('gone')).runs.length, fails ? 1 : 0);
 });
+
+for (const id of [null, 123, undefined, {}, { toString: () => 's' }]) {
+  test(`Remote gate methods reject non-string session ID: ${String(id)}`, async () => {
+    const h = await harness(async () => ({ items: [] }));
+    const fiber = h.ctx.plugin(PixieService, h.dir); await fiber;
+    const service = h.ctx.get('studioPixie'); const abort = new AbortController();
+    try {
+      await assert.rejects(service.gateRuns(id), /Invalid session id/);
+      await assert.rejects(service.resolveGateRejection(id, 'r', 'dismissed'), /Invalid session id/);
+      await assert.rejects(service.followGates(id, abort.signal).next(), /Invalid session id/);
+    } finally { abort.abort(); await fiber.dispose(); }
+  });
+}
