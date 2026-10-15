@@ -1,4 +1,5 @@
 import React from 'react';
+import { GateTrialPanel, type GateTrialAction } from './pixie-gate-trial-panel.tsx';
 import { Button, Notice, PageHead, SectionHead, SettingsRow, Toggle } from './ui.tsx';
 import { MAX_GATE_STAGES, validateGateDefinition, type GateDefinition, type StageDefinition } from './pixie-gate-contracts.ts';
 import { gateEditorText, type GateEditorKey } from './pixie-gate-editor-locale.ts';
@@ -10,6 +11,7 @@ export interface GateEditorActions {
   save(entries: GateEntry[]): Promise<unknown>;
   presets(): Promise<{ id: string; name: string }[]>;
   models(): Promise<PixieSettingsCatalog>;
+  trial: GateTrialAction;
 }
 const message = (error: unknown) => error instanceof Error ? error.message : String(error);
 const makeStage = (id: string): StageDefinition => ({ id, kind: 'converse', role: 'check', prompt: '{{subject}}' });
@@ -120,5 +122,6 @@ export function GateEditor({ actions, locale }: { actions: GateEditorActions; lo
         </section>)}
       </>}
     </fieldset>}
+    {g && <GateTrialPanel key={g.id} definition={g} trial={actions.trial} locale={locale} />}
   </div>;
 }

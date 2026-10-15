@@ -1,4 +1,8 @@
 const messages = {
+  trial: ['시험 실행', 'Trial run', '试运行'], trialDraft: ['저장하지 않은 현재 편집 내용으로 실행합니다. 결과는 세션에 적용하지 않습니다.', 'Run the unsaved draft without applying results to a session.', '试运行未保存的编辑内容，不将结果应用于会话。'],
+  sample: ['샘플 입력 (필수)', 'Sample input (required)', '示例输入（必填）'], sampleTool: ['도구 이름', 'Tool name', '工具名称'], sampleHooks: ['일반 훅 컨텍스트 (선택)', 'Hook context (optional)', '钩子上下文（可选）'],
+  executeCommands: ['명령 실행', 'Execute commands', '执行命令'], noSession: ['설정 화면에서는 세션 정책을 알 수 없어 명령 단계를 실행하지 않습니다', 'Command stages are disabled because session policy is unavailable in settings.', '设置页面无法获知会话策略，因此不执行命令阶段。'],
+  runTrial: ['실행', 'Run trial', '运行'], cancelTrial: ['취소', 'Cancel trial', '取消'], trialRunning: ['시험 실행 중…', 'Running trial…', '正在试运行…'], trialCancelled: ['시험 실행 취소됨', 'Trial cancelled', '试运行已取消'], trialError: ['시험 실행 오류', 'Trial failed', '试运行失败'],
   title: ['게이트', 'Gates', '门控'], description: ['프리셋에 연결할 순차 파이프라인을 편집합니다.', 'Edit sequential pipelines connected to presets.', '编辑关联预设的顺序流水线。'],
   yes: ['켜짐', 'On', '开启'], no: ['꺼짐', 'Off', '关闭'],
   add: ['게이트 추가', 'Add gate', '添加门控'], duplicate: ['복제', 'Duplicate', '复制'], remove: ['삭제', 'Delete', '删除'],

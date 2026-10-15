@@ -2,6 +2,7 @@
  * The tab registers only where the right sidebar exists, so Studio still loads without it.
  */
 import React from 'react';
+import type { GateTrialResponse } from './pixie-gate-trial-panel.tsx';
 import type { GateEntry, GateEditorActions } from './pixie-gate-editor.tsx';
 import type { StudioContext } from './contracts.js';
 import { PACKAGE_NAME } from './package-name.ts';
@@ -32,6 +33,7 @@ interface PixieRemote {
   ask(sessionId: string, payload: string): RemoteValue<{ threadId: string; turnId: string }>;
   cancel(sessionId: string): RemoteValue<boolean>;
   follow(sessionId: string): AsyncIterable<PixieAskFrame> & { dispose(): void };
+  trialGate(payload: string, signal: AbortSignal): RemoteValue<GateTrialResponse>;
   gateDefinitions(): RemoteValue<GateEntry[]>;
   saveGateDefinitions(payload: string): RemoteValue<unknown>;
   readSettings(): RemoteValue<PixieSettings>;
@@ -62,6 +64,7 @@ export function pixieDescriptors() {
     descriptor('ask', ['sessionId', 'payload']),
     descriptor('cancel', ['sessionId']),
     descriptor('follow', ['sessionId'], { mode: 'stream', cancellation: { parameter: 'signal' } }),
+    descriptor('trialGate', ['payload'], { cancellation: { parameter: 'signal' } }),
     descriptor('gateDefinitions', []),
     descriptor('saveGateDefinitions', ['payload']),
     descriptor('readSettings', []),
@@ -87,6 +90,10 @@ export function mountPixie(ctx: StudioContext, options: { navFooter?: (locale: s
     models: () => unwrap(remote().models()) as ReturnType<PixieSettingsActions['models']>,
   };
   const gateActions: GateEditorActions = {
+    trial: request => {
+      const controller = new AbortController();
+      return { result: unwrap(remote().trialGate(JSON.stringify(request), controller.signal)), cancel: () => controller.abort() };
+    },
     read: () => unwrap(remote().gateDefinitions()),
     save: entries => unwrap(remote().saveGateDefinitions(JSON.stringify(entries))),
     models: settingsActions.models,

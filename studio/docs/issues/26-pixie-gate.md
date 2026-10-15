@@ -394,6 +394,16 @@ interface GateResult {
 - **이번 범위의 미완료:** 시간 예산에 따라 편집기를 우선 커밋한다. 시험 실행 패널, trialGate Remote descriptor/취소 연결, GateResultDetails 연결, 현재 세션 공개 API 확인 및 명령 실행 옵션·payload 테스트는 다음 작업이다. 현재 세션을 추측하거나 사용자 GUI Client Inspect를 호출하지 않았다.
 - **S7 남은 것:** Pixie 탭 실행 카드/followGates, 거부 카드의 수정해서 보내기, 격리 GUI 라이트·다크·좁은 폭 시각 확인. 사용자 GUI(19387)·desktop 프로필 접근 및 배포, 독립 설치는 하지 않았다. S1 표는 변경하지 않았다.
 
+#### S7 부분 진행 — (A) 설정 시험 실행 패널
+
+- 편집기 아래에 샘플 입력(필수), tool-*의 도구 이름(필수), 일반 훅 컨텍스트(선택), 기본 꺼짐 명령 실행, 실행/취소와 `GateResultDetails`를 연결했다. 저장 API를 호출하지 않고 현재 draft를 복제해 전달한다. 결과·단계 생략·소요 시간·오류 Notice를 표시하며 사용량은 표시하지 않는다. 선택 게이트 변경/언마운트 시 취소하고 취소 이후 늦은 결과는 폐기한다.
+- `trialGate` descriptor에 cancellation을 선언하고 `AbortController` 기반 `{ result, cancel }` handle을 연결했다. 공개 Remote의 optional AbortSignal 계약은 [gateway Client](../../../packages/api/gateway/src/client/index.ts#L495-L531)에서 확인했다. 셸의 기존 단일 `$mount` 조립 경로에 descriptor가 합쳐진다.
+- **세션 선택:** 공개 Session Slot에는 framework가 sessionId를 전달한다([ui-slots](../../../packages/client/ui-slots/src/index.ts#L614-L625)). 기존 Pixie 사이드바도 해당 prop을 사용한다([pixie-client](../../src/pixie-client.tsx#L149-L152)). 반면 설정 서비스는 [shell](../../src/shell.tsx#L74-L83)의 root scope이다. 따라서 전역의 임의 활성 세션을 추측하지 않고 설정에서는 명령 실행을 비활성화하며 “설정 화면에서는 세션 정책을 알 수 없어 명령 단계를 실행하지 않습니다”를 표시한다. 패널의 명시적 sessionId seam에서는 opt-in 활성/payload를 테스트하되 현재 설정 경로에서는 sessionId를 제공하지 않는다. 실제 실행 정책 검증은 기존 Host가 담당한다.
+- **Client Inspect 미사용(사용자 GUI 보호):** Provider 목록만 확인했으며 client query는 사용자 GUI(19387)에 전달되므로 호출하지 않았다. Host `Service/listService(studioPixie)`는 미등록 오류여서 런타임 계약 확인 증거로 사용하지 않았다. 공개 소스 정적 조사로 대체했고 격리 Client Inspect/실제 시각 확인은 다음 워커로 넘긴다.
+- 기존 공용 부품·스타일만 사용했다. 새 공용 부품이나 CSS 변경이 없어 디자인 시스템 표 및 HTML 스냅샷 재생성은 필요하지 않다. ko·en·zh 문구를 제공한다.
+- 검증: `npm --prefix studio run typecheck`, `npm --prefix studio test` **332개 통과**(신규 jsdom 6개: draft·결과·skipped, 세션 없음 비활성, 명시적 세션 명령 opt-in/tool payload, 취소/늦은 결과 폐기, 오류 Notice, 언마운트 취소), `git diff --check`. 초기 테스트에서 Toggle을 checkbox로 가정한 assertion은 실제 switch의 aria-checked 검사로 수정했다. 기존 Node deprecation 및 RoleEditor heading nesting 경고는 유지된다.
+- **다음 작업 (B):** Pixie 탭 실행 카드, applied 상태/상세·pending 거부 처리, followGates sync 재조회·run 반영·재연결, 560px 목록/상세 전환, 공개 입력 채우기 API 정적 조사 및 격리 Client Inspect 확인. B 코드는 아직 변경하지 않았다. 격리 GUI 시각 검증·독립 설치·사용자 배포는 미실시이며 S1 표는 변경하지 않았다. 코드 리뷰는 S9 이후 일괄 수행한다.
+
 ### S8 — 판정 단계 연결
 
 - 선행: S2, S7.
