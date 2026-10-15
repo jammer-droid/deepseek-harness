@@ -85,16 +85,16 @@ export function gateInput(deps: GateInputDeps) {
         item.applied = 'appended';
       }
     }
-    // Persistence is awaited before returning a destructive decision. Recheck cancellation after every await.
+    // Commit once before persistence: late cancellation belongs to the caller's turn loop.
+    const cancelled = payload.signal.aborted || pending.some(item => item.result.verdict === 'cancelled');
+    const committed: Decision = cancelled ? decision : rejected ? { kind: 'reject' }
+      : pending.some(item => item.applied === 'replaced' || item.applied === 'appended') ? { ...decision, messages } : decision;
     for (const item of pending) {
-      const cancelled = payload.signal.aborted || item.result.verdict === 'cancelled';
       const applied = cancelled || (rejected && item.applied !== 'rejected') ? 'none' : item.applied;
       await deps.recorder.finish(payload.agent.id, item.run.id, { status: cancelled ? 'cancelled' : item.result.verdict === 'error' ? 'error' : 'done', result: item.result, applied, hooksInput, ...(applied === 'rejected' ? { rejection: item.rejection } : {}) });
       const usage = gateUsage(item.result);
       deps.emit('pixie-gate/end', { ...item.run, result: item.result, finalText: item.result.subject, applied, hooksInput, usage, endedAt: Date.now(), status: cancelled ? 'cancelled' : item.result.verdict === 'error' ? 'error' : 'done', ...(applied === 'rejected' && item.rejection ? { rejection: { ...item.rejection, original: item.run.original, status: 'pending' as const } } : {}) });
     }
-    if (payload.signal.aborted) return decision;
-    if (rejected) return { kind: 'reject' };
-    return pending.some(item => item.applied === 'replaced' || item.applied === 'appended') ? { ...decision, messages } : decision;
+    return committed;
   };
 }

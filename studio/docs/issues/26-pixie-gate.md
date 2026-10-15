@@ -34,6 +34,12 @@ Studio는 특정 기능(양식 검증, 번역, 검색 요약, 선압축)을 직�
 - **S4 구현·로컬 검증 완료:** 프리셋 연결 정의 저장소, Remote 조회·저장, input waterfall 바인딩, 명령/모델 어댑터, 실행 기록·관찰 이벤트를 연결했다. 타입 검사·Studio 빌드 포함 전체 테스트 **272개 통과**(이번 S4 20개 추가), `git diff --check` 통과. 실제 모델·실제 훅 브리지 Loader·독립 설치는 미검증이므로 S4 전체 수용 완료와 구별한다.
 - **다음 단계 S5:** 턴 종료 연결. S6 도구 연결, S7 UI, S8 judge 연결, S9 독립 설치 검증은 대기한다. S1 미확인 사항은 관련 연결 단계에서 확인해야 하며 완료로 간주하지 않는다.
 
+### S4 취소 경합 보강 (A)
+
+- 반환 결정과 `applied`를 finish 이전 단일 동기 확정점에서 함께 확정한다. 확정 전 취소는 원 decision + applied none이며, finish 저장 중 취소는 이미 확정한 결정을 그대로 반환한다. `applied`는 게이트가 반환한 결정이며 이후 턴 취소로 DSH 루프가 적용하지 않을 수 있다. terminal 기록을 재작성하지 않아 S3 한 번만 정착 불변을 유지한다.
+- 먼저 finish 저장 직후 abort를 발생시키는 revise/fail 회귀 2개를 추가했다. 수정 전 각각 original/new, enter/reject 불일치로 실패(20개 중 2개 실패)를 확인했다. 기존 before/stage/end 취소 회귀는 확정 전 applied none을 검증한다.
+- 검증: `npm --prefix studio run typecheck`, `npm --prefix studio test`(빌드 포함, **274개 통과**), `git diff --check` 통과. 실제 모델·GUI·독립 설치는 이 보강 범위에서 미검증이다.
+
 ### S4 구현 결과와 남은 검증
 
 - 정의는 `<pixie root>/gates.json`의 `{ definition, presetIds }[]`로 저장한다. 전체 목록을 검증·정규화한 뒤 직렬화된 임시 파일 rename으로 교체하며 검증/저장 오류는 Remote에 반환한다. `gateDefinitions()`·`saveGateDefinitions(payload)`는 S7 편집기용이다. 같은 프리셋·지점의 활성 게이트 중복은 거부한다(복수 게이트 실행 순서는 후속). 실행 기록 디렉터리 `gates/`와 충돌하지 않는다.

@@ -54,6 +54,17 @@ for (const when of ['before', 'stage', 'end']) test(`cancellation ${when} applie
   assert.equal(await h.invoke(), h.decision);
   const run = (await h.recorder.read('session')).runs[0]; assert.equal(run.applied, 'none'); assert.equal(run.status, 'cancelled'); assert.equal(run.rejection, undefined);
 });
+for (const [verdict, expected] of [['revise', 'replaced'], ['fail', 'rejected']]) test(`cancellation during finish preserves committed ${verdict} decision`, async () => {
+  const h = await harness({ verdict, text: 'new', reason: 'bad' });
+  const finish = h.recorder.finish.bind(h.recorder);
+  h.recorder.finish = async (...args) => { const saved = await finish(...args); h.abort.abort(); return saved; };
+  const value = await h.invoke();
+  const run = (await h.recorder.read('session')).runs[0];
+  assert.equal(run.applied, expected);
+  if (verdict === 'fail') assert.equal(value.kind, 'reject');
+  else assert.equal(value.messages[0].content[0].text, 'new');
+  assert.equal(h.events.at(-1)[1].applied, expected);
+});
 test('downstream rejection is returned without consulting gate definitions', async () => {
   const h = await harness({ verdict: 'fail' }); const reject = { kind: 'reject' };
   assert.equal(await h.invoke(async () => reject), reject); assert.equal(h.events.length, 0);
