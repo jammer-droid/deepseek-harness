@@ -51,6 +51,7 @@ export function GateRunsPanel({ actions, locale }: { actions: GateRunActions; lo
   const sorted = [...runs].sort((a, b) => Number(b.rejection?.status === 'pending') - Number(a.rejection?.status === 'pending') || b.startedAt - a.startedAt);
   const opened = sorted.find(run => run.id === openId);
   const shown = opened ?? sorted[0];
+  const rejectionOriginal = shown?.rejection?.original || shown?.original || '';
   const badges = (run: GateRun) => <><Badge tone={run.rejection?.status === 'pending' || run.status === 'error' ? 'warning' : 'neutral'}>{t(run.rejection?.status === 'pending' ? 'pending' : gateRunStatus(run))}</Badge></>;
   const resolve = async (run: GateRun, status: 'resent' | 'dismissed') => {
     setBusy(true); setError('');
@@ -82,11 +83,11 @@ export function GateRunsPanel({ actions, locale }: { actions: GateRunActions; lo
         {shown.point === 'turn-end' && <p className="studio-card-meta">{t('turn')}: {shown.turn ?? '—'} · {t('steerCount')}: {shown.steerCount ?? '—'}</p>}
         {shown.point.startsWith('tool-') && shown.tool && <p className="studio-card-meta">{t('tool')}: {shown.tool.name} · {t('callId')}: {shown.tool.callId}</p>}
         {shown.rejection && <section>
-          <section><SectionHead title={t('original')} /><p className="studio-pixie-answer">{shown.rejection.original}</p></section>
+          {rejectionOriginal && <section><SectionHead title={t('original')} /><p className="studio-pixie-answer">{rejectionOriginal}</p></section>}
           <section><SectionHead title={t('reason')} /><p className="studio-pixie-answer">{shown.rejection.reason}</p></section>
           {shown.rejection.suggestion && <section><SectionHead title={t('suggestion')} /><p className="studio-pixie-answer">{shown.rejection.suggestion}</p></section>}
           {shown.rejection.status === 'pending' && <><Note>{t('draftNote')}</Note><div className="studio-inline-actions">
-            <Button small disabled={busy} onClick={() => { try { actions.fillDraft(shown.rejection!.suggestion ?? shown.rejection!.original); setError(''); } catch { setError(t('composerUnavailable')); } }}>{t('editSend')}</Button>
+            <Button small disabled={busy} onClick={() => { try { actions.fillDraft(shown.rejection!.suggestion || rejectionOriginal); setError(''); } catch { setError(t('composerUnavailable')); } }}>{t('editSend')}</Button>
             <Button small disabled={busy} onClick={() => { void resolve(shown, 'resent'); }}>{t('resent')}</Button>
             <Button small disabled={busy} onClick={() => { void resolve(shown, 'dismissed'); }}>{t('dismissed')}</Button>
           </div></>}

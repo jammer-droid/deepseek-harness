@@ -138,3 +138,19 @@ test('missing, zero and invalid timestamps use dash, pending has one status badg
     await f.close();
   }
 });
+
+for (const original of ['', undefined]) test(`rejection detail and draft fall back to run original: ${String(original)}`, async t => {
+  const p = pending(); p.rejection.original = original; p.rejection.suggestion = '';
+  const f = await setup([p]); t.after(() => f.close());
+  const heading = [...f.host.querySelectorAll('h3')].find(h => h.textContent === 'Original');
+  assert.ok(heading); assert.match(heading.closest('section').textContent, /original pending/);
+  await act(async () => button(f.host, 'Edit and send').click());
+  assert.deepEqual(f.calls, [['draft', 'original pending']]);
+});
+test('rejection detail omits original section when both originals are missing', async t => {
+  const p = pending(); delete p.original; delete p.rejection.original; delete p.rejection.suggestion;
+  const f = await setup([p]); t.after(() => f.close());
+  assert.equal([...f.host.querySelectorAll('h3')].some(h => h.textContent === 'Original'), false);
+  await act(async () => button(f.host, 'Edit and send').click());
+  assert.deepEqual(f.calls, [['draft', '']]);
+});
