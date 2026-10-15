@@ -25,10 +25,25 @@ export function validatePresetGates(value: unknown): PresetGate[] {
 /** Atomic, serialized replacement; invalid or failed saves never publish a new definition. */
 export class PixieGateDefinitions {
   private writes: Promise<unknown> = Promise.resolve();
-  constructor(private readonly file: string) {}
+  constructor(private readonly file: string, private readonly legacyFile?: string) {}
   async read(): Promise<PresetGate[]> {
     try { return validatePresetGates(JSON.parse(await readFile(this.file, 'utf8'))); }
-    catch (error) { if ((error as NodeJS.ErrnoException).code === 'ENOENT') return []; throw error; }
+    catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error; }
+    if (!this.legacyFile) return [];
+    const operation = this.writes.catch(() => {}).then(async () => {
+      // Recheck within the write queue: a save or another first read may have won.
+      try { return validatePresetGates(JSON.parse(await readFile(this.file, 'utf8'))); }
+      catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error; }
+      let rows: PresetGate[];
+      try { rows = validatePresetGates(JSON.parse(await readFile(this.legacyFile!, 'utf8'))); }
+      catch (error) { if ((error as NodeJS.ErrnoException).code === 'ENOENT') return []; throw error; }
+      await mkdir(dirname(this.file), { recursive: true });
+      // Atomic rename only after validation. A failed move leaves the original intact.
+      await rename(this.legacyFile!, this.file);
+      return rows;
+    });
+    this.writes = operation;
+    return operation;
   }
   save(value: unknown): Promise<PresetGate[]> {
     const rows = validatePresetGates(value);

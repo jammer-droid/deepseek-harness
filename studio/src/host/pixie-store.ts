@@ -94,6 +94,10 @@ export class PixieStore {
       if (!name.endsWith('.json')) continue;
       const sessionId = name.slice(0, -'.json'.length);
       if (!SESSION_ID.test(sessionId) || this.queues.has(sessionId) || await exists(sessionId)) continue;
+      // This directory can contain legacy non-session JSON; never prune by filename alone.
+      let record: unknown;
+      try { record = JSON.parse(await readFile(join(this.root, name), 'utf8')); } catch { continue; }
+      if (!record || typeof record !== 'object' || Array.isArray(record) || (record as PixieSessionRecord).sessionId !== sessionId || !Array.isArray((record as PixieSessionRecord).threads)) continue;
       await rm(join(this.root, name), { force: true });
       removed.push(sessionId);
     }

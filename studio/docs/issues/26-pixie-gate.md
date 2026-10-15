@@ -63,6 +63,8 @@ Studio는 특정 기능(양식 검증, 번역, 검색 요약, 선압축)을 직�
 
 ### S4 구현 결과와 남은 검증
 
+- **정의 저장 경로 보강:** 일반 Pixie 세션 prune이 `<pixie root>/gates.json`을 sessionId `gates`로 오인해 삭제하는 경합을 발견했다. 정의는 `<data>/pixie-gate/definitions.json`으로 분리하며 첫 읽기에서 기존 파일을 검증 후 원자적 rename한다(실패 시 원본 유지, 없으면 빈 목록). 일반 prune도 파일명과 일치하는 sessionId·threads 배열을 가진 세션 envelope만 삭제한다. 결정적 이전·실패·prune 보존 테스트를 추가했다.
+
 - 정의는 `<pixie root>/gates.json`의 `{ definition, presetIds }[]`로 저장한다. 전체 목록을 검증·정규화한 뒤 직렬화된 임시 파일 rename으로 교체하며 검증/저장 오류는 Remote에 반환한다. `gateDefinitions()`·`saveGateDefinitions(payload)`는 S7 편집기용이다. 같은 프리셋·지점의 활성 게이트 중복은 거부한다(복수 게이트 실행 순서는 후속). 실행 기록 디렉터리 `gates/`와 충돌하지 않는다.
 - 프리셋 판별은 공개 `agentPresets.composedPreset(agent.ctx)`를 매 호출 사용한다. `preset-policy`의 scope ancestry 방식과 달리 연결 id 목록을 직접 대조하므로 재선택/recompose 후 별도 리스너 재설치가 필요 없다. root/child는 공개 `agents.roots()`의 현재 runtime 소유 관계이며 durable parent lineage를 추정하지 않는다.
 - 대상 메시지는 각각 실행하여 원래 source 객체(중계 sender/form 포함)와 비텍스트 content를 보존한다. 원문 text 블록은 줄바꿈으로 합쳐 전달하고 교체 시 첫 text 위치에 결과를 넣는다. runtime-context/model-selection/일반 훅/게이트 컨텍스트는 대상에서 제외한다. 여러 메시지 결과는 하나의 enter/reject로 적용하며 뒤의 거부가 앞의 교체를 폐기하면 앞 run은 applied=none이다.

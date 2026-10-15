@@ -64,7 +64,7 @@ export class PixieService extends TypertRemoteService {
     this.store = new PixieStore(join(dataDir, 'pixie'));
     this.gates = new PixieGateStore(join(dataDir, 'pixie'));
     this.settings = new PixieSettingsStore(join(dataDir, 'pixie-settings.json'));
-    this.definitions = new PixieGateDefinitions(join(dataDir, 'pixie', 'gates.json'));
+    this.definitions = new PixieGateDefinitions(join(dataDir, 'pixie-gate', 'definitions.json'), join(dataDir, 'pixie', 'gates.json'));
     const gateDeps: GateInputDeps = {
       definitions: () => this.definitions.read(),
       preset: agent => ctx.get('agentPresets')?.composedPreset(agent.ctx),
