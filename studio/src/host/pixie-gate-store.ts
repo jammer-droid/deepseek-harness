@@ -6,7 +6,7 @@ import type { PixieUsage } from '../pixie-contracts.ts';
 
 export const MAX_GATE_RUNS = 200;
 const SESSION_ID = /^[\w-]{1,200}$/;
-type Settlement = { reason?: string; turn?: number; steerCount?: number; status: Exclude<GateRunStatus, 'running'>; result?: GateResult; applied: GateApplied; hooksInput?: 'observed' | 'unverified'; rejection?: { reason: string; suggestion?: string } };
+type Settlement = { tool?: { name: string; callId: string }; reason?: string; turn?: number; steerCount?: number; status: Exclude<GateRunStatus, 'running'>; result?: GateResult; applied: GateApplied; hooksInput?: 'observed' | 'unverified'; rejection?: { reason: string; suggestion?: string } };
 
 /** Internal producer port for S4–S6. Persist start before applying destructive decisions.
  * End hooks preserve the verdict on external cancellation: check signal before applying an action.
@@ -73,6 +73,7 @@ export class PixieGateStore implements PixieGateRecorder {
       if (value.hooksInput) run.hooksInput = value.hooksInput;
       if (value.reason !== undefined) run.reason = value.reason;
       if (value.turn !== undefined) run.turn = value.turn;
+      if (value.tool !== undefined) run.tool = value.tool;
       if (value.steerCount !== undefined) run.steerCount = value.steerCount;
       if (value.result) {
         run.result = value.result; run.finalText = value.result.subject;

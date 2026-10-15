@@ -32,7 +32,7 @@ Studio는 특정 기능(양식 검증, 번역, 검색 요약, 선압축)을 직�
 - **수용한 S3 tradeoff:** running/pending 보호 기록이 해소되지 않으면 200건 상한을 넘어 계속 성장할 수 있다. 엄격한 용량 상한보다 진행 중 소유권과 미처리 원문 보존을 우선한다.
 - **S3 완료 기준:** 구독 수정 커밋 `3e155af79b`를 포함한다. 사용자 결정에 따라 코드 리뷰는 **S9 이후 일괄 진행**하며 단계별 리뷰를 기다리지 않는다.
 - **S4 구현·로컬 검증 완료:** 프리셋 연결 정의 저장소, Remote 조회·저장, input waterfall 바인딩, 명령/모델 어댑터, 실행 기록·관찰 이벤트를 연결했다. 타입 검사·Studio 빌드 포함 전체 테스트 **272개 통과**(이번 S4 20개 추가), `git diff --check` 통과. 실제 모델·실제 훅 브리지 Loader·독립 설치는 미검증이므로 S4 전체 수용 완료와 구별한다.
-- **S5 구현·로컬 검증 완료:** turn-stopping 뒤 등록, 마지막 assistant text 수집, 기존 steer 관찰, 게이트·턴별 상한을 연결했다. 타입 검사·Studio 테스트(빌드 포함) **285개 통과**, diff 검사 통과. 다음은 S6이며 S7–S9는 대기한다. S1 미확인 사항은 완료로 간주하지 않는다.
+- **S5 구현·로컬 검증 완료:** turn-stopping 뒤 등록, 마지막 assistant text 수집, 기존 steer 관찰, 게이트·턴별 상한을 연결했다. 타입 검사·Studio 테스트(빌드 포함) **285개 통과**, diff 검사 통과. S6도 아래와 같이 로컬 검증했으며 다음은 S7, S8–S9는 대기한다. S1 미확인 사항은 완료로 간주하지 않는다.
 
 ### S5 구현 결과와 남은 검증
 
@@ -41,6 +41,19 @@ Studio는 특정 기능(양식 검증, 번역, 검색 요약, 선압축)을 직�
 - Agent WeakMap에 현재 turn과 gateId별 누적 횟수를 보관하여 같은 턴의 반복 stopping에서도 상한이 유지된다. 다음 턴은 초기화한다. `reason`, `turn`, `steerCount`를 기록하며 기존 steering/상한은 applied none이다.
 - 단일 확정점 뒤 finish→emit→steer 순서를 유지한다. finish 중 취소는 확정 결정을 바꾸지 않는다. applied는 게이트가 확정한 동작이지 이후 루프의 실제 소비 보장이 아니다.
 - 신규 단위 테스트 11개: pass/note/fail, 반복 상한·다음 턴 초기화, 기존 steer 관찰, 확정 전/finish 중 취소, 프리셋/root/child 필터. 실제 모델, Loader 종단간 continuation, 독립 설치 및 UI 카드는 미검증(S7/S9 인계).
+
+### S6 구현 결과와 S7 인계
+
+- Host Inspect로 pre/post waterfall, PreToolDecision/PostToolDecision/ToolExecution 계약을 확인했다. 두 리스너는 prepend + next 먼저이며 deny/cancel/block은 실행 없이 그대로 반환한다. ask는 hooks.decision으로 전달하고 pass 시 원 결정을 보존한다. 뒤에 prepend되는 바깥 리스너까지 관측하는 보장은 없다.
+- fail은 before deny(reason), after block(feedback)이다. after subject는 downstream content가 있으면 그것을, 없으면 결과 content의 text를 합친다. before subject는 인자 JSON이며 tool stdin에 name/call_id/arguments를 전달한다. 인자는 수정하지 않는다.
+- content replace는 value 없는 결과에만 적용한다. 성공 결과에 value가 있으면(null 포함) 원 decision + applied none + reason `value-bearing result`로 보존한다. 따라서 일반 구조화 성공 도구의 요약 교체는 지원하지 않으며 append를 사용한다. downstream value 결정도 보존한다. callId/exec는 변경하지 않는다.
+- append는 downstream additionalContexts를 유지하고 게이트 source 메시지를 추가한다. 원 결과 additionalContexts는 런타임이 합치므로 반환 결정에 중복 복사하지 않는다. 훅 context에는 양쪽을 관측한다.
+- turn은 공개 session.snapshotEvents()의 마지막 turn/start에서 구하며 agent 없는 호출은 건너뛴다. 공통 프리셋/root·child/cwd/policy 어댑터를 재사용한다. 취소 확정은 finish 이전 한 번뿐이다.
+- 검증: 타입 검사, Studio 전체 테스트(빌드 포함) **308개 통과**(S6 23개 추가), diff 검사 통과. 기존 deprecation/React nesting 경고는 남아 있다. 실제 모델/API 호출, 실제 Loader·도구 dispatch→모델 기록의 call ID 종단간, 설치 sandbox 강제 실행, GUI 및 독립 설치는 미검증이다. 단위 테스트에서 exec callId 불변과 stdin/기록 연결은 확인했다.
+- S7 공통 카드 필드: id/gateId/gateName/point/sessionId, startedAt/endedAt/status, original/finalText, result.verdict/subject/notes/stages/records/hooks/forward/forwardError/appliedPolicy, applied, hooksInput, usage. 판정과 적용은 별도로 표시하며 observed는 완전한 훅 관측 보장이 아니다.
+- 지점별 추가 표시: input은 rejection.original/reason/suggestion/status 및 replaced/appended/rejected; turn-end는 turn/steerCount/reason(상한·기존 steer·취소) 및 steered/none; tool-before는 tool.name/callId, turn/reason 및 denied/none; tool-after는 동일 식별 필드와 replaced/appended/blocked/none, 특히 value-bearing result 이유를 표시한다. pass/note 기록만인 S5/S6는 applied none이다.
+- 정의 편집 Remote: `studioPixie.gateDefinitions()` → `{ definition: GateDefinition, presetIds: string[] }[]`; `studioPixie.saveGateDefinitions(payload: string)` → 같은 배열의 JSON 문자열로 전체 교체(추가/수정/삭제/정렬 모두 이 메서드). 같은 preset·point 활성 중복 금지, 1–5단계, judge 미지원, turn-end/tool-before는 revise 및 replace/append 금지. 샘플 시험 실행 Remote는 아직 없으며 S7에서 구현해야 한다.
+- 카드 Remote: `gateRuns(sessionId: string)`, `followGates(sessionId: string, signal: AbortSignal)` 스트림, `resolveGateRejection(sessionId: string, runId: string, status: 'resent' | 'dismissed')`. 마지막 메서드는 상태만 바꾸며 실제 입력 재전송은 UI가 별도로 수행한다.
 
 ### S4 취소 경합 보강 (A)
 

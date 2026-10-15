@@ -14,6 +14,7 @@ import type { ForkEvent } from './pixie-fork.ts';
 import { PixieGateDefinitions } from './pixie-gate-definitions.ts';
 import { gateInput, type GateInputDeps } from './pixie-gate-input.ts';
 import { gateTurn } from './pixie-gate-turn.ts';
+import { gateTools } from './pixie-gate-tools.ts';
 import { DefaultStageRunner, type GateShell } from './pixie-gate-runner.ts';
 import type { GateInput } from '../pixie-gate-contracts.ts';
 
@@ -91,6 +92,9 @@ export class PixieService extends TypertRemoteService {
     };
     ctx.on('agent/pre-step', gateInput(gateDeps), { prepend: true });
     ctx.on('agent/turn-stopping', gateTurn(gateDeps));
+    const tools = gateTools(gateDeps);
+    ctx.on('tools/pre-execute', tools.before, { prepend: true });
+    ctx.on('tools/post-execute', tools.after, { prepend: true });
     const sessions = () => ctx.get('sessionController') as unknown as SessionControllerSlice;
     this.runtime = new PixieRuntime({
       store: this.store,

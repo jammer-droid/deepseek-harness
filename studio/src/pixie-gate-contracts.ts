@@ -83,6 +83,7 @@ export interface GateRun {
   reason?: string;
   turn?: number;
   steerCount?: number;
+  tool?: { name: string; callId: string };
 }
 export interface GateRunRecord { sessionId: string; runs: GateRun[] }
 export type GateRunFrame = { type: 'sync' } | { type: 'run'; run: GateRun };
