@@ -134,7 +134,7 @@ export type JudgeAnswer =
 export interface JudgeRequest { state: unknown; questions: Record<string, JudgeQuestion> }
 
 /** Failure stays a failure; it is never turned into a low score or a "no". */
-export type JudgeResult = { ok: true; answers: Record<string, JudgeAnswer> } | { ok: false; error: string };
+export type JudgeResult = ({ ok: true; answers: Record<string, JudgeAnswer> } | { ok: false; error: string }) & { usage?: PixieUsage };
 
 export const DEFAULT_JUDGE_SYSTEM_PROMPT = [
   'You are a judgment component. Evaluate the given state against each question independently.',

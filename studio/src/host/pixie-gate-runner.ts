@@ -66,7 +66,8 @@ export function parseCommandOutput(stdout: string, role: StageRole): StageResult
   const data = raw as Record<string, unknown>;
   if (Object.keys(data).some(key => !['verdict', 'text', 'reason', 'data'].includes(key))) throw new Error('Unknown command JSON field');
   if ((data.text !== undefined && typeof data.text !== 'string') || (data.reason !== undefined && typeof data.reason !== 'string')) throw new Error('Invalid command text/reason');
-  const verdict = data.verdict ?? (data.text !== undefined && role !== 'check' ? role : 'pass');
+  if (Object.hasOwn(data, 'verdict') && (typeof data.verdict !== 'string' || !['pass', 'fail', 'revise', 'note'].includes(data.verdict))) throw new Error('Invalid command verdict');
+  const verdict = Object.hasOwn(data, 'verdict') ? data.verdict : (data.text !== undefined && role !== 'check' ? role : 'pass');
   return allowed(role, { ...data, verdict } as StageResult);
 }
 export function parseCheckOutput(text: string): StageResult {
@@ -95,9 +96,10 @@ export class DefaultStageRunner<Spec = GateShellRequest> implements StageRunner,
         ]));
         const engine = new LlmJudgeEngine(this.deps.llm, model, this.deps.judgeSystemPrompt);
         const result = await engine.judge({ state: { subject: context.subject, original: context.original, stages: context.stages, hooks: context.hooks ?? { context: [], decision: 'none' } }, questions }, context.signal);
-        if (!result.ok) return errorResult(result.error);
+        usage = result.usage;
+        if (!result.ok) return { ...errorResult(result.error), data: { questions }, ...(usage ? { usage } : {}) };
         const evaluation = evaluateJudgePass(stage.pass, result.answers);
-        return { verdict: evaluation.pass ? 'pass' : 'fail', ...(evaluation.reason ? { reason: evaluation.reason } : {}), data: { answers: result.answers, ...(evaluation.failedConditions ? { failedConditions: evaluation.failedConditions } : {}) } };
+        return { verdict: evaluation.pass ? 'pass' : 'fail', ...(usage ? { usage } : {}), ...(evaluation.reason ? { reason: evaluation.reason } : {}), data: { questions, answers: result.answers, ...(evaluation.failedConditions ? { failedConditions: evaluation.failedConditions } : {}) } };
       }
       const model = stage.model ?? this.deps.model;
       if (!model) throw new Error('No Pixie model configured');

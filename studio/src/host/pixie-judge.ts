@@ -58,6 +58,7 @@ export class LlmJudgeEngine implements JudgeEngine {
   constructor(private readonly llm: PixieLlm, private readonly model: PixieModel, private readonly system = DEFAULT_JUDGE_SYSTEM_PROMPT) {}
 
   async judge(request: JudgeRequest, signal: AbortSignal): Promise<JudgeResult> {
+    let usage: JudgeResult['usage'];
     try {
       const { state, questions } = validateJudgeRequest(request);
       const prompt = `State:\n${typeof state === 'string' ? state : JSON.stringify(state, null, 2)}\n\nQuestions:\n${JSON.stringify(questions, null, 2)}`;
@@ -70,6 +71,11 @@ export class LlmJudgeEngine implements JudgeEngine {
         system: this.system, messages: [{ role: 'user', content: [{ type: 'text', text: prompt }] }], signal,
       }), signal)) {
         if (chunk.type === 'text-delta' && typeof chunk.text === 'string') text += chunk.text;
+        if (chunk.type === 'usage' && chunk.usage && typeof chunk.usage === 'object') {
+          const raw = chunk.usage as Record<string, unknown>;
+          usage = { inputTokens: typeof raw.inputTokens === 'number' ? raw.inputTokens : 0, outputTokens: typeof raw.outputTokens === 'number' ? raw.outputTokens : 0 };
+          for (const key of ['cacheReadTokens', 'cacheWriteTokens', 'reasoningTokens'] as const) if (typeof raw[key] === 'number') usage[key] = raw[key];
+        }
         if (chunk.type === 'finish') {
           const reason = chunk.reason as { kind?: string; failure?: { message?: string } } | undefined;
           if (reason?.kind !== 'stop') throw new Error(reason?.failure?.message ?? `Judge model ended with ${reason?.kind ?? 'unknown'}`);
@@ -78,9 +84,9 @@ export class LlmJudgeEngine implements JudgeEngine {
       }
       signal.throwIfAborted();
       if (!finished) throw new Error('Judge model stream ended without a finish');
-      return { ok: true, answers: parseJudgeOutput(text, questions) };
+      return { ok: true, answers: parseJudgeOutput(text, questions), ...(usage ? { usage } : {}) };
     } catch (error) {
-      return { ok: false, error: error instanceof Error ? error.message : String(error) };
+      return { ok: false, error: error instanceof Error ? error.message : String(error), ...(usage ? { usage } : {}) };
     }
   }
 }

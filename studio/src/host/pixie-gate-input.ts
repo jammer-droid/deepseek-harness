@@ -64,10 +64,11 @@ export function gateInput(deps: GateInputDeps) {
       const item: typeof pending[number] = { run, result, applied: 'pass' };
       pending.push(item);
       if (payload.signal.aborted || result.verdict === 'cancelled') break;
-      if (result.verdict === 'fail' || (result.verdict === 'error' && result.appliedPolicy === 'block') || (result.verdict === 'revise' && gate.confirmRevision)) {
+      const suggestion = gate.confirmRevision && result.forward.kind === 'replace' && result.forward.text !== original ? result.forward.text : undefined;
+      if (result.verdict === 'fail' || (result.verdict === 'error' && result.appliedPolicy === 'block') || suggestion !== undefined) {
         const failure = [result.hooks.start, ...Object.values(result.stages), result.forwardError].find(stage => stage?.verdict === 'fail' || stage?.verdict === 'error');
         item.applied = 'rejected';
-        item.rejection = { reason: failure?.reason ?? failure?.error ?? 'Revision requires confirmation', ...(result.verdict === 'revise' ? { suggestion: result.subject } : failure?.text === undefined ? {} : { suggestion: failure.text }) };
+        item.rejection = { reason: failure?.reason ?? failure?.error ?? 'Revision requires confirmation', ...(suggestion !== undefined ? { suggestion } : failure?.text === undefined ? {} : { suggestion: failure.text }) };
         rejected = true; break;
       }
       if (result.forward.kind === 'replace' && result.forward.text !== original) {
