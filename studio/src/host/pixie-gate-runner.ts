@@ -1,5 +1,6 @@
 import type { CommandSpec, GateDefinition, GateInput, GateResult, StageDefinition, StageResult, StageRole } from '../pixie-gate-contracts.ts';
-import { MAX_GATE_STDOUT_BYTES } from '../pixie-gate-contracts.ts';
+import { LlmJudgeEngine } from './pixie-judge.ts';
+import { MAX_GATE_STDOUT_BYTES, evaluateJudgePass } from '../pixie-gate-contracts.ts';
 import type { PixieModel } from '../pixie-contracts.ts';
 import { untilAborted, type PixieLlm } from './pixie-runtime.ts';
 
@@ -77,13 +78,27 @@ export function parseCheckOutput(text: string): StageResult {
 }
 
 export class DefaultStageRunner<Spec = GateShellRequest> implements StageRunner, GateHookRunner {
-  constructor(private readonly deps: { shell: GateShell<Spec>; llm: PixieLlm; model?: PixieModel }) {}
+  constructor(private readonly deps: { shell: GateShell<Spec>; llm: PixieLlm; model?: PixieModel; judgeModel?: PixieModel; judgeSystemPrompt?: string }) {}
   async run(stage: StageDefinition, context: StageContext): Promise<StageResult> {
     let usage: StageResult['usage'];
     try {
       context.signal.throwIfAborted();
       if (stage.kind === 'command') return await this.command(stage.command, stage.role, 'stage', context);
-      if (stage.kind === 'judge') throw new Error('judge is not yet supported');
+      if (stage.kind === 'judge') {
+        const model = stage.model ?? this.deps.judgeModel ?? this.deps.model;
+        if (!model) throw new Error('No Pixie judge model configured');
+        const render = (value: string) => renderGatePrompt(value, context);
+        const questions = Object.fromEntries(Object.entries(stage.questions).map(([id, question]) => [id,
+          question.type === 'choice' ? { ...question, options: Object.fromEntries(Object.entries(question.options).map(([key, text]) => [key, render(text)])) } :
+          question.type === 'score' ? { ...question, levels: question.levels.map(render) } :
+          { ...question, question: render(question.question), ...(question.criteria ? { criteria: Object.fromEntries(Object.entries(question.criteria).map(([key, text]) => [key, render(text)])) } : {}) },
+        ]));
+        const engine = new LlmJudgeEngine(this.deps.llm, model, this.deps.judgeSystemPrompt);
+        const result = await engine.judge({ state: { subject: context.subject, original: context.original, stages: context.stages, hooks: context.hooks ?? { context: [], decision: 'none' } }, questions }, context.signal);
+        if (!result.ok) return errorResult(result.error);
+        const evaluation = evaluateJudgePass(stage.pass, result.answers);
+        return { verdict: evaluation.pass ? 'pass' : 'fail', ...(evaluation.reason ? { reason: evaluation.reason } : {}), data: { answers: result.answers } };
+      }
       const model = stage.model ?? this.deps.model;
       if (!model) throw new Error('No Pixie model configured');
       const instructions = stage.role === 'check' ? '\nReturn only JSON {"pass":boolean,"reason"?:string,"fix"?:string}. No other fields or markdown.' : '';

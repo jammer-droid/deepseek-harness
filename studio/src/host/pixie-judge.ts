@@ -1,4 +1,6 @@
 import type { JudgeAnswer, JudgeQuestion, JudgeRequest, JudgeResult, PixieModel } from '../pixie-contracts.ts';
+import { DEFAULT_JUDGE_SYSTEM_PROMPT, validateJudgeRequest } from '../pixie-contracts.ts';
+import { untilAborted } from './pixie-runtime.ts';
 import type { PixieLlm } from './pixie-runtime.ts';
 
 /** A System One decision component: state plus typed questions in, typed answers out (Jev contract). */
@@ -9,30 +11,7 @@ export interface JudgeEngine {
 
 const TOLERANCE = 0.02;
 
-/** Reject requests that a Jev endpoint would reject, so the LLM and Jev engines accept the same inputs.
- * @returns the request, typed.
- */
-export function validateJudgeRequest(value: unknown): JudgeRequest {
-  if (!value || typeof value !== 'object') throw new Error('Judge request must be an object');
-  const { state, questions } = value as { state?: unknown; questions?: unknown };
-  if (state === undefined) throw new Error('Judge request needs a state');
-  if (!questions || typeof questions !== 'object' || Array.isArray(questions)) throw new Error('Judge request needs questions by id');
-  const entries = Object.entries(questions as Record<string, unknown>);
-  if (entries.length === 0) throw new Error('Judge request needs at least one question');
-  for (const [id, raw] of entries) {
-    const question = raw as Partial<JudgeQuestion> & Record<string, unknown>;
-    if (question?.type === 'choice') {
-      const options = question.options as Record<string, unknown> | undefined;
-      if (!options || Object.keys(options).length < 2 || Object.values(options).some(item => typeof item !== 'string')) throw new Error(`Choice "${id}" needs at least two options with descriptions`);
-    } else if (question?.type === 'score') {
-      const levels = question.levels as unknown;
-      if (!Array.isArray(levels) || levels.length < 2 || levels.length > 10 || levels.some(item => typeof item !== 'string')) throw new Error(`Score "${id}" needs 2–10 levels`);
-    } else if (question?.type === 'noul') {
-      if (typeof question.question !== 'string' || !question.question.trim()) throw new Error(`Noul "${id}" needs a question`);
-    } else throw new Error(`Question "${id}" must be choice, score, or noul`);
-  }
-  return { state, questions: questions as Record<string, JudgeQuestion> };
-}
+export { validateJudgeRequest } from "../pixie-contracts.ts";
 
 const isProbability = (value: unknown): value is number => typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= 1;
 const sumsToOne = (values: number[]) => Math.abs(values.reduce((sum, value) => sum + value, 0) - 1) <= TOLERANCE;
@@ -71,18 +50,12 @@ export function parseJudgeOutput(text: string, questions: Record<string, JudgeQu
   return Object.fromEntries(Object.entries(questions).map(([id, question]) => [id, checkAnswer(id, question, answers[id])]));
 }
 
-const SYSTEM = [
-  'You are a judgment component. Evaluate the given state against each question independently.',
-  'Reply with exactly one JSON object and nothing else: {"answers": {<question id>: <answer>}}.',
-  'choice answer: {"choice": <option name>, "probabilities": {<every option name>: number}} — probabilities sum to 1.',
-  'score answer: {"score": number from 0 to levels-1 (fractional allowed), "probabilities": [one number per level, in order]} — probabilities sum to 1.',
-  'noul answer: {"noul": probability from 0 to 1 that the answer is yes}.',
-].join('\n');
+
 
 /** Judge with a conversation model, held to the same output contract a Jev engine returns. */
 export class LlmJudgeEngine implements JudgeEngine {
   readonly kind = 'judge' as const;
-  constructor(private readonly llm: PixieLlm, private readonly model: PixieModel) {}
+  constructor(private readonly llm: PixieLlm, private readonly model: PixieModel, private readonly system = DEFAULT_JUDGE_SYSTEM_PROMPT) {}
 
   async judge(request: JudgeRequest, signal: AbortSignal): Promise<JudgeResult> {
     try {
@@ -90,12 +63,12 @@ export class LlmJudgeEngine implements JudgeEngine {
       const prompt = `State:\n${typeof state === 'string' ? state : JSON.stringify(state, null, 2)}\n\nQuestions:\n${JSON.stringify(questions, null, 2)}`;
       let text = '';
       let finished = false;
-      for await (const chunk of this.llm.stream({
+      for await (const chunk of untilAborted(this.llm.stream({
         provider: this.model.provider, model: this.model.model,
         ...(this.model.reasoningEffort ? { reasoningEffort: this.model.reasoningEffort } : {}),
         ...(this.model.maxTokens ? { maxTokens: this.model.maxTokens } : {}),
-        system: SYSTEM, messages: [{ role: 'user', content: [{ type: 'text', text: prompt }] }], signal,
-      })) {
+        system: this.system, messages: [{ role: 'user', content: [{ type: 'text', text: prompt }] }], signal,
+      }), signal)) {
         if (chunk.type === 'text-delta' && typeof chunk.text === 'string') text += chunk.text;
         if (chunk.type === 'finish') {
           const reason = chunk.reason as { kind?: string; failure?: { message?: string } } | undefined;

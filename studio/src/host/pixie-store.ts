@@ -143,6 +143,11 @@ export function parsePixieSettings(value: unknown): PixieSettings {
   if (typeof raw.allowThreadModel !== 'boolean') throw new Error('Pixie settings allowThreadModel must be a boolean');
   const settings: PixieSettings = { contextMode: raw.contextMode, systemPrompt: raw.systemPrompt, allowThreadModel: raw.allowThreadModel };
   if (raw.model !== undefined) settings.model = parsePixieModel(raw.model);
+  if (raw.judgeModel !== undefined) settings.judgeModel = parsePixieModel(raw.judgeModel);
+  if (raw.judgeSystemPrompt !== undefined) {
+    if (typeof raw.judgeSystemPrompt !== 'string') throw new Error('Pixie settings judgeSystemPrompt must be a string');
+    settings.judgeSystemPrompt = raw.judgeSystemPrompt;
+  }
   return settings;
 }
 

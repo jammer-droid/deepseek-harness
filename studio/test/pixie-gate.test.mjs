@@ -44,7 +44,7 @@ test('definition defaults and 1/3/5 stage limits; 0/6/judge and invalid IDs reje
   const g = validateGateDefinition(definition()); assert.equal(g.onError, 'pass'); assert.equal(g.confirmRevision, false); assert.deepEqual(g.match, { agents: 'root', sources: ['user'] });
   for (const n of [1, 3, 5]) assert.equal(validateGateDefinition(definition(Array.from({ length: n }, (_, i) => converse(`s${i}`)))).stages.length, n);
   for (const n of [0, 6]) assert.throws(() => validateGateDefinition(definition(Array.from({ length: n }, (_, i) => converse(`s${i}`)))), /1–5/);
-  assert.throws(() => validateGateDefinition(definition([{ id: 'j', kind: 'judge' }])), /not yet supported/);
+  assert.throws(() => validateGateDefinition(definition([{ id: 'j', kind: 'judge' }])), /needs questions/);
   for (const stages of [[converse('start')], [converse('a'), converse('a')], [converse('subject')]]) assert.throws(() => validateGateDefinition(definition(stages)), /stage id/);
 });
 

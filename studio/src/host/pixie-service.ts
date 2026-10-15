@@ -74,7 +74,7 @@ export class PixieService extends TypertRemoteService {
         return service?.resolve({ session: agent.session });
       },
       runner: async () => {
-        const model = (await this.settings.read()).model;
+        const { model, judgeModel, judgeSystemPrompt } = await this.settings.read();
         return new DefaultStageRunner({
         shell: {
           resolve: request => {
@@ -87,6 +87,8 @@ export class PixieService extends TypertRemoteService {
         },
         llm: { stream: options => llmOf(ctx).stream(options) },
         ...(model ? { model } : {}),
+        ...(judgeModel ? { judgeModel } : {}),
+        ...(judgeSystemPrompt !== undefined ? { judgeSystemPrompt } : {}),
         });
       },
       recorder: this.gates,
@@ -245,8 +247,9 @@ export class PixieService extends TypertRemoteService {
   @Remote
   async judge(payload: string, signal: AbortSignal) {
     const settings = await this.settings.read();
-    if (!settings.model) return { ok: false, error: '[pixie/no-model] No Pixie model is configured in Studio settings' };
-    const engine = new LlmJudgeEngine({ stream: options => llmOf(this.ctx).stream(options) }, settings.model);
+    const model = settings.judgeModel ?? settings.model;
+    if (!model) return { ok: false, error: '[pixie/no-model] No Pixie model is configured in Studio settings' };
+    const engine = new LlmJudgeEngine({ stream: options => llmOf(this.ctx).stream(options) }, model, settings.judgeSystemPrompt);
     return engine.judge(json<JudgeRequest>(payload), signal);
   }
 }

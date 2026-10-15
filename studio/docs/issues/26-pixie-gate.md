@@ -213,7 +213,7 @@ interface GateResult {
 - **프롬프트 변수:** `{{subject}}`(현재 작업 텍스트), `{{original}}`(원문), `{{stages.<id>.text}}`, `{{stages.<id>.reason}}`, `{{stages.<id>.data}}`(JSON 문자열), `{{hooks.context}}`(일반 훅이 붙인 컨텍스트). 알 수 없는 변수는 저장 시 오류다.
 - **게이트 출력(`forward`):** 파이프라인이 `fail`이면 `forward`와 상관없이 지점의 fail 동작을 한다. 통과하면 `forward`가 다음 모델 입력을 정한다. `append`는 원문 메시지를 그대로 두고 단계 텍스트를 별도 컨텍스트 메시지(source `studio-pixie-gate`)로 붙인다. `replace`는 대상 메시지 텍스트만 바꾼다. `turn-end`·`tool-before`의 `forward`는 `original`만 허용하며 `replace`·`append`는 저장 시 거부한다. 지정 단계에 text가 없어 forward 계산이 실패하면 `forwardError`에 기록하고 `onError`를 적용한다.
 - **converse `check` 출력:** JSON `{ "pass": boolean, "reason"?: string, "fix"?: string }`을 요구하고 엄격히 검증한다. 잘못된 출력은 `error`이며 통과로 바꾸지 않는다(#25 판정 검증과 같은 원칙). `fix`는 fail일 때 교정 지시·다시 쓰기 제안으로 쓴다.
-- **judge 단계(확장):** #25 `JudgeEngine.judge({ state, questions })`를 그대로 쓴다. `state`는 `{ subject, original, stages }`. `pass` 규칙(예: noul ≥ 0.7, choice ∈ 허용 목록, score ≥ n)이 answers를 `pass`/`fail`로 바꾼다. 파이프라인은 `StageResult`만 보므로 judge 추가가 파이프라인·지점 매핑을 바꾸지 않는다. S8 전까지 정의 검증은 judge 단계를 "아직 지원하지 않음"으로 거부한다.
+- **judge 단계(확장):** #25 `JudgeEngine.judge({ state, questions })`를 그대로 쓴다. `state`는 `{ subject, original, stages, hooks }`. `pass` 규칙(예: noul ≥ 0.7, choice ∈ 허용 목록, score ≥ n)이 answers를 `pass`/`fail`로 바꾼다. 파이프라인은 `StageResult`만 보므로 judge 추가가 파이프라인·지점 매핑을 바꾸지 않는다. S8 전까지 정의 검증은 judge 단계를 "아직 지원하지 않음"으로 거부한다.
 - 조건부 건너뛰기, 병렬 그룹, 분기 그래프는 후속이다.
 
 ### 훅 계약
@@ -308,6 +308,7 @@ interface GateResult {
 | U6 | 게이트는 **1–N개 단계의 순차 파이프라인**이다. 명령·일반·판정 단계를 `판정 → 일반 → 판정`처럼 자유롭게 섞는다. 이번 상한은 **5개**다. 판정 단계 실행은 일반 단계 완성 뒤 S8에서 연결한다. |
 | U7 | 단계 종류에 **명령(bash) 단계**를 더한다. 명령 단계·게이트 시작/종료 훅은 [훅 계약](#훅-계약)을 따르고, 게이트는 같은 지점의 일반 훅 결과를 입력으로 읽고 시작·종료를 명령 훅과 Cordis 이벤트로 알린다. |
 | U8 | 게이트 출력 `forward`(original / replace / append)가 다음 모델 입력을 정한다. 자막 번역 예시(명령 → 판정 → 일반 → append)를 기준 시나리오로 삼는다. |
+| U9 | 판정 전용 `judgeModel`·`judgeSystemPrompt` 설정을 분리한다. 모델 미설정 시 Pixie 기본 모델, 프롬프트 미설정 시 Jev JSON 출력 기본 판정 프롬프트를 사용한다. #25 수동 판정 시험도 같은 설정을 사용한다. 단계 model이 최우선이다. |
 
 ## 구현 단계
 
@@ -434,6 +435,17 @@ interface GateResult {
 - 책임: `judge` `StageRunner`(#25 `LlmJudgeEngine`), `pass` 규칙 계약·검증, UI의 판정 단계 편집(질문·통과 규칙). 판정 전용 모델·시스템 프롬프트 분리는 이 단계에서 함께 결정한다.
 - 수용: `판정 → 일반 → 판정` 게이트가 시험 실행과 `input` 지점에서 동작한다. 잘못된 판정 출력은 오류다.
 - 검증: 단위 테스트 + 실제 모델 1회.
+
+#### S8 부분 구현 — Host 계약·판정 실행·설정
+
+- `JudgePassRule = { mode: 'all' | 'any', conditions: JudgePassCondition[] }`; 조건은 `{question,type:'noul',threshold}` / `{question,type:'score',min}` / `{question,type:'choice',allowed:string[]}`. 비어 있지 않은 평면 조건 목록으로 제한한다. noul 0..1, score 0..levels-1(소수 허용), choice는 존재하는 옵션의 비어 있지 않은 목록이며 질문 참조·형식·타입을 검증한다. 질문 ID는 영문 시작 영숫자/`_`/`-`, prototype 예약어 제외다.
+- judge는 계약에 role이 없는 **check 고정** 단계다. 명시 role 필드도 거부하며 revise/note는 일반 단계로 분리한다. 질문 내용·옵션 설명·score levels·noul 기준은 기존 변수 검증/렌더링을 사용한다. state는 `{ subject, original, stages, hooks }`이며 이전 판정의 `data.answers`와 일반 단계 결과, 일반 훅 컨텍스트를 포함한다.
+- 기존 `LlmJudgeEngine`을 재사용하고 JSON 검증 실패는 error로 보존한다. 조건 실패 이유에 질문과 실패 조건을 기록하며 답은 `data.answers`에 저장한다. 기존 파이프라인의 `stageTimeoutMs`와 취소 경계를 사용하고 판정 스트림도 `untilAborted`로 늦은 응답을 폐기한다.
+- 선택 설정 `judgeModel`, `judgeSystemPrompt`를 저장/복원한다. 생략은 저장 형식 그대로 허용하고 실행 시 기본값을 적용하여 기존 파일과 하위 호환한다. 모델 우선순위는 단계 → 판정 설정 → Pixie 기본 모델이다. 기본 시스템 프롬프트는 기존 Jev JSON 지시문이며 수동 판정 Remote에도 같은 설정을 연결했다.
+- 검증: typecheck 및 Studio 전체 테스트 **363개 통과, 3회 연속**, `git diff --check` 통과. 신규 Host 회귀는 all/any·경계값·잘못된 JSON·타임아웃/취소·설정 fallback과 저장 roundtrip·수동 판정 설정을 포함한다. 가짜 llm의 `판정 → 일반 → 판정`, `명령 → 판정 → 일반 → append`를 실제 input waterfall 서비스 조합에서도 확인했다.
+- 전체 검증 중 정의 삭제 경합을 발견했다(수정 전 전체 실행 6회 중 4회 실패, 단독 테스트는 통과). 이벤트 emit은 동기이므로 대기 문제 가설을 기각했다. 원인은 일반 세션 prune의 `gates.json` 오인이었고 S4 경로 보강 커밋으로 분리했다. 테스트 대기나 구현 순서를 바꾸어 숨기지 않았다.
+- **S8 미완료 / UI 인계:** 단계 종류 판정 활성화, 질문·유형별 옵션/levels/기준 편집, 통과 규칙/모델 편집, `GateResultDetails` answers 요약, 설정 페이지 판정 모델/시스템 프롬프트와 기존 저장 버튼 상태, 관련 jsdom 테스트가 남아 있다. 현재 편집기는 judge 선택을 계속 비활성화한다. 후속 UI는 위 계약을 그대로 사용한다.
+- 실제 모델 호출은 미실시이며 키 존재 여부도 확인하지 않았고 키 값은 열람하지 않았다. 사용자 GUI·프로필 접근/배포 및 Client Inspect 없음. 독립 설치·시각 확인 미검증. S1 표 불변, 리뷰는 S9 이후.
 
 ### S9 — 독립 설치 검증
 

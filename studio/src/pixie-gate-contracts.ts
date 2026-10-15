@@ -1,4 +1,32 @@
-import type { JudgeQuestion, PixieModel, PixieUsage } from './pixie-contracts.ts';
+import { validateJudgeRequest, type JudgeAnswer, type JudgeQuestion, type PixieModel, type PixieUsage } from './pixie-contracts.ts';
+
+export function validateJudgePassRule(value: unknown, questions: Record<string, JudgeQuestion>): asserts value is JudgePassRule {
+  if (!object(value) || !['all', 'any'].includes(value.mode as string) || !Array.isArray(value.conditions) || !value.conditions.length) throw new Error('Judge pass needs all/any and nonempty conditions');
+  for (const condition of value.conditions) {
+    if (!object(condition) || typeof condition.question !== 'string' || !Object.hasOwn(questions, condition.question)) throw new Error('Judge condition references unknown question');
+    const question = questions[condition.question]!;
+    if (condition.type !== question.type) throw new Error('Judge condition type must match question');
+    if (condition.type === 'choice') {
+      if (question.type !== 'choice' || !Array.isArray(condition.allowed) || !condition.allowed.length || condition.allowed.some(key => typeof key !== 'string' || !Object.hasOwn(question.options, key))) throw new Error('Judge condition needs known allowed choices');
+    } else {
+      const number = condition.type === 'noul' ? condition.threshold : condition.min;
+      const max = question.type === 'score' ? question.levels.length - 1 : 1;
+      if (typeof number !== 'number' || !Number.isFinite(number) || number < 0 || number > max) throw new Error('Judge condition threshold out of range');
+    }
+  }
+}
+
+/** Missing or mismatched answers are errors, never a successful any-rule fallback. */
+export function evaluateJudgePass(rule: JudgePassRule, answers: Record<string, JudgeAnswer>): { pass: boolean; reason?: string } {
+  const failed = rule.conditions.flatMap(condition => {
+    const answer = answers[condition.question];
+    if (!answer || answer.type !== condition.type) throw new Error(`Missing or mismatched judge answer: ${condition.question}`);
+    const passed = condition.type === 'noul' && answer.type === 'noul' ? answer.noul >= condition.threshold : condition.type === 'score' && answer.type === 'score' ? answer.score >= condition.min : condition.type === 'choice' && answer.type === 'choice' && condition.allowed.includes(answer.choice);
+    return passed ? [] : [condition.type === 'choice' ? `${condition.question}: choice must be in [${condition.allowed.join(', ')}]` : condition.type === 'noul' ? `${condition.question}: noul must be >= ${condition.threshold}` : `${condition.question}: score must be >= ${condition.min}`];
+  });
+  const pass = rule.mode === 'all' ? failed.length === 0 : failed.length < rule.conditions.length;
+  return { pass, ...(!pass ? { reason: failed.join('; ') } : {}) };
+}
 
 export const MAX_GATE_STAGES = 5;
 export const MAX_GATE_STDOUT_BYTES = 256 * 1024;
@@ -9,8 +37,12 @@ export type ForwardSpec =
   | { kind: 'original' }
   | { kind: 'replace'; from: string }
   | { kind: 'append'; from: string[] };
-/** Reserved for the judge runner in S8; definitions containing judge are not accepted yet. */
-export type JudgePassRule = { question: string; min: number } | { question: string; choices: string[] };
+/** Typed question conditions; a nonempty flat group deliberately avoids recursive rule complexity. */
+export type JudgePassCondition =
+  | { question: string; type: 'noul'; threshold: number }
+  | { question: string; type: 'score'; min: number }
+  | { question: string; type: 'choice'; allowed: string[] };
+export interface JudgePassRule { mode: 'all' | 'any'; conditions: JudgePassCondition[] }
 export type StageDefinition =
   | { id: string; kind: 'command'; role: StageRole; command: CommandSpec }
   | { id: string; kind: 'converse'; role: StageRole; model?: PixieModel; system?: string; prompt: string }
@@ -116,7 +148,18 @@ export function validateGateDefinition(value: unknown): GateDefinition {
   const prior = new Set<string>(object(g.hooks) && g.hooks.start ? ['start'] : []);
   for (const raw of g.stages) {
     if (!object(raw) || typeof raw.id !== 'string' || !/^[A-Za-z][A-Za-z0-9_-]*$/.test(raw.id) || ['start', 'forward', 'subject', '__proto__', 'constructor', 'prototype'].includes(raw.id) || prior.has(raw.id)) throw new Error('Duplicate, reserved or invalid stage id');
-    if (raw.kind === 'judge') throw new Error('judge is not yet supported (아직 지원하지 않음)');
+    if (raw.kind === 'judge') {
+      if (raw.role !== undefined) throw new Error('Judge role is fixed to check; omit role');
+      const { questions } = validateJudgeRequest({ state: {}, questions: raw.questions });
+      validateJudgePassRule(raw.pass, questions);
+      if (raw.model !== undefined && (!object(raw.model) || typeof raw.model.provider !== 'string' || !raw.model.provider || typeof raw.model.model !== 'string' || !raw.model.model)) throw new Error('Invalid judge model');
+      for (const question of Object.values(questions)) {
+        const templates = question.type === 'choice' ? Object.values(question.options) : question.type === 'score' ? question.levels : [question.question, ...Object.values(question.criteria ?? {})];
+        for (const template of templates) validateTemplate(template, prior);
+      }
+      prior.add(raw.id);
+      continue;
+    }
     if (!['command', 'converse'].includes(raw.kind as string) || !['check', 'revise', 'note'].includes(raw.role as string)) throw new Error('Invalid stage kind/role');
     if (raw.role === 'revise' && ['turn-end', 'tool-before'].includes(g.point as string)) throw new Error('revise is not supported at this point');
     if (raw.kind === 'command') command(raw.command);
