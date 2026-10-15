@@ -59,7 +59,6 @@ function Turn({ turn, live, locale }: { turn: PixieTurn; live?: string; locale: 
       {turn.status === 'cancelled' && <Badge tone="neutral">{t('cancelled')}</Badge>}
       {turn.status === 'error' && <Badge tone="warning">{t('error')}</Badge>}
       {turn.truncated && <Badge tone="warning">{t('truncated')}</Badge>}
-      {turn.usage && <UsageLine usage={turn.usage} locale={locale} />}
     </div>
     {turn.error && <p className="studio-pixie-error" role="alert">{pixieError(locale, turn.error)}</p>}
   </li>;
@@ -118,7 +117,8 @@ export function PixieTab({ actions, locale }: { actions: PixieTabActions; locale
     let active = true;
     // Subscribe before the first read so no frame falls between the snapshot and the stream.
     const stop = actions.follow(frame => {
-      if (frame.type === 'start') { setLive({ turnId: frame.turnId, threadId: frame.threadId, question: frame.question, text: '' }); void refresh(); }
+      if (frame.type === 'sync') { setLive(undefined); void refresh(); }
+      else if (frame.type === 'start') { setLive({ turnId: frame.turnId, threadId: frame.threadId, question: frame.question, text: '' }); void refresh(); }
       else if (frame.type === 'text') setLive(current => current && { ...current, text: current.text + frame.text });
       else if (frame.type === 'end') { setLive(undefined); void refresh(); }
     });
@@ -207,7 +207,6 @@ export function PixieTab({ actions, locale }: { actions: PixieTabActions; locale
           <textarea aria-label={t('question')} placeholder={t('placeholder')} value={question} rows={2} onChange={event => setQuestion(event.target.value)}
             onKeyDown={event => { if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) { event.preventDefault(); void submit(); } }} />
           <div className="studio-pixie-compose-bar">
-            <span className="studio-muted">{t('isolationShort')}</span>
             {running && <Button small onClick={() => { void guard(() => actions.cancel()); }}>{t('cancel')}</Button>}
             <Button small primary disabled={running || !question.trim()} onClick={() => { void submit(); }}>{t('ask')}</Button>
           </div>
@@ -238,9 +237,15 @@ export function PixieCommandRow({ question, outcome, locale, onOpen, actions }: 
     let mine = false;
     const load = () => actions.commandTurn().then(value => { if (!active) return; setTurn(value); setLoaded(true); if (value && value.status !== 'streaming') setLive(undefined); }, () => { if (active) setLoaded(true); });
     const stop = actions.follow(frame => {
-      if (frame.type === 'start') { mine = frame.commandId === actions.commandId; if (mine) setLive(''); }
+      if (frame.type === 'sync') { mine = false; setLive(undefined); void load(); }
+      else if (frame.type === 'start') { mine = frame.commandId === actions.commandId; if (mine) setLive(''); }
       else if (frame.type === 'text') { if (mine) setLive(current => (current ?? '') + frame.text); }
-      else if (frame.type === 'end') { if (mine) { mine = false; void load(); } }
+      else if (frame.type === 'end') {
+        // The row subscribes after command completion and may miss its start.
+        // Reconcile by command id even then; another request cannot replace this answer.
+        mine = false;
+        void load();
+      }
     });
     void load();
     return () => { active = false; stop(); };
@@ -261,8 +266,6 @@ export function PixieCommandRow({ question, outcome, locale, onOpen, actions }: 
     <div className="studio-pixie-turn-meta">
       {status === 'cancelled' && answer && <Badge tone="neutral">{t('cancelled')}</Badge>}
       {turn?.truncated && <Badge tone="warning">{t('truncated')}</Badge>}
-      {turn?.usage && <UsageLine usage={turn.usage} locale={locale} />}
-      <span className="studio-muted studio-pixie-usage">{t('isolationShort')}</span>
     </div>
   </div>;
 }

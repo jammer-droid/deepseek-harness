@@ -27,6 +27,35 @@ async function harness({ sessions = ['s1'] } = {}) {
 const start = async (h) => { const fiber = h.ctx.plugin(PixieService, h.dataDir); await fiber; return fiber; };
 const until = async (check) => { for (let i = 0; i < 100; i++) { if (await check()) return; await new Promise(r => setTimeout(r, 10)); } throw new Error('timed out'); };
 
+test('follow replays an in-flight request and syncs after a disconnected completion', async () => {
+  const h = await harness();
+  let release;
+  const gate = new Promise(resolve => { release = resolve; });
+  h.ctx.set('llm', {
+    stream: async function* () { yield { type: 'text-delta', index: 0, text: 'first' }; await gate; yield { type: 'text-delta', index: 0, text: ' second' }; },
+    resolveModelInfo: async () => ({ context: { contextWindow: 64000 } }),
+  });
+  const fiber = await start(h);
+  const service = h.ctx.get('studioPixie');
+  const abort = new AbortController();
+  try {
+    await service.saveSettings(JSON.stringify({ model: { provider: 'p', model: 'm' }, contextMode: 'fresh', systemPrompt: '', allowThreadModel: true }));
+    await service.ask('s1', JSON.stringify({ question: 'ping' }));
+    await until(async () => (await service.view('s1')).frames.some(f => f.type === 'text'));
+    const stream = service.follow('s1', abort.signal);
+    assert.equal((await stream.next()).value.type, 'sync');
+    assert.equal((await stream.next()).value.type, 'start');
+    assert.deepEqual((await stream.next()).value, { type: 'text', text: 'first' });
+    await stream.return();
+    release();
+    await until(async () => !(await service.view('s1')).running);
+    const reconnected = service.follow('s1', abort.signal);
+    assert.equal((await reconnected.next()).value.type, 'sync');
+    assert.equal((await service.view('s1')).record.threads[0].turns[0].answer, 'first second');
+    await reconnected.return();
+  } finally { release(); abort.abort(); await fiber.dispose(); }
+});
+
 test('registers /pixie and withdraws it on dispose', async () => {
   const h = await harness();
   const fiber = await start(h);

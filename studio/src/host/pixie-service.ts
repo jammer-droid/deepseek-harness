@@ -128,7 +128,9 @@ export class PixieService extends TypertRemoteService {
   /** Stream frames of requests in one session until the caller disconnects. */
   @Remote({ mode: 'stream' })
   async *follow(sessionId: string, signal: AbortSignal): AsyncIterable<PixieAskFrame> {
-    const queue: PixieAskFrame[] = [];
+    // Snapshot and subscribe without yielding: replay precedes every new frame.
+    // Sync also repairs a completion missed while the carrier was disconnected.
+    const queue: PixieAskFrame[] = [{ type: 'sync' }, ...this.live.current(sessionId)];
     let wake: (() => void) | undefined;
     const stop = this.live.subscribe(sessionId, frame => { queue.push(frame); wake?.(); });
     const onAbort = () => wake?.();

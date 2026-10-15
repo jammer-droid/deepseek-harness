@@ -61,6 +61,9 @@ test('shows threads, the active conversation, and usage with the model limit', a
   assert.match(text, /Out 20/);
   assert.match(text, /Cache 50/);
   assert.match(text, /Reasoning 5/);
+  assert.doesNotMatch(host.querySelector('.studio-pixie-turns').textContent, /In 100|Out 20/);
+  assert.doesNotMatch(text, /Not in the agent/);
+  assert.match(host.querySelector('.studio-pixie-total').textContent, /In 100/);
 });
 
 test('asking streams the answer and the running request can be cancelled', async () => {
@@ -157,9 +160,44 @@ test('the /pixie row streams its own answer, ignores other requests, and opens t
   recorded = { ...done, id: 't', question: 'why?', answer: 'because.', commandId: 'c1' };
   await act(async () => { push({ type: 'end', status: 'done' }); await new Promise(r => setTimeout(r, 0)); });
   assert.match(host.textContent, /because\./);
-  assert.match(host.textContent, /In 100/);
+  assert.doesNotMatch(host.textContent, /In 100|Out 20|Not in the agent/);
   await act(async () => { button(host, 'Open Pixie').click(); });
   assert.equal(opened, 1);
+});
+
+test('a /pixie row mounted after start reloads its completed answer without navigation', async () => {
+  const { PixieCommandRow } = await import('../src/pixie-tab.tsx');
+  let push;
+  let recorded = { ...done, commandId: 'late', answer: '', status: 'streaming', usage: undefined };
+  const actions = { commandId: 'late', commandTurn: async () => structuredClone(recorded), follow: listener => { push = listener; return () => {}; } };
+  const { host, root } = await render(React.createElement(PixieCommandRow, { question: 'what?', outcome: { kind: 'success' }, locale: 'en', onOpen: () => {}, actions }));
+  assert.match(host.textContent, /answering/);
+  // Host follow does not replay start frames emitted before subscription.
+  await act(async () => {
+    push({ type: 'text', text: 'that.' });
+    recorded = { ...done, commandId: 'late' };
+    push({ type: 'end', status: 'done' });
+  });
+  assert.match(host.textContent, /that\./);
+  assert.doesNotMatch(host.textContent, /answering/);
+  await act(async () => root.unmount());
+});
+
+test('a /pixie row resets replay text and recovers completion on reconnect', async () => {
+  const { PixieCommandRow } = await import('../src/pixie-tab.tsx');
+  let push;
+  let recorded = { ...done, commandId: 'c', status: 'streaming', answer: '' };
+  const actions = { commandId: 'c', commandTurn: async () => structuredClone(recorded), follow: listener => { push = listener; return () => {}; } };
+  const { host, root } = await render(React.createElement(PixieCommandRow, { question: 'what?', outcome: { kind: 'success' }, locale: 'en', onOpen: () => {}, actions }));
+  const replay = () => { push({ type: 'sync' }); push({ type: 'start', threadId: 'a', turnId: 't1', commandId: 'c', question: 'what?' }); push({ type: 'text', text: 'partial' }); };
+  await act(async () => replay());
+  await act(async () => replay());
+  assert.equal(host.querySelector('.studio-pixie-answer').textContent, 'partial');
+  recorded = { ...done, commandId: 'c', answer: 'finished offline' };
+  await act(async () => push({ type: 'sync' }));
+  assert.match(host.textContent, /finished offline/);
+  assert.doesNotMatch(host.textContent, /partial|answering/);
+  await act(async () => root.unmount());
 });
 
 test('a request started by /pixie streams under its own question, and coded Host errors are localized', async () => {

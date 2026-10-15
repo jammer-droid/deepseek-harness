@@ -84,6 +84,7 @@ export interface PixieUsageTotal extends PixieUsage { requests: number }
 
 /** One streamed item the Host sends for an ask. */
 export type PixieAskFrame =
+  | { type: 'sync' }
   | { type: 'start'; threadId: string; turnId: string; question: string; commandId?: string }
   | { type: 'text'; text: string }
   | { type: 'usage'; usage: PixieUsage }
