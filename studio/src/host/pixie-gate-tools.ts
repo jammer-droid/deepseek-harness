@@ -1,3 +1,4 @@
+import { readRuntimeGateDefinitions } from './pixie-gate-definition-reader.ts';
 import { randomUUID } from 'node:crypto';
 import type { ContentBlock, UserMessage } from '@deepseek-ai/dsh-llm';
 import type { PostToolDecision, PreToolDecision, ToolExecution, ToolExecutionResult } from '@deepseek-ai/dsh-tools';
@@ -13,7 +14,7 @@ export function gateTools(deps: GateInputDeps) {
     if (!agent) return decision;
     const preset = deps.preset(agent);
     if (!preset) return decision;
-    const gate = (await deps.definitions()).find(row => row.presetIds.includes(preset) && row.definition.point === point && row.definition.enabled)?.definition;
+    const gate = (await readRuntimeGateDefinitions(deps)).find(row => row.presetIds.includes(preset) && row.definition.point === point && row.definition.enabled)?.definition;
     if (!gate || (gate.match.tools && !gate.match.tools.includes(exec.name))) return decision;
     const root = deps.isRoot(agent);
     if ((gate.match.agents === 'root' && !root) || (gate.match.agents === 'child' && root)) return decision;

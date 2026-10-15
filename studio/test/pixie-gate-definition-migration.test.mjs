@@ -14,13 +14,13 @@ async function fixture() {
 test('gate definitions migrate atomically once and survive thread pruning', async () => {
   const f = await fixture(); await writeFile(f.legacy, '[]');
   const definitions = new PixieGateDefinitions(f.target, f.legacy);
-  assert.deepEqual(await Promise.all([definitions.read(), definitions.read()]), [[], []]);
+  assert.deepEqual(await Promise.all([definitions.read(), definitions.read()]), [{ entries: [], invalid: [] }, { entries: [], invalid: [] }]);
   await assert.rejects(access(f.legacy), { code: 'ENOENT' }); await access(f.target);
   await definitions.save([]); assert.deepEqual(await new PixieStore(f.sessions).prune(async () => false), []); await access(f.target);
-  await writeFile(f.legacy, 'not valid'); assert.deepEqual(await definitions.read(), []);
+  await writeFile(f.legacy, 'not valid'); assert.deepEqual(await definitions.read(), { entries: [], invalid: [] });
 });
 test('missing legacy is empty; failed migration preserves source', async () => {
-  const f = await fixture(); assert.deepEqual(await new PixieGateDefinitions(f.target, f.legacy).read(), []);
+  const f = await fixture(); assert.deepEqual(await new PixieGateDefinitions(f.target, f.legacy).read(), { entries: [], invalid: [] });
   await writeFile(f.legacy, '[]'); await writeFile(join(f.root, 'blocked'), 'file');
   await assert.rejects(new PixieGateDefinitions(join(f.root, 'blocked', 'definitions.json'), f.legacy).read());
   assert.equal(await readFile(f.legacy, 'utf8'), '[]');

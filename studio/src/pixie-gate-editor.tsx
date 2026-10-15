@@ -7,9 +7,10 @@ import { MAX_GATE_STAGES, validateGateDefinition, type GateDefinition, type Stag
 import { gateEditorText, type GateEditorKey } from './pixie-gate-editor-locale.ts';
 import type { PixieSettingsCatalog } from './pixie-settings.tsx';
 
-export interface GateEntry { definition: GateDefinition; presetIds: string[] }
+import type { GateEntry, GateDefinitionsRead, InvalidGateEntry, GateDefinitionError } from './pixie-gate-definitions.ts';
+export type { GateEntry } from './pixie-gate-definitions.ts';
 export interface GateEditorActions {
-  read(): Promise<GateEntry[]>;
+  read(): Promise<GateDefinitionsRead | GateEntry[]>;
   save(entries: GateEntry[]): Promise<unknown>;
   presets(): Promise<{ id: string; name: string }[]>;
   models(): Promise<PixieSettingsCatalog>;
@@ -44,6 +45,10 @@ function validation(entry: GateEntry): { field: string; key: GateEditorKey } | u
 export function GateEditor({ actions, locale }: { actions: GateEditorActions; locale: string }) {
   const t = (key: GateEditorKey) => gateEditorText(locale, key);
   const [entries, setEntries] = React.useState<GateEntry[]>();
+  const [invalid, setInvalid] = React.useState<InvalidGateEntry[]>([]);
+  const [fileError, setFileError] = React.useState<GateDefinitionError>();
+  const [removedInvalid, setRemovedInvalid] = React.useState(false);
+  const [confirmOverwrite, setConfirmOverwrite] = React.useState(false);
   const [stored, setStored] = React.useState('');
   const [selected, setSelected] = React.useState('');
   const [presets, setPresets] = React.useState<{ id: string; name: string }[]>([]);
@@ -54,21 +59,23 @@ export function GateEditor({ actions, locale }: { actions: GateEditorActions; lo
   const [problem, setProblem] = React.useState<ReturnType<typeof validation>>();
   const load = React.useCallback(async () => {
     setError('');
-    try { const [values, list, catalog] = await Promise.all([actions.read(), actions.presets(), actions.models()]); setEntries(values); setStored(JSON.stringify(values)); setSelected(values[0]?.definition.id ?? ''); setPresets(list); setModels(catalog); }
+    try { const [values, list, catalog] = await Promise.all([actions.read(), actions.presets(), actions.models()]); const result = Array.isArray(values) ? { entries: values, invalid: [] } : values; setInvalid(result.invalid); setFileError(result.error); setRemovedInvalid(false); setConfirmOverwrite(false); setEntries(result.entries); setStored(JSON.stringify(result.entries)); setSelected(result.entries[0]?.definition.id ?? ''); setPresets(list); setModels(catalog); }
     catch (e) { setError(message(e)); }
   }, [actions]);
   React.useEffect(() => { void load(); }, [load]);
   const entry = entries?.find(item => item.definition.id === selected);
   const g = entry?.definition;
-  const dirty = !!entries && JSON.stringify(entries) !== stored;
+  const dirty = !!entries && (JSON.stringify(entries) !== stored || removedInvalid || invalid.length > 0 || !!fileError);
   const update = (patch: Partial<GateDefinition>) => { setEntries(old => old?.map(item => item.definition.id === selected ? { ...item, definition: { ...item.definition, ...patch } } : item)); setProblem(undefined); };
   const stageUpdate = (index: number, stage: StageDefinition) => update({ stages: g!.stages.map((s, i) => i === index ? stage : s) });
-  const save = async () => {
+  const save = async (confirmed = false) => {
     if (!entries || saving) return;
     setError(''); setProblem(undefined);
     for (const item of entries) { const p = validation(item); if (p) { setSelected(item.definition.id); setProblem(p); return; } }
+    if (!confirmed && (invalid.length || fileError)) { setConfirmOverwrite(true); return; }
+    setConfirmOverwrite(false);
     setSaving(true);
-    try { await actions.save(entries.map(item => ({ ...item, definition: validateGateDefinition(item.definition) }))); setStored(JSON.stringify(entries)); }
+    try { await actions.save(entries.map(item => ({ ...item, definition: validateGateDefinition(item.definition) }))); setStored(JSON.stringify(entries)); setInvalid([]); setFileError(undefined); setRemovedInvalid(false); }
     catch (e) { setError(`${t('failed')} (${message(e)})`); }
     finally { setSaving(false); }
   };
@@ -79,6 +86,15 @@ export function GateEditor({ actions, locale }: { actions: GateEditorActions; lo
   return <div className="studio-page-stack">
     <PageHead title={t('title')} description={t('description')} actions={entries && <Button primary disabled={saving || !dirty} onClick={() => void save()}>{saving ? t('saving') : dirty ? t('save') : t('saved')}</Button>} />
     {error && <Notice action={<>{!entries && <Button onClick={() => void load()}>{t('retry')}</Button>}<Button onClick={() => setError('')}>{t('close')}</Button></>}>{error}</Notice>}
+    {fileError && <Notice>{t('invalidFile')} ({fileError.code}: {fileError.message})</Notice>}
+    {invalid.length > 0 && <Notice><strong>{t('invalidLoaded').replace('{count}', String(invalid.length))}</strong><p>{t('removeInvalidHint')}</p>{invalid.map(item => <div key={item.index}>
+      <p>#{item.index + 1}: {t(item.error.code === 'options' ? 'invalidOptions' : 'invalidReason')} ({item.error.code}: {item.error.message})</p>
+      <details><summary>{t('rawJson')}</summary><pre>{JSON.stringify(item.raw, null, 2)}</pre></details>
+      <Button onClick={async () => { try { await navigator.clipboard.writeText(JSON.stringify(item.raw, null, 2)); } catch (e) { setError(message(e)); } }}>{t('copyJson')}</Button>
+      <Button disabled={saving} onClick={() => { setInvalid(old => old.filter(row => row.index !== item.index)); setRemovedInvalid(true); setConfirmOverwrite(false); }}>{t('removeInvalid')}</Button>
+    </div>)}</Notice>}
+    {removedInvalid && <Notice>{t('removeInvalidHint')}</Notice>}
+    {confirmOverwrite && <Notice action={<><Button onClick={() => void save(true)}>{t('confirmOverwrite')}</Button><Button onClick={() => setConfirmOverwrite(false)}>{t('cancelOverwrite')}</Button></>}>{t('overwriteInvalid')}</Notice>}
     {notice && <Notice>{notice}</Notice>}
     {problem?.field === '' && <Notice>{t(problem.key)}</Notice>}
     {!entries && !error && <p role="status">{t('loading')}</p>}

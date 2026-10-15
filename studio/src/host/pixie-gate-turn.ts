@@ -1,3 +1,4 @@
+import { readRuntimeGateDefinitions } from './pixie-gate-definition-reader.ts';
 import { randomUUID } from 'node:crypto';
 import type { Message, UserMessage } from '@deepseek-ai/dsh-llm';
 import type { GateInputDeps, InputAgent } from './pixie-gate-input.ts';
@@ -17,7 +18,7 @@ export function gateTurn(deps: GateInputDeps) {
   return async ({ agent, turn, signal }: { agent: TurnAgent; turn: number; signal: AbortSignal }): Promise<void> => {
     const preset = deps.preset(agent);
     if (!preset) return;
-    const gate = (await deps.definitions()).find(row => row.presetIds.includes(preset) && row.definition.point === 'turn-end' && row.definition.enabled)?.definition;
+    const gate = (await readRuntimeGateDefinitions(deps)).find(row => row.presetIds.includes(preset) && row.definition.point === 'turn-end' && row.definition.enabled)?.definition;
     if (!gate) return;
     const root = deps.isRoot(agent);
     if ((gate.match.agents === 'root' && !root) || (gate.match.agents === 'child' && root)) return;

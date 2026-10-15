@@ -127,3 +127,42 @@ test('editor separates localized sections, list summary, selection and compact m
   assert.ok(host.querySelector('section[aria-label="기본"]').contains(input(host, '연결 프리셋')));
   assert.equal(input(host, '모델').className, input(host, '종류').className);
 });
+
+test('invalid definitions show diagnostics and raw JSON, confirm overwrite, and remove on next save', async t => {
+  const invalid = [{ index: 2, raw: { broken: true }, error: { code: 'options', message: 'Empty option' } }];
+  const { host, saves } = await setup(t, { read: async () => ({ entries: [seed()], invalid }) });
+  assert.match(host.textContent, /1 gates could not be loaded/);
+  assert.match(host.textContent, /Choice options need non-empty descriptions/);
+  assert.match(host.textContent, /"broken": true/);
+  await change(input(host, 'Name'), 'Changed');
+  await click(button(host, 'Save'));
+  assert.equal(saves.length, 0);
+  assert.match(host.textContent, /permanently remove/);
+  await click(button(host, 'Cancel'));
+  await click(button(host, 'Remove from list'));
+  assert.doesNotMatch(host.textContent, /1 gates could not be loaded/);
+  await click(button(host, 'Save'));
+  assert.equal(saves.length, 1); assert.equal(saves[0].length, 1);
+});
+
+test('invalid overwrite requires explicit confirmation and copies untouched JSON', async t => {
+  const raw = { lost: ['original'] }; const copied = [];
+  const oldNavigator = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
+  Object.defineProperty(globalThis, 'navigator', { configurable: true, value: { clipboard: { writeText: async text => copied.push(text) } } });
+  t.after(() => { if (oldNavigator) Object.defineProperty(globalThis, 'navigator', oldNavigator); else delete globalThis.navigator; });
+  const { host, saves } = await setup(t, { read: async () => ({ entries: [], invalid: [{ index: 0, raw, error: { code: 'invalid-entry', message: 'Malformed gate' } }] }) });
+  await click(button(host, 'Copy JSON')); assert.deepEqual(JSON.parse(copied[0]), raw);
+  await click(button(host, 'Save')); assert.equal(saves.length, 0);
+  await click(button(host, 'Overwrite and save')); assert.deepEqual(saves, [[]]);
+  assert.doesNotMatch(host.textContent, /could not be loaded/);
+});
+for (const [locale, label] of [['ko', '불러오지 못한 게이트 1개'], ['zh', '无法加载 1 个门控']]) test(`invalid notice is localized: ${locale}`, async t => {
+  const { host } = await setup(t, { read: async () => ({ entries: [], invalid: [{ index: 0, raw: null, error: { code: 'options', message: 'Empty option' } }] }) }, locale);
+  assert.ok(host.textContent.includes(label));
+});
+test('broken file notice requires confirmation before replacing it', async t => {
+  const { host, saves } = await setup(t, { read: async () => ({ entries: [], invalid: [], error: { code: 'invalid-json', message: 'Malformed JSON' } }) });
+  assert.match(host.textContent, /original file was not changed/);
+  await click(button(host, 'Save')); assert.equal(saves.length, 0);
+  await click(button(host, 'Overwrite and save')); assert.deepEqual(saves, [[]]);
+});

@@ -4,7 +4,7 @@
 import React from 'react';
 import type { GateRunFrame, GateRunRecord } from './pixie-gate-contracts.ts';
 import type { GateTrialResponse } from './pixie-gate-trial-panel.tsx';
-import type { GateEntry, GateEditorActions } from './pixie-gate-editor.tsx';
+import type { GateEditorActions } from './pixie-gate-editor.tsx';
 import type { StudioContext } from './contracts.js';
 import { PACKAGE_NAME } from './package-name.ts';
 import { StudioSurface } from './ui.tsx';
@@ -38,7 +38,7 @@ interface PixieRemote {
   cancel(sessionId: string): RemoteValue<boolean>;
   follow(sessionId: string): AsyncIterable<PixieAskFrame> & { dispose(): void };
   trialGate(payload: string, signal: AbortSignal): RemoteValue<GateTrialResponse>;
-  gateDefinitions(): RemoteValue<GateEntry[]>;
+  gateDefinitions(): RemoteValue<import('./pixie-gate-definitions.ts').GateDefinitionsRead>;
   saveGateDefinitions(payload: string): RemoteValue<unknown>;
   readSettings(): RemoteValue<PixieSettings>;
   saveSettings(payload: string): RemoteValue<PixieSettings>;

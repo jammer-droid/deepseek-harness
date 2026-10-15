@@ -1,5 +1,16 @@
 import { gatePointText } from './pixie-gate-locale.ts';
 const messages = {
+  invalidLoaded: ['불러오지 못한 게이트 {count}개', '{count} gates could not be loaded', '无法加载 {count} 个门控'],
+  invalidReason: ['정의 검증에 실패했습니다', 'Definition validation failed', '定义验证失败'],
+  invalidOptions: ['선택 옵션에 비어 있지 않은 설명이 필요합니다', 'Choice options need non-empty descriptions', '选项需要非空描述'],
+  invalidFile: ['정의 파일을 읽을 수 없습니다. 원본 파일은 변경하지 않았습니다.', 'Cannot load the definitions file. The original file was not changed.', '无法加载定义文件。原始文件未更改。'],
+  rawJson: ['원본 JSON', 'Original JSON', '原始 JSON'],
+  copyJson: ['JSON 복사', 'Copy JSON', '复制 JSON'],
+  removeInvalid: ['목록에서 제거', 'Remove from list', '从列表移除'],
+  removeInvalidHint: ['제거한 항목은 다음 저장 때 제외됩니다.', 'Removed entries are excluded on the next save.', '移除的条目将在下次保存时排除。'],
+  overwriteInvalid: ['저장하면 불러오지 못한 항목 또는 깨진 파일을 덮어써 영구 제거합니다. 계속할까요?', 'Saving will overwrite and permanently remove unloaded entries or the broken file. Continue?', '保存将覆盖并永久删除未加载的条目或损坏的文件。是否继续？'],
+  confirmOverwrite: ['덮어써 저장', 'Overwrite and save', '覆盖并保存'],
+  cancelOverwrite: ['취소', 'Cancel', '取消'],
   basic: ['기본', 'Basic', '基本'], target: ['대상', 'Target', '目标'], handling: ['결과 처리', 'Result handling', '结果处理'], hooks: ['훅', 'Hooks', '钩子'],
   presetCount: ['프리셋 {count}개', '{count} presets', '{count} 个预设'], stageCount: ['단계 {count}개', '{count} stages', '{count} 个阶段'],
   disabledTrial: ['이 게이트는 꺼져 있습니다. 저장된 상태로는 실제 실행에 적용되지 않습니다.', 'This gate is off. Its saved state does not apply to live runs.', '此门控已关闭。保存的状态不会应用于实际运行。'],

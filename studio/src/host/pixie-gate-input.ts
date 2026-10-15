@@ -1,3 +1,4 @@
+import { readRuntimeGateDefinitions } from './pixie-gate-definition-reader.ts';
 import { randomUUID } from 'node:crypto';
 import type { Context } from '@deepseek-ai/cordis';
 import type { UserMessage } from '@deepseek-ai/dsh-llm';
@@ -20,7 +21,8 @@ declare module '@deepseek-ai/cordis' {
 type Decision = { kind: 'reject' } | { kind: 'enter'; messages: UserMessage[]; startsRequestSeries?: true };
 export interface InputAgent { id: string; ctx: Context; session: { header: { cwd?: string } } }
 export interface GateInputDeps {
-  definitions(): Promise<PresetGate[]>;
+  definitions(): Promise<PresetGate[] | import('../pixie-gate-definitions.ts').GateDefinitionsRead>;
+  warn?(message: string): void;
   preset(agent: InputAgent): string | undefined;
   isRoot(agent: InputAgent): boolean;
   policy(agent: InputAgent): GateInput['sandboxPolicy'];
@@ -36,7 +38,7 @@ export function gateInput(deps: GateInputDeps) {
     if (decision.kind === 'reject') return decision;
     const preset = deps.preset(payload.agent);
     if (!preset) return decision;
-    const rows = await deps.definitions();
+    const rows = await readRuntimeGateDefinitions(deps);
     const gate = rows.find(row => row.presetIds.includes(preset) && row.definition.point === 'input' && row.definition.enabled)?.definition;
     if (!gate) return decision;
     const root = deps.isRoot(payload.agent);

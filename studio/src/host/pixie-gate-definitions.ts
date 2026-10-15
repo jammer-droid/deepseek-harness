@@ -1,9 +1,22 @@
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import { randomUUID } from 'node:crypto';
-import { validateGateDefinition, type GateDefinition } from '../pixie-gate-contracts.ts';
+import { validateGateDefinition } from '../pixie-gate-contracts.ts';
 
-export interface PresetGate { definition: GateDefinition; presetIds: string[] }
+import type { GateEntry, GateDefinitionsRead, GateDefinitionError } from '../pixie-gate-definitions.ts';
+export type PresetGate = GateEntry;
+const diagnostic = (error: unknown, code: string): GateDefinitionError => ({ code: typeof (error as { code?: unknown })?.code === 'string' ? (error as { code: string }).code : code, message: error instanceof Error ? error.message : String(error) });
+function decode(text: string): GateDefinitionsRead {
+  let value: unknown;
+  try { value = JSON.parse(text); } catch (error) { return { entries: [], invalid: [], error: diagnostic(error, 'invalid-json') }; }
+  if (!Array.isArray(value)) return { entries: [], invalid: [], error: { code: 'invalid-file', message: 'Gate definitions must be an array' } };
+  const result: GateDefinitionsRead = { entries: [], invalid: [] };
+  value.forEach((raw, index) => {
+    try { const rows = validatePresetGates([...result.entries, raw]); result.entries.push(rows[rows.length - 1]!); }
+    catch (error) { result.invalid.push({ index, raw, error: diagnostic(error, 'invalid-entry') }); }
+  });
+  return result;
+}
 export function validatePresetGates(value: unknown): PresetGate[] {
   if (!Array.isArray(value)) throw new Error('Gate definitions must be an array');
   const ids = new Set<string>();
@@ -26,17 +39,18 @@ export function validatePresetGates(value: unknown): PresetGate[] {
 export class PixieGateDefinitions {
   private writes: Promise<unknown> = Promise.resolve();
   constructor(private readonly file: string, private readonly legacyFile?: string) {}
-  async read(): Promise<PresetGate[]> {
-    try { return validatePresetGates(JSON.parse(await readFile(this.file, 'utf8'))); }
+  async read(): Promise<GateDefinitionsRead> {
+    try { return decode(await readFile(this.file, 'utf8')); }
     catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error; }
-    if (!this.legacyFile) return [];
+    if (!this.legacyFile) return { entries: [], invalid: [] };
     const operation = this.writes.catch(() => {}).then(async () => {
       // Recheck within the write queue: a save or another first read may have won.
-      try { return validatePresetGates(JSON.parse(await readFile(this.file, 'utf8'))); }
+      try { return decode(await readFile(this.file, 'utf8')); }
       catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error; }
-      let rows: PresetGate[];
-      try { rows = validatePresetGates(JSON.parse(await readFile(this.legacyFile!, 'utf8'))); }
-      catch (error) { if ((error as NodeJS.ErrnoException).code === 'ENOENT') return []; throw error; }
+      let rows: GateDefinitionsRead;
+      try { rows = decode(await readFile(this.legacyFile!, 'utf8')); }
+      catch (error) { if ((error as NodeJS.ErrnoException).code === 'ENOENT') return { entries: [], invalid: [] }; throw error; }
+      if (rows.error || rows.invalid.length) return rows;
       await mkdir(dirname(this.file), { recursive: true });
       // Atomic rename only after validation. A failed move leaves the original intact.
       await rename(this.legacyFile!, this.file);

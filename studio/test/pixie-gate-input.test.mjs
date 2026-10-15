@@ -88,15 +88,15 @@ test('a later rejection discards earlier staged replacement', async () => {
 });
 test('definition store validates atomically and persists defaults, preset bindings and errors', async () => {
   const root = await mkdtemp(join(tmpdir(), 'studio-definitions-')); const file = join(root, 'gates.json'); const store = new PixieGateDefinitions(file);
-  assert.deepEqual(await store.read(), []);
+  assert.deepEqual(await store.read(), { entries: [], invalid: [] });
   const gate = definition({ match: {} }); delete gate.onError;
   await store.save([{ definition: gate, presetIds: ['p'] }]);
-  assert.equal((await store.read())[0].definition.onError, 'pass');
-  assert.deepEqual((await store.read())[0].definition.match.sources, ['user']);
+  assert.equal((await store.read()).entries[0].definition.onError, 'pass');
+  assert.deepEqual((await store.read()).entries[0].definition.match.sources, ['user']);
   const before = await readFile(file, 'utf8');
   for (const rows of [[{ definition: definition({ stages: [] }), presetIds: ['p'] }], [{ definition: definition(), presetIds: [123] }], [{ definition: definition(), presetIds: ['p'] }, { definition: definition({ id: 'other' }), presetIds: ['p'] }]]) assert.throws(() => store.save(rows));
   assert.equal(await readFile(file, 'utf8'), before);
-  await writeFile(file, 'broken'); await assert.rejects(store.read());
+  await writeFile(file, 'broken'); assert.equal((await store.read()).error.code, 'invalid-json');
   await writeFile(join(root, 'not-dir'), 'file');
   await assert.rejects(new PixieGateDefinitions(join(root, 'not-dir', 'gates.json')).save([{ definition: definition(), presetIds: [] }]));
 });

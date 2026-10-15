@@ -355,6 +355,8 @@ interface GateResult {
 
 ### S4 — `input` 지점 연결 (R1·R2)
 
+- 재리뷰 조건 해소: 정의 읽기는 `{ entries, invalid: [{ index, raw, error }], error? }`로 항목 실패를 격리하고 깨진 파일·invalid 이전 원본을 보존한다. 저장은 전체 검증하며 런타임 4개 지점은 읽기 실패 시 fail-open·동일 경고 60초 제한, Remote/편집기는 복구 정보와 삭제·덮어쓰기 확인을 제공한다.
+
 - 선행: S3.
 - 책임: `agent/pre-step` 바인딩(바깥쪽 등록), source·에이전트 필터, `next()` 결과에서 일반 훅 컨텍스트 읽기, 대상 메시지 교체·append·거부, `pixie-gate/start`·`end` 이벤트, 프리셋 범위 적용.
 - 호출자 책임(S4–S6): end 훅 도중 외부 취소에도 GateResult 판정은 유지되므로 실제 동작 적용 직전에 `signal.aborted`를 확인한다.
@@ -464,6 +466,8 @@ interface GateResult {
 - **리뷰 후 갱신:** 판정 라벨 스냅샷 제한은 `db8499c716`·`dbdd703856`으로 해결했다. 렌더된 질문·기준·옵션·점수 문구를 실행 기록에 보관하고, 결과와 실패 조건은 기록만 사용한다. 스냅샷 없는 구기록은 현재 정의가 아니라 id·숫자로 표시한다. 실제 모델 호출은 여전히 미검증이며, S9 부분 검증과 일괄 리뷰 결과는 아래 기록을 참조한다. S1 표 불변.
 
 ### 일괄 리뷰 수정 기록
+
+- 정의 하나의 잘못된 choice 옵션이 모든 게이트와 에이전트 턴을 실패시키던 재리뷰 조건을 해소했다. [defs-red.txt](</tmp/pixie-gate-review-fix/defs-red.txt>)에 로더·4개 런타임·편집기 red를 보존했으며 S1 표는 변경하지 않았다.
 
 - 리뷰 자료: [/tmp/pixie-gate-review-all/](</tmp/pixie-gate-review-all/>). 재현 red 근거는 [before.txt](</tmp/pixie-gate-review-fix/before.txt>), [additional-red.txt](</tmp/pixie-gate-review-fix/additional-red.txt>), [client-red.txt](</tmp/pixie-gate-review-fix/client-red.txt>)다. `additional-before.txt`에는 fixture 오류가 섞였으므로 결함 근거로 사용하지 않는다.
 - **Host A — `db8499c716`:** 실제 교체되는 forward 텍스트 기준으로 수정 확인·제안을 결정하며 동일 텍스트는 불필요하게 거부하지 않는다. 명령 JSON의 명시적 null/잘못된 verdict는 오류로 처리한다. 판정 사용량을 성공·잘못된 모델 출력 모두 기록하고, `StageResult.data.questions`에 렌더된 질문(noul 질문·기준, choice 옵션 라벨, score 단계 문구)을 저장한다.
