@@ -17,6 +17,7 @@ import { gateTurn } from './pixie-gate-turn.ts';
 import { gateTools } from './pixie-gate-tools.ts';
 import { DefaultStageRunner, type GateShell } from './pixie-gate-runner.ts';
 import type { GateInput } from '../pixie-gate-contracts.ts';
+import { trialGate } from './pixie-gate-trial.ts';
 
 /** What the Pixie tab shows for one session. */
 export interface PixieView {
@@ -55,6 +56,7 @@ export class PixieService extends TypertRemoteService {
   private live: PixieLive;
   private gates: PixieGateStore;
   private definitions: PixieGateDefinitions;
+  private gateRunner: GateInputDeps['runner'];
   /** Internal producer API, intentionally not Remote. */
   get gateRecorder(): PixieGateRecorder { return this.gates; }
   constructor(ctx: Context, dataDir: string) {
@@ -90,6 +92,7 @@ export class PixieService extends TypertRemoteService {
       recorder: this.gates,
       emit: (event, run) => ctx.emit(event, run),
     };
+    this.gateRunner = gateDeps.runner;
     ctx.on('agent/pre-step', gateInput(gateDeps), { prepend: true });
     ctx.on('agent/turn-stopping', gateTurn(gateDeps));
     const tools = gateTools(gateDeps);
@@ -190,6 +193,21 @@ export class PixieService extends TypertRemoteService {
         wake = undefined;
       }
     } finally { stop(); signal.removeEventListener('abort', onAbort); }
+  }
+
+  /** Preview only: no gate records, lifecycle events or agent input are written. */
+  @Remote
+  async trialGate(payload: string, signal: AbortSignal) {
+    return trialGate(json(payload), {
+      runner: this.gateRunner,
+      session: id => {
+        const agent = this.ctx.get('agents')?.roots().find(agent => agent.id === id);
+        if (!agent) throw new Error('An active root session is required for commands');
+        const policy = this.ctx.get('sandboxPolicy') as unknown as { resolve(request: { session: unknown }): GateInput['sandboxPolicy'] } | undefined;
+        const sandboxPolicy = policy?.resolve({ session: agent.session });
+        return { sessionId: id, cwd: agent.session.header.cwd ?? '', ...(sandboxPolicy ? { sandboxPolicy } : {}) };
+      },
+    }, signal);
   }
 
   @Remote

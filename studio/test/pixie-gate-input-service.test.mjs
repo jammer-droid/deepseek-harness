@@ -23,6 +23,24 @@ for (const sandbox of [true, false]) test(`Cordis service composition uses publi
     const service = ctx.get('studioPixie');
     await service.saveGateDefinitions(JSON.stringify([{ presetIds: ['p'], definition: { id: 'g', name: 'Gate', enabled: true, point: 'input', match: {}, stages: [{ id: 's', kind: 'command', role: 'revise', command: { command: 'trusted' } }], forward: { kind: 'replace', from: 'subject' }, limits: { stageTimeoutMs: 1000, maxSteersPerTurn: 0 } } }]));
     assert.equal((await service.gateDefinitions()).length, 1);
+    const trialDefinition = (await service.gateDefinitions())[0].definition;
+    const trial = await service.trialGate(JSON.stringify({ definition: trialDefinition, text: 'trial' }), new AbortController().signal);
+    assert.deepEqual(trial.skipped, ['s']);
+    assert.equal(requests.length, 0);
+    assert.equal((await service.gateRuns('session')).runs.length, 0);
+    assert.equal(events.length, 0);
+    if (sandbox) {
+      const enabledTrial = await service.trialGate(JSON.stringify({ definition: trialDefinition, text: 'trial', executeCommands: true, sessionId: 'session' }), new AbortController().signal);
+      assert.equal(enabledTrial.result.subject, 'new');
+      assert.equal(requests.length, 1);
+      assert.equal(requests[0].sandboxPolicy.mode, 'read-only');
+      assert.equal((await service.gateRuns('session')).runs.length, 0);
+      assert.equal(events.length, 0);
+      requests.length = 0;
+    } else {
+      await assert.rejects(service.trialGate(JSON.stringify({ definition: trialDefinition, text: 'trial', executeCommands: true, sessionId: 'session' }), new AbortController().signal), /sandbox policy/);
+    }
+    await assert.rejects(service.trialGate(JSON.stringify({ definition: trialDefinition, text: 'trial', executeCommands: true, sessionId: 'missing' }), new AbortController().signal), /active root session/);
     const message = { id: 'm', role: 'user', source: { kind: 'user' }, content: [{ type: 'text', text: 'original' }] };
     const payload = { agent, messages: [message], turn: 1, step: 1, signal: new AbortController().signal };
     const result = await ctx.waterfall('agent/pre-step', payload, async () => ({ kind: 'enter', messages: [message] }));
