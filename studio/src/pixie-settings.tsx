@@ -2,6 +2,8 @@
  * Uses the same {@link DetailLayout} frame as the preset service so every Studio service looks alike.
  */
 import React from 'react';
+import { DEFAULT_JUDGE_SYSTEM_PROMPT } from './pixie-contracts.ts';
+import { judgeText } from './pixie-gate-judge-locale.ts';
 import { GateEditor, type GateEditorActions } from './pixie-gate-editor.tsx';
 import { gateEditorText } from './pixie-gate-editor-locale.ts';
 import { Button, Notice, PageHead, Segmented, SettingsRow, Toggle } from './ui.tsx';
@@ -22,7 +24,7 @@ export interface PixieSettingsActions {
 }
 
 const SEP = '\u0000';
-type PageId = 'model' | 'threads' | 'prompt' | 'gates';
+type PageId = 'model' | 'threads' | 'prompt' | 'judge' | 'gates';
 
 export function PixieSettingsPage({ actions, gateActions, locale, navFooter }: { actions: PixieSettingsActions; gateActions?: GateEditorActions; locale: string; navFooter?: React.ReactNode }) {
   const t = (key: PixieTextKey) => pixieText(locale, key);
@@ -114,10 +116,30 @@ export function PixieSettingsPage({ actions, gateActions, locale, navFooter }: {
     </SettingsRow>
   </section>);
 
+  const jt = (key: Parameters<typeof judgeText>[1]) => judgeText(locale, key);
+  const judgePage = <div className="studio-page-stack">
+    <PageHead title={jt('judge')} description={jt('settingsDescription')} actions={draft && catalog && <Button primary disabled={status === 'saving' || !dirty} onClick={() => void save()}>{status === 'saving' ? t('saving') : dirty ? t('save') : t('savedButton')}</Button>} />
+    {saveError && <Notice action={<Button small onClick={() => setSaveError('')}>{t('dismiss')}</Button>}>{`${t('saveFailed')} (${saveError})`}</Notice>}
+    {error && <Notice action={<Button small onClick={() => void load()}>{t('retry')}</Button>}>{error}</Notice>}
+    {!error && (!draft || !catalog) && <p role="status">{t('loading')}</p>}
+    {draft && catalog && <fieldset disabled={status === 'saving'} className="studio-config-root studio-settings-card">
+      <SettingsRow title={jt('model')} description={jt('modelHint')} control={<select className="studio-compact" aria-label={jt('model')} value={draft.judgeModel ? JSON.stringify([draft.judgeModel.provider, draft.judgeModel.model]) : ''} onChange={e => {
+        const { judgeModel: _, ...rest } = draft;
+        const route = e.target.value ? JSON.parse(e.target.value) as string[] : undefined;
+        replace(route ? { ...rest, judgeModel: { provider: route[0]!, model: route[1]! } } : rest);
+      }}><option value="">{gateEditorText(locale, 'defaultModel')}</option>{catalog.groups.map(group => <optgroup key={group.id} label={group.name}>{group.models.map(model => <option key={model.id} value={JSON.stringify([group.id, model.id])}>{model.name}</option>)}</optgroup>)}</select>} />
+      <SettingsRow title={jt('prompt')} description={jt('promptHint')}>
+        <textarea className="studio-pixie-prompt" aria-label={jt('prompt')} placeholder={DEFAULT_JUDGE_SYSTEM_PROMPT} value={draft.judgeSystemPrompt ?? ''} onChange={e => { const { judgeSystemPrompt: _, ...rest } = draft; replace(e.target.value ? { ...rest, judgeSystemPrompt: e.target.value } : rest); }} />
+        <Button disabled={!draft.judgeSystemPrompt} onClick={() => { const { judgeSystemPrompt: _, ...rest } = draft; replace(rest); }}>{jt('reset')}</Button>
+      </SettingsRow>
+    </fieldset>}
+  </div>;
+
   return <DetailLayout footer={navFooter} navigation={t('settingsNavigation')} selected={page} onSelect={next => setPage(next as PageId)} pages={[
     { id: 'model', group: t('settingsGroup'), label: t('pageModel'), content: modelPage },
     { id: 'threads', group: t('settingsGroup'), label: t('pageThreads'), content: threadsPage },
     { id: 'prompt', group: t('settingsGroup'), label: t('pagePrompt'), content: promptPage },
+    { id: 'judge', group: t('settingsGroup'), label: jt('judge'), content: judgePage },
     ...(gateActions ? [{ id: 'gates', group: t('settingsGroup'), label: gateEditorText(locale, 'title'), content: <GateEditor actions={gateActions} locale={locale} /> }] : []),
   ]} />;
 }

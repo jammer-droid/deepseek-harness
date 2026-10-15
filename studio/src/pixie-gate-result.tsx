@@ -1,5 +1,7 @@
 import React from 'react';
-import type { GateResult, StageResult } from './pixie-gate-contracts.ts';
+import { judgeText } from './pixie-gate-judge-locale.ts';
+import type { JudgeAnswer } from './pixie-contracts.ts';
+import type { GateDefinition, GateResult, StageResult } from './pixie-gate-contracts.ts';
 import { gateText } from './pixie-gate-locale.ts';
 import { Badge, Notice, SectionHead } from './ui.tsx';
 
@@ -8,8 +10,8 @@ function wasSkipped(result: StageResult): boolean {
 }
 
 /** Shared trial/run detail; deliberately omits model usage and never infers applied actions. */
-export function GateResultDetails({ result, locale, durations = {}, skipped = [] }: {
-  result: GateResult; locale: string; durations?: Record<string, number>; skipped?: string[];
+export function GateResultDetails({ result, locale, durations = {}, skipped = [], definition }: {
+  definition?: GateDefinition | undefined; result: GateResult; locale: string; durations?: Record<string, number>; skipped?: string[];
 }): React.ReactElement {
   const t = (key: Parameters<typeof gateText>[1]) => gateText(locale, key);
   const skippedCount = new Set([...skipped.filter(id => !id.startsWith('hooks.')), ...Object.entries(result.stages).filter(([, value]) => wasSkipped(value)).map(([id]) => id)]).size;
@@ -20,6 +22,18 @@ export function GateResultDetails({ result, locale, durations = {}, skipped = []
       <SectionHead title={label} actions={<Badge tone={!omitted && (value.verdict === 'error' || value.verdict === 'fail') ? 'warning' : 'neutral'}>{t(omitted ? 'skipped' : value.verdict)}</Badge>} />
       {value.text !== undefined && <p className="studio-pixie-answer">{value.text}</p>}
       {(value.reason || omitted) && <p className="studio-pixie-answer">{t('reason')}: {omitted && (!value.reason || value.reason === 'skipped: 시험 실행에서 명령 미실행') ? t('skippedCommand') : value.reason}</p>}
+      {!!value.data && typeof value.data === 'object' && 'answers' in value.data && !!value.data.answers && typeof value.data.answers === 'object' && <section aria-label={judgeText(locale, 'answers')}>
+        <SectionHead title={judgeText(locale, 'answers')} />
+        {Object.entries(value.data.answers as Record<string, JudgeAnswer>).map(([questionId, answer]) => {
+          const s = definition?.stages.find(stage => stage.id === id);
+          const q = s?.kind === 'judge' ? s.questions[questionId] : undefined;
+          if (!answer || !['choice', 'score', 'noul'].includes(answer.type)) return null;
+          const percent = (number: number) => `${Math.round(number * 100)}%`;
+          return <p key={questionId} className="studio-pixie-answer">{questionId}: {answer.type === 'noul' ? answer.noul : answer.type === 'choice' ? <>
+            {q?.type === 'choice' ? q.options[answer.choice] || answer.choice : answer.choice} · {judgeText(locale, 'probability')}: {percent(answer.probabilities?.[answer.choice] ?? 0)} · {judgeText(locale, 'confidence')}: {percent(answer.confidence)}
+          </> : <>{q?.type === 'score' ? q.levels[answer.score] || answer.score : answer.score} · {judgeText(locale, 'confidence')}: {percent(answer.confidence)}</>}</p>;
+        })}
+      </section>}
       {value.error && <Notice>{t('error')}: {value.error}</Notice>}
       {durations[id] !== undefined && <p className="studio-muted">{t('elapsed')}: {duration(durations[id]!)}</p>}
     </section>;

@@ -48,10 +48,10 @@ test('preset checkboxes support multiple selection, removal and unknown saved id
   assert.deepEqual(saves[0][0].presetIds, ['missing', 'q']);
 });
 
-test('stage controls enforce 1–5 stages and disable judge; order follows explicit moves', async t => {
+test('stage controls enforce 1–5 stages and enable judge; order follows explicit moves', async t => {
   const { host } = await setup(t);
   assert.equal(host.querySelector('[data-gate-editor-stage] button:last-child').disabled, true);
-  assert.equal(input(host, 'Kind').querySelector('[value=judge]').disabled, true);
+  assert.equal(input(host, 'Kind').querySelector('[value=judge]').disabled, false);
   for (let i = 0; i < 4; i++) await click(button(host, 'Add stage'));
   assert.equal(button(host, 'Add stage').disabled, true);
   assert.match(host.textContent, /At most 5 stages/);

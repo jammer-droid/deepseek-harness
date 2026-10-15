@@ -1,4 +1,6 @@
 import React from 'react';
+import { GateJudgeEditor, makeJudgeStage } from './pixie-gate-judge-editor.tsx';
+import { judgeText } from './pixie-gate-judge-locale.ts';
 import { GateTrialPanel, type GateTrialAction } from './pixie-gate-trial-panel.tsx';
 import { Button, CheckOption, Notice, PageHead, SectionHead, SettingsRow, Toggle } from './ui.tsx';
 import { MAX_GATE_STAGES, validateGateDefinition, type GateDefinition, type StageDefinition } from './pixie-gate-contracts.ts';
@@ -72,7 +74,7 @@ export function GateEditor({ actions, locale }: { actions: GateEditorActions; lo
   };
   const field = (key: GateEditorKey, control: React.ReactNode, address: string = key) => <SettingsRow title={t(key)}><>{control}{problem?.field === address && <Notice>{t(problem.key)}</Notice>}</></SettingsRow>;
   const text = (key: GateEditorKey, value: string | number, change: (v: string) => void, address: string = key, numeric = false) => field(key, <input className="studio-compact" aria-label={t(key)} type={numeric ? 'number' : 'text'} value={value} onChange={e => change(e.target.value)} />, address);
-  const select = (key: GateEditorKey, value: string, options: readonly GateEditorKey[], change: (v: string) => void, address: string = key) => field(key, <select className="studio-compact" aria-label={t(key)} value={value} onChange={e => change(e.target.value)}>{options.map(v => <option key={v} value={v} disabled={v === 'judge'}>{t(v)}</option>)}</select>, address);
+  const select = (key: GateEditorKey, value: string, options: readonly GateEditorKey[], change: (v: string) => void, address: string = key) => field(key, <select className="studio-compact" aria-label={t(key)} value={value} onChange={e => change(e.target.value)}>{options.map(v => <option key={v} value={v} >{t(v)}</option>)}</select>, address);
   const add = (copy = false) => { const item = copy && entry ? structuredClone(entry) : makeGate(t('title')); if (copy) { item.definition.id = crypto.randomUUID(); item.definition.name += ` (${t('duplicate')})`; item.definition.enabled = false; } setEntries(old => [...old!, item]); setSelected(item.definition.id); setProblem(undefined); };
   return <div className="studio-page-stack">
     <PageHead title={t('title')} description={t('description')} actions={entries && <Button primary disabled={saving || !dirty} onClick={() => void save()}>{saving ? t('saving') : dirty ? t('save') : t('saved')}</Button>} />
@@ -121,13 +123,15 @@ export function GateEditor({ actions, locale }: { actions: GateEditorActions; lo
         {g.stages.map((s, i) => <section className="studio-settings-card" key={i} data-gate-editor-stage={i}>
           <SectionHead title={`${t('stages')} ${i + 1}`} actions={<><Button disabled={i === 0} onClick={() => { const stages = [...g.stages]; [stages[i - 1], stages[i]] = [stages[i]!, stages[i - 1]!]; update({ stages }); }}>{t('up')}</Button><Button disabled={i === g.stages.length - 1} onClick={() => { const stages = [...g.stages]; [stages[i + 1], stages[i]] = [stages[i]!, stages[i + 1]!]; update({ stages }); }}>{t('down')}</Button><Button disabled={g.stages.length === 1} title={g.stages.length === 1 ? t('minStages') : undefined} onClick={() => update({ stages: g.stages.filter((_, n) => n !== i) })}>{t('remove')}</Button></>} />
           {text('id', s.id, id => stageUpdate(i, { ...s, id }), `stage-${i}-id`)}
-          {select('kind', s.kind, ['command', 'converse', 'judge'], kind => stageUpdate(i, kind === 'command' ? { id: s.id, kind, role: s.kind === 'judge' ? 'check' : s.role, command: { command: '' } } : { id: s.id, kind: 'converse', role: s.kind === 'judge' ? 'check' : s.role, prompt: '{{subject}}' }))}
+          {select('kind', s.kind, ['command', 'converse', 'judge'], kind => stageUpdate(i, kind === 'judge' ? makeJudgeStage(s.id) : kind === 'command' ? { id: s.id, kind, role: s.kind === 'judge' ? 'check' : s.role, command: { command: '' } } : { id: s.id, kind: 'converse', role: s.kind === 'judge' ? 'check' : s.role, prompt: '{{subject}}' }))}
           {s.kind !== 'judge' && select('role', s.role, g.point === 'input' || g.point === 'tool-after' ? ['check', 'revise', 'note'] : ['check', 'note'], role => stageUpdate(i, { ...s, role: role as 'check' | 'revise' | 'note' }), `stage-${i}-role`)}
           {s.kind === 'command' && <>{text('command', s.command.command, command => stageUpdate(i, { ...s, command: { ...s.command, command } }), `stage-${i}-command`)}{text('commandTimeout', s.command.timeoutMs ?? '', value => { const { timeoutMs: _, ...command } = s.command; stageUpdate(i, { ...s, command: value ? { ...command, timeoutMs: Number(value) } : command }); }, `stage-${i}-command`, true)}</>}
-          {s.kind === 'converse' && <>
-            {field('model', <select className="studio-compact" aria-label={t('model')} value={s.model ? JSON.stringify([s.model.provider, s.model.model]) : ''} onChange={e => { const { model: _, ...rest } = s; const v = e.target.value ? JSON.parse(e.target.value) as string[] : undefined; stageUpdate(i, v ? { ...rest, model: { provider: v[0]!, model: v[1]! } } : rest); }}><option value="">{t('defaultModel')}</option>{models.groups.map(group => <optgroup key={group.id} label={group.name}>{group.models.map(m => <option key={m.id} value={JSON.stringify([group.id, m.id])}>{m.name}</option>)}</optgroup>)}</select>)}
+          {s.kind !== 'command' && <>
+            {field('model', <select className="studio-compact" aria-label={t('model')} value={s.model ? JSON.stringify([s.model.provider, s.model.model]) : ''} onChange={e => { const { model: _, ...rest } = s; const v = e.target.value ? JSON.parse(e.target.value) as string[] : undefined; stageUpdate(i, v ? { ...rest, model: { provider: v[0]!, model: v[1]! } } : rest); }}><option value="">{s.kind === 'judge' ? judgeText(locale, 'defaultModel') : t('defaultModel')}</option>{models.groups.map(group => <optgroup key={group.id} label={group.name}>{group.models.map(m => <option key={m.id} value={JSON.stringify([group.id, m.id])}>{m.name}</option>)}</optgroup>)}</select>)}
+            {s.kind === 'judge' ? <GateJudgeEditor stage={s} definition={g} index={i} onChange={next => stageUpdate(i, next)} locale={locale} /> : <>
             {field('system', <textarea aria-label={t('system')} value={s.system ?? ''} onChange={e => stageUpdate(i, { ...s, system: e.target.value })} />, `stage-${i}-prompt`)}
             {field('prompt', <textarea aria-label={t('prompt')} value={s.prompt} onChange={e => stageUpdate(i, { ...s, prompt: e.target.value })} />, `stage-${i}-prompt`)}
+            </>}
             <p className="studio-muted">{t('variables')}: {['{{subject}}', '{{original}}', '{{hooks.context}}', ...(g.hooks?.start ? ['start'] : []), ...g.stages.slice(0, i).map(s => s.id)].flatMap(v => v.startsWith('{{') ? [v] : ['text', 'reason', 'data'].map(part => `{{stages.${v}.${part}}}`)).join(', ')}</p>
           </>}
         </section>)}

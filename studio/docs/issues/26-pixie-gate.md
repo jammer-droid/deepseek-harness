@@ -447,6 +447,16 @@ interface GateResult {
 - **S8 미완료 / UI 인계:** 단계 종류 판정 활성화, 질문·유형별 옵션/levels/기준 편집, 통과 규칙/모델 편집, `GateResultDetails` answers 요약, 설정 페이지 판정 모델/시스템 프롬프트와 기존 저장 버튼 상태, 관련 jsdom 테스트가 남아 있다. 현재 편집기는 judge 선택을 계속 비활성화한다. 후속 UI는 위 계약을 그대로 사용한다.
 - 실제 모델 호출은 미실시이며 키 존재 여부도 확인하지 않았고 키 값은 열람하지 않았다. 사용자 GUI·프로필 접근/배포 및 Client Inspect 없음. 독립 설치·시각 확인 미검증. S1 표 불변, 리뷰는 S9 이후.
 
+#### S8 UI 구현·로컬 검증
+
+- 판정 단계 선택을 활성화했다. 선택 모델(판정 기본 모델 fallback), check 고정 안내, choice 옵션 ID/문구·score 2–10단계·noul 질문/참/거짓 기준, 질문 추가/삭제와 ID 편집, all/any 및 유형별 통과 조건을 편집한다. 기존 변수 안내와 CheckOption을 재사용한다. 질문 유형 변경·ID 변경·옵션/질문 삭제로 깨진 조건은 자동 삭제하지 않고 유지하며 공유 `validateGateDefinition` 오류를 질문/조건 옆에 표시한다.
+- `GateResultDetails`는 answers의 선택 라벨·확률/신뢰도, 점수 단계 문구·신뢰도, noul 값과 실패 조건 reason을 표시한다. 선택적 definition을 시험 실행 draft 및 실행 카드의 저장 정의 조회에서 전달하며, 질문/옵션/단계를 찾지 못하면 ID/숫자로 표시한다. Host 기록 계약은 바꾸지 않았다.
+- Pixie 설정은 기존 성격별 DetailLayout 페이지 구조와 일치하도록 독립 **판정** 페이지를 선택했다. 판정 모델의 Pixie 기본 모델 fallback, 빈 시스템 프롬프트의 기본 Jev 지시문, 기본값으로 되돌리기, 수동 판정 탭도 설정을 사용한다는 안내와 기존 저장 버튼 상태/오류 보존 규칙을 적용했다. 선택 필드가 없는 기존 설정을 그대로 지원한다.
+- ko·en·zh 문구 제공. 새 공용 부품 및 CSS 변경이 없어 디자인 시스템 부품 표/스타일 스냅샷 변경은 없다.
+- 검증: `npm --prefix studio run typecheck`, `npm --prefix studio test` **368개 2회 연속 통과**, `git diff --check`. 신규 jsdom 5개는 단계 생성/noul·trial payload, choice 편집/깨진 옵션, score/깨진 질문, answers·ID fallback, 설정 저장/복원/하위 호환을 다룬다. 기존 테스트의 judge 선택 가능·판정 설정 탐색 기대값 및 실행 카드 Remote mock을 새 계약에 맞췄다. 첫 전체 실행의 기존 테스트 2개 실패는 탐색 기대값/Remote mock 누락이었으며 수정 후 연속 2회 통과했다. 기존 Node deprecation/RoleEditor nesting 경고는 남는다.
+- 격리 서버 19391 및 임시 Chrome 프로필로 라이트·다크 × 1440·520에서 질문 3유형·통과 조건·판정 설정·판정 결과를 24장 촬영했다. [스크린샷 INDEX](</tmp/pixie-gate-s8-shots/INDEX.md>). 결과는 격리 프로필에만 추가한 합성 실행 기록 1개이며 기존 기록은 보존했다. 사용자 GUI 19387·desktop 프로필 접근/배포 및 Client Inspect 없음.
+- **남은 항목:** 실제 모델 1회 확인 — 키 미열람. 실행 기록에 판정 질문 라벨 스냅샷 없음(정의 변경 시 id 표시). S9 독립 설치 종단간 검증과 코드 리뷰는 후속이다. S1 표 불변.
+
 ### S9 — 독립 설치 검증
 
 - 선행: S1–S8.

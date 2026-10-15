@@ -142,6 +142,7 @@ export function mountPixie(ctx: StudioContext, options: { navFooter?: (locale: s
     view: () => unwrap(remote().view(sessionId)),
     follow: listener => followPixieStream(() => remote().follow(sessionId), listener),
     gateRuns: () => unwrap(remote().gateRuns(sessionId)),
+    gateDefinitions: () => unwrap(remote().gateDefinitions()),
     followGates: listener => followPixieStream(() => remote().followGates(sessionId), listener),
     resolveGateRejection: (runId, status) => unwrap(remote().resolveGateRejection(sessionId, runId, status)),
     fillDraft: text => {

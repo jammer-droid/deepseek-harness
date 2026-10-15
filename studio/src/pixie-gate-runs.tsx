@@ -1,11 +1,12 @@
 import React from 'react';
-import type { GateRun, GateRunFrame, GateRunRecord } from './pixie-gate-contracts.ts';
+import type { GateDefinition, GateRun, GateRunFrame, GateRunRecord } from './pixie-gate-contracts.ts';
 import { gateText, gatePointText, type GateTextKey } from './pixie-gate-locale.ts';
 import { GateResultDetails } from './pixie-gate-result.tsx';
 import { Badge, Button, IconButton, SectionHead, Notice, Note } from './ui.tsx';
 
 export interface GateRunActions {
   gateRuns(): Promise<GateRunRecord>;
+  gateDefinitions?(): Promise<{ definition: GateDefinition }[]>;
   followGates(listener: (frame: GateRunFrame) => void): () => void;
   resolveGateRejection(runId: string, status: 'resent' | 'dismissed'): Promise<unknown>;
   fillDraft(text: string): void;
@@ -19,6 +20,13 @@ export function gateRunStatus(run: GateRun): GateTextKey {
 export function GateRunsPanel({ actions, locale }: { actions: GateRunActions; locale: string }) {
   const t = (key: GateTextKey) => gateText(locale, key);
   const [runs, setRuns] = React.useState<GateRun[]>([]);
+  const [definitions, setDefinitions] = React.useState<GateDefinition[]>([]);
+  React.useEffect(() => {
+    let active = true;
+    setDefinitions([]);
+    void actions.gateDefinitions?.().then(entries => { if (active) setDefinitions(entries.map(entry => entry.definition)); }, () => { /* Historical runs remain readable by id without definitions. */ });
+    return () => { active = false; };
+  }, [actions]);
   const [openId, setOpenId] = React.useState<string>();
   const [error, setError] = React.useState('');
   const [busy, setBusy] = React.useState(false);
@@ -90,7 +98,7 @@ export function GateRunsPanel({ actions, locale }: { actions: GateRunActions; lo
             <Button small disabled={busy} onClick={() => { void resolve(shown, 'dismissed'); }}>{t('dismissed')}</Button>
           </div></>}
         </section>}
-        {shown.result ? <GateResultDetails result={shown.result} locale={locale} /> : <p className="studio-pixie-answer">{shown.original}</p>}
+        {shown.result ? <GateResultDetails result={shown.result} definition={definitions.find(definition => definition.id === shown.gateId)} locale={locale} /> : <p className="studio-pixie-answer">{shown.original}</p>}
       </div>}
     </div>
   </div>;
