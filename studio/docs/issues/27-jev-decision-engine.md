@@ -17,17 +17,24 @@ Pixie Gate 훅 스크립트가 부르는 판정 엔진에 TypeSafe Jev를 추가
 
 ## 현재 진행 상황
 
-명세 `ready`. 첫 단계는 **S1**. 구현은 시작하지 않았다.
+S1–S7 구현과 로컬 검증을 마쳤다. 실제 Jev API 호출과 실세션 게이트 실행은 **미검증**이다(TypeSafe 키 없음, 세션 모델 키 없음).
 
-| 단계 | 상태 |
-| --- | --- |
-| S1 판정 계약 정렬 | 대기 |
-| S2 JevJudgeEngine과 키 | 대기 |
-| S3 엔진 선택과 키 설정 화면 | 대기 |
-| S4 `pixie judge` 확장 | 대기 |
-| S5 스크립트 직접 결론(exit 11) | 대기 |
-| S6 Pixie 출력 Markdown 표시 | 대기 |
-| S7 가이드와 검증 | 대기 |
+| 단계 | 상태 | 커밋 |
+| --- | --- | --- |
+| S1 판정 계약 정렬 | 완료 | `49086773fd` |
+| S2 JevJudgeEngine과 키 | 완료(가짜 fetch) | `49086773fd` |
+| S3 엔진 선택과 키 설정 화면 | 완료, 설치 화면 확인 | `49086773fd` |
+| S4 `pixie judge` 확장 | 완료 | `a35be44af1` |
+| S5 스크립트 직접 결론(exit 11) | 완료 | `a35be44af1` |
+| S6 Pixie 출력 Markdown 표시 | 완료(렌더러 주입은 단위 테스트, 실제 렌더 화면은 미확인) | `e67d5eb5cd` |
+| S7 가이드와 검증 | 가이드·스킬 갱신 완료, 실호출 미검증 | 이 커밋 |
+
+### 검증 기록
+
+- **로컬:** `npm run typecheck`, `node build.mjs`, `node --import tsx --test test/*.test.mjs` 479/479 통과, `git diff --check` 통과. 작업 트리에 의존성이 없어 메인 체크아웃의 `node_modules`를 심볼릭 링크로 썼다(커밋하지 않음). DSH 패키지 재빌드는 하지 않았다.
+- **가이드 예시 스크립트:** ko·en 가이드의 `translate-check.sh`·`claim-check.sh`를 문서에서 추출해 실제 bash·curl·`jq`와 실제 헬퍼 경로(가짜 판정 엔진)로 실행했다. 문서에 적은 exit·출력과 일치했다(일회성 검사, 저장소에 넣지 않음).
+- **독립 설치:** 수정하지 않은 DSH `0.2.0-rc.2`(`/Applications/DeepSeek Harness.app`, `dsh --version`)에 `start-web.mjs`로 pack한 `@matamt-dbg/dsh-studio@0.3.0` tarball을 격리 `studio/.dsh-home` / `lean-agent-web`에 설치했다. 19388은 다른 프로세스가 쓰고 있어 같은 프로필을 19390에서 다시 띄웠다. Loader 로딩 성공, Pixie 설정에 **결정 엔진** 페이지 표시. 키 저장 → `설정됨 · 출처: file`, 입력칸 비워짐, 페이지에 키 문자열 없음, 키 삭제 → `설정 안 됨`(DSH credentials 실제 서비스). 화면: [라이트 1440 LLM](../verification/jev-27/judge-llm-light-1440.png), [라이트 1440 Jev 키 저장 후](../verification/jev-27/judge-jev-saved-light-1440.png), [다크 520 Jev](../verification/jev-27/judge-jev-dark-520.png). 콘솔 오류 없음. 사용자 GUI(19387)·사용자 프로필은 건드리지 않았다.
+- **미검증:** 실제 Jev 응답(세 형식, 한국어 state), 실세션에서 exit 11·Jev 판정 게이트, 실제 `MarkdownText` 렌더 화면(Pixie 답변이 필요해 모델 키 필요), `0.2.1-alpha.2` 설치.
 
 ## 범위
 

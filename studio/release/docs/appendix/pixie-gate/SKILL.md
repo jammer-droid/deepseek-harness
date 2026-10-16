@@ -20,15 +20,16 @@ Help the user build a Pixie Gate: a task the Pixie model runs at one point of an
    | `turn-end` | The agent's final answer |
 
 2. Write the task (`instruction`) in plain words. Say which of the five output fields to use: verdict (`pass`/`stop`), reason, replacement, addition, note. Check the guide's application table: at `tool-before` and `turn-end` replacement and addition become notes; at `turn-end` stop asks the agent to redo with the reason.
-3. For a strict yes/no threshold, write a hook script that calls `pixie judge` and exits 10 or prints the outcome; gates have no judge option.
+3. For a judgment (yes/no threshold, picking one of fixed options, a graded score), write a hook script that calls `pixie judge` and decides the outcome itself: exit 10 to pass untouched, exit 11 to print the gate output, exit 0 only when Pixie should interpret the result. Gates have no judge option; the engine (LLM or TypeSafe Jev) is set in Studio → Pixie → Settings → Decision engine.
 4. Use a hook script only when the two fields cannot express the flow: conditions (only some tools), loops, or external measurement. Prefer no script.
 
 ## Write a script
 
 - Bash only (macOS and Linux). Save it as an executable file in the script folder (`chmod +x`): `<profile>/studio-data/pixie-gate/commands/` unless the user set another under Gates → Scope (`<profile>/studio-data/pixie-gate/settings.json`, `scriptDirectory`). Use letters, digits, `_`, `.`, `-`; no subfolders, no `..`.
 - Read the target from stdin. Print what the task needs to stdout (256 KB max); print a JSON object to fill `{{hooks.<name>.data}}`. `<name>` is the file name without its last extension.
-- Exit 0 to continue, 10 to skip the gate, anything else is an error.
-- Use `pixie ask "<instruction>" [--input]` and `pixie judge --question "…" [--threshold 0.5] [--input]`. With `--input` the helper reads stdin; otherwise it uses the gate target. `judge` exits 0 on pass, 1 below threshold, 2 on errors. At most 20 helper calls per run.
+- Exit 0 to run the Pixie task, 10 to skip the gate, 11 to apply stdout as the gate output (a JSON object with optional `verdict`, `reason`, `replace`, `append`, `note`; no Pixie call). Anything else is an error. A gate whose script always exits 10 or 11 may have an empty task; exit 0 then fails.
+- Use `pixie ask "<instruction>" [--input]` and `pixie judge [--type bool|select|score] --question "…" [--json] [--input]`. bool takes `--threshold` (default 0.5) and optional `--true`/`--false` meanings, prints the yes probability, exits 0 at or above the threshold and 1 below; select takes two or more `--option name="description"` and prints the chosen name; score takes 2–10 `--level "description"` (lowest first) and prints the score. `--json` prints `{"type","label","answer","engine"}`. Errors exit 2 and never become a "no". With `--input` the helper reads stdin; otherwise it uses the gate target. At most 20 helper calls per run.
+- Write the whole judgment in `--question`: question IDs never reach the model. For several inputs (source and translation, answer and evidence), pipe a JSON object built with `jq` and name its fields in backticks in the question.
 - The script runs in the session working directory under the session sandbox. Do not write files unless the session can write; never try to escape the sandbox.
 - In the task, reference only `{{hooks.<name>.text}}` and `{{hooks.<name>.data}}` of the chosen script.
 

@@ -9,13 +9,14 @@ Pixie Gate lets the **Pixie model read, judge, and rework content** at a set mom
 - [Advanced options](#advanced-options)
 - [Pixie hook scripts](#pixie-hook-scripts)
 - [The pixie helper](#the-pixie-helper)
+- [Decision engine](#decision-engine)
 - [Example scripts](#example-scripts)
 - [Run records](#run-records)
 - [Limits and troubleshooting](#limits-and-troubleshooting)
 
 ## Create a gate
 
-1. In **Studio → Pixie → Settings → Model**, choose the Pixie model. Gates and the helper (`pixie ask`, `pixie judge`) all use it.
+1. In **Studio → Pixie → Settings → Model**, choose the Pixie model. Gate tasks and `pixie ask` use it; `pixie judge` follows the [decision engine](#decision-engine) setting.
 2. In **Gates → Gate composition**, press **New gate** and pick a template. Each point has one representative template (instruction format check, agent message protocol, block risky commands, digest long tool results, verify the final answer); the blank gate is last. The switch on each card turns the gate on or off everywhere.
 3. Set **When** and **What Pixie does**. Write the task in plain words: whether to pass or stop, what to replace or add, and what note to show only to you.
 4. Put a sample in **Try it** and run it. The configured Pixie model really answers; nothing is recorded or sent to a session.
@@ -61,7 +62,7 @@ When the verdict is stop, the replacement and addition never reach the main mode
 
 ## Pixie hook scripts
 
-Build flows the two fields cannot express — only certain tools, translate → judge → retranslate loops, external measurements — as a script. Studio does not build features one by one; it gives scripts the means.
+Build flows the two fields cannot express — only certain tools, translate → judge → retranslate loops, external measurements, concluding from a judgment alone — as a script. Studio does not build features one by one; it gives scripts the means.
 
 - **Location:** the default is `<profile>/studio-data/pixie-gate/commands/`; change it under **Gates → Scope → Script folder** to another absolute or `~/…` path, and use **Open folder** to show it in Finder or Explorer (when DSH runs on your desktop). Leave it empty to restore the default; the folder is not created for you. Only executable files (`chmod +x`) in that folder can be chosen. Subfolders, links pointing outside the folder, and names containing `..` are excluded. Press **Refresh list** after adding a file.
 - **Supported environments:** available only when DSH runs with a bash profile (macOS and Linux). Windows is not supported yet; where scripts are unsupported the gate does not run them and applies its error policy.
@@ -77,9 +78,18 @@ Build flows the two fields cannot express — only certain tools, translate → 
 | stdout is a JSON object | `{{hooks.<name>.data}}` holds that JSON; otherwise it is empty |
 | exit 0 | Continue: Pixie runs the task |
 | exit 10 | Skip this gate: the original flow continues, no model call |
+| exit 11 | Use stdout as the gate output: no Pixie call. See below |
 | Other, or timeout | Error: the error policy applies |
 
 `<name>` is the file name without its last extension (`measure-subtitle.sh` → `measure-subtitle`). A task using an undefined variable cannot be saved.
+
+**Exit 11 — the script concludes.** stdout must be the same JSON object Pixie returns, with optional `verdict` (`pass` or `stop`), `reason`, `replace`, `append`, and `note`. The [point rules](#when-and-how-results-apply) apply unchanged, and the run record shows **Concluded by** `Hook script`. Non-JSON output or an unknown field follows the error policy.
+
+```bash
+printf '{"verdict":"stop","reason":"The form has no title line."}'; exit 11
+```
+
+If the script always ends with exit 10 or 11, the **task** can stay empty. A gate with an empty task fails when its script exits 0.
 
 ### Environment
 
@@ -98,15 +108,37 @@ Inside a script, the `pixie` command calls the Pixie model. It is first on the s
 
 ```sh
 pixie ask "<instruction>" [--input]
-pixie judge --question "<question>" [--threshold 0.5] [--input]
+pixie judge [--type bool|select|score] --question "<question>" [type arguments] [--json] [--input]
 ```
 
 - With `--input` the helper reads its input from stdin; otherwise it uses the gate target.
 - `ask` prints the answer and exits 0, using the Pixie model.
-- `judge` prints the "yes" probability and exits 0 at or above the threshold, 1 below it, using the Pixie model.
+- `judge` judges with the [decision engine](#decision-engine); types and output follow the table there.
 - Usage, token, limit, and model errors exit 2 with a message on stderr. A failed helper call never decides the gate; the script's exit code does.
 - Limits: 20 calls and 256 KB per request for each run. Calls follow the gate time limit and cancellation; their usage is added to the gate and listed under **Helper calls** in the run record.
 - A token reaches only that run's ask and judge. The helper uses a Studio route on the DSH web server, so it is unavailable without one (for example, headless).
+
+## Decision engine
+
+`pixie judge` uses the engine chosen in **Studio → Pixie → Settings → Decision engine**. A judgment runs only when a script asks for one, and the script decides what to do with the result.
+
+| Engine | Description |
+| --- | --- |
+| LLM (default) | The judge model (the Pixie model when unset) answers in the Jev format. The judge system prompt can be changed |
+| Jev | [TypeSafe Jev](https://docs.typesafe.ai/api) answers through its API. The model defaults to `jev-latest`; once thresholds are tuned, pin a version such as `jev-1.13.0`. **Gate input is sent to TypeSafe** |
+
+**Jev API key:** paste it on the decision engine page and press **Save key**. It is stored in DSH credentials as `TYPESAFE_API_KEY` and never shown again. A `TYPESAFE_API_KEY` from the environment or `.env` is used instead and cannot be changed on the page. Without a valid key, `pixie judge` fails with exit 2.
+
+| `--type` | Arguments | stdout | exit |
+| --- | --- | --- | --- |
+| `bool` (default) | `--threshold` (default 0.5); optional `--true "<what yes means>"`, `--false "<what no means>"` | "yes" probability | 0 at or above the threshold, 1 below |
+| `select` | Two or more `--option name="description"` | The chosen option name | 0 |
+| `score` | 2–10 `--level "description"`, lowest first | The score (from 0, may be fractional) | 0 |
+
+- `--json` prints one JSON line `{"type","label","answer","engine"}`. `label` is `yes`/`no` for bool, the option name for select, and the nearest level number for score; `answer` holds the probabilities and confidence.
+- Write the full judgment in `--question`; question IDs are not sent to the model. When the input has several parts, wrap them in JSON and name them in the question, such as `` `source` ``.
+- A judgment error stays an error: it never becomes "no" or a low score, and exits 2.
+- The previous `pixie judge --question … --threshold …` still works (`--type bool`).
 
 ## Example scripts
 
@@ -131,21 +163,42 @@ printf '{"cues":%d,"bytes":%d}\n' "$lines" "${#text}"
 
 Task: `Measured: {{hooks.measure-subtitle.data}}` …
 
-**Translation loop** (`translate-until-ok.sh`, when the agent finishes its answer): translate, and retranslate up to three times until the judge passes it.
+**Translation check** (`translate-check.sh`, when the agent finishes its answer): ends after one judgment when the answer is already Korean; otherwise translates and judges faithfulness against the source. It leaves the note itself with exit 11, without a Pixie task. Requires `jq`.
 
 ```bash
 #!/bin/bash
 source=$(cat)
+printf '%s' "$source" | pixie judge --question "Is the prose of this text written in Korean?" --threshold 0.8 --input >/dev/null && exit 10
 for _ in 1 2 3; do
-  draft=$(printf '%s' "$source" | pixie ask "Translate into natural Korean. Output only the translation." --input) || exit 1
-  if printf '%s' "$draft" | pixie judge --question "Is this a faithful, natural Korean translation?" --threshold 0.7 --input >/dev/null; then
-    printf '%s\n' "$draft"; exit 0
+  draft=$(printf '%s' "$source" | pixie ask "Translate into natural Korean. Keep code, paths and numbers unchanged. Output only the translation." --input) || exit 1
+  if jq -n --arg s "$source" --arg t "$draft" '{source:$s, translation:$t}' \
+     | pixie judge --question "Does \`translation\` keep every condition, number and negation of \`source\`?" --threshold 0.7 --input >/dev/null; then
+    jq -n --arg t "$draft" '{note: ("[Translation]\n" + $t)}'; exit 11
   fi
 done
 exit 10
 ```
 
-Task: `Put this translation in the note as is.\n{{hooks.translate-until-ok.text}}`
+**Completion claim audit** (`claim-check.sh`, when the agent finishes its answer): judges with select whether the answer's test-pass claim matches the last recorded run. A contradiction asks for a redo, missing evidence leaves a note, and low confidence hands over to Pixie with exit 0. Adapt the run record file (`.last-test-run`) to your project.
+
+```bash
+#!/bin/bash
+answer=$(cat)
+evidence=$(cat .last-test-run 2>/dev/null || echo "no recorded test run")
+result=$(jq -n --arg a "$answer" --arg e "$evidence" '{answer:$a, evidence:$e}' | pixie judge --type select --json --input \
+  --question "Is the claim in \`answer\` that tests passed supported by \`evidence\`?" \
+  --option supported="evidence shows the claimed tests ran and passed, or answer makes no test claim" \
+  --option contradicted="evidence shows a failure or a different run" \
+  --option missing="answer claims tests passed but evidence has no run") || exit 1
+case "$(jq -r .label <<<"$result")" in
+  supported) exit 10 ;;
+  contradicted) printf '{"verdict":"stop","reason":"The test results contradict the claim. Check the actual results and report again."}'; exit 11 ;;
+  missing) [ "$(jq '.answer.confidence < 0.6' <<<"$result")" = true ] && { printf '%s' "$result"; exit 0; }
+           printf '{"note":"No recorded test run."}'; exit 11 ;;
+esac
+```
+
+Task for a gate using this script (runs only on low confidence): `Read {{hooks.claim-check.data}}; stop with a reason if the test claim is unsupported.`
 
 **Changed files** (`list-changed-files.sh`, when the agent finishes its answer): report git changes in the working directory.
 
@@ -156,7 +209,7 @@ git status --porcelain 2>/dev/null | head -50
 
 ## Run records
 
-The gate records in the session's right-side **Pixie** tab list each run. The detail shows the action actually applied (replaced, appended, rejected, blocked, steered, none), Pixie's five output fields, token usage, original and final text, notes, and helper calls. For a rejected input, **Edit and send** puts the suggestion (or the original) into the composer.
+The gate records in the session's right-side **Pixie** tab list each run. The detail shows the action actually applied (replaced, appended, rejected, blocked, steered, none), who concluded (Pixie, hook script, skipped by hook), the five output fields, token usage, original and final text, notes, and helper calls. For a rejected input, **Edit and send** puts the suggestion (or the original) into the composer.
 
 ## Limits and troubleshooting
 
@@ -165,5 +218,7 @@ The gate records in the session's right-side **Pixie** tab list each run. The de
 - **`Session sandbox policy and cwd are required`** means the session policy is unknown.
 - **`pixie: helper is not available`** means there is no web server, or the command ran outside a script run.
 - **`pixie: HTTP 401`** means the run already ended or the token belongs to another run. **429** is the call limit; **413** is the request size limit.
+- **`Jev API key is not configured`** means the decision engine is Jev and `TYPESAFE_API_KEY` is missing. **`Jev request failed: HTTP 401`** means a wrong key; **422** means a malformed question.
+- **`Hook script exit 11 needs a gate output JSON`** means the stdout of an exit 11 is not gate output JSON.
 - Sandboxes that block local network access can make helper calls fail.
 - Background tasks (pre-compaction, file pre-indexing) are not supported yet.
