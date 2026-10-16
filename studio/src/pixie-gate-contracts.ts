@@ -99,7 +99,11 @@ export interface GateRun {
   steerCount?: number;
   tool?: { name: string; callId: string };
 }
-export interface GateRunRecord { sessionId: string; runs: GateRun[] }
-export type GateRunFrame = { type: 'sync' } | { type: 'run'; run: GateRun };
+/** `disabledGateIds`: gates switched off for this session only; absent means none. Definitions are untouched. */
+export interface GateRunRecord { sessionId: string; runs: GateRun[]; disabledGateIds?: string[] }
+export type GateRunFrame = { type: 'sync' } | { type: 'run'; run: GateRun } | { type: 'session'; disabledGateIds: string[] };
+/** A gate that applies to this session's preset, with its session switch. */
+export interface SessionGate { id: string; name: string; when: string; script?: string; sessionEnabled: boolean }
+export interface SessionGates { preset?: string; gates: SessionGate[] }
 
 const object = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);

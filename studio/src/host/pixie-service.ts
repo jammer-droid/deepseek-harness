@@ -7,7 +7,8 @@ import { totalUsage } from '../pixie-contracts.ts';
 import { pixieCommand } from './pixie-command.ts';
 import { PixieLive } from './pixie-live.ts';
 import { PixieGateStore, type PixieGateRecorder } from './pixie-gate-store.ts';
-import type { GateRejection, GateRunFrame } from '../pixie-gate-contracts.ts';
+import type { GateRejection, GateRunFrame, SessionGates } from '../pixie-gate-contracts.ts';
+import { enabledFor } from '../pixie-gate-task.ts';
 import { PixieRuntime, type PixieLlm } from './pixie-runtime.ts';
 import { parsePixieModel, PixieSettingsStore, PixieStore } from './pixie-store.ts';
 import type { ForkEvent } from './pixie-fork.ts';
@@ -119,6 +120,7 @@ export class PixieService extends TypertRemoteService {
     });
     const gateDeps: GateInputDeps = {
       definitions: () => this.definitions.read(),
+      disabledGates: sessionId => this.gates.disabledGates(sessionId),
       warn: message => ctx.logger.warn(message),
       preset: agent => ctx.get('agentPresets')?.composedPreset(agent.ctx),
       isRoot: agent => ctx.get('agents')?.roots().some(root => root.id === agent.id) ?? false,
@@ -278,6 +280,24 @@ export class PixieService extends TypertRemoteService {
   @Remote
   async resolveGateRejection(sessionId: string, runId: string, status: Exclude<GateRejection['status'], 'pending'>) {
     return this.gates.resolveRejection(sessionId, runId, status);
+  }
+
+  /** Gates that apply to this session's preset (switched on everywhere, attached, on for the preset), with the session switch. */
+  @Remote
+  async sessionGates(sessionId: string): Promise<SessionGates> {
+    const agent = this.ctx.get('agents')?.get(sessionId as never) as unknown as { ctx: Context } | undefined;
+    const preset = agent ? this.ctx.get('agentPresets')?.composedPreset(agent.ctx) : undefined;
+    if (!preset) return { gates: [] };
+    const [read, disabled] = await Promise.all([this.definitions.read(), this.gates.disabledGates(sessionId)]);
+    const off = new Set(disabled);
+    return { preset, gates: read.entries.filter(task => enabledFor(task, preset)).map(task => ({ id: task.id, name: task.name, when: task.when,
+      ...(task.advanced.script ? { script: task.advanced.script } : {}), sessionEnabled: !off.has(task.id) })) };
+  }
+
+  @Remote
+  async setSessionGate(sessionId: string, gateId: string, enabled: boolean): Promise<string[]> {
+    if (typeof enabled !== 'boolean') throw new Error('enabled must be a boolean');
+    return this.gates.setGateEnabled(sessionId, gateId, enabled);
   }
 
   @Remote({ mode: 'stream' })

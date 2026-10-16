@@ -100,15 +100,18 @@ test('shared follow reconnects to sync and disposes on unmount', async () => {
 });
 test('Remote descriptors and session-bound composer use public scopes without auto-send', async () => {
   const descriptors = pixieDescriptors();
-  for (const name of ['gateRuns', 'followGates', 'resolveGateRejection']) assert.equal(descriptors.filter(d => d.method === name).length, 1);
+  for (const name of ['gateRuns', 'followGates', 'resolveGateRejection', 'sessionGates', 'setSessionGate']) assert.equal(descriptors.filter(d => d.method === name).length, 1);
+  assert.deepEqual(descriptors.find(d => d.method === 'setSessionGate').parameters.map(p => p.name ?? p), ['sessionId', 'gateId', 'enabled']);
   assert.equal(descriptors.find(d => d.method === 'followGates').mode, 'stream');
   let Body; const calls = []; const input = { setDraft: text => calls.push(['draft', text]), focus: () => calls.push(['focus']) };
   const actx = { get: name => name === 'conversation' ? { input: { for: scope => { assert.equal(scope, actx); return input; } } } : undefined };
-  const remote = { gateDefinitions: async () => ({ ok: true, value: [] }), view: async () => ({ ok: true, value: { record: { threads: [] }, settings: {}, frames: [] } }), gateRuns: async () => ({ ok: true, value: { runs: [pending()] } }), follow: () => stream(), followGates: () => stream(), resolveGateRejection: async (...args) => { calls.push(args); return { ok: true, value: true }; } };
+  const remote = { gateDefinitions: async () => ({ ok: true, value: [] }), view: async () => ({ ok: true, value: { record: { threads: [] }, settings: {}, frames: [] } }), gateRuns: async () => ({ ok: true, value: { runs: [pending()] } }), follow: () => stream(), followGates: () => stream(), resolveGateRejection: async (...args) => { calls.push(args); return { ok: true, value: true }; }, sessionGates: async () => ({ ok: true, value: { gates: [] } }), setSessionGate: async () => ({ ok: true, value: [] }) };
   function stream() { let done; return { dispose: () => done?.(), async *[Symbol.asyncIterator]() { yield { type: 'sync' }; await new Promise(r => { done = r; }); } }; }
-  const slots = { inject: (_name, callback) => callback(), register: (definition, component) => { if (definition.name === 'sidebar.right.pane.tab') Body = component; } };
+  const registered = [];
+  const slots = { inject: (_name, callback) => callback(), register: (definition, component) => { registered.push(definition); if (definition.name === 'sidebar.right.pane.tab') Body = component; } };
   const ctx = { get: name => name === 'sessions' ? { scope: id => { assert.equal(id, 's'); return actx; } } : remote, slots, locale: { getLocale: () => ({ active: 'en' }), subscribe: () => () => {} }, inject: (_names, callback) => callback({ slots, sidebarRightTabs: { register: () => () => {} }, sidebarRight: {}, effect: fn => fn() }) };
   mountPixie(ctx);
+  assert.deepEqual(registered.filter(d => d.name === 'conversation.chat.turnTail'), [{ name: 'conversation.chat.turnTail', id: 'studio-pixie-gate-tail' }]);
   const host = document.createElement('div'); const root = createRoot(host);
   await act(async () => root.render(React.createElement(Body, { sessionId: 's' })));
   await act(async () => button(host, 'Gates').click());
@@ -183,4 +186,33 @@ test('run detail names who concluded; older records without it show no row', asy
   assert.match(byPixie.host.textContent, /Pixie output/); await byPixie.close();
   const old = await setup([run('old', { result })]);
   assert.doesNotMatch(old.host.querySelector('.studio-gate-facts').textContent, /Concluded by/); await old.close();
+});
+
+test('the gate tab lists this session\'s gates with a session switch that follows other surfaces', async () => {
+  const switched = [];
+  const f = await setup([], {
+    sessionGates: async () => ({ preset: 'p', gates: [{ id: 'tr', name: 'Translate', when: 'turn-end', script: 'translate-check.sh', sessionEnabled: true }, { id: 'in', name: 'Input check', when: 'user-message', sessionEnabled: false }] }),
+    setSessionGate: async (id, enabled) => { switched.push([id, enabled]); return enabled ? [] : [id, 'in']; },
+  }, GateRunsPanel, 'ko');
+  await act(async () => {});
+  const list = f.host.querySelector('section[aria-label="이 세션의 게이트"]');
+  assert.ok(list);
+  const rows = [...list.querySelectorAll('[data-gate-session]')].map(row => row.textContent);
+  assert.match(rows[0], /Translate.*턴이 끝났을 때|Translate.*답변/);
+  assert.match(rows[0], /translate-check\.sh/); assert.match(rows[1], /이 세션에서 꺼짐/);
+  const toggle = list.querySelector('[role="switch"][aria-label="이 세션에서 Translate 실행"]');
+  assert.equal(toggle.getAttribute('aria-checked'), 'true');
+  await act(async () => toggle.click());
+  assert.deepEqual(switched, [['tr', false]]);
+  assert.equal(toggle.getAttribute('aria-checked'), 'false');
+  // The chat block turned it back on: the live frame updates the list without a refetch.
+  await f.emit({ type: 'session', disabledGateIds: [] });
+  assert.equal(toggle.getAttribute('aria-checked'), 'true');
+  await f.close();
+});
+
+test('hosts without session switches show no session list', async () => {
+  const f = await setup([]);
+  assert.equal(f.host.querySelector('.studio-gate-session'), null);
+  await f.close();
 });

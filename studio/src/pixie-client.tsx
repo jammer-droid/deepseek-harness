@@ -9,6 +9,7 @@ import type { StudioContext } from './contracts.js';
 import { PACKAGE_NAME } from './package-name.ts';
 import { MarkdownProvider, StudioSurface, type MarkdownRenderer } from './ui.tsx';
 import { PixieCommandRow, PixieTab, type PixieCommandRowActions, type PixieTabActions } from './pixie-tab.tsx';
+import { GateTail, type GateTailActions } from './pixie-gate-tail.tsx';
 import { PixieSettingsPage, type PixieSettingsActions } from './pixie-settings.tsx';
 import { pixieText } from './pixie-locale.ts';
 import type { PixieAskFrame, PixieSettings, PixieThread } from './pixie-contracts.ts';
@@ -29,6 +30,8 @@ interface PixieRemote {
   gateRuns(sessionId: string): RemoteValue<GateRunRecord>;
   followGates(sessionId: string): AsyncIterable<GateRunFrame> & { dispose(): void };
   resolveGateRejection(sessionId: string, runId: string, status: string): RemoteValue<unknown>;
+  sessionGates(sessionId: string): RemoteValue<import('./pixie-gate-contracts.ts').SessionGates>;
+  setSessionGate(sessionId: string, gateId: string, enabled: boolean): RemoteValue<string[]>;
   view(sessionId: string): RemoteValue<import('./pixie-tab.tsx').PixieViewValue>;
   createThread(sessionId: string, payload: string): RemoteValue<PixieThread>;
   activate(sessionId: string, threadId: string): RemoteValue<boolean>;
@@ -67,6 +70,8 @@ export function pixieDescriptors() {
     descriptor('gateRuns', ['sessionId']),
     descriptor('followGates', ['sessionId'], { mode: 'stream', cancellation: { parameter: 'signal' } }),
     descriptor('resolveGateRejection', ['sessionId', 'runId', 'status']),
+    descriptor('sessionGates', ['sessionId']),
+    descriptor('setSessionGate', ['sessionId', 'gateId', 'enabled']),
     descriptor('view', ['sessionId']),
     descriptor('createThread', ['sessionId', 'payload']),
     descriptor('activate', ['sessionId', 'threadId']),
@@ -167,6 +172,8 @@ export function mountPixie(ctx: StudioContext, options: { navFooter?: (locale: s
     gateRuns: () => unwrap(remote().gateRuns(sessionId)),
     followGates: listener => followPixieStream(() => remote().followGates(sessionId), listener),
     resolveGateRejection: (runId, status) => unwrap(remote().resolveGateRejection(sessionId, runId, status)),
+    sessionGates: () => unwrap(remote().sessionGates(sessionId)),
+    setSessionGate: (gateId, enabled) => unwrap(remote().setSessionGate(sessionId, gateId, enabled)),
     fillDraft: text => {
       const sessions = ctx.get('sessions' as never) as unknown as { scope(id: string): { get(name: string): unknown } | undefined } | undefined;
       const actx = sessions?.scope(sessionId);
@@ -211,5 +218,18 @@ export function mountPixie(ctx: StudioContext, options: { navFooter?: (locale: s
       </StudioSurface>);
     }
     scope.slots.inject('conversation.chat.commandview' as never, () => scope.slots.register({ name: 'conversation.chat.commandview', key: 'pixie' } as never, CommandRow as never));
+    // Under a finished answer: the note a hook script concluded at turn end (translation and similar). Renders nothing otherwise.
+    // GateTail mounts this surface (and its stylesheet) only when the turn has a note.
+    function GateTailSurface({ children }: React.PropsWithChildren) { return <StudioSurface className="studio-gate-tail">{children}</StudioSurface>; }
+    function TurnTail({ sessionId, turn }: { sessionId: string; turn: { turn: number; status: string } }) {
+      const active = useLocale();
+      const actions = React.useMemo<GateTailActions>(() => {
+        const tab = tabActions(sessionId);
+        return { gateRuns: tab.gateRuns, followGates: tab.followGates, setSessionGate: (gateId, enabled) => unwrap(remote().setSessionGate(sessionId, gateId, enabled)), openTab };
+      }, [sessionId]);
+      if (turn.status !== 'closed') return null;
+      return withMarkdown(<GateTail actions={actions} turn={turn.turn} locale={active} Surface={GateTailSurface} />);
+    }
+    scope.slots.inject('conversation.chat.turnTail' as never, () => scope.slots.register({ name: 'conversation.chat.turnTail', id: 'studio-pixie-gate-tail' } as never, TurnTail as never));
   });
 }
