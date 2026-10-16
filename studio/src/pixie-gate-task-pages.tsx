@@ -75,6 +75,7 @@ export function GateTaskEditor({ task: initial, open, locale, onApply, onClose }
             <Button small onClick={async () => { try { await navigator.clipboard.writeText(GATE_SCRIPT_DIR); setCopied(true); } catch { setCopied(false); } }}>{copied ? '✓' : t('copyPath')}</Button>
             <Button small onClick={() => undefined}>{t('refresh')}</Button>
           </div>
+          <p className="studio-muted">{t('scriptEnv')}</p>
           <p className="studio-muted">{t('scriptShell')} <a href={GATE_GUIDE_URL} target="_blank" rel="noreferrer">{t('guideLink')}</a></p>
         </SettingsRow>
         <SettingsRow title={t('judge')} description={t('judgeHint')} control={<Toggle label={t('judge')} checked={!!task.advanced.judge} onChange={on => { const { judge: _, ...rest } = task.advanced; set({ advanced: on ? { ...rest, judge: { question: '', threshold: 0.5 } } : rest }); }} />}>

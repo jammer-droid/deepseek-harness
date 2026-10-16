@@ -27,6 +27,7 @@ const messages = {
   advanced: ['고급', 'Advanced', '高级'], advancedHint: ['대부분의 게이트는 위 두 칸만으로 충분합니다.', 'Most gates only need the two fields above.', '大多数门控只需要上面两项。'],
   script: ['Pixie 훅 스크립트', 'Pixie hook script', 'Pixie 钩子脚本'], scriptHint: ['두 칸으로 표현하기 어려운 흐름을 스크립트로 만듭니다. 아래 폴더의 파일만 고를 수 있습니다.', 'Build flows the two fields cannot express as a script. Only files in the folder below can be picked.', '用脚本构建两项无法表达的流程。只能选择下方文件夹中的文件。'],
   guideLink: ['스크립트 작성 가이드', 'Script guide', '脚本编写指南'],
+  scriptEnv: ['DSH에서 bash 프로필을 지원하는 경우에만 사용 가능합니다.', 'Available only when DSH runs with a bash profile.', '仅在 DSH 支持 bash 配置文件时可用。'],
   noScript: ['사용 안 함', 'None', '不使用'], scriptDir: ['스크립트 폴더', 'Script folder', '脚本文件夹'], copyPath: ['경로 복사', 'Copy path', '复制路径'], refresh: ['목록 새로고침', 'Refresh list', '刷新列表'],
   scriptShell: ['입출력 규칙·환경 변수·예시는', 'Contract, environment, and examples:', '规则、环境变量和示例：'],
   variables: ['할 일에서 쓸 수 있는 값', 'Values for the task', '任务中可用的值'], 'var-text': ['스크립트 출력 텍스트', 'script output text', '脚本输出文本'], 'var-data': ['스크립트 출력 데이터(JSON)', 'script output data (JSON)', '脚本输出数据（JSON）'],

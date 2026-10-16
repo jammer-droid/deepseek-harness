@@ -113,6 +113,7 @@ test('hook script points to the guide instead of inlining its contract', async t
   const link = [...editor.querySelectorAll('a')].find(a => a.textContent === 'Script guide');
   assert.match(link.getAttribute('href'), /docs\/guides\/pixie-gate\.md$/);
   assert.doesNotMatch(editor.textContent, /PIXIE_TOOL_NAME|exit code/i);
+  assert.match(editor.textContent, /Available only when DSH runs with a bash profile\./);
 });
 
 test('task model: templates, variables and problems', () => {
