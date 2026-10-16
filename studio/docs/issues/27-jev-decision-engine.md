@@ -33,7 +33,8 @@ S1–S7 구현과 검증을 마쳤다. 실제 Jev API 호출, 실세션의 Jev �
 | 결정 엔진 메뉴를 게이트 묶음으로 이동, 문구 정리 | 완료 | `91c21354b3` |
 | 자격 증명 파일의 빈 `refs:` 오류 안내 | 완료 | `b283e5d2e0` |
 | 스킬 `studio-pixie-hook-guide`를 `<DSH 홈>/skills/`에 설치(사용자 수정은 유지) | 완료, 격리 런타임에서 에이전트가 스킬을 찾음 | `2954767045` |
-| 에이전트 도구 `judge`(Jev 요청 형식, Studio Master 포함, Optimized 제외) | 완료, 아래 검증 | 이 커밋 |
+| 에이전트 도구 `judge`(Jev 요청 형식, Studio Master 포함, Optimized 제외) | 완료, 아래 검증 | `0c90da2ee6` |
+| 답변 끝 스크립트 메모를 대화창 답변 아래에 표시, 게이트 세션별 끄기(Pixie 탭 목록·대화 블록) | 완료, 아래 검증 | `235ac988f3` |
 
 ### 검증 기록
 
@@ -56,7 +57,10 @@ S1–S7 구현과 검증을 마쳤다. 실제 Jev API 호출, 실세션의 Jev �
 - **키 저장 피드백:** 같은 서버에서 키 저장 → `키를 저장했습니다.`, 다시 입력하면 문구가 사라짐, 키 삭제 → `키를 삭제했습니다.`, 페이지에 키 문자열 없음. 설명은 `'pixie judge'`로 표시. 화면: [라이트 1440](../verification/jev-27/key-saved-light-1440.png), [다크 520](../verification/jev-27/key-dark-520.png). 확인용 키로 덮어쓰고 지우면서 저장돼 있던 키도 같이 지워졌으므로, 검사 전에 백업한 `studio/.dsh-home/.credentials.yaml`로 복원했다(`TYPESAFE_API_KEY` 외 항목은 같음을 확인).
 - **Markdown:** 사용자가 웹 빌드에서 Pixie 답변의 Markdown 표시를 확인했다.
 - **`judge` 도구:** 실제 DSH `ToolRuntime`에 등록해 스키마·실행·오류를 테스트했다. 격리 rc.2 프로필에서 프리셋 편집기 도구 목록에 `judge`가 보였고, Studio Master 세션의 에이전트가 `judge`를 호출해 `noul=1, engine=llm`을 받았다(세션 로그에 도구 호출 기록). 격리 프로필에 TypeSafe 키가 없어 이 확인은 LLM 엔진으로 했고, 확인 뒤 엔진 설정을 원래대로(`jev`) 되돌렸다. 화면: [도구 목록](../verification/jev-27/judge-tool-row-light-1440.png).
-- **미검증:** `claim-check.sh`의 실세션 실행(답변 끝 지점), `judge` 도구의 Jev 엔진 실세션 호출, `0.2.1-alpha.2` 설치, Windows.
+- **desktop 실사용 (Test Preset, 세션 `5a664d5f`):** 로케일 교정 스킬이 `judge`(Jev) 10회로 140개 문구를 판정하고 승인받은 11줄만 고쳤다(`73d45fd749`). 같은 문구를 다시 판정하면 자연스러움 점수가 1.29~1.47로 흔들렸다. 답변 끝 번역 게이트: 한국어 답변은 0.94로 건너뜀(0.2–0.6초), 영어 답변은 0.01 → 번역 → 충실도 0.80 통과, 11.8초, 코드 블록이 원문과 같음. 한국어와 영어가 섞인 답변은 충실도 0.65로 "미확인" 메모, 39초.
+- **턴 번호:** 같은 세션의 `turn/start`·`turn/end`(1–4)와 게이트 기록 `turn`(1–4)이 일치했다. 대화 슬롯의 턴 번호도 같은 `turn/start`의 `data.turn`에서 온다.
+- **대화창 블록과 세션 끄기:** 격리 rc.2 프로필에서 메모만 남기는 답변 끝 게이트로 확인했다. 답변 아래 블록이 Markdown(굵게·코드·목록)으로 그려졌고, 블록에서 끈 뒤의 턴에는 블록이 생기지 않았으며, Pixie 탭 목록에 "이 세션에서 꺼짐"으로 보였다. 목록에서 다시 켜자 블록의 끄기 버튼이 실시간으로 돌아왔고 다음 턴에 블록이 다시 생겼다. 다크 520에서도 확인. 화면: [대화 블록](../verification/jev-27/turn-tail-light-1440.png), [세션 게이트 목록](../verification/jev-27/session-gates-light-1440.png), [다크 520](../verification/jev-27/turn-tail-dark-520.png).
+- **미검증:** `claim-check.sh`의 실세션 실행(답변 끝 지점), desktop에서 번역 게이트와 대화창 블록을 함께 쓰는 경우(앱 재시작 필요), `0.2.1-alpha.2` 설치, Windows.
 
 ## 범위
 
