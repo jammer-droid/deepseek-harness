@@ -30,7 +30,8 @@ export async function assemblePreview(ctx: Context, input: PreviewRequest): Prom
         if (request.model.trim()) child.ctx.systemPrompt.variable('model', () => request.model.trim());
         const assembly = await ctx.systemPrompt.assemble({ scope: key });
         const actual = assembly.tools.map(tool => tool.name);
-        if (actual.some(name => !request.tools.includes(name)) || request.tools.some(name => !actual.includes(name))) throw new Error('Assembler tool output differs from the selected tools');
+        // Selected tools that are not installed are skipped, as at apply time; nothing unselected may appear.
+        if (actual.some(name => !request.tools.includes(name))) throw new Error('Assembler tool output differs from the selected tools');
         return {
           prompt: renderPrompt(assembly),
           sections: assembly.sections.map(section => ({ name: section.name, text: renderPrompt({ ...assembly, sections: [section] }) })).filter(section => section.text),

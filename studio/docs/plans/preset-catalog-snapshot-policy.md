@@ -1,7 +1,7 @@
 # DSH 기본 동작을 보존하는 프리셋 덮어쓰기 — #26 이후 구현 계획
 
-- 계획 준비 상태: **draft**. 제품 방향은 확정이며, #26 이후 코드·지원 API 재확인과 아래 미결정 사항 정리가 끝나면 ready로 전환한다.
-- 구현 상태: **압축 누락 긴급 수정(P1·P2)만 완료**([15절](#15-선행-처리-압축-누락-긴급-수정)). 나머지는 미착수이며 다음 단계는 **S0**이다. 이 문서는 구현·배포 승인이 아니다.
+- 계획 준비 상태: **draft**. S0에서 도구 정책 결정은 닫았다([16절](#16-s0-기록--26-이후-기준과-도구-정책-결정)). 13절의 저장 형식·스냅샷 결정은 S1·S3 착수 시 닫는다.
+- 구현 상태: 압축 누락 긴급 수정(P1·P2, [15절](#15-선행-처리-압축-누락-긴급-수정)), **S0 완료**, **S2 중 own-scope 차단 해소 완료(설치 검증 전)**. 다음 단계는 **S1**이다. 이 문서는 구현·배포 승인이 아니다.
 
 ## 상태와 재개 위치
 
@@ -266,7 +266,7 @@ DSH Host에서 제공되는 공용 기능 (복제하지 않음)
 
 ## 11. 의존 순서별 구현 단계
 
-현재 진행: **S0 대기 / S1–S6 미착수**. 단, S2의 "프롬프트 provider 선택에 따른 비도구 기능 일괄 제거 제거"와 S5의 Optimized 템플릿 재정렬 일부는 [15절](#15-선행-처리-압축-누락-긴급-수정)에서 먼저 처리했다. 해당 단계 착수 시 15절 결과를 기준으로 남은 범위만 진행한다. 단계 ID는 코드가 바뀌어도 유지하며 파일·함수명은 착수 시 다시 매핑한다. 선행 단계의 검증을 통과한 후 다음 단계로 진행한다.
+현재 진행: **S0 완료 / S2 일부(도구 차단 해소) 완료 / S1·S3–S6 미착수**([16절](#16-s0-기록--26-이후-기준과-도구-정책-결정)). 단, S2의 "프롬프트 provider 선택에 따른 비도구 기능 일괄 제거 제거"와 S5의 Optimized 템플릿 재정렬 일부는 [15절](#15-선행-처리-압축-누락-긴급-수정)에서 먼저 처리했다. 해당 단계 착수 시 15절 결과를 기준으로 남은 범위만 진행한다. 단계 ID는 코드가 바뀌어도 유지하며 파일·함수명은 착수 시 다시 매핑한다. 선행 단계의 검증을 통과한 후 다음 단계로 진행한다.
 
 ### S0 — #26 이후 기준 재확인과 지원 경계 확정
 
@@ -387,3 +387,60 @@ DSH Host에서 제공되는 공용 기능 (복제하지 않음)
 1. **S0**부터 시작한다. 15절 변경을 #26 이후 기준에 포함된 것으로 기록한다.
 2. S2 착수 시: own-scope 도구 차단([preset-policy.ts](<../../src/host/preset-policy.ts>)의 `installPolicy` 탐침과 전역 `guard`)과 [Optimized JSDoc](<../../src/optimized-preset.ts#L5-L12>) 수정이 남은 핵심이다. 조합 경계(P1)는 완료되었다.
 3. S4·S5: 압축 포함·자동 ON/OFF·`/compact` 표시, 명시적 제외 설정과 저장 형식, 기존 사용자 프리셋의 누락 탐지·복구 안내가 남아 있다.
+
+## 16. S0 기록 — #26 이후 기준과 도구 정책 결정
+
+### 16.1 기준
+
+- 기준 브랜치·커밋: `studio/feat/workflow` `49cfd6a996`(#26 완료 기록 `e8a0552cd5`와 15절 수정 포함). `studio/research/catalog-scope`는 이 커밋의 조상으로 병합되어 있고, 계획에 적힌 별도 worktree는 더 이상 없다. 작업은 메인 checkout에서 진행했다.
+- Studio `0.2.9`, peer 범위 `0.2.0-rc.2 || 0.2.1-alpha.2`. 설치 앱 런타임은 `0.2.0-rc.2`(`~/.dsh/dsh-runtimes/dsh-primary-runtime/runtime.json`), workspace 소스는 `0.2.1-alpha.2`다.
+- #26 Pixie Gate는 `tools/pre-execute`·`agent/pre-step`·`agent/turn-stopping` 리스너와 `agentPresets.composedPreset`으로 프리셋을 판별한다([pixie-service.ts](<../../src/host/pixie-service.ts>)). 프리셋 정책의 restrict·guard와 독립이므로 이번 정책 변경의 영향을 받지 않는다.
+
+### 16.2 own-scope 차단 원인 — 설치 런타임과 workspace 소스의 차이
+
+1절의 미확인 사항을 설치 앱 `app.asar`의 `0.2.0-rc.2` 산출물에서 확인했다(읽기만 함).
+
+- 설치 런타임에는 `@deepseek-ai/dsh-tool-schedule` 패키지가 없다. `@deepseek-ai/dsh-schedule` 서비스가 `agent/created` 때 **root Agent마다 `agent.ctx`로 네 도구를 등록**한다(`registerScheduleTools(rootCtx, agent.ctx, agent)`). 즉 Agent own-scope 등록이 이 버전의 정상 경로다.
+- workspace 소스(`0.2.1-alpha.2`)는 이를 `tool-schedule` 플러그인으로 분리해 `standard`·`ptc`·`cordis` 프리셋 scope(Agent의 상위)에 등록한다. 로컬 소스만 보고 "프리셋 선언이라 상속 도구로 보인다"고 판단했던 것이 설치 런타임과 맞지 않았다.
+- 따라서 예약 플러그인을 켜면 모든 root Agent에 own-scope 도구가 생기고, 이전 정책의 own-scope 탐침이 매 설치를 거절하여 `block` guard가 전체 호출을 막았다. 지원하는 두 런타임 모두에서 own-scope 등록은 정상 DSH 동작으로 취급해야 한다.
+
+### 16.3 공개 API 확인표
+
+설치 `0.2.0-rc.2` 산출물에서 존재를 확인했다. workspace 소스와 같은 의미다.
+
+| 계약 | 확인 결과 |
+| --- | --- |
+| `tools.restrict({ allow/deny })` | 상속 도구만 가린다. own-scope 등록은 가리지 않는다. 등록 시점에 알려진 상속 이름만 받는다(미지 이름은 오류). |
+| `tools.guard` | 모든 실행 이름에 적용되는 단조 거절. 동적 도구까지 막으므로 기본 구성 용도로 쓰지 않는다. |
+| `tools.schemas/get(scope)` | scope별 실효 목록. 제공자 출처 없음. |
+| `agentPresets.register/resolve/readDocument/acquireScope/composeFrom/serviceFor/recompose/select/compositionInventory` | 모두 존재. |
+| 하위 Agent `toolFilter` | `applyChildComposition`이 child scope에 `restrict(toolFilter)`를 건다. 기존 role 필터 경로는 그대로다. |
+| `dsh-compaction`·`dsh-commands`·`dsh-config-editor`·`dsh-compaction-basic` | 설치 산출물에 존재. S4에서 상태 표시 계약을 다시 읽는다. |
+
+### 16.4 결정 (사용자 확인)
+
+| 항목 | 결정 |
+| --- | --- |
+| 기본 도구 선택의 적용 | **설치 시점 deny 스냅샷.** 정책 설치 때 보이는 상속 도구 중 미선택 이름만 `restrict({ deny })`로 가린다. 이후 새 이름으로 등록되는 도구와 Agent own-scope 도구는 DSH 기본 흐름을 따른다. `restrict({ allow })`와 전역 실행 guard는 쓰지 않는다. |
+| 알려진 한계 | 설치 시 가린 이름이 같은 Agent 수명 중 해제 후 재등록되면 계속 가려진다. own-scope 도구는 같은 layer에서 덮어쓸 수 없으므로 설명·실행 기본값 덮어쓰기를 적용하지 못하고 경고만 남긴다. 미선택 own-scope 도구도 가리지 않는다(2절의 "선택 해제는 영구 deny가 아님"과 같은 방향). |
+| 선택한 도구가 없을 때 | **경고 후 계속.** 없는 도구는 건너뛰고 나머지 정책을 적용한다. `DSH에 다시 반영`과 시작 시 복원은 `applyWarning`으로, 실행 중 Agent 설치는 Host 로그 경고로 알린다. |
+| 여전히 차단하는 경우 | 정책 데이터 자체가 잘못된 경우(알 수 없는 파라미터 경로, PTC 표시, 프롬프트 섹션 충돌)만 기존처럼 이유를 담아 해당 Agent의 호출을 막는다. 덮어쓰기가 반쯤 적용된 상태로 실행하지 않기 위해서다. |
+
+### 16.5 S2 진행 — own-scope 차단 해소
+
+| 변경 | 파일 |
+| --- | --- |
+| own-scope 탐침 거절·누락 도구 거절·전역 실행 guard 제거, 설치 시점 deny 스냅샷과 `warn` 콜백 도입 | [preset-policy.ts](<../../src/host/preset-policy.ts>) |
+| 반영·복원 경고를 `applyWarning`으로 표시, 누락 도구로 반영 실패하지 않음 | [preset-store.ts](<../../src/host/preset-store.ts>) |
+| 미리보기는 미설치 선택 도구를 건너뛰고, 미선택 도구가 보이면만 실패 | [prompt-preview.ts](<../../src/host/prompt-preview.ts>) |
+| Optimized JSDoc을 "고정 시작 선택이며 실행 allowlist가 아님"으로 수정 | [optimized-preset.ts](<../../src/optimized-preset.ts>) |
+| 회귀 테스트: 늦게 등록된 상속·own-scope 도구 실행, 제거 반영과 무관 도구 정상, root Agent의 예약 도구 4종, own-scope 도구가 있어도 정책 적용, 잘못된 정책만 차단, 누락 도구 경고 | [preset-policy.test.mjs](<../../test/preset-policy.test.mjs>), [policy-reselect.test.mjs](<../../test/policy-reselect.test.mjs>), [preset-store.test.mjs](<../../test/preset-store.test.mjs>), [execution-defaults.test.mjs](<../../test/execution-defaults.test.mjs>) |
+
+검증: `npm --prefix studio test`(타입 검사·빌드 포함) 417개 통과. **미검증:** 설치 앱(`0.2.0-rc.2`)에 패키징한 Studio를 넣어 예약 플러그인 ON 상태에서 `bash`·`skill` 호출과 `schedule_*` 호출을 확인하는 것. 실제 Loader/scope 통합 테스트(S2 수용 조건)도 남아 있다. [정책 정렬 검증 기록](<../verification/policy-alignment.md>)의 "외부 제공자는 ancestor scope 등록을 사용해야 한다"는 이번 변경 이전의 제약이다.
+
+S2에 남은 것: `selectPromptProviders` 정리 여부, 실제 Loader 통합 테스트, 설치 검증.
+
+### 16.6 다음 세션 재개 지점
+
+1. 설치 검증을 먼저 한다: 앱 종료 후 `DSH_HOME="$HOME/.dsh" npm --prefix studio run dev:desktop`(15.3 주의), 예약 플러그인 ON, Optimized·사용자 복사 프리셋의 새 세션에서 일반 도구와 `schedule_list` 호출을 확인한다.
+2. 이어서 **S1**(변경 의도·기본 구성 계약)을 시작한다.

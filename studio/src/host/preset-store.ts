@@ -70,7 +70,7 @@ export class PresetStore {
         }
       } catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error; }
       for (const row of this.rows) if (row.applied) {
-        try { await this.mount(row.id, row.applied); }
+        try { const warnings = await this.mount(row.id, row.applied); if (warnings.length) row.applyWarning = [...new Set([row.applyWarning, ...warnings].filter(Boolean))].join('\n'); }
         catch (error) { row.applyWarning = `Restore failed: ${String(error)}`; row.status = 'modified'; }
       }
     })();
@@ -87,13 +87,14 @@ export class PresetStore {
         : row.group && Array.isArray(row.config) ? policies(row.config as CompositionRow[])
           : row.name === POLICY_PLUGIN ? [row.config as unknown as PresetPolicyConfig] : []);
       const configs = policies(plugins);
+      const warnings: string[] = [];
       if (configs.length) {
         const lease = await this.ctx.agentPresets.acquireScope(id);
         try {
           const key = {};
           const child = createScope(this.ctx, key, { parent: lease.key });
           const releases: Array<() => void> = [];
-          try { for (const config of configs) releases.push(installPolicy(child.ctx, key, config)); }
+          try { for (const config of configs) releases.push(installPolicy(child.ctx, key, config, message => warnings.push(message))); }
           finally {
             try { for (const release of releases.reverse()) release(); }
             finally { await child.dispose(); }
@@ -101,6 +102,7 @@ export class PresetStore {
         } finally { await lease[Symbol.asyncDispose](); }
       }
       this.disposers.set(id, dispose);
+      return warnings;
     } catch (error) { await dispose(); throw error; }
   }
   private async persist(rows: StoredPreset[]) {
@@ -210,9 +212,10 @@ export class PresetStore {
     const applied = { name: old.name, description: old.description, plugins: dump([...withoutDelegationPlugins(plugins), ...rolePlugins, { id: 'studio-policy', name: POLICY_PLUGIN, config: { tools: [...new Set(tools)], toolOverrides: keep(request.toolOverrides ?? {}), sections: request.sections ?? {}, prompt: request.prompt, ...(execution ? { execution } : {}), ...(childToolFilter ? { childToolFilter } : {}) } }], { schema: entryListSchema, noRefs: true }) };
     await this.disposers.get(id)?.(); this.disposers.delete(id);
     try {
-      await this.mount(id, applied);
+      const warnings = await this.mount(id, applied);
       const row: StoredPreset = { ...old, applied, appliedAt: new Date().toISOString(), status: 'applied' };
-      delete row.applyWarning;
+      // Missing selected tools no longer block: the preset applies without them and says so.
+      if (warnings.length) row.applyWarning = warnings.join('\n'); else delete row.applyWarning;
       await this.persist(this.rows.map(item => item.id === id ? row : item));
       return this.public(row);
     } catch (error) {

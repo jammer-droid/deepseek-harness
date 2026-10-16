@@ -89,7 +89,7 @@ test('generic delegation tools fold into subagent_role even without saved roles'
   assert.deepEqual(plugins.find(row=>row.name==='@matamt-dbg/dsh-studio/roles').config.roles,[]);
   await store.dispose();
 });
-test('restore rejects missing policy dependencies without losing the applied snapshot and recovers on reactivation', async () => {
+test('restore applies without a missing selected tool, reports it, and keeps the applied snapshot', async () => {
   const file = join(await mkdtemp(join(tmpdir(), 'studio-dependency-')), 'presets.json');
   const a = await runtime(); const first = new PresetStore(a.ctx, file);
   const draft = await first.save(JSON.stringify({ name: 'Dependency', description: '', request: { ...request, tools: ['read'] } }));
@@ -98,8 +98,8 @@ test('restore rejects missing policy dependencies without losing the applied sna
   const before = await readFile(file, 'utf8');
   const b = await runtime(); b.removeTool('read'); const missing = new PresetStore(b.ctx, file);
   const [failed] = await missing.list();
-  assert.equal(failed.status, 'modified'); assert.match(failed.applyWarning, /read/);
-  assert.equal(b.registrations.has(draft.id), false);
+  assert.equal(failed.status, 'applied'); assert.match(failed.applyWarning, /selected tools unavailable: read/);
+  assert.equal(b.registrations.has(draft.id), true);
   assert.equal(await readFile(file, 'utf8'), before); await missing.dispose();
   const c = await runtime(); const recovered = new PresetStore(c.ctx, file);
   assert.equal((await recovered.list())[0].status, 'applied');
