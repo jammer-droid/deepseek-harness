@@ -120,7 +120,7 @@ pixie judge [--type bool|select|score] --question "<question>" [type arguments] 
 
 ## Decision engine
 
-`pixie judge` uses the engine chosen in **Studio → Pixie → Settings → Decision engine**. A judgment runs only when a script asks for one, and the script decides what to do with the result.
+`pixie judge` uses the engine chosen in **Studio → Pixie → Gates → Decision engine**. A judgment runs only when a script asks for one, and the script decides what to do with the result.
 
 | Engine | Description |
 | --- | --- |

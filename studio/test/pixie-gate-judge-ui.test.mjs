@@ -26,19 +26,22 @@ test('judge answer summary uses recorded labels, falls back to ids and keeps fai
   delete result.stages.first.data.questions;
   const fallback = await render(t, GateResultDetails, { result }); assert.match(fallback.textContent, /c: yes/); assert.match(fallback.textContent, /s: 1/);
 });
+const NO_GATES = { read: async () => ({ entries: [], invalid: [] }), save: async v => v, presets: async () => [], trial: () => ({ result: new Promise(() => {}), cancel() {} }),
+  scripts: async () => ({ directory: '', defaultDirectory: '', custom: false, supported: true, scripts: [] }), saveScriptDirectory: async () => ({ directory: '', defaultDirectory: '', custom: false, supported: true, scripts: [] }) };
 const catalog = async () => ({ groups: [{ id: 'p', name: 'P', models: [{ id: 'm', name: 'M' }, { id: 'j', name: 'J' }] }] });
 const openJudge = async host => click([...host.querySelectorAll('nav button, [role="navigation"] button, button')].find(b => b.textContent === 'Decision engine'));
 const visible = host => [...host.querySelectorAll('section:not([hidden])')].pop();
 test('decision engine page edits LLM judge fields and keeps them across other edits', async t => {
   const saves = [];
   const stored = { contextMode: 'fresh', systemPrompt: 'original', allowThreadModel: true, judgeModel: { provider: 'p', model: 'j' }, judgeSystemPrompt: 'Custom' };
-  const host = await render(t, PixieSettingsPage, { actions: { read: async () => stored, models: catalog, save: async value => { saves.push(value); return value; } } });
+  const host = await render(t, PixieSettingsPage, { gateActions: NO_GATES, actions: { read: async () => stored, models: catalog, save: async value => { saves.push(value); return value; } } });
   await change(host.querySelector('select'), 'p\u0000m');
   await click([...host.querySelectorAll('button')].find(b => b.textContent === 'Save'));
   assert.deepEqual(saves[0].judgeModel, { provider: 'p', model: 'j' }); assert.equal(saves[0].judgeSystemPrompt, 'Custom');
   await openJudge(host);
   assert.equal(input(host, 'Judge model').value, 'p\u0000j');
   assert.equal(input(host, 'Judge system prompt').value, 'Custom');
+  assert.match(host.textContent, /When not set, the value entered in the Pixie model settings is used\./);
   await change(input(host, 'Judge model'), '');
   await click([...host.querySelectorAll('button')].find(b => b.textContent === 'Save'));
   assert.equal(saves[1].judgeModel, undefined);
@@ -48,7 +51,7 @@ test('Jev engine shows the model field and a key row that never displays the val
   const saves = [], keyCalls = [];
   let status = { available: true, configured: false, writable: true };
   const jevKey = { status: async () => status, save: async value => { keyCalls.push(['save', value]); status = { available: true, configured: true, writable: true, source: 'store' }; return status; }, remove: async () => { keyCalls.push(['remove']); status = { available: true, configured: false, writable: true }; return status; } };
-  const host = await render(t, PixieSettingsPage, { actions: { read: async () => ({ contextMode: 'fresh', systemPrompt: '', allowThreadModel: true }), models: catalog, save: async value => { saves.push(value); return value; }, jevKey } });
+  const host = await render(t, PixieSettingsPage, { gateActions: NO_GATES, actions: { read: async () => ({ contextMode: 'fresh', systemPrompt: '', allowThreadModel: true }), models: catalog, save: async value => { saves.push(value); return value; }, jevKey } });
   await openJudge(host);
   await click(button(host, 'Jev'));
   await change(input(host, 'Jev model'), 'jev-1.13.0');
@@ -74,7 +77,7 @@ test('Jev engine shows the model field and a key row that never displays the val
 test('the key row shows progress while saving and no confirmation on failure', async t => {
   let release;
   const jevKey = { status: async () => ({ available: true, configured: false, writable: true }), save: () => new Promise((_, reject) => { release = () => reject(new Error('disk full')); }), remove: async () => assert.fail() };
-  const host = await render(t, PixieSettingsPage, { actions: { read: async () => ({ contextMode: 'fresh', systemPrompt: '', allowThreadModel: true, judgeEngine: 'jev' }), models: catalog, save: async v => v, jevKey } });
+  const host = await render(t, PixieSettingsPage, { gateActions: NO_GATES, actions: { read: async () => ({ contextMode: 'fresh', systemPrompt: '', allowThreadModel: true, judgeEngine: 'jev' }), models: catalog, save: async v => v, jevKey } });
   await openJudge(host);
   await change(input(host, 'TypeSafe API key'), 'k');
   await click(button(host, 'Save key'));
@@ -86,10 +89,10 @@ test('the key row shows progress while saving and no confirmation on failure', a
 
 test('a read-only key source hides the input; no credentials service explains why', async t => {
   const read = async () => ({ contextMode: 'fresh', systemPrompt: '', allowThreadModel: true, judgeEngine: 'jev' });
-  const shadowed = await render(t, PixieSettingsPage, { actions: { read, models: catalog, save: async v => v, jevKey: { status: async () => ({ available: true, configured: true, writable: false, source: 'env' }), save: async () => assert.fail(), remove: async () => assert.fail() } } });
+  const shadowed = await render(t, PixieSettingsPage, { gateActions: NO_GATES, actions: { read, models: catalog, save: async v => v, jevKey: { status: async () => ({ available: true, configured: true, writable: false, source: 'env' }), save: async () => assert.fail(), remove: async () => assert.fail() } } });
   await openJudge(shadowed);
   assert.match(shadowed.textContent, /read-only source \(env\)/); assert.equal(input(shadowed, 'TypeSafe API key'), null);
-  const missing = await render(t, PixieSettingsPage, { actions: { read, models: catalog, save: async v => v, jevKey: { status: async () => ({ available: false, configured: false, writable: false }), save: async () => assert.fail(), remove: async () => assert.fail() } } });
+  const missing = await render(t, PixieSettingsPage, { gateActions: NO_GATES, actions: { read, models: catalog, save: async v => v, jevKey: { status: async () => ({ available: false, configured: false, writable: false }), save: async () => assert.fail(), remove: async () => assert.fail() } } });
   await openJudge(missing);
   assert.match(missing.textContent, /credentials service is not available/); assert.equal(input(missing, 'TypeSafe API key'), null);
 });

@@ -20,7 +20,7 @@ Help the user build a Pixie Gate: a task the Pixie model runs at one point of an
    | `turn-end` | The agent's final answer |
 
 2. Write the task (`instruction`) in plain words. Say which of the five output fields to use: verdict (`pass`/`stop`), reason, replacement, addition, note. Check the guide's application table: at `tool-before` and `turn-end` replacement and addition become notes; at `turn-end` stop asks the agent to redo with the reason.
-3. For a judgment (yes/no threshold, picking one of fixed options, a graded score), write a hook script that calls `pixie judge` and decides the outcome itself: exit 10 to pass untouched, exit 11 to print the gate output, exit 0 only when Pixie should interpret the result. Gates have no judge option; the engine (LLM or TypeSafe Jev) is set in Studio → Pixie → Settings → Decision engine.
+3. For a judgment (yes/no threshold, picking one of fixed options, a graded score), write a hook script that calls `pixie judge` and decides the outcome itself: exit 10 to pass untouched, exit 11 to print the gate output, exit 0 only when Pixie should interpret the result. Gates have no judge option; the engine (LLM or TypeSafe Jev) is set in Studio → Pixie → Gates → Decision engine.
 4. Use a hook script only when the two fields cannot express the flow: conditions (only some tools), loops, or external measurement. Prefer no script.
 
 ## Write a script

@@ -171,10 +171,10 @@ export function PixieSettingsPage({ actions, gateActions, locale, navFooter }: {
     { id: 'model', group: t('settingsGroup'), label: t('pageModel'), content: modelPage },
     { id: 'threads', group: t('settingsGroup'), label: t('pageThreads'), content: threadsPage },
     { id: 'prompt', group: t('settingsGroup'), label: t('pagePrompt'), content: promptPage },
-    { id: 'judge', group: t('settingsGroup'), label: t('pageJudge'), content: judgePage },
     ...(gateActions ? [
       { id: 'gate-composition', group: gt('group'), label: gt('composition'), content: <GateTaskCompositionPage gates={gates} locale={locale} /> },
       { id: 'gate-scope', group: gt('group'), label: gt('scope'), content: <GateTaskScopePage gates={gates} presets={gatePresets} locale={locale} /> },
+      { id: 'judge', group: gt('group'), label: t('pageJudge'), content: judgePage },
     ] : []),
   ]} />;
 }

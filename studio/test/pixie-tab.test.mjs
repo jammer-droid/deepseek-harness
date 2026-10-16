@@ -138,7 +138,7 @@ test('settings page saves the chosen model, effort, and mode', async () => {
   const { host } = await render(React.createElement(PixieSettingsPage, { actions, locale: 'en', navFooter: React.createElement('span', { className: 'footer' }, 'v1') }));
   const { Simulate } = await import('react-dom/test-utils');
   // Same frame as the preset service: grouped left menu, pages, and the shared footer; no service title.
-  assert.deepEqual([...host.querySelectorAll('nav.studio-nav .studio-nav-item')].map(item => item.textContent), ['Model', 'Threads', 'System prompt', 'Decision engine']);
+  assert.deepEqual([...host.querySelectorAll('nav.studio-nav .studio-nav-item')].map(item => item.textContent), ['Model', 'Threads', 'System prompt']);
   assert.ok(host.querySelector('nav.studio-nav .footer'));
   assert.equal(host.querySelector('.studio-nav-title'), null);
   const saveButton = () => [...host.querySelectorAll('section:not([hidden]) button.studio-primary')][0];
