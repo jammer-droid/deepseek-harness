@@ -89,13 +89,32 @@ test('scope toggles gates and presets; cards duplicate disabled and delete', asy
   await click(button(editor, 'Apply'));
   const scope = page(host, 'Scope');
   await click(input(scope, 'Enabled New gate'));
+  const card = scope.querySelector('[data-gate-scope]'); const height = card.innerHTML.length;
+  await click(button(card, 'Choose presets'));
   await click(input(scope, 'Presets New gate').querySelector('input'));
+  await click(button(scope, 'Done'));
+  assert.match(card.textContent, /1 presets/); assert.equal(card.querySelectorAll('input[type=checkbox]').length, 0);
   assert.match(comp.querySelector('[data-gate-task]').textContent, /On.*1 presets/s);
   await click(button(comp.querySelector('[data-gate-task]'), 'Duplicate'));
   const cards = comp.querySelectorAll('[data-gate-task]');
   assert.equal(cards.length, 2); assert.match(cards[1].textContent, /Off/);
   await click(button(cards[1], 'Delete'));
   assert.equal(comp.querySelectorAll('[data-gate-task]').length, 1);
+});
+
+test('tool points show a tool filter under When, summarized on the card', async t => {
+  const host = await settings(t);
+  const comp = page(host, 'Gate composition');
+  await click(button(comp, 'New gate'));
+  await click(pick(comp.querySelector('dialog'), 'Digest search results'));
+  const editor = [...comp.querySelectorAll('dialog')].find(d => input(d, 'What Pixie does'));
+  assert.equal(input(editor, 'Tools').value, 'grep, glob, read_batch');
+  await change(input(editor, 'Tools'), 'bash');
+  await change(input(editor, 'When'), 'user-message');
+  assert.equal(input(editor, 'Tools'), null);
+  await change(input(editor, 'When'), 'tool-after');
+  await click(button(editor, 'Apply'));
+  assert.match(comp.querySelector('.studio-gate-sentence').textContent, /When a tool result arrives \(bash\)/);
 });
 
 test('task model: templates, variables and problems', () => {

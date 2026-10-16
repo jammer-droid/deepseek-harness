@@ -644,6 +644,8 @@ ${adapter}.studio-ui *, .studio-ui *::before, .studio-ui *::after { box-sizing: 
 .studio-ui .studio-gate-trial p, .studio-ui .studio-gate-trial h3 { margin: 0; }
 .studio-ui .studio-gate-result { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 12px; margin: 0; font-size: 13px; }
 .studio-ui .studio-gate-result dd { margin: 0; overflow-wrap: anywhere; }
+.studio-ui .studio-gate-chips { display: flex; flex-wrap: nowrap; gap: 4px; overflow: hidden; mask-image: linear-gradient(to right, black 85%, transparent); }
+.studio-ui .studio-gate-preset-list { display: grid; gap: 2px; max-height: 320px; overflow-y: auto; }
 .studio-ui .studio-pick-disabled { cursor: default; opacity: .6; }
 .studio-ui .studio-pick-disabled:hover { background: transparent; }
 /* The composer lives in the top layer, so it narrows on its own width rather than the shell's. */

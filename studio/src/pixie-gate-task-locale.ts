@@ -23,6 +23,7 @@ const messages = {
   'when-tool-after': ['도구 결과가 나왔을 때', 'When a tool result arrives', '工具结果返回时'],
   'when-turn-end': ['에이전트 답변이 끝났을 때', 'When the agent finishes its answer', '代理完成回答时'],
   'target-user-message': ['보낸 지시', 'your instruction', '你发送的指令'], 'target-agent-message': ['주고받는 메시지', 'the message between agents', '代理之间的消息'], 'target-tool-before': ['도구 호출 내용', 'the tool call', '工具调用内容'], 'target-tool-after': ['도구 결과', 'the tool result', '工具结果'], 'target-turn-end': ['마지막 답변', 'the final answer', '最后的回答'],
+  tools: ['도구', 'Tools', '工具'], toolsHint: ['쉼표로 구분합니다. 비우면 모든 도구에 적용됩니다.', 'Comma separated. Leave empty for every tool.', '用逗号分隔。留空则适用于所有工具。'],
   // advanced
   advanced: ['고급', 'Advanced', '高级'], advancedHint: ['대부분의 게이트는 위 두 칸만으로 충분합니다.', 'Most gates only need the two fields above.', '大多数门控只需要上面两项。'],
   script: ['준비 스크립트', 'Preparation script', '准备脚本'], scriptHint: ['Pixie가 읽기 전에 실행할 스크립트입니다. 아래 폴더에 넣어 둔 파일만 고를 수 있습니다. 스크립트는 받은 텍스트를 입력으로 받고, 출력은 할 일에서 변수로 씁니다.', 'Runs before Pixie reads. Only files placed in the folder below can be picked. The script receives the text as input; use its output as a variable in the task.', '在 Pixie 读取前运行。只能选择放在下方文件夹中的文件。脚本以文本为输入，输出可在任务中作为变量使用。'],
@@ -43,6 +44,7 @@ const messages = {
   'problem-name': ['이름을 입력하세요.', 'Enter a name.', '请输入名称。'], 'problem-instruction': ['Pixie가 할 일을 입력하세요.', 'Describe what Pixie should do.', '请填写 Pixie 的任务。'], 'problem-judge': ['판정 질문과 0–1 사이 기준을 입력하세요.', 'Enter a judge question and a threshold between 0 and 1.', '请输入判定问题和 0–1 之间的阈值。'], 'problem-limits': ['제한 시간과 상한을 확인하세요.', 'Check the time limit and redo limit.', '请检查时限和上限。'],
   // scope
   enabled: ['켜짐', 'Enabled', '启用'], presets: ['적용 프리셋', 'Presets', '适用预设'], presetsHint: ['이 프리셋으로 실행되는 에이전트에만 게이트가 걸립니다.', 'The gate runs only for agents using these presets.', '门控只作用于使用这些预设的代理。'],
+  choosePresets: ['프리셋 선택', 'Choose presets', '选择预设'], searchPresets: ['프리셋 검색', 'Search presets', '搜索预设'], done: ['완료', 'Done', '完成'],
   scopeEmpty: ['게이트 구성에서 먼저 게이트를 만드세요.', 'Create a gate in Gate composition first.', '请先在门控构成中创建门控。'],
   // templates
   'tpl-format-check': ['작업 지시 양식 검사', 'Instruction format check', '任务指令格式检查'],
