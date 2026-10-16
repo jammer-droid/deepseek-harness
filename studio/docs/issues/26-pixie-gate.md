@@ -423,7 +423,7 @@ interface GateResult {
 #### R4 — 문서·스킬
 
 - 사용자 가이드 [Pixie Gate 가이드](../../release/docs/appendix/pixie-gate.ko.md)([English](../../release/docs/appendix/pixie-gate.md)): 만들기 절차, 지점별 결과 적용 표(U13·U14), 고급 옵션, 스크립트 계약(stdin·stdout·exit·환경 변수), `pixie` 헬퍼, 예시 스크립트 4개(도구 필터·자막 측정·번역 반복·변경 파일), 실행 기록, 문제 해결. 사용 가이드 목차에 연결했고 화면의 가이드 링크(`GATE_GUIDE_URL`)를 이 위치로 맞췄다.
-- 스킬 [dsh-studio-pixie-gate](../../release/docs/appendix/pixie-gate/SKILL.md): 지점 선택, 할 일 작성, 스크립트 작성·설치, 정의 형식, 확인 방법. 기존 preset-check 스킬처럼 release 문서와 함께 배포된다.
+- 스킬 [studio-pixie-hook-guide](../../release/docs/appendix/studio-pixie-hook-guide/SKILL.md)(#27에서 `dsh-studio-pixie-gate`에서 이름 변경): 지점 선택, 할 일 작성, 스크립트 작성·설치, 정의 형식, 확인 방법. #27부터 Studio가 시작할 때 `<DSH 홈>/skills/`에 설치한다.
 - 자막 준비 템플릿은 가이드 예시와 같게 `{{hooks.measure-subtitle.data}}`를 쓴다.
 
 #### R5 — 통합 검증

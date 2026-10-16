@@ -8,3 +8,4 @@ packages/*/policy.js
 packages/*/batch.js
 packages/*/tasks.js
 packages/*/roles.js
+packages/shell/skills/

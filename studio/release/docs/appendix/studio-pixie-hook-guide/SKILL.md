@@ -1,11 +1,11 @@
 ---
-name: dsh-studio-pixie-gate
+name: studio-pixie-hook-guide
 description: Assemble DSH Studio Pixie Gate definitions and Pixie hook scripts for a user — choose the point, write the task, write and install a script, and explain how to save and verify it. Use when the user asks to build, write, debug, or explain a Pixie Gate or a script using `pixie ask`/`pixie judge`.
 ---
 
 # DSH Studio Pixie Gate
 
-Help the user build a Pixie Gate: a task the Pixie model runs at one point of an agent's work. The full contract is in the Pixie Gate guide (`../pixie-gate.md`, next to this folder). Read it before writing a gate or a script.
+Help the user build a Pixie Gate: a task the Pixie model runs at one point of an agent's work. The full contract — output fields, per-point rules, exit codes, environment, helper, decision engine, and worked example scripts — is in `guide.md` next to this file. Read it before writing a gate or a script.
 
 ## Decide the gate
 

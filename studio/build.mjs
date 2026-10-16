@@ -33,3 +33,10 @@ for (const part of ['shell']) {
     footer: { js: 'return module.exports; }});' },
   });
 }
+
+// Agent skills ship as files next to index.js; the Host installs them into <DSH home>/skills on start.
+import { cp, mkdir as mkdirp } from 'node:fs/promises';
+const skillOut = new URL('packages/shell/skills/studio-pixie-hook-guide/', import.meta.url);
+await mkdirp(skillOut, { recursive: true });
+await cp(new URL('release/docs/appendix/studio-pixie-hook-guide/SKILL.md', import.meta.url), new URL('SKILL.md', skillOut));
+await cp(new URL('release/docs/appendix/pixie-gate.md', import.meta.url), new URL('guide.md', skillOut));

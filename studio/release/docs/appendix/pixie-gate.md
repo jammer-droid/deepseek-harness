@@ -11,6 +11,7 @@ Pixie Gate lets the **Pixie model read, judge, and rework content** at a set mom
 - [The pixie helper](#the-pixie-helper)
 - [Decision engine](#decision-engine)
 - [Example scripts](#example-scripts)
+- [Agent skill](#agent-skill)
 - [Run records](#run-records)
 - [Limits and troubleshooting](#limits-and-troubleshooting)
 
@@ -206,6 +207,13 @@ Task for a gate using this script (runs only on low confidence): `Read {{hooks.c
 #!/bin/bash
 git status --porcelain 2>/dev/null | head -50
 ```
+
+## Agent skill
+
+On start, Studio installs a skill with this guide and the hook rules into `<DSH home>/skills/studio-pixie-hook-guide/` (`~/.dsh/skills/` by default). Ask an agent something like "build a Pixie gate that checks translations" and it reads the skill to help you choose the point, write the script, use `pixie judge`, and follow the exit 0/10/11 rules.
+
+- It holds `SKILL.md` (the rules) and `guide.md` (this guide).
+- Updating Studio updates the skill. Files you edited are never overwritten; to get the Studio version back, delete that file and restart DSH.
 
 ## Run records
 
