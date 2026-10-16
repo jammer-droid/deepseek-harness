@@ -494,3 +494,10 @@ S2에 남은 것: `selectPromptProviders` 정리 여부, 실제 Loader 통합 �
 - `npm --prefix studio test` 432개 통과. 포함 목록의 검색·필터·상태·의존 잠금, 플러그인 추가·제거 호출, 엄격한 반영 검사(이전 반영본 유지) 테스트를 추가했다.
 - 화면: 포함 목록을 DSH 토큰 CSS로 정적 렌더링해 라이트·다크를 확인했다.
 - **미검증:** 설치 앱에서 `플러그인 추가`로 실제 플러그인(예: `tool-schedule`)을 추가해 도구 목록에 나타나는지, 추가 후 활성화 실패 시 복구되는지.
+
+### 18.3 플러그인 추가 수정
+
+- `addMasterPlugin`의 Host 매개변수 이름이 Client descriptor(`payload`)와 달라 게이트웨이가 거절했다. 이름을 맞추고 모든 `studioCatalog` 메서드의 이름 일치를 검사하는 [remote-signatures.test.mjs](<../../test/remote-signatures.test.mjs>)를 추가했다.
+- `terminal-bash`를 단독으로 추가하면 같은 그룹의 `dsh-terminal`(격리된 `terminals` 서비스)이 없어 `waiting for terminals`로 활성화되지 않았다. 이제 DSH 프리셋에서 그룹 안에 선언된 플러그인은 **그 그룹 전체(격리 설정과 형제 플러그인)** 를 함께 추가한다. 후보 설명에 함께 추가될 플러그인을 표시한다.
+- `!!js` 비활성 조건은 DSH 프리셋이 쓰는 `process.platform ===/!== '<os>'` 형태만 평가하고, 그 밖의 식은 꺼진 것으로 보고 후보와 추가 대상에서 뺀다. 이 플랫폼에서 꺼진 변형(macOS의 pwsh 계열 등)은 더 이상 후보에 나오지 않는다.
+- 남은 제한: 함께 추가된 그룹이 Master에 이미 있는 도구와 같은 이름을 등록하면(예: `tool-bash-persistent`의 `bash`와 Master의 `tool-bash`) 추가 전 활성화 검사가 실패하고 이전 상태로 되돌린다. 이 충돌은 활성화해 보기 전에는 공개 API로 알 수 없다.
