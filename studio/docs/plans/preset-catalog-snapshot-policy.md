@@ -92,6 +92,8 @@ Studio는 YAML을 직접 편집하지 않고 프리셋의 기능·도구·설정
 - **편집:** 사용자가 편집한 필드만 덮어쓴다. 편집하지 않은 필드는 DSH 기본값을 따른다.
 - **제외:** 특정 기능을 빼려면 덮어쓰기와 별개인 명시적 제외 설정을 사용한다. 덮어쓰기 해제는 제외가 아니라 기본값 복귀다.
 - 새로 수집된 실행 구성 항목은 제외 설정이 없으므로 기본 반영된다.
+- 기존 프리셋 이전: 기존 `providers` 목록에 없던 항목은 제외로 변환하지 않고 기본 반영한다. Optimized 템플릿과 사용자 복사본 모두 같다. 이 결과 기존 Optimized 계열에서 빠져 있던 `agent-instructions`, `time-context`, `skill-filesystem`, `compaction-basic`, `command-compact`, `compaction-tool-result-pruner`가 다음 적용부터 포함된다. 기존 세션에는 자동 재적용하지 않는다.
+- 프롬프트에 주는 영향은 편집 화면에서 확인·조정할 수 있어야 한다. `agent-instructions`와 `time-context`는 시스템 프롬프트 섹션이 아니라 `agent/pre-step`에서 세션 메시지로 주입하므로([지침](<../../../packages/context/agent-instructions/src/index.ts#L334-L360>), [시각](<../../../packages/context/time-context/src/index.ts#L185-L200>)) 현재 [프롬프트 미리보기](<../../src/host/prompt-preview.ts>)의 `systemPrompt.assemble()` 결과에는 나타나지 않는다. 표시 방식과 편집 범위(Config 필드 편집, 주입 내용 미리보기)는 S4에서 정한다. 주입 내용은 실행 시점의 파일·시각으로 생성되므로 렌더링된 텍스트를 고정 저장하는 방식으로 편집하지 않는다.
 
 현재 구현은 이와 다르다. 선택한 provider만 포함하고 선택하지 않은 prompt provider를 조합에서 제거한다([조합](<../../src/host/composition-plan.ts#L76>), [provider 제거](<../../src/prompt-composition.ts#L58-L65>)).
 
@@ -339,7 +341,7 @@ DSH Host에서 제공되는 공용 기능 (복제하지 않음)
 - 신규 필드의 정확한 저장 스키마, 원자적 저장 단위, 기존 형식 버전 판별과 복구 승인 UX.
 - 출처를 확인하지 못한 도구의 표시·편집 제한, 공유 제공자의 일부 도구를 선택하는 지원 범위.
 - Optimized 고정 항목 부재 시 적용 오류/경고 기준과 실행 설정 제외 UI의 범위.
-- 제외 설정의 저장 형식, 그리고 기존 `providers` 목록에 없는 항목을 새 규칙에서 기본 반영할지 제외로 변환할지의 이전 규칙. Optimized 템플릿과 사용자 복사본을 구분한다.
+- 제외 설정의 저장 형식.
 - 스냅샷 변경 안내와 승인 여부, 알림 없는 부팅의 처리, Master 교체 중 신규 세션 생성의 직렬화·실패 복구.
 
 이 결정들은 기본값 보존/명시적 덮어쓰기/DSH 실행 흐름 준수라는 제품 방향을 다시 뒤집는 항목이 아니다. 정확한 파일 경로·기존 줄 번호는 조사 단서일 뿐 구현 지시가 아니며 #26 이후 최신 코드에서 다시 확인한다.
