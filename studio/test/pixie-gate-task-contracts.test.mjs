@@ -18,7 +18,7 @@ test('task validation matches draft problems and isolates detached data', () => 
   const value = task();
   const copy = validateGateTask(value); copy.presetIds.push('other');
   assert.deepEqual(value.presetIds, ['p']);
-  for (const change of [t => t.name = '', t => t.instruction = '', t => t.advanced.timeoutMs = 0, t => t.advanced.maxSteers = -1, t => t.advanced.judge = { question: '', threshold: 0.5 }]) {
+  for (const change of [t => t.name = '', t => t.instruction = '', t => t.advanced.timeoutMs = 0, t => t.advanced.maxSteers = -1]) {
     const invalid = task(); change(invalid); assert.ok(taskProblem(invalid)); assert.throws(() => validateGateTask(invalid));
   }
   for (const script of ['../test.sh', '/tmp/test.sh', '', 'a/b', 'a\\b']) assert.throws(() => validateGateTask({ ...value, advanced: { ...value.advanced, script } }));
@@ -89,33 +89,6 @@ test('ordinary executor makes exactly one call and retains usage on invalid outp
   const invalid = await new GateTaskRunner({ model, llm: llm(['not json']) }).run(task(), '', signal());
   assert.equal(invalid.status, 'error'); assert.equal(invalid.output, undefined); assert.deepEqual(invalid.usage, { inputTokens: 2, outputTokens: 3 });
 });
-for (const probability of [0.2, 0.8]) test(`judge decides verdict at ${probability}`, async () => {
-  const value = task(); value.advanced.judge = { question: 'Good?', threshold: 0.5 };
-  const calls = [];
-  const result = await new GateTaskRunner({ model, judgeModel: { ...model, model: 'judge' }, llm: llm(['{"verdict":"stop","replace":"r","note":"n"}', JSON.stringify({ answers: { gate: { noul: probability } } })], calls) }).run(value, 'target', signal());
-  assert.equal(result.output.verdict, probability >= 0.5 ? 'pass' : 'stop'); assert.equal(result.output.replace, 'r');
-  assert.equal(calls.length, 2); assert.equal(calls[1].model, 'judge'); assert.deepEqual(result.usage, { inputTokens: 4, outputTokens: 6 });
-});
-test('judge pass preserves ordinary stop reason only as a user note', async () => {
-  const value = task(); value.advanced.judge = { question: 'Good?', threshold: 0.5 };
-  const calls = [];
-  const result = await new GateTaskRunner({ model, llm: llm(['{"verdict":"stop","reason":"ordinary concern","replace":"r","append":"a","note":"n"}', '{"answers":{"gate":{"noul":0.8}}}'], calls) }).run(value, 'original', signal());
-  assert.deepEqual(result.output, { verdict: 'pass', replace: 'r', append: 'a', note: 'n\nPixie 지시 판단: ordinary concern' });
-  assert.deepEqual(gateOutputPlan(value, result.output, 'original'), { stop: false, replacement: 'r', addition: 'a', notes: ['n\nPixie 지시 판단: ordinary concern'] });
-  assert.match(JSON.stringify(calls[1].messages), /original/);
-});
-for (const reason of [undefined, 'ordinary reason']) test(`judge stop reason and forwarding: ${reason}`, async () => {
-  const value = task(); value.advanced.judge = { question: 'Good?', threshold: 0.5 };
-  const result = await new GateTaskRunner({ model, llm: llm([JSON.stringify({ verdict: 'pass', reason, replace: 'r', append: 'a', note: 'n' }), '{"answers":{"gate":{"noul":0.2}}}']) }).run(value, 'original', signal());
-  const expectedReason = reason ?? 'Good?: noul must be >= 0.5';
-  assert.equal(result.output.reason, expectedReason);
-  assert.deepEqual(gateOutputPlan(value, result.output, 'original'), { stop: true, reason: expectedReason, suggestion: 'r', notes: ['n', 'a'] });
-});
-test('judge malformed answer stops with a reason rather than allowing input', async () => {
-  const value = task(); value.advanced.judge = { question: 'Good?', threshold: 0.5 };
-  const result = await new GateTaskRunner({ model, llm: llm(['{"verdict":"pass"}', '{}']) }).run(value, '', signal());
-  assert.equal(result.status, 'done'); assert.equal(result.output.verdict, 'stop'); assert.ok(result.output.reason);
-});
 test('script is unsupported without a model call; cancellation wins', async () => {
   const value = task(); value.advanced.script = 'script.sh'; const calls = [];
   const runner = new GateTaskRunner({ model, llm: llm([], calls) });
@@ -140,29 +113,11 @@ test('timeout aborts a stalled stream', async () => {
   assert.equal(result.status, 'error'); assert.match(result.error, /timed out/);
 });
 
-test('ordinary output failure never invokes configured judge', async () => {
- const value = task(); value.advanced.judge = { question: 'Good?', threshold: 0.5 }; const calls = [];
- const result = await new GateTaskRunner({ model, llm: llm(['not-json'], calls) }).run(value, '', signal());
- assert.equal(result.status, 'error'); assert.equal(calls.length, 1);
-});
-for (const reason of [undefined, 'ordinary reason']) test(`judge API failure reason priority ${reason}`, async () => {
- const value = task(); value.advanced.judge = { question: 'Good?', threshold: 0.5 }; let calls = 0;
- const runner = new GateTaskRunner({ model, llm: { async *stream() {
-   if (++calls === 2) throw new Error('judge API failed');
-   yield { type: 'text-delta', text: JSON.stringify({ verdict: 'pass', reason }) };
-   yield { type: 'finish', reason: { kind: 'stop' } };
- } } });
- const result = await runner.run(value, '', signal());
- assert.equal(result.output.verdict, 'stop');
- if (reason) assert.equal(result.output.reason, reason); else assert.match(result.output.reason, /judge API failed/);
-});
-for (const cancel of [false, true]) test(`judge pending ${cancel ? 'cancel' : 'timeout'}`, async () => {
- const value = task(); value.advanced.judge = { question: 'Good?', threshold: 0.5 }; value.advanced.timeoutMs = 15;
- const controller = new AbortController(); let calls = 0;
- const runner = new GateTaskRunner({ model, llm: { async *stream() {
-  if (++calls === 2) { if (cancel) controller.abort(); await new Promise(() => {}); }
-  yield { type: 'text-delta', text: '{}' }; yield { type: 'finish', reason: { kind: 'stop' } };
- } } });
- const result = await runner.run(value, '', controller.signal);
- assert.equal(calls, 2); assert.equal(result.status, cancel ? 'cancelled' : 'error'); assert.equal(result.output, undefined);
+test('the removed judge option is dropped on validation and never adds a model call', async () => {
+  const stored = { ...task(), advanced: { ...task().advanced, judge: { question: 'Good?', threshold: 0.9 } } };
+  const valid = validateGateTask(stored);
+  assert.equal('judge' in valid.advanced, false); assert.equal('judge' in stored.advanced, true);
+  const calls = [];
+  const result = await new GateTaskRunner({ model, judgeModel: { ...model, model: 'judge' }, llm: llm(['{"verdict":"pass","note":"n"}'], calls) }).run(stored, 'target', signal());
+  assert.equal(calls.length, 1); assert.deepEqual(result.output, { verdict: 'pass', note: 'n' });
 });

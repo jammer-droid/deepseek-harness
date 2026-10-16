@@ -85,7 +85,7 @@ test('new gate offers one template per point and the blank gate, with no coming-
   await click(pick(picker, 'Verify the final answer'));
   const editor = [...comp.querySelectorAll('dialog')].find(d => input(d, 'What Pixie does'));
   assert.equal(input(editor, 'When').value, 'turn-end');
-  assert.equal(input(editor, 'Judge question (passes when “yes” is likely)').value, 'Does this answer fully satisfy the user’s request?');
+  assert.equal(input(editor, 'Judge question (passes when “yes” is likely)'), null);
   await click(button(editor, 'Apply'));
   const card = comp.querySelector('[data-gate-task]');
   assert.match(card.querySelector('.studio-gate-sentence').textContent, /When the agent finishes its answer→Check that the answer covers/);
@@ -104,7 +104,7 @@ test('editor shows two fields up front; script, judge and limits live under Adva
   await change(input(editor, 'Pixie hook script'), 'measure-subtitle.sh');
   assert.match(editor.querySelector('.studio-gate-vars').textContent, /\{\{hooks\.measure-subtitle\.text\}\}/);
   assert.match(advanced.textContent, /\/profile\/studio-data\/pixie-gate\/commands/);
-  assert.ok(advanced.contains(input(editor, 'Decide the verdict with the judge model')));
+  assert.equal(input(editor, 'Decide the verdict with the judge model'), null);
   assert.ok(input(editor, 'Confirm before replacing'));
   await change(input(editor, 'What Pixie does'), '');
   await click(button(editor, 'Apply'));
@@ -185,15 +185,14 @@ test('scope lists Studio presets, adds gates per preset, and switches one preset
   await click(input(comp, 'Gate on New gate'));
   assert.equal(toggle('p').disabled, true); assert.match(preset('p').textContent, /The gate is off everywhere/);
 });
-test('scope shows only presets the Host lists as Studio presets and keeps foreign attachments removable', async t => {
+test('scope shows only Studio presets; gates on other presets are listed as not added yet', async t => {
   const task = { ...makeTask('Old'), instruction: 'x', presetIds: ['standard'] };
   const host = await settings(t, 'en', { read: { entries: [task], invalid: [] }, presets: [] });
   const scope = page(host, 'Scope');
   assert.match(scope.textContent, /No presets made in Studio yet/);
-  const other = scope.querySelector('[data-gate-preset="other"]');
-  assert.match(other.textContent, /Old · standard/); assert.equal(input(other, 'Enabled Old · standard'), null);
-  await click(button(other, 'Remove from preset'));
+  assert.equal(scope.querySelector('[data-gate-preset="other"]'), null);
   assert.match(scope.querySelector('[data-gate-preset=""]').textContent, /Old/);
+  assert.equal(scope.querySelector('section').getAttribute('aria-label'), 'Script folder');
 });
 
 test('script folder shows the default, saves a custom folder and resets it', async t => {
@@ -253,9 +252,8 @@ test('task model: templates, variables and problems', () => {
   assert.deepEqual(taskVariables(task), []);
   task.advanced.script = 'list-changed-files.sh';
   assert.deepEqual(taskVariables(task), ['{{hooks.list-changed-files.text}}', '{{hooks.list-changed-files.data}}']);
-  task.advanced.judge = { question: '', threshold: 0.5 }; assert.equal(taskProblem(task), 'judge');
-  task.advanced.judge.question = 'ok?'; task.advanced.judge.threshold = 2; assert.equal(taskProblem(task), 'judge');
-  task.advanced.judge.threshold = 0.7; assert.equal(taskProblem(task), undefined);
+  assert.equal(taskProblem(task), undefined);
+  task.advanced.timeoutMs = 0; assert.equal(taskProblem(task), 'limits');
 });
 
 for (const locale of ['ko', 'zh']) test(`preview is localized: ${locale}`, async t => {

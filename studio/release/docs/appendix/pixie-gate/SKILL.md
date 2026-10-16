@@ -20,7 +20,7 @@ Help the user build a Pixie Gate: a task the Pixie model runs at one point of an
    | `turn-end` | The agent's final answer |
 
 2. Write the task (`instruction`) in plain words. Say which of the five output fields to use: verdict (`pass`/`stop`), reason, replacement, addition, note. Check the guide's application table: at `tool-before` and `turn-end` replacement and addition become notes; at `turn-end` stop asks the agent to redo with the reason.
-3. Use the judge option only when the user wants a strict yes/no threshold.
+3. For a strict yes/no threshold, write a hook script that calls `pixie judge` and exits 10 or prints the outcome; gates have no judge option.
 4. Use a hook script only when the two fields cannot express the flow: conditions (only some tools), loops, or external measurement. Prefer no script.
 
 ## Write a script
@@ -40,7 +40,7 @@ Do not edit `definitions.json` unless the user asks you to; prefer guiding them 
 
 ```json
 { "id": "<uuid>", "name": "…", "enabled": true, "when": "user-message", "instruction": "…",
-  "advanced": { "confirmReplace": false, "onError": "pass", "agents": "root", "timeoutMs": 60000, "maxSteers": 1, "script": "optional.sh", "judge": { "question": "…", "threshold": 0.5 } },
+  "advanced": { "confirmReplace": false, "onError": "pass", "agents": "root", "timeoutMs": 60000, "maxSteers": 1, "script": "optional.sh" },
   "presetIds": ["<preset id>"], "disabledPresetIds": ["<attached preset where it is off>"] }
 ```
 

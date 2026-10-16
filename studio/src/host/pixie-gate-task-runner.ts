@@ -41,7 +41,7 @@ const points: Record<GateTask['when'], string> = {
   'turn-end': 'The final agent answer. Stop requests correction; replacement and addition are notes.',
 };
 
-/** One ordinary model call, plus one optional judge call. Runs a session-bound preparation script when configured. */
+/** One ordinary model call. Runs a session-bound preparation script first when configured; the script may call `pixie ask/judge`. */
 export class GateTaskRunner {
   constructor(private readonly deps: GateTaskRunnerDeps) {}
   async run(task: GateTask, target: string, parent: AbortSignal, context?: HookContext): Promise<GateTaskExecution> {
@@ -101,22 +101,6 @@ export class GateTaskRunner {
       signal.throwIfAborted();
       if (!finished) throw new Error('Gate model stream ended without a finish');
       const output = parseGateOutput(text);
-      if (task.advanced.judge) {
-        const option = task.advanced.judge;
-        const judge = new LlmJudgeEngine(this.deps.llm, this.deps.judgeModel ?? this.deps.model, this.deps.judgeSystemPrompt);
-        const result = await judge.judge({ state: target, questions: { gate: { type: 'noul', question: option.question } } }, signal);
-        if (result.usage) addUsage(result.usage);
-        signal.throwIfAborted();
-        const answer = result.ok ? result.answers.gate : undefined;
-        output.verdict = answer?.type === 'noul' && answer.noul >= option.threshold ? 'pass' : 'stop';
-        if (output.verdict === 'stop' && output.reason === undefined) {
-          output.reason = result.ok ? `${option.question}: noul must be >= ${option.threshold}` : `${option.question}: ${result.error}`;
-        } else if (output.verdict === 'pass' && output.reason !== undefined) {
-          const judgment = `Pixie 지시 판단: ${output.reason}`;
-          output.note = output.note === undefined ? judgment : `${output.note}\n${judgment}`;
-          delete output.reason;
-        }
-      }
       return { status: 'done', output, usage };
     } catch (error) {
       return { status: parent.aborted ? 'cancelled' : 'error', error: String(signal.aborted ? signal.reason : error), usage };

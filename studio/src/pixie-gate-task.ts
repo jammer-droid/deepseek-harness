@@ -17,8 +17,6 @@ export interface GateTask {
   advanced: {
     /** File name inside {@link GATE_SCRIPT_DIR}, run before Pixie (U18, U23). */
     script?: string;
-    /** Decide the verdict with the judge model instead of the instruction's own answer. */
-    judge?: { question: string; threshold: number };
     /** Ask the user before a replacement is sent (message points only). */
     confirmReplace: boolean;
     onError: 'pass' | 'block';
@@ -34,7 +32,7 @@ export interface GateTask {
 }
 
 export type GateTemplateId = 'format-check' | 'agent-protocol' | 'command-guard' | 'tool-digest' | 'verify-answer';
-export interface GateTemplate { id: GateTemplateId; when: GateWhen; judge?: true }
+export interface GateTemplate { id: GateTemplateId; when: GateWhen }
 
 /** One representative template per point (U21); the blank gate comes last. */
 export const GATE_TEMPLATES: readonly GateTemplate[] = [
@@ -42,7 +40,7 @@ export const GATE_TEMPLATES: readonly GateTemplate[] = [
   { id: 'agent-protocol', when: 'agent-message' },
   { id: 'command-guard', when: 'tool-before' },
   { id: 'tool-digest', when: 'tool-after' },
-  { id: 'verify-answer', when: 'turn-end', judge: true },
+  { id: 'verify-answer', when: 'turn-end' },
 ];
 
 /** Pixie Gate guide: result rules, script contract, environment, helpers, and examples (U22, U23). */
@@ -70,9 +68,8 @@ export function makeTask(name: string, when: GateWhen = 'user-message', instruct
 }
 
 /** A gate built from a template; text comes from the caller's locale. */
-export function taskFromTemplate(template: GateTemplate, text: { name: string; instruction: string; question?: string }): GateTask {
+export function taskFromTemplate(template: GateTemplate, text: { name: string; instruction: string }): GateTask {
   const task = makeTask(text.name, template.when, text.instruction);
-  if (template.judge && text.question) task.advanced.judge = { question: text.question, threshold: 0.5 };
   return task;
 }
 
@@ -83,10 +80,9 @@ export function taskVariables(task: GateTask): string[] {
 }
 
 /** @returns the first problem key, or undefined when the draft can be saved. */
-export function taskProblem(task: GateTask): 'name' | 'instruction' | 'judge' | 'limits' | undefined {
+export function taskProblem(task: GateTask): 'name' | 'instruction' | 'limits' | undefined {
   if (!task.name.trim()) return 'name';
   if (!task.instruction.trim()) return 'instruction';
-  if (task.advanced.judge && (!task.advanced.judge.question.trim() || !(task.advanced.judge.threshold >= 0 && task.advanced.judge.threshold <= 1))) return 'judge';
   if (!(task.advanced.timeoutMs > 0) || !Number.isInteger(task.advanced.maxSteers) || task.advanced.maxSteers < 0) return 'limits';
   return undefined;
 }

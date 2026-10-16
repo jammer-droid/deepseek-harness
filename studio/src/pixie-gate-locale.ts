@@ -13,15 +13,15 @@ const en = {
 } as const;
 export type GateTextKey = keyof typeof en;
 const ko: Record<GateTextKey, string> = {
-  gates: '게이트', emptyRuns: '게이트 실행 기록이 없습니다', applied: '적용', replaced: '교체', appended: '덧붙임', rejected: '거부', steered: '교정', blocked: '차단', denied: '차단', running: '진행 중', pending: '거부 처리 대기', unverified: '훅 입력 미확인', suggestion: '제안', editSend: '수정해서 보내기', resent: '보냈음 표시', dismissed: '무시', draftNote: '입력창 초안을 제안(없으면 원문)으로 교체합니다. 직접 확인하고 전송하세요. 보냈음 표시는 확인 기록이며 실제 전송이 아닙니다.', composerUnavailable: '세션 입력창을 사용할 수 없습니다', turn: '턴', steerCount: '교정 횟수', tool: '도구', callId: '호출 ID', allRuns: '모든 게이트 실행',
+  gates: '게이트', emptyRuns: '게이트 실행 기록이 없습니다', applied: '적용', replaced: '교체', appended: '덧붙임', rejected: '거부', steered: '교정', blocked: '차단', denied: '차단', running: '진행 중', pending: '거부 처리 대기', unverified: '훅 입력 미확인', suggestion: '제안', editSend: '수정 후 보내기', resent: '보냈음 표시', dismissed: '무시', draftNote: '입력창 초안을 제안(없으면 원문)으로 바꿉니다. 전송은 직접 하세요. ‘보냈음 표시’는 기록만 남기고 전송하지 않습니다.', composerUnavailable: '세션 입력창을 사용할 수 없습니다', turn: '턴', steerCount: '교정 횟수', tool: '도구', callId: '호출 ID', allRuns: '모든 게이트 실행',
   verdict: '판정', forward: '전달', forwardError: '전달 오류', original: '원문', subject: '최종 텍스트',
-  stages: '단계', start: '시작 훅', end: '종료 훅', reason: '이유', error: '오류', elapsed: '소요', skipped: '건너뜀',
+  stages: '단계', start: '시작 훅', end: '종료 훅', reason: '이유', error: '오류', elapsed: '소요 시간', skipped: '건너뜀',
   pass: '통과', fail: '거부', revise: '수정', note: '메모', skip: '건너뜀', cancelled: '취소',
   none: '없음', replace: '교체', append: '덧붙임',
   skippedForward: '시험 실행에서 명령 단계를 건너뛰어 전달 결과를 계산할 수 없음',
   skippedCommand: '시험 실행에서 명령을 실행하지 않았습니다.',
   skippedCount: '건너뛴 단계 {count}개 포함', milliseconds: '{value} ms', seconds: '{value}초',
-  output: 'Pixie 출력', notes: '메모', helperCalls: '헬퍼 호출', helperNoul: '예 확률 {noul} · 기준 {threshold}', tokens: '토큰', applyNote: '적용 안 한 이유', originalSame: '원문 (변경 없음)', sentAlong: '함께 전달한 내용', usage: '토큰 입력 {input} · 출력 {output}', stop: '막음',
+  output: 'Pixie 출력', notes: '메모', helperCalls: '헬퍼 호출', helperNoul: '예 확률 {noul} · 기준 {threshold}', tokens: '토큰', applyNote: '미적용 이유', originalSame: '원문 (변경 없음)', sentAlong: '함께 전달한 내용', usage: '토큰 입력 {input} · 출력 {output}', stop: '막음',
 };
 const zh: Record<GateTextKey, string> = {
   gates: '门控', emptyRuns: '暂无门控运行记录', applied: '应用', replaced: '已替换', appended: '已追加', rejected: '已拒绝', steered: '已纠正', blocked: '已阻止', denied: '已阻止', running: '运行中', pending: '拒绝待处理', unverified: '钩子输入未验证', suggestion: '建议', editSend: '修改后发送', resent: '标记已发送', dismissed: '忽略', draftNote: '用建议（或原文）替换输入框草稿。请自行检查并发送。标记已发送仅记录确认，不会实际发送。', composerUnavailable: '会话输入框不可用', turn: '轮次', steerCount: '纠正次数', tool: '工具', callId: '调用 ID', allRuns: '所有门控运行',

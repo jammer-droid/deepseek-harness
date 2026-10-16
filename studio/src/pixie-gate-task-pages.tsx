@@ -78,7 +78,6 @@ function TemplatePicker({ open, locale, onPick, onClose }: { open: boolean; loca
   const pick = (template: GateTemplate) => onPick(taskFromTemplate(template, {
     name: t(`tpl-${template.id}`),
     instruction: t(`tplText-${template.id}` as GateTaskKey),
-    ...(template.judge ? { question: t(`tplQuestion-${template.id}` as GateTaskKey) } : {}),
   }));
   return <DetailDialog open={open} title={t('pickTemplate')} subtitle={t('pickHint')} onClose={onClose} footer={<Button onClick={onClose}>{t('cancel')}</Button>}>
     <ul className="studio-pick-list" aria-label={t('pickTemplate')}>
@@ -153,13 +152,6 @@ export function GateTaskEditor({ task: initial, open, locale, actions, onApply, 
           {scripts && !scripts.supported && <Notice>{t('scriptUnsupported')}</Notice>}
           <p className="studio-muted">{t('scriptEnv')}</p>
           <p className="studio-muted">{t('scriptShell')} <a href={GATE_GUIDE_URL} target="_blank" rel="noreferrer">{t('guideLink')}</a></p>
-        </SettingsRow>
-        <SettingsRow title={t('judge')} description={t('judgeHint')} control={<Toggle label={t('judge')} checked={!!task.advanced.judge} onChange={on => { const { judge: _, ...rest } = task.advanced; set({ advanced: on ? { ...rest, judge: { question: '', threshold: 0.5 } } : rest }); }} />}>
-          {task.advanced.judge && <div className="studio-gate-judge">
-            <label className="studio-field"><span>{t('judgeQuestion')}</span><input aria-label={t('judgeQuestion')} value={task.advanced.judge.question} onChange={event => adv({ judge: { ...task.advanced.judge!, question: event.target.value } })} /></label>
-            <label className="studio-field"><span>{t('judgeThreshold')}</span><input className="studio-compact" aria-label={t('judgeThreshold')} type="number" min={0} max={1} step={0.05} value={task.advanced.judge.threshold} onChange={event => adv({ judge: { ...task.advanced.judge!, threshold: Number(event.target.value) } })} /></label>
-            {problemAt('judge')}
-          </div>}
         </SettingsRow>
         {isMessage(task.when) && <SettingsRow title={t('confirmReplace')} description={t('confirmReplaceHint')} control={<Toggle label={t('confirmReplace')} checked={task.advanced.confirmReplace} onChange={confirmReplace => adv({ confirmReplace })} />} />}
         <SettingsRow title={t('onError')} control={<Segmented label={t('onError')} value={task.advanced.onError} options={[{ value: 'pass', label: t('errorPass') }, { value: 'block', label: t('errorBlock') }]} onChange={onError => adv({ onError })} />} />
@@ -258,10 +250,10 @@ function ScriptFolder({ actions, t }: { actions: GateTaskActions; t: Text }) {
 export function GateTaskScopePage({ gates, presets, locale }: { gates: GateTasks; presets: readonly { id: string; name: string }[]; locale: string }) {
   const t = useText(locale);
   const [adding, setAdding] = React.useState<{ id: string; name: string }>();
-  const studio = new Set(presets.map(preset => preset.id));
   const attachedTo = (preset: string) => gates.tasks.filter(task => task.presetIds.includes(preset));
-  const others = [...new Set(gates.tasks.flatMap(task => task.presetIds))].filter(id => !studio.has(id));
-  const unused = gates.tasks.filter(task => !task.presetIds.length);
+  // A gate whose only presets are not Studio presets is shown here too; adding it to a Studio preset is the way forward.
+  const studio = new Set(presets.map(preset => preset.id));
+  const unused = gates.tasks.filter(task => !task.presetIds.some(id => studio.has(id)));
   const detach = (task: GateTask, preset: string) => gates.update(task.id, item => ({ ...item, presetIds: item.presetIds.filter(id => id !== preset), ...(item.disabledPresetIds ? { disabledPresetIds: item.disabledPresetIds.filter(id => id !== preset) } : {}) }));
   const switchFor = (task: GateTask, preset: string, on: boolean) => gates.update(task.id, item => {
     const off = new Set(item.disabledPresetIds ?? []);
@@ -269,41 +261,37 @@ export function GateTaskScopePage({ gates, presets, locale }: { gates: GateTasks
     const { disabledPresetIds: _, ...rest } = item;
     return off.size ? { ...rest, disabledPresetIds: [...off] } : rest;
   });
-  const row = (task: GateTask, preset: string, removeOnly = false) => {
+  const row = (task: GateTask, preset: string) => {
     const on = enabledFor(task, preset);
     const conflict = on && gates.tasks.some(other => other.id !== task.id && other.when === task.when && enabledFor(other, preset));
     return <li key={task.id} className="studio-gate-scope-row" data-gate-scope={task.id}>
       <span className="studio-gate-scope-name"><strong>{task.name}</strong><span className="studio-card-meta">{t(`when-${task.when}`)}{task.advanced.script ? ` · ${task.advanced.script}` : ''}</span>
         {!task.enabled && <Badge tone="neutral">{t('gateOff')}</Badge>}{conflict && <Badge tone="warning">{t('conflict')}</Badge>}</span>
-      <span className="studio-inline-actions">
+      <span className="studio-gate-scope-actions">
         <Button small onClick={() => detach(task, preset)}>{t('removeFromPreset')}</Button>
-        {!removeOnly && <Toggle label={`${t('enabled')} ${task.name}`} checked={on} disabled={!task.enabled} onChange={next => switchFor(task, preset, next)} />}
+        <span className="studio-gate-scope-switch"><Toggle label={`${t('enabled')} ${task.name}`} checked={on} disabled={!task.enabled} onChange={next => switchFor(task, preset, next)} /></span>
       </span>
     </li>;
   };
   const presetCard = (preset: { id: string; name: string }) => {
     const tasks = attachedTo(preset.id);
     return <section key={preset.id} className="studio-settings-card" aria-label={preset.name} data-gate-preset={preset.id}>
-      <div className="studio-gate-scope-head"><span><strong>{preset.name}</strong> <span className="studio-card-meta">{t('gateCount', { count: tasks.length, on: tasks.filter(task => enabledFor(task, preset.id)).length })}</span></span>
-        <Button small disabled={!gates.loaded} onClick={() => setAdding(preset)}>{t('addGate')}</Button></div>
+      <div className="studio-gate-scope-head"><span className="studio-gate-scope-title"><strong>{preset.name}</strong><span className="studio-card-meta">{t('gateCount', { count: tasks.length, on: tasks.filter(task => enabledFor(task, preset.id)).length })}</span></span>
+        <span className="studio-gate-scope-actions"><Button small disabled={!gates.loaded} onClick={() => setAdding(preset)}>{t('addGate')}</Button><span className="studio-gate-scope-switch" aria-hidden="true" /></span></div>
       {tasks.length ? <ul className="studio-gate-scope-list">{tasks.map(task => row(task, preset.id))}</ul> : <p className="studio-card-meta">{t('noGatesInPreset')}</p>}
     </section>;
   };
   const candidates = adding ? gates.tasks.filter(task => !task.presetIds.includes(adding.id)) : [];
   return <div className="studio-page-stack">
     <GateHead gates={gates} title={t('scope')} description={t('scopeDescription')} t={t} />
+    <ScriptFolder actions={gates.actions} t={t} />
     <SectionHead title={t('presetsTitle')} description={t('presetsTitleHint')} />
     {!presets.length && <p role="status" className="studio-muted">{t('noStudioPresets')}</p>}
     {presets.map(presetCard)}
-    {others.length > 0 && <section className="studio-settings-card" aria-label={t('otherPresets')} data-gate-preset="other">
-      <div className="studio-gate-scope-head"><strong>{t('otherPresets')}</strong></div><p className="studio-card-meta">{t('otherPresetsHint')}</p>
-      <ul className="studio-gate-scope-list">{others.flatMap(id => attachedTo(id).map(task => <React.Fragment key={`${id}:${task.id}`}>{row({ ...task, name: `${task.name} · ${id}` }, id, true)}</React.Fragment>))}</ul>
-    </section>}
     {unused.length > 0 && <section className="studio-settings-card" aria-label={t('unusedGates')} data-gate-preset="">
       <div className="studio-gate-scope-head"><strong>{t('unusedGates')}</strong></div><p className="studio-card-meta">{t('unusedGatesHint')}</p>
       <ul className="studio-gate-scope-list">{unused.map(task => <li key={task.id} className="studio-gate-scope-row" data-gate-scope={task.id}><span className="studio-gate-scope-name"><strong>{task.name}</strong><span className="studio-card-meta">{t(`when-${task.when}`)}</span></span></li>)}</ul>
     </section>}
-    <ScriptFolder actions={gates.actions} t={t} />
     <DetailDialog compact open={!!adding} title={adding ? t('addGateTo', { preset: adding.name }) : ''} onClose={() => setAdding(undefined)} footer={<Button onClick={() => setAdding(undefined)}>{t('close')}</Button>}>
       {!candidates.length && <p className="studio-muted">{t('noGateToAdd')}</p>}
       <ul className="studio-pick-list" aria-label={adding ? t('addGateTo', { preset: adding.name }) : ''}>{candidates.map(task => <li key={task.id}>

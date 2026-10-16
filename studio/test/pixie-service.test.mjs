@@ -8,27 +8,23 @@ import { Context } from '@deepseek-ai/cordis';
 import { PixieService } from '../src/host/pixie-service.ts';
 import { makeTask } from '../src/pixie-gate-task.ts';
 
-for (const score of [0.2, 0.8]) test(`gate trial service uses dedicated judge settings and score ${score}`, async () => {
+test('gate trial service uses the ordinary Pixie model once and reports its plan and usage', async () => {
   const h = await harness(), calls = [];
   h.ctx.set('llm', { stream: async function* (options) {
     calls.push(options);
-    yield { type: 'text-delta', index: 0, text: calls.length === 1 ? '{"replace":"replacement","append":"addition"}' : JSON.stringify({ answers: { gate: { noul: score } } }) };
+    yield { type: 'text-delta', index: 0, text: '{"replace":"replacement","append":"addition"}' };
     yield { type: 'usage', usage: { inputTokens: 2, outputTokens: 3 } };
     yield { type: 'finish', reason: { kind: 'stop' } };
   } });
   const fiber = await start(h);
   try {
     const service = h.ctx.get('studioPixie');
-    await service.saveSettings(JSON.stringify({ model: { provider: 'p', model: 'ordinary' }, judgeModel: { provider: 'p', model: 'judge' }, judgeSystemPrompt: 'Dedicated judge', contextMode: 'fresh', systemPrompt: '', allowThreadModel: true }));
-    const task = makeTask('Trial', 'tool-after', 'Check'); task.advanced.judge = { question: 'Good?', threshold: 0.5 };
+    await service.saveSettings(JSON.stringify({ model: { provider: 'p', model: 'ordinary' }, judgeModel: { provider: 'p', model: 'judge' }, contextMode: 'fresh', systemPrompt: '', allowThreadModel: true }));
+    const task = makeTask('Trial', 'tool-after', 'Check');
     const result = await service.trialGate(JSON.stringify({ task, text: 'original' }), new AbortController().signal);
-    assert.equal(result.output.verdict, score < 0.5 ? 'stop' : 'pass');
-    assert.equal(result.plan.stop, score < 0.5);
-    assert.equal(calls[0].model, 'ordinary'); assert.equal(calls[1].model, 'judge');
-    assert.equal(calls[1].system, 'Dedicated judge'); assert.match(JSON.stringify(calls[1].messages), /original/);
-    assert.deepEqual(result.usage, { inputTokens: 4, outputTokens: 6 });
-    if (score < 0.5) assert.deepEqual(result.plan.notes, ['replacement', 'addition']);
-    else assert.equal(result.plan.replacement, 'replacement');
+    assert.equal(result.output.verdict, 'pass'); assert.equal(result.plan.replacement, 'replacement'); assert.equal(result.plan.addition, 'addition');
+    assert.equal(calls.length, 1); assert.equal(calls[0].model, 'ordinary');
+    assert.deepEqual(result.usage, { inputTokens: 2, outputTokens: 3 });
   } finally { await fiber.dispose(); }
 });
 

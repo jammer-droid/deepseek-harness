@@ -638,13 +638,17 @@ ${adapter}.studio-ui *, .studio-ui *::before, .studio-ui *::after { box-sizing: 
 .studio-ui .studio-gate-folder { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
 .studio-ui .studio-gate-folder input { flex: 1 1 260px; width: auto; min-width: 0; }
 .studio-ui .studio-gate-folder .studio-button { margin: 0; }
-.studio-ui .studio-gate-scope-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 12px; }
+.studio-ui .studio-gate-scope-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 12px; min-height: 32px; }
+.studio-ui .studio-gate-scope-title { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; min-width: 0; }
+.studio-ui .studio-gate-scope-title strong { font-weight: 500; }
+.studio-ui .studio-gate-scope-actions { display: inline-flex; flex: 0 0 auto; align-items: center; justify-content: flex-end; gap: 8px; margin-inline-start: auto; }
+.studio-ui .studio-gate-scope-actions .studio-button { margin: 0; min-width: 104px; justify-content: center; }
+.studio-ui .studio-gate-scope-switch { display: inline-flex; justify-content: flex-end; width: 36px; }
 .studio-ui ul.studio-gate-scope-list { display: grid; margin: 0; padding: 0; list-style: none; }
-.studio-ui .studio-gate-scope-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 12px; margin: 0; padding: 8px 0; border-top: .5px solid var(--studio-line); }
+.studio-ui .studio-gate-scope-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 12px; min-height: 32px; margin: 0; padding: 8px 0; border-top: .5px solid var(--studio-line); }
 .studio-ui .studio-gate-scope-row:first-child { border-top: 0; }
 .studio-ui .studio-gate-scope-name { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; min-width: 0; }
 .studio-ui .studio-gate-scope-name strong { font-weight: 500; }
-.studio-ui .studio-gate-scope-row .studio-inline-actions .studio-button { margin: 0; }
 .studio-ui .studio-pixie-thread.studio-gate-run-item { gap: 2px; padding: 6px 10px; }
 .studio-ui .studio-gate-facts { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 12px; align-items: baseline; margin: 0; font-size: 13px; }
 .studio-ui .studio-gate-facts dt { color: var(--studio-muted); font-size: 12px; }

@@ -15,12 +15,12 @@ Pixie Gate lets the **Pixie model read, judge, and rework content** at a set mom
 
 ## Create a gate
 
-1. In **Studio → Pixie → Settings → Model**, choose the Pixie model. Gates and the helper use it. To use a separate judge model, choose it on the **Judge** page.
+1. In **Studio → Pixie → Settings → Model**, choose the Pixie model. Gates and the helper use it. Scripts' `pixie judge` uses the judge model chosen on the **Judge** page (or the Pixie model).
 2. In **Gates → Gate composition**, press **New gate** and pick a template. Each point has one representative template (instruction format check, agent message protocol, block risky commands, digest long tool results, verify the final answer); the blank gate is last. The switch on each card turns the gate on or off everywhere.
 3. Set **When** and **What Pixie does**. Write the task in plain words: whether to pass or stop, what to replace or add, and what note to show only to you.
 4. Put a sample in **Try it** and run it. The configured Pixie model really answers; nothing is recorded or sent to a session.
 5. Press **Apply**, then **Save** at the top of the page. Only saved gates apply to runs.
-6. **Gates → Scope** lists the presets made in Studio. Use **Add gate** on a preset to attach a gate, and the row switch to turn it on or off **for that preset only**. A gate can be attached to several presets; one preset's switch never affects another. Save to apply. A gate runs only for agents using those presets.
+6. **Gates → Scope** sets the script folder at the top and then lists the presets made in Studio. Gates not yet added to a Studio preset are collected at the bottom. Use **Add gate** on a preset to attach a gate, and the row switch to turn it on or off **for that preset only**. A gate can be attached to several presets; one preset's switch never affects another. Save to apply. A gate runs only for agents using those presets.
 
 Only one enabled gate per preset and **When** is allowed (the page warns, and saving is refused). Saved definitions live in `<profile>/studio-data/pixie-gate/definitions.json`.
 
@@ -53,7 +53,6 @@ When the verdict is stop, the replacement and addition never reach the main mode
 | Option | Default | Description |
 | --- | --- | --- |
 | Pixie hook script | None | A script run before the task. See [below](#pixie-hook-scripts) |
-| Decide the verdict with the judge model | Off | Passes when the judge question's "yes" probability reaches the threshold. The rest of the task output still applies |
 | Confirm before replacing | Off | Stops a real replacement and shows it as a suggestion (message points) |
 | On error | Pass | Pass or stop on model or script errors and timeouts |
 | Target agents | Root (child for agent messages) | Root, child, or any |
