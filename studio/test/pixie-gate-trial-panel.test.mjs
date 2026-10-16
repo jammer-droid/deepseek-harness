@@ -5,7 +5,7 @@ import { createRoot } from 'react-dom/client';
 import { Simulate } from 'react-dom/test-utils';
 import { JSDOM } from 'jsdom';
 import { GateTrialPanel } from '../src/pixie-gate-trial-panel.tsx';
-import { GateEditor } from '../src/pixie-gate-editor.tsx';
+import { GateComposer } from '../src/pixie-gate-composer.tsx';
 const dom = new JSDOM('<!doctype html><body></body>');
 globalThis.window = dom.window; globalThis.document = dom.window.document;
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
@@ -18,14 +18,15 @@ const change = async (el, value) => { assert.ok(el); await act(async () => { el.
 async function setup(t, props = {}, editor = false) {
   const calls = []; const trial = request => { calls.push(request); return { result: Promise.resolve(response()), cancel() {} }; };
   const host = document.createElement('div'); document.body.append(host); const root = createRoot(host);
-  const base = editor ? { actions: { read: async () => [{ definition: definition(), presetIds: [] }], save: async () => {}, presets: async () => [], models: async () => ({ groups: [] }), trial } } : { definition: definition(), trial };
-  await act(async () => root.render(React.createElement(editor ? GateEditor : GateTrialPanel, { ...base, locale: 'en', ...props })));
+  const base = editor ? { open: true, entry: { definition: definition(), presetIds: [] }, models: { groups: [] }, onClose() {}, onSave: async () => true, trial } : { definition: definition(), trial };
+  await act(async () => root.render(React.createElement(editor ? GateComposer : GateTrialPanel, { ...base, locale: 'en', ...props })));
   t.after(async () => { await act(async () => root.unmount()); host.remove(); });
   return { host, calls, root };
 }
 test('editor trial submits unsaved draft and displays result and skipped stage', async t => {
   const { host, calls } = await setup(t, {}, true);
   await change(input(host, 'Name'), 'Unsaved draft');
+  await click(host.querySelector('[data-gate-node="trial"]'));
   assert.equal(button(host, 'Run trial').disabled, true);
   await change(input(host, 'Sample input (required)'), 'sample');
   await change(input(host, 'Hook context (optional)'), 'hook sample');

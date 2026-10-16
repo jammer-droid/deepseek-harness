@@ -4,7 +4,7 @@ import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Simulate } from 'react-dom/test-utils';
 import { JSDOM } from 'jsdom';
-import { GateEditor } from '../src/pixie-gate-editor.tsx';
+import { GateComposer } from '../src/pixie-gate-composer.tsx';
 import { GateResultDetails } from '../src/pixie-gate-result.tsx';
 import { PixieSettingsPage } from '../src/pixie-settings.tsx';
 import { makeJudgeStage } from '../src/pixie-gate-judge-editor.tsx';
@@ -22,8 +22,10 @@ async function render(t, component, props) {
 }
 async function editor(t) {
   const saves = [], trials = [];
-  const host = await render(t, GateEditor, { actions: { read: async () => [{ definition: definition(), presetIds: [] }], presets: async () => [], models: async () => ({ groups: [] }), save: async entries => saves.push(structuredClone(entries)), trial: request => { trials.push(request); return { result: Promise.resolve({ result: { verdict: 'pass', original: request.text, subject: request.text, notes: [], stages: {}, records: [], hooks: {}, forward: { kind: 'original', text: request.text } }, durations: {}, skipped: [] }), cancel() {} }; } } });
-  await change(input(host, 'Kind'), 'judge'); return { host, saves, trials };
+  const host = await render(t, GateComposer, { open: true, entry: { definition: definition(), presetIds: [] }, models: { groups: [] }, onClose() {}, onSave: async entry => { saves.push([structuredClone(entry)]); return true; }, trial: request => { trials.push(request); return { result: Promise.resolve({ result: { verdict: 'pass', original: request.text, subject: request.text, notes: [], stages: {}, records: [], hooks: {}, forward: { kind: 'original', text: request.text } }, durations: {}, skipped: [] }), cancel() {} }; } });
+  await click(host.querySelector('[data-gate-node="stage-0"]'));
+  await click([...input(host, 'Kind').querySelectorAll('[role=radio]')].find(b => b.textContent === 'Judge'));
+  return { host, saves, trials };
 }
 test('judge validation notices localize ordinary invalid drafts in ko en zh', async t => {
   const { GateJudgeEditor } = await import('../src/pixie-gate-judge-editor.tsx');
@@ -54,6 +56,7 @@ test('judge creation hides role, edits noul and submits judge draft in trial pay
   await change(input(host, 'Threshold (0–1)'), '0.8'); await change(input(host, 'Condition mode'), 'any');
   await click(button(host, 'Save'));
   const stage = saves[0][0].definition.stages[0]; assert.equal(stage.role, undefined); assert.deepEqual(stage.questions.question1.criteria, { true: 'safe', false: 'unsafe' }); assert.equal(stage.pass.conditions[0].threshold, 0.8); assert.equal(stage.pass.mode, 'any');
+  await click(host.querySelector('[data-gate-node="trial"]'));
   await change(input(host, 'Sample input (required)'), 'sample'); await click(button(host, 'Run trial'));
   assert.deepEqual(trials[0].definition.stages[0], stage); assert.equal(trials[0].executeCommands, false);
 });
