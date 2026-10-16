@@ -110,8 +110,68 @@ Host Inspect로 확인한 공개 계약 기준이다. "가능성"은 설계 후�
 9. **헬퍼와의 관계:** 스크립트 `pixie judge`를 새 결정 기능의 얇은 클라이언트로 바꿀지, 그대로 둘지.
 10. **배포:** 공개 API만으로 되는지 — 특히 Client 표시(W1)와 Auto 모드(C)는 먼저 확인이 필요하다.
 
-## 7. 다음 단계 제안
+## 7. 브레인스토밍 결과 (2026-10-16)
 
-1. 이 문서로 grilling을 해서 W1–W6 중 1차 범위와 호출 주체(질문 3)를 정한다.
-2. 정한 범위로 새 이슈와 명세(`studio/docs/issues/<번호>-…md`)를 만든다. #26은 닫힌 상태로 둔다.
-3. 명세 단계에서 확인할 것: C 후보면 `approval`·`permissionPresets` 계약과 Auto 훅, W1이면 Client 슬롯, A 후보면 프리셋 도구 노출 경로.
+후보 A–F와 Pixie 확장 방식을 대화로 검토한 결과다. 기준은 `studio/feat/workflow` @ `ce9a731d9f`를 merge한 이 브랜치이며, 대상 DSH `0.2.0-rc.2 || 0.2.1-alpha.2`다. 아래 공개 API 근거는 Host·Client Inspect, 저장소 소스와 `dsh-v0.2.0-rc.2` 태그로 확인했다. 실제 호출·설치 검증은 하지 않았다.
+
+### 하지 않기로 한 것
+
+| 검토안 | 하지 않는 이유 |
+| --- | --- |
+| Pixie를 서브에이전트로 실행 | 메인의 `list_agents`·`send_message`에 노출될 수 있다. 사이드바 대화 탭 주소(`dsh-resource://subagentchat/...`)는 ui-subagent 내부 형식이라 공개 계약이 아니다. 결과 전달 API도 rc.2와 alpha.2에서 다르다 |
+| Pixie를 독립 세션(fork처럼)으로 실행 | `agents.create`로 세션은 만들 수 있지만, Host에서 그 세션에 지시를 넣는 공개 경로를 찾지 못했다. 세션 목록 표시, 승인 알림 문제도 있다 |
+| Pixie 전용 도구 루프(bash 등) | `llm.stream`의 `tools` 옵션과 `tools.execute`로 가능은 하다. 하지만 메인 루프가 이미 처리하는 도구 메시지 형식, 승인, 취소를 다시 구현해야 한다 |
+| 범용 결정 도구·레시피·흐름 편집기 | 구조가 커지는 데 비해 실제 사용 이득이 불분명하다 |
+
+Pixie는 지금 구조를 유지한다. 훅으로 필요한 데이터를 받아 해석하는 역할이다. 사용해 보니 이 방식으로도 UI/UX가 충분했다.
+
+### 결정 1: Pixie 출력을 Markdown으로 표시한다
+
+모델 출력은 대부분 Markdown이지만 지금 Pixie는 `<p>`에 일반 텍스트로 보여 준다.
+
+- **부품:** DSH 공용 `MarkdownText`(`@deepseek-ai/dsh-client-ui-primitives`)를 쓴다. 메인 대화창과 같은 렌더러다. GFM 표, 코드 블록·복사, TeX 수식, `streaming` 증분 렌더링을 지원한다. 원시 HTML은 버리고 링크는 http·https·mailto만 허용한다. `0.2.0-rc.2` 태그와 현재 소스에서 모두 export되는 것을 확인했다.
+- **필수 라벨:** `labels.code.copyLabel`, `labels.code.copiedLabel`, `labels.footnotes`. ko·en·zh 사전에 둔다. 좁은 Pixie 탭에는 `variant="compact"`를 검토한다.
+
+| 위치 | 변경 |
+| --- | --- |
+| [ui-host.tsx](../../src/ui-host.tsx) | primitives export 목록에 `MarkdownText` 추가. 기능 모듈은 이 파일을 통해서만 가져온다 |
+| 공용 부품 `PixieMarkdown`(새로 만듦) | `MarkdownText` + 로캘 라벨. 디자인 시스템 문서의 부품 표 갱신 |
+| [pixie-tab.tsx](../../src/pixie-tab.tsx) :50, :284 | Pixie 탭 답변, `/pixie` 대화 행. 답변 생성 중에는 `streaming` |
+| [pixie-gate-result.tsx](../../src/pixie-gate-result.tsx) :35, 메모(:64, :77) | 게이트 결과 중 Pixie가 쓴 출력 텍스트와 메모 |
+
+- **바꾸지 않음:** 게이트 기록의 원문, 최종 텍스트, 함께 전달한 내용, 거부 원문·제안은 사용자나 도구의 원본 데이터라 일반 텍스트로 둔다. 판정 답 요약, 이유 한 줄 같은 Studio가 만든 문구도 그대로 둔다.
+- **확인:** `MarkdownText`의 CSS가 Pixie 탭 좁은 폭, 라이트·다크 모드에서 코드 블록과 표를 어떻게 보여 주는지 Web에 배포해 본다. UI 스냅샷을 갱신한다.
+
+### 결정 2: Jev는 Studio 내부 판정 엔진으로 붙이고, 키는 DSH credentials에 둔다
+
+- **DSH 모델 프로바이더로 등록하지 않는다.** `llm.registerAdapter`는 공개지만 대화 모델용이다. 텍스트를 스트림으로 돌려주는 `stream()`을 구현해야 하고, 등록하면 일반 모델 선택 목록에 뜬다. Jev는 `POST https://api.typesafe.ai/v1/systemone`에 `{ model, state, questions }`를 보내 `{ answers, usage }`를 받는 판정 API다([API reference](https://docs.typesafe.ai/api.md)).
+- **엔진:** 기존 `JudgeEngine` 포트([host/pixie-judge.ts](../../src/host/pixie-judge.ts))에 `JevJudgeEngine`을 추가한다. Studio Host에서 `fetch`로 호출한다. 429·529는 짧게 다시 시도한다. 401·422·네트워크 오류는 오류로 낸다. 오류를 "아니오"나 낮은 점수로 바꾸지 않는 기존 규칙을 유지한다.
+- **계약 정렬:** Studio 계약은 이전 Jev 형식에 맞춰져 있어 현재 API와 다르다. 엔진 안에서 변환하되, 판정 품질과 직결되는 차이이므로 계약 자체를 현재 형식으로 맞추는 쪽을 권장한다.
+
+| 항목 | Studio 현재 | Jev 현재 |
+| --- | --- | --- |
+| 질문 문장 | noul만 `question` | 세 형식 모두 `instructions`(필수, 문자열·객체·배열) |
+| choice 선택지 | `options` | `criteria`(map, 최대 255) |
+| score 단계 | `levels` | `criteria`(배열, 2–10) |
+| score 답 | `probabilities` 배열 | `probabilities`·`legend`(단계 번호 키 객체) |
+| 모델 | 없음 | `model` 필수(예: `jev-latest`) |
+| 사용량 | Studio 형식 | `usage.input_tokens`·`output_tokens` |
+
+- **키 설정:** Studio 설정의 결정 엔진 화면에서 입력받는다.
+  - 저장: Client → Studio Remote → `ctx.credentials.set('TYPESAFE_API_KEY', value)`. 삭제는 `unset`.
+  - 상태: `ctx.credentials.describe(ref)`의 `{ configured, source, writable }`만 표시한다. 키 값은 Client로 돌려주지 않는다.
+  - 사용: 호출마다 `ctx.credentials.resolve(ref)`로 읽고 캐시하지 않는다. DSH `llm-deepseek-api-key`와 같은 방식이다.
+  - 환경 변수·`.env`로 설정한 키도 `resolve`가 그대로 찾는다. 읽기 전용 출처가 값을 가리면 `set`이 거부되므로, 화면에 출처와 "여기서 바꿀 수 없음"을 표시한다.
+  - 키 이름은 `TYPESAFE_API_KEY`로 고정한다.
+- **쓰지 않는 길:** Studio 플러그인 Config에 `role('credential-ref')` 필드를 두는 방식은 쓰지 않는다. 키 입력·저장 UI는 DSH 모델 설정 화면만 제공하고, 일반 플러그인 설정 화면에서는 같은 처리를 찾지 못했다. Config에 두면 키 값이 아니라 이름 문자열만 편집하게 된다.
+- **미검증:** 실제 Jev 응답(세 형식), Studio 설정 화면의 키 저장·출처 표시. API 키가 있어야 확인할 수 있다.
+
+### 결정 3: 결정 엔진은 게이트 훅 스크립트에서 부르고, 스크립트가 결론을 낼 수 있다
+
+- 게이트는 에이전트 미들웨어다. 판정 시점·입력·결과 처리는 훅 스크립트가 `pixie judge`로 정한다. Pixie는 도구가 없어 판정을 직접 부르지 않는다.
+- 스크립트 exit 11을 추가해 stdout JSON을 게이트 출력으로 바로 쓴다. 통과는 exit 10, 애매하면 exit 0으로 Pixie에게 넘긴다(confidence routing).
+- 적용 아이디어 조사와 우선 후보는 [Jev 적용 아이디어](jev-use-cases.md)에 있다.
+
+## 8. 다음 단계
+
+1차 범위(Jev 엔진·키, 계약 정렬, `pixie judge` 확장, exit 11, Markdown 표시)는 [#27 명세](../issues/27-jev-decision-engine.md)에서 진행한다. 에이전트 도구, 게이트 판정 칸, DSH 일반 훅 연결은 #27 이후 사용 결과를 보고 정한다.
