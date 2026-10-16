@@ -13,12 +13,18 @@ import { compositionPlan, parseComposition } from './composition-plan.ts';
 import { executableRoles, parseRoles, roleToolFilter } from '../role-settings.ts';
 import { delegationTools, migratePolicyConfig, renameLegacyRoleKey, ROLE_PLUGIN, ROLE_TOOL, withoutDelegationPlugins } from '../delegation.ts';
 import type { CompositionRow } from '../prompt-composition.ts';
+import { cleanRequest, cleanRoles, type CleanablePreset } from '../master-snapshot.ts';
+import { applyConfigExclusions, EXCLUDABLE_PACKAGES } from '../config-overrides.ts';
+import { masterComposition } from './master-composition.ts';
+import { MASTER_PRESET_ID } from '../master-preset.ts';
 
 
 export interface StudioPreset {
   id: string; name: string; description: string; request: PreviewRequest;
   conveniences: unknown; agents: unknown; updatedAt: string; appliedAt?: string;
   status: 'draft' | 'applied' | 'modified'; applyWarning?: string;
+  /** Non-tool features the applied snapshot lacks although the preset does not exclude them. */
+  missingFeatures?: string[];
 }
 interface StoredPreset extends StudioPreset { applied?: { name: string; description: string; plugins: string } }
 const owned = (id: string) => id === OPTIMIZED_PRESET_ID || /^studio-user-[a-f0-9-]{36}$/.test(id);
@@ -40,6 +46,22 @@ function migrateLegacyNames(row: StoredPreset): void {
     return { ...entry, name, ...(config === undefined ? {} : { config }) };
   });
   row.applied = { ...row.applied, plugins: dump(visit(parseComposition(row.applied.plugins)), { schema: entryListSchema, noRefs: true }) };
+}
+
+const packageNames = (rows: CompositionRow[]): string[] => rows.flatMap(row => row.disabled === true ? [] : row.group && Array.isArray(row.config) ? packageNames(row.config as CompositionRow[]) : [row.name]);
+/**
+ * Features an older build dropped from the applied snapshot (e.g. compaction when only persona was
+ * selected). Legacy data has no exclusions, so absence is never read as the user's intent; it is
+ * only reported, and restoring it waits for the user to reapply.
+ */
+export function missingFeatures(row: Pick<StoredPreset, 'request' | 'applied'>): string[] {
+  if (!row.applied || row.request.preset !== MASTER_PRESET_ID) return [];
+  try {
+    const expected = packageNames(applyConfigExclusions(masterComposition(), row.request.configExclusions ?? [], row.request.configOverrides ?? {}))
+      .filter(name => EXCLUDABLE_PACKAGES.includes(name));
+    const present = new Set(packageNames(parseComposition(row.applied.plugins)));
+    return expected.filter(name => !present.has(name));
+  } catch { return []; }
 }
 
 /** Profile-local Studio data, never a Loader patch or profile package mutation. */
@@ -118,7 +140,11 @@ export class PresetStore {
     this.tail = result.catch(() => {});
     return result;
   }
-  private public(row: StoredPreset): StudioPreset & { template?: boolean; nonDeletable?: boolean } { const { applied, ...value } = row; return structuredClone({ ...value, ...(row.id === OPTIMIZED_PRESET_ID ? { template: true, nonDeletable: true } : {}) }); }
+  private public(row: StoredPreset): StudioPreset & { template?: boolean; nonDeletable?: boolean } {
+    const { applied, ...value } = row;
+    const missing = missingFeatures(row);
+    return structuredClone({ ...value, ...(missing.length ? { missingFeatures: missing } : {}), ...(row.id === OPTIMIZED_PRESET_ID ? { template: true, nonDeletable: true } : {}) });
+  }
   /** Compose the Optimized applied snapshot: the template request over the current base composition. */
   private optimizedApplied(request: PreviewRequest, plugins: CompositionRow[]) {
     const delegates = request.tools.includes(ROLE_TOOL);
@@ -167,6 +193,25 @@ export class PresetStore {
     return this.public(refresh);
   }); }
   list() { return this.serial(async () => this.rows.map(row => this.public(row))); }
+  /** User presets the catalog cleanup may rewrite; Optimized follows its template instead. */
+  cleanable() { return this.serial(async (): Promise<CleanablePreset[]> => this.rows.filter(row => row.id !== OPTIMIZED_PRESET_ID).map(row => structuredClone({ id: row.id, name: row.name, request: row.request, agents: row.agents }))); }
+  /**
+   * Delete confirmed removed names from saved drafts in one write. Applied snapshots stay as they
+   * are (sessions that use them are not reconfigured); a changed preset is marked for reapply.
+   */
+  cleanup(tools: readonly string[], configs: readonly string[]) { return this.serial(async () => {
+    const now = new Date().toISOString();
+    const rows = this.rows.map(row => {
+      if (row.id === OPTIMIZED_PRESET_ID) return row;
+      const request = cleanRequest(row.request, tools, configs);
+      const agents = cleanRoles(row.agents, tools);
+      if (JSON.stringify(request) === JSON.stringify(row.request) && JSON.stringify(agents) === JSON.stringify(row.agents)) return row;
+      return { ...row, request, agents, updatedAt: now, status: row.applied ? 'modified' as const : row.status };
+    });
+    const changed = rows.filter((row, index) => row !== this.rows[index]).length;
+    if (changed) await this.persist(rows);
+    return changed;
+  }); }
   save(payload: string) { return this.serial(async () => {
     const value = JSON.parse(payload);
     if (!value || typeof value.name !== 'string' || !value.name.trim() || value.name.length > 120 || typeof value.description !== 'string') throw new Error('Invalid preset name or description');

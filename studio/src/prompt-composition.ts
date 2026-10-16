@@ -12,7 +12,9 @@ export const promptProviderModules = [
 ] as const;
 export interface PromptProvider { name: string; description: string; fields?: ProviderField[] }
 export interface ToolOverride { description?: string; parameters?: Record<string, string> }
-export interface PreviewRequest { configOverrides?: ConfigOverrides; preset: string; providers: string[]; tools: string[]; prompt: string; model: string; persona?: string; toolOverrides?: Record<string, ToolOverride>; sections?: Record<string, string>; providerConfigs?: Record<string, Record<string, unknown>>; execution?: ExecutionDefaults; subagentToolFilter?: { deny: string[] } }
+export interface PreviewRequest { configOverrides?: ConfigOverrides; preset: string; providers: string[]; tools: string[]; prompt: string; model: string; persona?: string; toolOverrides?: Record<string, ToolOverride>; sections?: Record<string, string>; providerConfigs?: Record<string, Record<string, unknown>>; execution?: ExecutionDefaults; subagentToolFilter?: { deny: string[] };
+  /** Master Config entry ids left out of this preset entirely. Absent ids keep DSH defaults (or their override). */
+  configExclusions?: string[] }
 export interface PresetBundle { files: Record<string, string> }
 export type ExportAction = (request: PreviewRequest) => Promise<PresetBundle>;
 /** Runtime schema used by the public Remote input codec. */
@@ -28,6 +30,7 @@ export function parsePreviewRequest(value: unknown): PreviewRequest {
   if (row.providerConfigs !== undefined && (!record(row.providerConfigs) || Object.values(row.providerConfigs).some(v => !record(v)))) throw new Error('Invalid provider configs');
   if (row.configOverrides !== undefined) validateConfigOverrides(row.configOverrides);
   if (row.execution !== undefined) validateExecutionDefaults(row.execution);
+  if (row.configExclusions !== undefined && (!strings(row.configExclusions) || row.configExclusions.some(id => !id))) throw new Error('Invalid Config exclusions');
   const filter = row.subagentToolFilter as { deny?: unknown } | undefined;
   if (filter !== undefined && (!record(filter) || !strings(filter.deny) || filter.deny.some(name => !name))) throw new Error('Invalid subagent tool filter');
   return { ...(row.configOverrides !== undefined ? { configOverrides: row.configOverrides as ConfigOverrides } : {}), ...(row.execution !== undefined ? { execution: row.execution } : {}), preset: row.preset, providers: [...row.providers], tools: [...row.tools], prompt: row.prompt, model: row.model,
@@ -36,6 +39,7 @@ export function parsePreviewRequest(value: unknown): PreviewRequest {
     ...(row.toolOverrides !== undefined ? { toolOverrides: row.toolOverrides as Record<string,ToolOverride> } : {}),
     ...(row.providerConfigs !== undefined ? { providerConfigs: row.providerConfigs as Record<string,Record<string,unknown>> } : {}),
     ...(filter !== undefined && (filter.deny as string[]).length ? { subagentToolFilter: { deny: [...new Set(filter.deny as string[])] } } : {}),
+    ...(Array.isArray(row.configExclusions) && row.configExclusions.length ? { configExclusions: [...new Set(row.configExclusions as string[])] } : {}),
   };
 }
 export interface PreviewResult { prompt: string; sections: { name: string; text: string }[]; context: string; tools: { name: string; description: string; parameters: Record<string, unknown> }[] }
@@ -53,15 +57,4 @@ export function promptProviders(rows: CompositionRow[]): PromptProvider[] {
     }
   }
   return [...new Map(found.map(item => [item.name, item])).values()];
-}
-/** Keep dependency groups intact, remove only the explicitly managed prompt providers. */
-export function selectPromptProviders(rows: CompositionRow[], selected: string[]): CompositionRow[] {
-  const available = new Set(promptProviders(rows).map(item => item.name));
-  if (selected.some(name => !available.has(name))) throw new Error('Unknown prompt provider selection');
-  const visit = (entries: CompositionRow[]): CompositionRow[] => entries.flatMap(row => {
-    if (row.name === '@deepseek-ai/dsh-command-compact' && !selected.includes('@deepseek-ai/dsh-compaction-basic')) return [];
-    if ((promptProviderModules as readonly string[]).includes(row.name) && !selected.includes(row.name)) return [];
-    return [{ ...row, ...(row.group && Array.isArray(row.config) ? { config: visit(row.config) } : {}) }];
-  });
-  return visit(rows);
 }

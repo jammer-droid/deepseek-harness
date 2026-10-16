@@ -18,6 +18,8 @@ import { PresetStore, studioStorePath } from './preset-store.ts';
 import { MASTER_PRESET_ID, MASTER_PRESET_NAME } from '../master-preset.ts';
 import { StudioUpdater } from './studio-update.ts';
 import { PixieService } from './pixie-service.ts';
+import { CatalogBaseline } from './catalog-baseline.ts';
+import { catalogSnapshot, compareCatalog, type CatalogChange, type CatalogSnapshot } from '../master-snapshot.ts';
 
 
 /** Catalog reads and temporary composition previews; no Agents or model calls. */
@@ -30,11 +32,15 @@ export default class StudioCatalog extends TypertRemoteService {
   private extensions: MasterExtensions;
   private changes: Promise<unknown> = Promise.resolve();
   private updater = new StudioUpdater(this.ctx);
+  private baseline: CatalogBaseline;
+  /** The newest complete collection and what it changes against the confirmed baseline. */
+  private pending: { snapshot: CatalogSnapshot; change?: CatalogChange; error?: string } | undefined;
   constructor(ctx: Context) {
     super(ctx, 'studioCatalog');
     // Shell environment variables are not the Desktop Host's launch environment.
     const storePath = studioStorePath(process.env, ctx.get('profileContext'));
     this.extensions = new MasterExtensions(join(dirname(storePath), 'master-extensions.json'));
+    this.baseline = new CatalogBaseline(join(dirname(storePath), 'catalog-snapshot.json'));
     this.store = new PresetStore(ctx, storePath);
     // Pixie is optional: it starts only where llm, sessionController, and commands exist.
     ctx.plugin(PixieService, dirname(storePath));
@@ -144,7 +150,38 @@ export default class StudioCatalog extends TypertRemoteService {
     await this.store.ensureOptimized(baseline.tools.map(t => t.name), composition);
     catalog.plugins = plugins;
     catalog.execution = executionCapabilities(catalog.tools);
+    await this.observe(catalog.tools, plugins, composition);
     return catalog;
+  }
+  /**
+   * Compare a complete collection with the confirmed baseline. The first good collection becomes
+   * the baseline; later differences wait for the user, so a partial or failed collection never
+   * deletes preset data or replaces the baseline.
+   */
+  private async observe(tools: PresetCatalog['tools'], plugins: PluginCatalogEntry[], composition: CompositionRow[]) {
+    const snapshot = catalogSnapshot(tools, plugins, composition);
+    if (!snapshot) { this.pending = undefined; return; }
+    try {
+      const previous = await this.baseline.read();
+      if (!previous) { await this.baseline.save(snapshot); this.pending = undefined; return; }
+      const change = compareCatalog(previous, snapshot, await this.store.cleanable());
+      this.pending = change ? { snapshot, change } : undefined;
+      if (!change && JSON.stringify(previous) !== JSON.stringify(snapshot)) await this.baseline.save(snapshot);
+    } catch (error) { this.pending = { snapshot, error: String(error) }; }
+  }
+  @Remote
+  async catalogChange() { await this.snapshot; return this.pending ? structuredClone(this.pending.change ?? { error: this.pending.error }) : null; }
+  /** Apply the shown cleanup and adopt the collection as the new baseline. Idempotent. */
+  @Remote
+  async confirmCatalogChange() {
+    await this.snapshot;
+    const pending = this.pending;
+    if (!pending?.change) return { cleaned: 0 };
+    // Recompute against current saved presets: edits made since the notice are cleaned too.
+    const cleaned = await this.store.cleanup(pending.change.removed.tools, pending.change.removed.configs);
+    await this.baseline.save(pending.snapshot);
+    if (this.pending === pending) this.pending = undefined;
+    return { cleaned };
   }
   @Remote
   async preview(request: PreviewRequest) { await this.snapshot; return assemblePreview(this.ctx, request); }

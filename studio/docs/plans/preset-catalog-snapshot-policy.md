@@ -1,7 +1,7 @@
 # DSH 기본 동작을 보존하는 프리셋 덮어쓰기 — #26 이후 구현 계획
 
 - 계획 준비 상태: **draft**. S0에서 도구 정책 결정은 닫았다([16절](#16-s0-기록--26-이후-기준과-도구-정책-결정)). 13절의 저장 형식·스냅샷 결정은 S1·S3 착수 시 닫는다.
-- 구현 상태: 압축 누락 긴급 수정(P1·P2, [15절](#15-선행-처리-압축-누락-긴급-수정)), **S0 완료**, **S2 중 own-scope 차단 해소 완료(설치 검증 전)**. 다음 단계는 **S1**이다. 이 문서는 구현·배포 승인이 아니다.
+- 구현 상태: P1·P2, S0, S1, S2, S3, S4a, S5 구현 완료(로컬 테스트). own-scope 차단 해소는 사용자가 설치 앱에서 확인했다. 남은 단계는 **S4b**(미리보기 편집)와 **S6**(독립 설치 검증)이다. 이 문서는 구현·배포 승인이 아니다([17절](#17-s1s5-구현-기록)).
 
 ## 상태와 재개 위치
 
@@ -266,7 +266,7 @@ DSH Host에서 제공되는 공용 기능 (복제하지 않음)
 
 ## 11. 의존 순서별 구현 단계
 
-현재 진행: **S0 완료 / S2 일부(도구 차단 해소) 완료 / S1·S3–S6 미착수**([16절](#16-s0-기록--26-이후-기준과-도구-정책-결정)). 단, S2의 "프롬프트 provider 선택에 따른 비도구 기능 일괄 제거 제거"와 S5의 Optimized 템플릿 재정렬 일부는 [15절](#15-선행-처리-압축-누락-긴급-수정)에서 먼저 처리했다. 해당 단계 착수 시 15절 결과를 기준으로 남은 범위만 진행한다. 단계 ID는 코드가 바뀌어도 유지하며 파일·함수명은 착수 시 다시 매핑한다. 선행 단계의 검증을 통과한 후 다음 단계로 진행한다.
+현재 진행: **S0–S3·S4a·S5 완료 / S4b·S6 남음**([16절](#16-s0-기록--26-이후-기준과-도구-정책-결정), [17절](#17-s1s5-구현-기록)). 단, S2의 "프롬프트 provider 선택에 따른 비도구 기능 일괄 제거 제거"와 S5의 Optimized 템플릿 재정렬 일부는 [15절](#15-선행-처리-압축-누락-긴급-수정)에서 먼저 처리했다. 해당 단계 착수 시 15절 결과를 기준으로 남은 범위만 진행한다. 단계 ID는 코드가 바뀌어도 유지하며 파일·함수명은 착수 시 다시 매핑한다. 선행 단계의 검증을 통과한 후 다음 단계로 진행한다.
 
 ### S0 — #26 이후 기준 재확인과 지원 경계 확정
 
@@ -442,5 +442,40 @@ S2에 남은 것: `selectPromptProviders` 정리 여부, 실제 Loader 통합 �
 
 ### 16.6 다음 세션 재개 지점
 
-1. 설치 검증을 먼저 한다: 앱 종료 후 `DSH_HOME="$HOME/.dsh" npm --prefix studio run dev:desktop`(15.3 주의), 예약 플러그인 ON, Optimized·사용자 복사 프리셋의 새 세션에서 일반 도구와 `schedule_list` 호출을 확인한다.
+1. (완료 — 사용자 확인) 설치 검증을 먼저 한다: 앱 종료 후 `DSH_HOME="$HOME/.dsh" npm --prefix studio run dev:desktop`(15.3 주의), 예약 플러그인 ON, Optimized·사용자 복사 프리셋의 새 세션에서 일반 도구와 `schedule_list` 호출을 확인한다.
 2. 이어서 **S1**(변경 의도·기본 구성 계약)을 시작한다.
+
+## 17. S1–S5 구현 기록
+
+### 17.1 결정 (사용자 확인)
+
+| 항목 | 결정 |
+| --- | --- |
+| 실행 설정 계약 | Studio Master의 실행 설정 항목은 **모두 기본 반영**한다. 값을 바꾸면 그 필드만 **덮어쓰고**, 덮어쓰기 해제는 기본값 복귀다. 특정 항목은 **반영에서 제외**할 수 있다. |
+| 제외 대상 | 도구 외 실행 기능 6개(`agent-instructions`, `time-context`, `skill-filesystem`, `compaction-basic`, `command-compact`, `tool-result-pruner`). 도구 제공자는 도구 선택으로만 관리해 선택한 도구가 사라지는 충돌을 막는다. |
+| 변경 안내 | 재시작 후 차이가 있으면 안내하고, **사용자가 확인해야** 정리하고 새 기준을 저장한다. 확인 전에는 저장 데이터를 바꾸지 않는다. |
+| S4 범위 | **S4a**(포함 스위치·3상태·압축 상태·변경 안내)만 구현했다. 11절 S4의 미리보기 편집·편집 단위·주입 컨텍스트 표시는 **S4b**로 나눴다. |
+| 복구 | 프리셋별 `복구` 버튼 → 추가될 기능 미리보기 → 확인 후 다시 반영. |
+
+### 17.2 단계별 변경
+
+| 단계 | 결과 | 파일 |
+| --- | --- | --- |
+| S1 | 저장 필드 `configExclusions`(Master Config 항목 id)를 추가했다. 조합 순서는 기준 선언 → 필드 덮어쓰기 → 제외다. 알 수 없는 id, 도구 제공자 제외, 덮어쓰기와 제외 동시 지정, 제외한 prompt provider를 편집 선택한 경우는 오류다. `command-compact`는 `compaction-basic`과 함께 빠진다(`CONFIG_REQUIRES`). 빈 목록은 저장하지 않으므로 기존 데이터는 모두 기본 반영으로 해석된다. | [config-overrides.ts](<../../src/config-overrides.ts>), [composition-plan.ts](<../../src/host/composition-plan.ts>), [prompt-composition.ts](<../../src/prompt-composition.ts>) |
+| S2 잔여 | 쓰이지 않던 `selectPromptProviders`를 제거했다. | [prompt-composition.ts](<../../src/prompt-composition.ts>) |
+| S3 | 프로필별 `studio-data/catalog-snapshot.json`에 도구 이름·정규화한 파라미터 스키마와 Config id·패키지 이름만 저장한다. Config 값은 저장하지 않는다. Config 항목 하나라도 로드 오류가 있으면 스냅샷을 만들지 않아 기준 교체나 삭제가 일어나지 않는다. 첫 정상 수집은 기준만 저장한다. 같은 id가 다른 패키지를 가리키면 제거+추가로 다룬다. 확인하면 Optimized를 뺀 사용자 프리셋에서 해당 도구 선택·설명·실행 기본값·batch·서브에이전트/역할 필터와 Config 덮어쓰기·제외만 지우고, 반영된 프리셋은 `다시 반영 필요`로 표시한다. 반영된 등록은 다시 만들지 않는다. 반복 확인은 저장 없이 끝난다. | [master-snapshot.ts](<../../src/master-snapshot.ts>), [catalog-baseline.ts](<../../src/host/catalog-baseline.ts>), [shell.ts](<../../src/host/shell.ts>), [preset-store.ts](<../../src/host/preset-store.ts>) |
+| S4a | 실행 설정 탭 위쪽에 포함 스위치(기본값/덮어쓰기/제외 배지), 자동 압축 ON/OFF 표시, "선언 기준이며 실행 중 세션 상태가 아님" 안내를 두었다. 제외한 항목은 아래 Config 편집 목록에서 숨긴다. 탭 설명 문구를 기본 반영 규칙으로 바꿨다. 프리셋 목록에 변경 안내(`+`/`-`/`~`, 정리될 프리셋 설정)를 추가했다. | [feature-inclusion.tsx](<../../src/feature-inclusion.tsx>), [master-change-notice.tsx](<../../src/master-change-notice.tsx>), [optimization-prototype.tsx](<../../src/optimization-prototype.tsx>), [preset-manager.tsx](<../../src/preset-manager.tsx>) |
+| S5 | 반영본에 없는데 제외하지도 않은 기능을 `missingFeatures`로 보고한다. 레거시 데이터의 부재는 의도로 해석하지 않고 자동으로 켜지도 않는다. `복구`는 확인 후 기존 `apply`를 호출하므로 덮어쓰기·역할·Pixie Gate 연결·ID가 보존되고, 실패하면 이전 반영본이 유지된다. 현재 desktop 프로필의 세 프리셋은 15절 재반영 이후라 누락이 없음을 읽기 전용으로 확인했다. | [preset-store.ts](<../../src/host/preset-store.ts>), [preset-manager.tsx](<../../src/preset-manager.tsx>) |
+
+### 17.3 검증
+
+- 로컬: `npm --prefix studio test`(Host·Client 타입 검사와 빌드 포함) 430개 통과, `git diff --check` 통과.
+- 새 테스트: [composition-plan.test.mjs](<../../test/composition-plan.test.mjs>)(기본 반영·덮어쓰기·제외·의존 정리·오류), [master-snapshot.test.mjs](<../../test/master-snapshot.test.mjs>)(부분 수집 거부, 추가/제거/스키마 변경, 출처 변경, 정리 범위·멱등, 기준 파일 손상 보존), [preset-store.test.mjs](<../../test/preset-store.test.mjs>)(확인 후 정리, 반영 등록 유지), [feature-inclusion.test.mjs](<../../test/feature-inclusion.test.mjs>)(3상태 UI, 의존 잠금, 누락 탐지, 복구 확인, 확인 전 무변경).
+- 화면: 새 부품을 DSH 토큰 CSS와 Studio 스타일로 정적 렌더링해 라이트·다크, ko/en/zh, 340px 폭을 확인했다. 실제 Studio 화면 안의 배치는 설치 검증에서 확인한다.
+- **미검증:** 설치 앱에서의 변경 안내·제외·복구 흐름, 실제 Loader 통합 테스트, 자동 압축(`compaction/start → summary → end`)과 `/compact` 실행. 독립 배포 검증(S6)은 하지 않았다.
+
+### 17.4 남은 작업
+
+1. **S4b** — 프롬프트 미리보기에 `agent-instructions`·`time-context` 주입 내용을 표시하고, 미리보기에서 Config 필드를 편집한다(실행 설정과 같은 덮어쓰기 저장값 공유).
+2. **S6** — 수정하지 않은 DSH에 패키징한 Studio만 설치해 Master/Optimized/사용자 복사 흐름, 리로드·재시작·세션 재개, 압축 자동·수동 실행을 검증한다.
+3. S2 수용 조건의 실제 Loader/scope 통합 테스트(S6과 함께).

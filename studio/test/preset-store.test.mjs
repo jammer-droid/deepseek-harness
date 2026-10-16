@@ -172,3 +172,24 @@ test('the policy may hide the union of the default and every role list, resolved
   assert.deepEqual(plugins.at(-1).config.childToolFilter,{deny:['read']});
   await store.dispose();
 });
+test('confirmed catalog cleanup rewrites only affected drafts, marks applied ones for reapply, keeps applied snapshots', async () => {
+  const file = join(await mkdtemp(join(tmpdir(), 'studio-cleanup-')), 'presets.json');
+  const a = await runtime(); const store = new PresetStore(a.ctx, file);
+  const hit = await store.save(JSON.stringify({ name: 'Hit', description: '', request: { ...request, tools: ['read'], toolOverrides: { read: { description: 'r' } } } }));
+  await store.apply(hit.id);
+  const appliedBefore = a.registrations.get(hit.id);
+  const other = await store.save(JSON.stringify({ name: 'Other', description: '', request: { ...request, tools: [] } }));
+  const before = await store.cleanable();
+  assert.deepEqual(before.map(row => row.id).sort(), [hit.id, other.id].sort());
+  assert.equal(await store.cleanup(['read'], []), 1);
+  const rows = await store.list();
+  const cleaned = rows.find(row => row.id === hit.id);
+  assert.deepEqual(cleaned.request.tools, []); assert.deepEqual(cleaned.request.toolOverrides, {});
+  assert.equal(cleaned.status, 'modified');
+  assert.equal(rows.find(row => row.id === other.id).status, 'draft');
+  assert.equal(a.registrations.get(hit.id), appliedBefore, 'the running registration is not rebuilt');
+  const saved = await readFile(file, 'utf8');
+  assert.equal(await store.cleanup(['read'], []), 0, 'repeat confirmation is a no-op');
+  assert.equal(await readFile(file, 'utf8'), saved);
+  await store.dispose();
+});
