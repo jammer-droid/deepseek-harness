@@ -2,7 +2,7 @@
 import React from 'react';
 import { Badge, Button, CheckOption, DetailDialog, Disclosure, Notice, PageHead, PickOption, Segmented, SettingsRow, Toggle } from './ui.tsx';
 import { gateTaskText, type GateTaskKey } from './pixie-gate-task-locale.ts';
-import { GATE_SCRIPT_DIR, GATE_TEMPLATES, GATE_WHENS, PROTOTYPE_SCRIPTS, isMessage, isTool, makeTask, taskFromTemplate, taskProblem, taskVariables, type GateTask, type GateTemplate } from './pixie-gate-task.ts';
+import { GATE_SCRIPT_DIR, GATE_TEMPLATES, GATE_WHENS, HOOK_ENV, HOOK_EXIT, HOOK_HELPERS, PROTOTYPE_SCRIPTS, isMessage, makeTask, taskFromTemplate, taskProblem, taskVariables, type GateTask, type GateTemplate } from './pixie-gate-task.ts';
 
 type Text = (key: GateTaskKey, values?: Record<string, string | number>) => string;
 const useText = (locale: string): Text => (key, values) => gateTaskText(locale, key, values);
@@ -36,12 +36,6 @@ function TemplatePicker({ open, locale, onPick, onClose }: { open: boolean; loca
   </DetailDialog>;
 }
 
-/** Comma-separated tool names; keeps the typed text so commas and spaces can be entered. */
-function ToolNames({ label, value, onChange }: { label: string; value: readonly string[]; onChange(tools: string[]): void }) {
-  const [text, setText] = React.useState(value.join(', '));
-  return <input className="studio-compact" aria-label={label} placeholder="grep, read" value={text} onChange={event => { setText(event.target.value); onChange(event.target.value.split(',').map(item => item.trim()).filter(Boolean)); }} />;
-}
-
 /** Two-field editor: When and What Pixie does; everything else under Advanced. */
 export function GateTaskEditor({ task: initial, open, locale, onApply, onClose }: { task: GateTask | undefined; open: boolean; locale: string; onApply(task: GateTask): void; onClose(): void }) {
   const t = useText(locale);
@@ -67,7 +61,6 @@ export function GateTaskEditor({ task: initial, open, locale, onApply, onClose }
       <SettingsRow title={t('when')} control={<select className="studio-compact" aria-label={t('when')} value={task.when} onChange={event => { const when = event.target.value as GateTask['when']; set({ when, advanced: { ...task.advanced, ...(!isMessage(when) ? { confirmReplace: false } : {}) } }); }}>
         {GATE_WHENS.map(when => <option key={when} value={when}>{t(`when-${when}`)}</option>)}
       </select>} />
-      {isTool(task.when) && <SettingsRow title={t('tools')} description={t('toolsHint')} control={<ToolNames label={t('tools')} value={task.tools} onChange={tools => set({ tools })} />} />}
       <SettingsRow title={t('what')} description={t('whatHint', { target })}>
         <textarea className="studio-gate-instruction" aria-label={t('what')} value={task.instruction} onChange={event => set({ instruction: event.target.value })} />
         {variables.length > 0 && <div className="studio-gate-vars"><span className="studio-muted">{t('variables')}</span>{variables.map((value, i) => <code key={value} title={t(i === 0 ? 'var-text' : 'var-data')}>{value}</code>)}</div>}
@@ -83,6 +76,14 @@ export function GateTaskEditor({ task: initial, open, locale, onApply, onClose }
             <Button small onClick={() => undefined}>{t('refresh')}</Button>
           </div>
           <p className="studio-muted">{t('scriptShell')}</p>
+          {task.advanced.script && <dl className="studio-gate-contract" aria-label={t('contract')}>
+            <dt>{t('contractIn')}</dt><dd>{t('contractInText')}</dd>
+            <dt>{t('contractOut')}</dt><dd>{t('contractOutText', { name: task.advanced.script.replace(/\.[^.]+$/, '') })}</dd>
+            <dt>{t('contractExit')}</dt><dd>{t('contractExitText', { cont: HOOK_EXIT.continue, skip: HOOK_EXIT.skip })}</dd>
+            <dt>{t('contractEnv')}</dt><dd>{HOOK_ENV.map(name => <code key={name}>{name}</code>)}</dd>
+            <dt>{t('contractHelpers')}</dt><dd>{HOOK_HELPERS.map(name => <code key={name}>{name}</code>)} <span className="studio-muted">{t('contractHelpersText')}</span></dd>
+          </dl>}
+          {task.advanced.script && <p className="studio-muted">{t('contractGuide')}</p>}
         </SettingsRow>
         <SettingsRow title={t('judge')} description={t('judgeHint')} control={<Toggle label={t('judge')} checked={!!task.advanced.judge} onChange={on => { const { judge: _, ...rest } = task.advanced; set({ advanced: on ? { ...rest, judge: { question: '', threshold: 0.5 } } : rest }); }} />}>
           {task.advanced.judge && <div className="studio-gate-judge">
@@ -125,7 +126,7 @@ export function GateTaskCompositionPage({ gates, locale }: { gates: GateTasks; l
     {!gates.tasks.length && <p role="status" className="studio-muted">{t('empty')}</p>}
     {gates.tasks.length > 0 && <div className="studio-tool-cards studio-card-pair">{gates.tasks.map(task => <article className="studio-preset-card studio-gate-card" key={task.id} data-gate-task={task.id}>
       <div className="studio-card-head"><h3>{task.name}</h3><Badge tone={task.enabled ? 'success' : 'neutral'}>{t(task.enabled ? 'on' : 'off')}</Badge></div>
-      <p className="studio-gate-sentence"><span>{t(`when-${task.when}`)}{isTool(task.when) && task.tools.length ? ` (${task.tools.join(', ')})` : ''}</span><span aria-hidden="true">→</span><span>{firstLine(task.instruction)}</span></p>
+      <p className="studio-gate-sentence"><span>{t(`when-${task.when}`)}</span><span aria-hidden="true">→</span><span>{firstLine(task.instruction)}</span></p>
       <p className="studio-card-meta">{task.presetIds.length ? t('presetCount', { count: task.presetIds.length }) : t('noPreset')}{task.advanced.script ? ` · ${task.advanced.script}` : ''}</p>
       <div className="studio-card-footer">
         <Button small onClick={() => setEditing(structuredClone(task))}>{t('edit')}</Button>

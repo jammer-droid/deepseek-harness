@@ -645,6 +645,9 @@ ${adapter}.studio-ui *, .studio-ui *::before, .studio-ui *::after { box-sizing: 
 .studio-ui .studio-gate-result { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 12px; margin: 0; font-size: 13px; }
 .studio-ui .studio-gate-result dd { margin: 0; overflow-wrap: anywhere; }
 .studio-ui .studio-gate-chips { display: flex; flex-wrap: nowrap; gap: 4px; overflow: hidden; mask-image: linear-gradient(to right, black 85%, transparent); }
+.studio-ui .studio-gate-contract { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 4px 12px; margin: 0; padding: 10px 12px; border-radius: var(--studio-small-radius); background: var(--studio-inset); font-size: 12px; }
+.studio-ui .studio-gate-contract dt { color: var(--studio-subtle); }
+.studio-ui .studio-gate-contract dd { display: flex; flex-wrap: wrap; gap: 4px; margin: 0; overflow-wrap: anywhere; }
 .studio-ui .studio-gate-preset-list { display: grid; gap: 2px; max-height: 320px; overflow-y: auto; }
 .studio-ui .studio-pick-disabled { cursor: default; opacity: .6; }
 .studio-ui .studio-pick-disabled:hover { background: transparent; }

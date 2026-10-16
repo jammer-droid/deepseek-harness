@@ -12,12 +12,10 @@ export interface GateTask {
   name: string;
   enabled: boolean;
   when: GateWhen;
-  /** Tool names for tool points; empty means every tool. */
-  tools: string[];
   /** What Pixie does, in natural language. The checked text is always given to Pixie; no variables needed. */
   instruction: string;
   advanced: {
-    /** File name inside {@link GATE_SCRIPT_DIR}, run before Pixie. */
+    /** File name inside {@link GATE_SCRIPT_DIR}, run before Pixie (U18, U23). */
     script?: string;
     /** Decide the verdict with the judge model instead of the instruction's own answer. */
     judge?: { question: string; threshold: number };
@@ -33,7 +31,7 @@ export interface GateTask {
 }
 
 export type GateTemplateId = 'format-check' | 'agent-protocol' | 'translate-answer' | 'verify-answer' | 'search-digest' | 'subtitle-prep' | 'precompact' | 'file-index';
-export interface GateTemplate { id: GateTemplateId; when: GateWhen; available: boolean; script?: string; judge?: true; tools?: string[] }
+export interface GateTemplate { id: GateTemplateId; when: GateWhen; available: boolean; script?: string; judge?: true }
 
 /** Templates first (U21). Background tasks are listed but not available until implemented. */
 export const GATE_TEMPLATES: readonly GateTemplate[] = [
@@ -41,14 +39,19 @@ export const GATE_TEMPLATES: readonly GateTemplate[] = [
   { id: 'agent-protocol', when: 'agent-message', available: true },
   { id: 'translate-answer', when: 'turn-end', available: true },
   { id: 'verify-answer', when: 'turn-end', available: true, judge: true },
-  { id: 'search-digest', when: 'tool-after', available: true, tools: ['grep', 'glob', 'read_batch'] },
+  { id: 'search-digest', when: 'tool-after', available: true, script: 'only-search-tools.sh' },
   { id: 'subtitle-prep', when: 'user-message', available: true, script: 'measure-subtitle.sh' },
   { id: 'precompact', when: 'turn-end', available: false },
   { id: 'file-index', when: 'tool-before', available: false },
 ];
 
 /** Example scripts shown in the prototype until the Host lists the real directory. */
-export const PROTOTYPE_SCRIPTS: readonly string[] = ['measure-subtitle.sh', 'list-changed-files.sh'];
+export const PROTOTYPE_SCRIPTS: readonly string[] = ['only-search-tools.sh', 'measure-subtitle.sh', 'translate-until-ok.sh', 'list-changed-files.sh'];
+
+/** Pixie hook script contract (U23), shown in the editor and documented in the guide. */
+export const HOOK_EXIT = { continue: 0, skip: 10 } as const;
+export const HOOK_ENV: readonly string[] = ['PIXIE_POINT', 'PIXIE_TOOL_NAME', 'PIXIE_TOOL_ARGS', 'PIXIE_AGENT', 'PIXIE_SESSION_ID', 'PIXIE_TURN', 'PIXIE_GATE_NAME'];
+export const HOOK_HELPERS: readonly string[] = ['pixie ask', 'pixie judge'];
 
 /** Points whose message can be replaced or extended before the model reads it. */
 export const canReplace = (when: GateWhen) => when === 'user-message' || when === 'agent-message' || when === 'tool-after';
@@ -57,7 +60,7 @@ export const isMessage = (when: GateWhen) => when === 'user-message' || when ===
 
 export function makeTask(name: string, when: GateWhen = 'user-message', instruction = ''): GateTask {
   return {
-    id: globalThis.crypto.randomUUID(), name, enabled: false, when, tools: [], instruction,
+    id: globalThis.crypto.randomUUID(), name, enabled: false, when, instruction,
     advanced: { confirmReplace: false, onError: 'pass', agents: when === 'agent-message' ? 'child' : 'root', timeoutMs: 60000, maxSteers: 1 },
     presetIds: [],
   };
@@ -67,7 +70,6 @@ export function makeTask(name: string, when: GateWhen = 'user-message', instruct
 export function taskFromTemplate(template: GateTemplate, text: { name: string; instruction: string; question?: string }): GateTask {
   const task = makeTask(text.name, template.when, text.instruction);
   if (template.script) task.advanced.script = template.script;
-  if (template.tools) task.tools = [...template.tools];
   if (template.judge && text.question) task.advanced.judge = { question: text.question, threshold: 0.5 };
   return task;
 }

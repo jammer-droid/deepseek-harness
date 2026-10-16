@@ -55,8 +55,8 @@ test('editor shows two fields up front; script, judge and limits live under Adva
   await click(pick(comp.querySelector('dialog'), 'Subtitle translation prep'));
   const editor = [...comp.querySelectorAll('dialog')].find(d => input(d, 'What Pixie does'));
   const advanced = editor.querySelector('details.studio-disclosure');
-  assert.ok(advanced.contains(input(editor, 'Preparation script')));
-  assert.equal(input(editor, 'Preparation script').value, 'measure-subtitle.sh');
+  assert.ok(advanced.contains(input(editor, 'Pixie hook script')));
+  assert.equal(input(editor, 'Pixie hook script').value, 'measure-subtitle.sh');
   assert.match(editor.querySelector('.studio-gate-vars').textContent, /\{\{hooks\.measure-subtitle\.text\}\}/);
   assert.match(advanced.textContent, /<profile>\/studio-data\/pixie-gate\/commands\//);
   assert.ok(advanced.contains(input(editor, 'Decide the verdict with the judge model')));
@@ -102,19 +102,20 @@ test('scope toggles gates and presets; cards duplicate disabled and delete', asy
   assert.equal(comp.querySelectorAll('[data-gate-task]').length, 1);
 });
 
-test('tool points show a tool filter under When, summarized on the card', async t => {
+test('hook script shows its contract: stdin, output variables, exit codes, env and helpers', async t => {
   const host = await settings(t);
   const comp = page(host, 'Gate composition');
   await click(button(comp, 'New gate'));
   await click(pick(comp.querySelector('dialog'), 'Digest search results'));
   const editor = [...comp.querySelectorAll('dialog')].find(d => input(d, 'What Pixie does'));
-  assert.equal(input(editor, 'Tools').value, 'grep, glob, read_batch');
-  await change(input(editor, 'Tools'), 'bash');
-  await change(input(editor, 'When'), 'user-message');
   assert.equal(input(editor, 'Tools'), null);
-  await change(input(editor, 'When'), 'tool-after');
-  await click(button(editor, 'Apply'));
-  assert.match(comp.querySelector('.studio-gate-sentence').textContent, /When a tool result arrives \(bash\)/);
+  assert.equal(input(editor, 'Pixie hook script').value, 'only-search-tools.sh');
+  const contract = input(editor, 'Script contract');
+  assert.match(contract.textContent, /\{\{hooks\.only-search-tools\.text\}\}/);
+  assert.match(contract.textContent, /0 continue · 10 skip this gate/);
+  assert.match(contract.textContent, /PIXIE_TOOL_NAME/); assert.match(contract.textContent, /pixie judge/);
+  await change(input(editor, 'Pixie hook script'), '');
+  assert.equal(input(editor, 'Script contract'), null);
 });
 
 test('task model: templates, variables and problems', () => {
