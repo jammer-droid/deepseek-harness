@@ -44,7 +44,7 @@ test('structured failures localize all types and fall back to ids without defini
   result.stages.first.data.questions = stage.questions;
   const host = await render(t, GateResultDetails, { locale: 'ko', result });
   assert.match(host.textContent, /질문 "안전한가\?": 예 확률 0.2 < 기준 0.5/);
-  assert.match(host.textContent, /점수 미흡 < 최소 충분/); assert.match(host.textContent, /선택 거부이 허용 옵션 아님/); assert.doesNotMatch(host.textContent, /legacy raw reason/);
+  assert.match(host.textContent, /점수 미흡 < 최소 충분/); assert.match(host.textContent, /허용 옵션이 아닌 선택값 거부/); assert.doesNotMatch(host.textContent, /legacy raw reason/);
   delete result.stages.first.data.questions;
   const fallback = await render(t, GateResultDetails, { result });
   assert.match(fallback.textContent, /Question "n": yes probability 0.2 < threshold 0.5/); assert.match(fallback.textContent, /score 0 < minimum 1/); assert.match(fallback.textContent, /selection no is not allowed/);

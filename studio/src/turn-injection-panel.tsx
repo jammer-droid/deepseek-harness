@@ -14,8 +14,8 @@ const FIELDS: Record<string, Field[]> = {
 const copy = {
   ko: { title: '턴 시작에 들어가는 내용', hint: '시스템 프롬프트가 아니라 실제 세션의 각 턴 시작에 대화 메시지로 들어갑니다. 아래는 지금 Studio가 실행 중인 폴더와 시각으로 만든 예시입니다.',
     example: '예시', readOnly: '본문 편집 불가', reset: '원래대로', overridden: '덮어쓰기', defaults: '기본값', none: '이 프리셋에 포함된 턴 시작 기능이 없습니다.', empty: '이 폴더에서 읽은 지침 파일이 없습니다.',
-    skills: '설치된 스킬 목록으로 만들어지며 세션의 작업 폴더에 따라 달라져 미리보기에서는 보여 주지 않습니다.', error: '예시를 만들지 못했습니다: ', list: '쉼표로 구분',
-    why: { '@deepseek-ai/dsh-time-context': '실행 시점의 시각으로 매번 만들어집니다.', '@deepseek-ai/dsh-agent-instructions': '세션 작업 폴더의 AGENTS.md 등 파일 내용입니다. 파일을 고치세요.', '@deepseek-ai/dsh-skill-filesystem': '설치된 스킬에서 만들어집니다.' } as Record<string, string> },
+    skills: '설치된 스킬 목록으로 만들고 세션 작업 폴더에 따라 달라지므로 미리보기에는 표시하지 않습니다.', error: '예시를 만들지 못했습니다: ', list: '쉼표로 구분',
+    why: { '@deepseek-ai/dsh-time-context': '실행할 때마다 그 시각으로 새로 만듭니다.', '@deepseek-ai/dsh-agent-instructions': '세션 작업 폴더의 AGENTS.md 등 파일 내용입니다. 파일을 고치세요.', '@deepseek-ai/dsh-skill-filesystem': '설치된 스킬로 만듭니다.' } as Record<string, string> },
   en: { title: 'Added at the start of each turn', hint: 'Not part of the system prompt: these enter a real session as conversation messages at each turn start. Below are examples made with the folder and time the Studio Host runs in now.',
     example: 'Example', readOnly: 'Text not editable', reset: 'Reset', overridden: 'Override', defaults: 'Defaults', none: 'This preset includes no turn-start features.', empty: 'No instruction files were found from this folder.',
     skills: 'Built from installed skills and the session folder, so the preview does not show it.', error: 'Could not build the example: ', list: 'Comma-separated',
