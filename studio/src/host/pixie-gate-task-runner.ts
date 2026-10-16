@@ -1,6 +1,6 @@
 import { runHookScript, type HookContext, type HookShell } from './pixie-gate-script.ts';
-import type { PixieGateHelper } from './pixie-gate-helper.ts';
-import type { StageRecord } from '../pixie-gate-contracts.ts';
+import { helperJudgement, type HelperJudgeRequest, type PixieGateHelper } from './pixie-gate-helper.ts';
+import type { GateConclusion, StageRecord } from '../pixie-gate-contracts.ts';
 import type { GateTask } from '../pixie-gate-task.ts';
 import { parseGateOutput, type GateOutput } from '../pixie-gate-task-contracts.ts';
 import type { PixieModel, PixieUsage } from '../pixie-contracts.ts';
@@ -10,6 +10,8 @@ import { untilAborted, type PixieLlm } from './pixie-runtime.ts';
 export interface GateTaskExecution {
   status: 'done' | 'error' | 'cancelled';
   skipped?: boolean;
+  /** Who produced `output`: Pixie, the hook script directly (exit 11), or nobody (exit 10). */
+  concludedBy?: GateConclusion;
   output?: GateOutput;
   error?: string;
   usage: PixieUsage;
@@ -76,7 +78,8 @@ export class GateTaskRunner {
             return session.env;
           });
         } finally { session?.revoke(); }
-        if (hook.skipped) return { status: 'done', skipped: true, output: { verdict: 'pass', note: 'skipped by hook' }, usage };
+        if (hook.skipped) return { status: 'done', skipped: true, concludedBy: 'skipped', output: { verdict: 'pass', note: 'skipped by hook' }, usage };
+        if ('direct' in hook) return { status: 'done', concludedBy: 'script', output: hook.direct, usage };
         instruction = hook.instruction;
       }
       if (!this.deps.model) throw new Error('No Pixie model configured');
@@ -101,7 +104,7 @@ export class GateTaskRunner {
       signal.throwIfAborted();
       if (!finished) throw new Error('Gate model stream ended without a finish');
       const output = parseGateOutput(text);
-      return { status: 'done', output, usage };
+      return { status: 'done', concludedBy: 'pixie', output, usage };
     } catch (error) {
       return { status: parent.aborted ? 'cancelled' : 'error', error: String(signal.aborted ? signal.reason : error), usage };
     } finally { clearTimeout(timer); parent.removeEventListener('abort', abort); }
@@ -137,20 +140,23 @@ export class GateTaskRunner {
         record('ask', input, { verdict: 'note', text, reason: instruction, ...(usage ? { usage } : {}) });
         return text;
       },
-      judge: async (question: string, threshold: number, input: string, callSignal: AbortSignal) => {
+      judge: async (request: HelperJudgeRequest, input: string, callSignal: AbortSignal) => {
+        const reason = request.question.instructions;
         const engine = this.deps.judge;
-        if (!engine) { record('judge', input, { verdict: 'error', error: 'No judge engine configured', reason: question }); throw new Error('No judge engine configured'); }
-        const result = await engine.judge({ state: input, questions: { helper: { type: 'noul', instructions: question } } }, callSignal);
+        if (!engine) { record('judge', input, { verdict: 'error', error: 'No judge engine configured', reason }); throw new Error('No judge engine configured'); }
+        const result = await engine.judge({ state: input, questions: { helper: request.question } }, callSignal);
         const usage = result.usage ? { usage: result.usage } : {};
         const answer = result.ok ? result.answers.helper : undefined;
-        if (answer?.type !== 'noul') {
-          const error = result.ok ? 'Judge answer is not noul' : result.error;
-          record('judge', input, { verdict: 'error', error, reason: question, ...usage });
+        if (!answer) {
+          const error = result.ok ? 'Judge returned no answer' : result.error;
+          record('judge', input, { verdict: 'error', error, reason, data: { type: request.type, engine: engine.label }, ...usage });
           throw new Error(error);
         }
-        const pass = answer.noul >= threshold;
-        record('judge', input, { verdict: pass ? 'pass' : 'fail', reason: question, data: { noul: answer.noul, threshold }, ...usage });
-        return { noul: answer.noul, pass };
+        const judgement = helperJudgement(request, answer, { engine: engine.label });
+        // A bool below threshold is the only `fail`; select and score always pass and the script reads the label.
+        record('judge', input, { verdict: judgement.exit === 0 ? 'pass' : 'fail', reason, ...usage,
+          data: { type: request.type, label: judgement.json.label, engine: engine.label, ...(request.type === 'bool' && answer.type === 'noul' ? { noul: answer.noul, threshold: request.threshold } : { answer }) } });
+        return judgement;
       },
     };
   }

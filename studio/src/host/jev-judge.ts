@@ -45,6 +45,7 @@ function retryDelay(retryAfter: string | null, attempt: number): number {
 /** Judge through the TypeSafe Jev HTTP API. Failures stay failures (D5); the key never appears in an error. */
 export class JevJudgeEngine implements JudgeEngine {
   readonly kind = 'judge' as const;
+  readonly label = 'jev';
   constructor(private readonly deps: { credentials: JevCredentials | undefined; model: string; fetch?: JevFetch }) {}
 
   async judge(request: JudgeRequest, signal: AbortSignal): Promise<JudgeResult> {

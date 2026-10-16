@@ -106,7 +106,9 @@ test('editor shows two fields up front; script, judge and limits live under Adva
   assert.match(advanced.textContent, /\/profile\/studio-data\/pixie-gate\/commands/);
   assert.equal(input(editor, 'Decide the verdict with the judge model'), null);
   assert.ok(input(editor, 'Confirm before replacing'));
+  // A script gate may leave the task empty (the script concludes with exit 10/11); without a script it is required.
   await change(input(editor, 'What to send Pixie'), '');
+  await change(input(editor, 'Pixie hook script'), '');
   await click(button(editor, 'Apply'));
   assert.match(editor.textContent, /Describe what Pixie should do/);
   assert.equal(comp.querySelector('[data-gate-task]'), null);

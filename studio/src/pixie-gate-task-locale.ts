@@ -26,7 +26,7 @@ const messages = {
   'target-user-message': ['보낸 지시', 'your instruction', '你发送的指令'], 'target-agent-message': ['주고받는 메시지', 'the message between agents', '代理之间的消息'], 'target-tool-before': ['도구 호출 내용', 'the tool call', '工具调用内容'], 'target-tool-after': ['도구 결과', 'the tool result', '工具结果'], 'target-turn-end': ['마지막 답변', 'the final answer', '最后的回答'],
   // advanced
   advanced: ['고급', 'Advanced', '高级'],
-  script: ['Pixie 훅 스크립트', 'Pixie hook script', 'Pixie 钩子脚本'], scriptHint: ['Pixie에게 지시하기 전에 실행할 스크립트를 고릅니다. 스크립트 결과를 Pixie에게 넘길 수 있습니다.', 'The script to run before instructing Pixie. Its output can be passed to Pixie.', '指定在向 Pixie 发出指令前运行的脚本。脚本结果可传递给 Pixie。'],
+  script: ['Pixie 훅 스크립트', 'Pixie hook script', 'Pixie 钩子脚本'], scriptHint: ['Pixie에게 지시하기 전에 실행할 스크립트를 고릅니다. exit 0이면 결과를 Pixie에게 넘기고, 10이면 건너뛰고, 11이면 stdout JSON을 그대로 결론으로 씁니다(Pixie 호출 없음). 스크립트가 늘 직접 결론을 내면 할 일은 비워 둘 수 있습니다.', 'The script to run before instructing Pixie. Exit 0 passes its output to Pixie, 10 skips the gate, and 11 applies its stdout JSON as the gate output without calling Pixie. If the script always concludes by itself, the task can stay empty.', '指定在向 Pixie 发出指令前运行的脚本。exit 0 将结果交给 Pixie，10 跳过门控，11 直接把 stdout JSON 作为门控结论（不调用 Pixie）。脚本总是自行给出结论时，任务可以留空。'],
   guideLink: ['스크립트 작성 가이드', 'script guide', '脚本编写指南'], resultGuide: ['가이드', 'Guide', '指南'],
   scriptEnv: ['DSH에서 bash 프로필을 지원할 때만 사용할 수 있습니다.', 'Available only when DSH runs with a bash profile.', '仅在 DSH 支持 bash 配置文件时可用。'],
   noScript: ['사용 안 함', 'None', '不使用'], scriptDir: ['스크립트 폴더', 'Script folder', '脚本文件夹'], copyPath: ['경로 복사', 'Copy path', '复制路径'], refresh: ['목록 새로고침', 'Refresh list', '刷新列表'],

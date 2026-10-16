@@ -6,6 +6,8 @@ import type { PixieLlm } from './pixie-runtime.ts';
 /** A System One decision component: state plus typed questions in, typed answers out (Jev contract). */
 export interface JudgeEngine {
   readonly kind: 'judge';
+  /** Recorded with each helper call: `llm` or `jev`. */
+  readonly label: string;
   judge(request: JudgeRequest, signal: AbortSignal): Promise<JudgeResult>;
 }
 
@@ -57,6 +59,7 @@ export function parseJudgeOutput(text: string, questions: Record<string, JudgeQu
 /** Judge with a conversation model, held to the same output contract a Jev engine returns. */
 export class LlmJudgeEngine implements JudgeEngine {
   readonly kind = 'judge' as const;
+  readonly label = 'llm';
   constructor(private readonly llm: PixieLlm, private readonly model: PixieModel, private readonly system = DEFAULT_JUDGE_SYSTEM_PROMPT) {}
 
   async judge(request: JudgeRequest, signal: AbortSignal): Promise<JudgeResult> {

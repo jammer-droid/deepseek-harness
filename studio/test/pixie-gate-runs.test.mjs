@@ -172,3 +172,10 @@ test('a recorded live run shows Pixie output, usage, notes and helper calls', as
   assert.match(calls.textContent, /Summarize the request in one short English sentence|Read and follow/);
   await f.close();
 });
+test('run detail names who concluded; older records without it show no row', async () => {
+  const result = { verdict: 'fail', original: 'o', subject: 'o', notes: [], stages: {}, records: [], hooks: {}, forward: { kind: 'none' } };
+  const f = await setup([run('script', { applied: 'rejected', result: { ...result, concludedBy: 'script' }, output: { verdict: 'stop', reason: 'missing fields' } })]);
+  assert.match(f.host.querySelector('.studio-gate-facts').textContent, /Concluded byHook script/); await f.close();
+  const old = await setup([run('old', { result })]);
+  assert.doesNotMatch(old.host.querySelector('.studio-gate-facts').textContent, /Concluded by/); await old.close();
+});

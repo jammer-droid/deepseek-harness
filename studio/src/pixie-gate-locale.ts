@@ -1,6 +1,7 @@
 import type { GatePoint } from './pixie-gate-contracts.ts';
 /** Gate result copy shared by trials and execution details. */
 const en = {
+  concludedBy: 'Concluded by', concludedPixie: 'Pixie', concludedScript: 'Hook script', concludedSkipped: 'Skipped by hook',
   gates: 'Gates', emptyRuns: 'No gate runs yet', applied: 'Applied', replaced: 'Replaced', appended: 'Appended', rejected: 'Rejected', steered: 'Steered', blocked: 'Blocked', denied: 'Blocked', running: 'Running', pending: 'Pending rejection', unverified: 'Hook input unverified', suggestion: 'Suggestion', editSend: 'Edit and send', resent: 'Mark as sent', dismissed: 'Dismiss', draftNote: 'Replaces the composer draft with the suggestion (or original). Review and send it yourself. Mark as sent only records your confirmation; it does not send.', composerUnavailable: 'Session composer unavailable', turn: 'Turn', steerCount: 'Steer count', tool: 'Tool', callId: 'Call ID', allRuns: 'All gate runs',
   verdict: 'Verdict', forward: 'Forward', forwardError: 'Forward error', original: 'Original', subject: 'Final text',
   stages: 'Stages', start: 'Start hook', end: 'End hook', reason: 'Reason', error: 'Error', elapsed: 'Elapsed', skipped: 'Skipped',
@@ -13,6 +14,7 @@ const en = {
 } as const;
 export type GateTextKey = keyof typeof en;
 const ko: Record<GateTextKey, string> = {
+  concludedBy: '결론', concludedPixie: 'Pixie', concludedScript: '훅 스크립트', concludedSkipped: '훅이 건너뜀',
   gates: '게이트', emptyRuns: '게이트 실행 기록이 없습니다', applied: '적용', replaced: '교체', appended: '덧붙임', rejected: '거부', steered: '교정', blocked: '차단', denied: '차단', running: '진행 중', pending: '거부 처리 대기', unverified: '훅 입력 미확인', suggestion: '제안', editSend: '수정 후 보내기', resent: '보냈음 표시', dismissed: '무시', draftNote: '입력창 초안을 제안(없으면 원문)으로 바꿉니다. 전송은 직접 하세요. ‘보냈음 표시’는 기록만 남기고 전송하지 않습니다.', composerUnavailable: '세션 입력창을 사용할 수 없습니다', turn: '턴', steerCount: '교정 횟수', tool: '도구', callId: '호출 ID', allRuns: '모든 게이트 실행',
   verdict: '판정', forward: '전달', forwardError: '전달 오류', original: '원문', subject: '최종 텍스트',
   stages: '단계', start: '시작 훅', end: '종료 훅', reason: '이유', error: '오류', elapsed: '소요 시간', skipped: '건너뜀',
@@ -24,6 +26,7 @@ const ko: Record<GateTextKey, string> = {
   output: 'Pixie 출력', notes: '메모', helperCalls: '헬퍼 호출', helperNoul: '예 확률 {noul} · 기준 {threshold}', tokens: '토큰', applyNote: '미적용 이유', originalSame: '원문 (변경 없음)', sentAlong: '함께 전달한 내용', usage: '토큰 입력 {input} · 출력 {output}', stop: '막음',
 };
 const zh: Record<GateTextKey, string> = {
+  concludedBy: '结论来源', concludedPixie: 'Pixie', concludedScript: '钩子脚本', concludedSkipped: '钩子跳过',
   gates: '门控', emptyRuns: '暂无门控运行记录', applied: '应用', replaced: '已替换', appended: '已追加', rejected: '已拒绝', steered: '已纠正', blocked: '已阻止', denied: '已阻止', running: '运行中', pending: '拒绝待处理', unverified: '钩子输入未验证', suggestion: '建议', editSend: '修改后发送', resent: '标记已发送', dismissed: '忽略', draftNote: '用建议（或原文）替换输入框草稿。请自行检查并发送。标记已发送仅记录确认，不会实际发送。', composerUnavailable: '会话输入框不可用', turn: '轮次', steerCount: '纠正次数', tool: '工具', callId: '调用 ID', allRuns: '所有门控运行',
   verdict: '判定', forward: '传递', forwardError: '传递错误', original: '原文', subject: '最终文本',
   stages: '阶段', start: '开始钩子', end: '结束钩子', reason: '原因', error: '错误', elapsed: '耗时', skipped: '已跳过',
