@@ -6,7 +6,7 @@ import { masterAddition } from '../src/host/shell.ts';
 import { disabledHere, masterComposition, pluginOrigins, standardFallback, studioLayer } from '../src/host/master-composition.ts';
 import { configEntries } from '../src/config-overrides.ts';
 
-const standard = parseComposition(readFileSync(new URL('../../packages/bundle/web-app/presets/standard.patch.yml', import.meta.url), 'utf8'))[0].insert[0].config.plugins;
+const standard = parseComposition(readFileSync(new URL('./fixtures/standard.patch.yml', import.meta.url), 'utf8'))[0].insert[0].config.plugins;
 const names = rows => rows.flatMap(row => row.group ? names(row.config) : [row.name]);
 
 test('platform gates are evaluated only in the process.platform form; anything else counts as off', () => {
