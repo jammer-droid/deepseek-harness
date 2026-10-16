@@ -40,5 +40,9 @@ for (const part of ['shell']) {
 import { cp, mkdir as mkdirp } from 'node:fs/promises';
 const skillOut = new URL('packages/shell/skills/studio-pixie-hook-guide/', import.meta.url);
 await mkdirp(skillOut, { recursive: true });
-await cp(new URL('release/docs/appendix/studio-pixie-hook-guide/SKILL.md', import.meta.url), new URL('SKILL.md', skillOut));
-await cp(new URL('release/docs/appendix/pixie-gate.md', import.meta.url), new URL('guide.md', skillOut));
+// Docs live in release/docs here and in docs/ in the published repository.
+import { existsSync } from 'node:fs';
+const docsRoot = ['release/docs/', 'docs/'].map(dir => new URL(dir, import.meta.url)).find(url => existsSync(new URL('appendix/pixie-gate.md', url)));
+if (!docsRoot) throw new Error('build: Pixie Gate guide not found in release/docs or docs');
+await cp(new URL('appendix/studio-pixie-hook-guide/SKILL.md', docsRoot), new URL('SKILL.md', skillOut));
+await cp(new URL('appendix/pixie-gate.md', docsRoot), new URL('guide.md', skillOut));

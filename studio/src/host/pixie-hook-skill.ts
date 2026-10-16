@@ -8,8 +8,9 @@ import type { BundledSkill } from './skill-install.ts';
 /** Files of the skill, from `<package>/skills/studio-pixie-hook-guide/` (build) or the release docs (source/tests). */
 export function pixieHookSkill(): BundledSkill {
   const name = 'studio-pixie-hook-guide';
+  // Docs live in release/docs here and in docs/ in the published repository.
   const read = (packaged: string, source: string) => {
-    for (const candidate of [new URL(packaged, import.meta.url), new URL(source, import.meta.url)]) {
+    for (const candidate of [new URL(packaged, import.meta.url), new URL(source, import.meta.url), new URL(source.replace('release/docs/', 'docs/'), import.meta.url)]) {
       try { return readFileSync(fileURLToPath(candidate), 'utf8'); } catch { /* try the next location */ }
     }
     throw new Error(`Studio skill file missing: ${packaged}`);
