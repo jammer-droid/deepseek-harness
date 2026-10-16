@@ -19,6 +19,7 @@ import { existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { readReleaseNotes } from './changelog.mjs';
 
 const studio = fileURLToPath(new URL('..', import.meta.url));
 const monorepo = path.resolve(studio, '..');
@@ -103,6 +104,8 @@ for (const file of exported.filter(file => file.endsWith('.md'))) {
 }
 const marker = `${sourceBranch}@${source}`;
 const version = JSON.parse(await readFile(path.join(studio, 'packages/shell/package.json'), 'utf8')).version;
+// A release without notes stops before anything is built or pushed.
+const notes = await readReleaseNotes(path.join(studio, 'release/CHANGELOG.md'), version);
 // The public tree must not name the private source, its authors, branches or local machines.
 const leaks = [];
 for (const file of (await readdir(work, { recursive: true })).filter(file => file !== '.git' && !file.startsWith(`.git${path.sep}`) && !file.startsWith('node_modules'))) {
@@ -121,7 +124,8 @@ console.log(`\nExported ${exported.length} files from ${marker} into ${work}\nPa
 // 6. Commit; push only when asked.
 run('git', ['add', '-A'], work);
 const unchanged = !git(['status', '--porcelain'], work);
-if (unchanged && !publish) { console.log('No changes relative to the published snapshot.'); process.exit(0); }
+if (unchanged && !publish && !push) { console.log('No changes relative to the published snapshot.'); process.exit(0); }
+// With --push and no changes, the push is a no-op and the Release is still created or updated.
 // Snapshots are authored by the publishing account, never the fork's local git identity.
 const identity = { GIT_AUTHOR_NAME: config.author.name, GIT_AUTHOR_EMAIL: config.author.email, GIT_COMMITTER_NAME: config.author.name, GIT_COMMITTER_EMAIL: config.author.email };
 if (!unchanged) run('git', ['commit', '--quiet', '-m', `release: ${version}`], work, { env: identity });
@@ -134,6 +138,18 @@ run('git', ['-c', `http.https://github.com/.extraheader=AUTHORIZATION: basic ${a
 const snapshot = git(['rev-parse', '--short=10', 'HEAD'], work);
 run('git', ['tag', '-f', `dsh-studio-snapshot/${snapshot}`, 'HEAD'], monorepo);
 console.log(`Pushed ${marker} to ${repo} ${branch} as ${config.publisher.github}; tagged dsh-studio-snapshot/${snapshot} locally.`);
+// GitHub Release v<version> on the pushed snapshot, created or updated from the changelog.
+const tag = `v${version}`;
+const ghEnv = { GH_TOKEN: ghToken() };
+const owner = new URL(repo).pathname.replace(/^\//, '').replace(/\.git$/, '');
+const notesFile = path.join(work, '.release-notes.md');
+await writeFile(notesFile, `${notes}\n`);
+let exists = true;
+try { run('gh', ['release', 'view', tag, '-R', owner], work, { capture: true, env: ghEnv }); } catch { exists = false; }
+if (exists) run('gh', ['release', 'edit', tag, '-R', owner, '--title', tag, '--notes-file', notesFile], work, { env: ghEnv });
+else run('gh', ['release', 'create', tag, '-R', owner, '--target', git(['rev-parse', 'HEAD'], work), '--title', tag, '--notes-file', notesFile], work, { env: ghEnv });
+await rm(notesFile, { force: true });
+console.log(`${exists ? 'Updated' : 'Created'} GitHub Release ${tag} on ${owner}.`);
 if (!publish) process.exit(0);
 if (!existsSync(tarball)) throw new Error('Packed tarball missing');
 // An absolute path: npm reads a bare relative path like dist/x.tgz as a GitHub shorthand.

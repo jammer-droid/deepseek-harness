@@ -43,6 +43,9 @@ node studio/release/deploy.mjs all      # 두 단계 연속. 인증 가능한 �
 
 ### 1. 버전 올리기
 
+릴리즈 노트를 먼저 씁니다. [release/CHANGELOG.md](../release/CHANGELOG.md) 맨 위에 `## <버전> — <날짜>` 섹션을 추가하고, 영어 노트 아래에 `### 한국어` 섹션을 붙입니다. 사용자에게 보이는 변경만 적습니다(주요 변경, 변경 사항, 업그레이드 참고). sync는 이 섹션이 없으면 시작하지 않으며, 테스트도 현재 버전 섹션과 한국어 섹션을 검사합니다.
+
+
 두 곳을 같은 값으로 바꾼다. 다르면 테스트가 실패한다.
 
 - [packages/shell/package.json](../packages/shell/package.json)의 `version`
@@ -77,6 +80,8 @@ node studio/release/sync.mjs
 4. 금지어 검사: `forbidden` 패턴(개인 계정, fork 경로, 브랜치, 로컬 경로·포트, 개발 스크립트·격리 프로필 이름)이 하나라도 있으면 위치를 출력하고 멈춘다. `.gitignore` 같은 점 파일도 검사한다.
 5. `pnpm install` → 타입 검사·빌드·테스트 → `pack.mjs`로 tarball을 만든다.
 6. `release: <version>` 커밋을 만든다. push는 하지 않는다.
+
+`--push`이면 이어서 공개 레포에 push하고, 같은 커밋에 GitHub Release `v<version>`을 만든다. 이미 있으면 노트를 새 CHANGELOG 섹션으로 갱신한다. 코드 변경 없이 문서·노트만 바뀐 경우에도 push와 Release 갱신은 그대로 수행한다. 공개 레포에는 `CHANGELOG.md`가 함께 내보내진다.
 
 결과 폴더에서 커밋 내용과 `dist/*.tgz`를 확인한다. 현재 스크립트는 `STUDIO_RELEASE_DIR`로 지정한 디렉터리를 삭제하고 다시 만든다. 작업 레포·홈·사용 중인 체크아웃을 지정하지 말고, 별도 지정 없이 자동 임시 폴더를 사용하는 것을 권장한다.
 

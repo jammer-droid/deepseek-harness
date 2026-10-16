@@ -13,7 +13,8 @@
     "LICENSE"
   ],
   "exclude": [
-    "test/staged-scope.test.mjs"
+    "test/staged-scope.test.mjs",
+    "test/release-changelog.test.mjs"
   ],
   "copy": {
     "release/standalone/tsconfig.base.json": "tsconfig.base.json",
@@ -21,7 +22,8 @@
     "release/standalone/gitignore": ".gitignore",
     "release/types": "types",
     "release/README.md": "README.md",
-    "release/docs": "docs"
+    "release/docs": "docs",
+    "release/CHANGELOG.md": "CHANGELOG.md"
   },
   "versions": {
     "@deepseek-ai/*": "0.2.0-rc.2",
