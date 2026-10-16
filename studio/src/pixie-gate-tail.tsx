@@ -3,6 +3,7 @@ import React from 'react';
 import type { GateRun, GateRunFrame, GateRunRecord } from './pixie-gate-contracts.ts';
 import { gatePointText, gateText, type GateTextKey } from './pixie-gate-locale.ts';
 import { Badge, Button, Disclosure, ModelText, Notice } from './ui.tsx';
+import { applyGateFrame } from './pixie-gate-chat-node.ts';
 
 export interface GateTailActions {
   gateRuns(): Promise<GateRunRecord>;
@@ -63,14 +64,28 @@ export function GateResults({ actions, anchor, locale, Surface = React.Fragment 
   const [disabled, setDisabled] = React.useState<readonly string[]>([]);
   React.useEffect(() => {
     let active = true;
-    const refresh = () => actions.gateRuns().then(record => { if (active) { setRuns(record.runs); setDisabled(record.disabledGateIds ?? []); } }, () => {});
+    // Frames received while a refresh is in flight are replayed onto its snapshot; only the latest refresh publishes.
+    let refreshing: { id: number; frames: Exclude<GateRunFrame, { type: 'sync' }>[] } | undefined;
+    let latest = 0;
+    const refresh = () => {
+      const id = ++latest;
+      const own = { id, frames: [] as Exclude<GateRunFrame, { type: 'sync' }>[] };
+      refreshing = own;
+      actions.gateRuns().then(snapshot => {
+        if (!active || id !== latest) return;
+        const record = own.frames.reduce(applyGateFrame, snapshot);
+        refreshing = undefined;
+        setRuns(record.runs); setDisabled(record.disabledGateIds ?? []);
+      }, () => { if (id === latest) refreshing = undefined; });
+    };
     const stop = actions.followGates(frame => {
       if (!active) return;
-      if (frame.type === 'sync') { void refresh(); return; }
+      if (frame.type === 'sync') { refresh(); return; }
+      refreshing?.frames.push(frame);
       if (frame.type === 'session') { setDisabled(frame.disabledGateIds); return; }
       setRuns(current => [...current.filter(run => run.id !== frame.run.id), frame.run]);
     });
-    void refresh();
+    refresh();
     return () => { active = false; stop(); };
   }, [actions]);
   const shown = anchorRuns(runs, anchor);

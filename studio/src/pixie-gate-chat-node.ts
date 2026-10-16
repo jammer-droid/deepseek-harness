@@ -61,30 +61,56 @@ export interface GateRunSource {
   followGates(listener: (frame: GateRunFrame) => void): () => void;
 }
 
+/** Applies one run or session frame to a record. Idempotent, so replaying a frame the record already has is harmless. */
+export function applyGateFrame(record: GateRunRecord, frame: Exclude<GateRunFrame, { type: 'sync' }>): GateRunRecord {
+  return frame.type === 'session' ? { ...record, disabledGateIds: frame.disabledGateIds }
+    : { ...record, runs: [...record.runs.filter(run => run.id !== frame.run.id), frame.run] };
+}
+
 /**
- * Many Chat rows read the same session's gate runs. One stream and one fetch per sync serve them all;
- * the record follows run and session frames so rows mounted later read the current state.
+ * Many Chat rows read the same session's gate runs. One stream and one fetch per sync serve them all.
+ * Frames that arrive while a fetch is pending are replayed onto its snapshot, so a late snapshot never drops a live result.
+ * Each load has a generation: a superseded load neither publishes its snapshot nor clears a newer one.
  * @param fetch reads the session record. @param connect opens the session stream and returns its stop.
  */
 export function gateRunHub(fetch: () => Promise<GateRunRecord>, connect: (listener: (frame: GateRunFrame) => void) => () => void): GateRunSource {
-  let current: Promise<GateRunRecord> | undefined;
+  let state: GateRunRecord | undefined;
+  let pending: { generation: number; promise: Promise<GateRunRecord>; frames: Exclude<GateRunFrame, { type: 'sync' }>[] } | undefined;
+  let generation = 0;
   let stop: (() => void) | undefined;
   const listeners = new Set<(frame: GateRunFrame) => void>();
-  const load = () => (current = fetch().catch(error => { current = undefined; throw error; }));
+  const load = (): Promise<GateRunRecord> => {
+    const id = ++generation;
+    const frames: Exclude<GateRunFrame, { type: 'sync' }>[] = [];
+    const promise = fetch().then(value => {
+      const next = frames.reduce(applyGateFrame, value);
+      if (id === generation) { state = next; pending = undefined; }
+      return next;
+    }, error => {
+      if (id === generation) pending = undefined;
+      throw error;
+    });
+    // Callers handle their own copy; the hub's reference must not surface as an unhandled rejection.
+    promise.catch(() => {});
+    pending = { generation: id, promise, frames };
+    return promise;
+  };
   const apply = (frame: GateRunFrame) => {
-    if (frame.type === 'sync') load();
-    else if (current) current = current.then(value => frame.type === 'session' ? { ...value, disabledGateIds: frame.disabledGateIds }
-      : { ...value, runs: [...value.runs.filter(run => run.id !== frame.run.id), frame.run] });
+    if (frame.type === 'sync') { state = undefined; void load(); }
+    else {
+      if (state) state = applyGateFrame(state, frame);
+      pending?.frames.push(frame);
+    }
     for (const listener of [...listeners]) listener(frame);
   };
   return {
-    gateRuns: () => current ?? load(),
+    gateRuns: () => state ? Promise.resolve(state) : pending ? pending.promise : load(),
     followGates(listener) {
       listeners.add(listener);
       if (listeners.size === 1) stop = connect(apply);
       return () => {
         if (!listeners.delete(listener) || listeners.size) return;
-        stop?.(); stop = undefined; current = undefined;
+        stop?.(); stop = undefined; state = undefined; pending = undefined; generation++;
       };
     },
   };

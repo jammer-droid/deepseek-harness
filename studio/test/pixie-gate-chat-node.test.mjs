@@ -78,3 +78,58 @@ test('a tool row renders nothing until a displayed result arrives, then shows it
   assert.equal(block.dataset.tailKind, 'verdict'); assert.match(block.textContent, /도구 실행 전/); assert.match(block.textContent, /위험한 명령/);
   await act(async () => root.unmount()); host.remove();
 });
+
+const deferred = () => { let resolve, reject; const promise = new Promise((a, b) => { resolve = a; reject = b; }); return { promise, resolve, reject }; };
+function pendingHub() {
+  const fetches = []; let emit;
+  const hub = gateRunHub(() => { const d = deferred(); fetches.push(d); return d.promise; }, listener => { emit = listener; return () => {}; });
+  return { hub, fetches, emit: frame => emit(frame) };
+}
+
+test('frames that arrive while the first fetch is pending survive its snapshot', async () => {
+  const h = pendingHub(); h.hub.followGates(() => {});
+  const first = h.hub.gateRuns();
+  h.emit({ type: 'run', run: run('live') }); h.emit({ type: 'session', disabledGateIds: ['g'] });
+  h.fetches[0].resolve({ sessionId: 's', runs: [run('old', { startedAt: 1 })] });
+  const record = await first;
+  assert.deepEqual(record.runs.map(r => r.id), ['old', 'live']); assert.deepEqual(record.disabledGateIds, ['g']);
+  assert.deepEqual((await h.hub.gateRuns()).runs.map(r => r.id), ['old', 'live']); assert.equal(h.fetches.length, 1);
+});
+
+test('a superseded fetch neither publishes nor clears the newer snapshot, and failures stay handled', async () => {
+  const unhandled = []; const onUnhandled = reason => unhandled.push(reason); process.on('unhandledRejection', onUnhandled);
+  try {
+    const h = pendingHub(); h.hub.followGates(() => {});
+    const old = h.hub.gateRuns(); old.catch(() => {});
+    h.emit({ type: 'run', run: run('live') });
+    h.emit({ type: 'sync' });
+    h.fetches[1].resolve({ sessionId: 's', runs: [run('fresh')] });
+    h.fetches[0].reject(new Error('offline'));
+    await assert.rejects(old, /offline/);
+    assert.deepEqual((await h.hub.gateRuns()).runs.map(r => r.id), ['fresh']);
+    await new Promise(r => setTimeout(r, 0));
+    assert.deepEqual(unhandled, []);
+  } finally { process.off('unhandledRejection', onUnhandled); }
+});
+
+test('a failed fetch lets the next read try again; resubscribing drops a pending older fetch', async () => {
+  const h = pendingHub(); const off = h.hub.followGates(() => {});
+  const failed = h.hub.gateRuns(); h.fetches[0].reject(new Error('offline')); await assert.rejects(failed);
+  const retry = h.hub.gateRuns(); assert.equal(h.fetches.length, 2);
+  off(); h.hub.followGates(() => {});
+  const fresh = h.hub.gateRuns(); assert.equal(h.fetches.length, 3);
+  h.fetches[1].resolve({ sessionId: 's', runs: [run('stale')] }); await retry;
+  h.fetches[2].resolve({ sessionId: 's', runs: [run('new')] }); await fresh;
+  assert.deepEqual((await h.hub.gateRuns()).runs.map(r => r.id), ['new']);
+});
+
+test('a row keeps a live result that arrives before its snapshot', async () => {
+  let listener; const d = deferred();
+  const actions = { gateRuns: () => d.promise, followGates: cb => { listener = cb; return () => {}; }, setSessionGate: async () => [], openTab: () => {} };
+  const host = document.createElement('div'); document.body.append(host); const root = createRoot(host);
+  await act(async () => root.render(React.createElement(GateResults, { actions, anchor: { kind: 'tool', callId: 'c1' }, locale: 'en' })));
+  await act(async () => listener({ type: 'run', run: run('live') }));
+  await act(async () => d.resolve({ sessionId: 's', runs: [] }));
+  assert.ok(host.querySelector('[data-gate-tail]'), 'the stale snapshot must not erase the live result');
+  await act(async () => root.unmount()); host.remove();
+});
