@@ -20,5 +20,20 @@ export async function executeTask(task: GateTask, original: string, signal: Abor
   return { ...execution, output, plan, result };
 }
 
+/** Settle the card projection only after the middleware's commit decision. */
+export function recordAppliedResult(execution: Awaited<ReturnType<typeof executeTask>>, options: { replacement?: boolean; addition?: boolean; withheld?: boolean }) {
+  const { result, output, plan } = execution;
+  const subject = options.replacement ? plan.replacement ?? result.original : result.original;
+  result.subject = subject;
+  result.notes = [
+    ...(output.note === undefined ? [] : [output.note]),
+    ...(output.replace === undefined || options.replacement ? [] : [output.replace]),
+    ...(output.append === undefined || options.addition ? [] : [output.append]),
+  ];
+  result.forward = options.withheld ? { kind: 'none' }
+    : options.addition ? { kind: 'append', text: subject, contexts: [plan.addition!], source: 'studio-pixie-gate' }
+    : options.replacement ? { kind: 'replace', text: subject } : { kind: 'original', text: subject };
+}
+
 export const taskPoint = (task: GateTask) => task.when === 'user-message' || task.when === 'agent-message' ? 'input' as const : task.when;
 export const taskMatches = (task: GateTask, preset: string, root: boolean) => task.enabled && task.presetIds.includes(preset) && (task.advanced.agents === 'any' || (task.advanced.agents === 'root') === root);

@@ -2,7 +2,7 @@ import { readRuntimeGateDefinitions } from './pixie-gate-definition-reader.ts';
 import { randomUUID } from 'node:crypto';
 import type { Message, UserMessage } from '@deepseek-ai/dsh-llm';
 import type { GateInputDeps, InputAgent } from './pixie-gate-input.ts';
-import { executeTask, taskMatches, taskPoint } from './pixie-gate-task-executor.ts';
+import { executeTask, recordAppliedResult, taskMatches, taskPoint } from './pixie-gate-task-executor.ts';
 
 export interface TurnAgent extends InputAgent {
   session: InputAgent['session'] & { deriveMessages(): Message[] };
@@ -36,6 +36,7 @@ export function gateTurn(deps: GateInputDeps) {
     const applied = cancelled || !failed || reason ? 'none' : 'steered';
     const message: UserMessage | undefined = applied === 'steered' ? { id: randomUUID() as UserMessage['id'], role: 'user', source: { kind: 'studio-pixie-gate' }, content: [{ type: 'text', text: plan.reason ?? 'Please correct the response.' }] } : undefined;
     if (message) budget.gates.set(gate.id, count + 1);
+    recordAppliedResult(execution, {});
     const settlement = { status: cancelled ? 'cancelled' as const : result.verdict === 'error' ? 'error' as const : 'done' as const, result, output: execution.output, usage: execution.usage, applied, hooksInput, ...(cancelled ? { reason: 'cancelled' } : reason ? { reason } : {}), turn, steerCount: count + (message ? 1 : 0) } as const;
     await deps.recorder.finish(agent.id, run.id, settlement);
     deps.emit('pixie-gate/end', { ...run, ...settlement, endedAt: Date.now(), finalText: result.subject, usage: execution.usage });

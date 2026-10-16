@@ -5,7 +5,7 @@ import type { UserMessage } from '@deepseek-ai/dsh-llm';
 import type { GateApplied, GateResult, GateRun } from '../pixie-gate-contracts.ts';
 import { type PixieGateRecorder } from './pixie-gate-store.ts';
 import type { PresetGate } from './pixie-gate-definitions.ts';
-import { executeTask, taskMatches, taskPoint } from './pixie-gate-task-executor.ts';
+import { executeTask, recordAppliedResult, taskMatches, taskPoint } from './pixie-gate-task-executor.ts';
 import type { GateTaskRunner } from './pixie-gate-task-runner.ts';
 
 declare module '@deepseek-ai/dsh-llm' {
@@ -87,6 +87,11 @@ export function gateInput(deps: GateInputDeps) {
       : pending.some(item => item.applied === 'replaced' || item.applied === 'appended') ? { ...decision, messages } : decision;
     for (const item of pending) {
       const applied = cancelled || (rejected && item.applied !== 'rejected') ? 'none' : item.applied;
+      recordAppliedResult(item.execution, {
+        replacement: !cancelled && !rejected && item.execution.plan.replacement !== undefined,
+        addition: !cancelled && !rejected && item.execution.plan.addition !== undefined,
+        withheld: !cancelled && rejected,
+      });
       await deps.recorder.finish(payload.agent.id, item.run.id, { status: cancelled ? 'cancelled' : item.result.verdict === 'error' ? 'error' : 'done', result: item.result, output: item.execution.output, usage: item.execution.usage, applied, hooksInput, ...(applied === 'rejected' ? { rejection: item.rejection } : {}) });
       const usage = item.execution.usage;
       deps.emit('pixie-gate/end', { ...item.run, result: item.result, output: item.execution.output, finalText: item.result.subject, applied, hooksInput, usage, endedAt: Date.now(), status: cancelled ? 'cancelled' : item.result.verdict === 'error' ? 'error' : 'done', ...(applied === 'rejected' && item.rejection ? { rejection: { ...item.rejection, original: item.run.original, status: 'pending' as const } } : {}) });

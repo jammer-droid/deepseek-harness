@@ -4,7 +4,7 @@ import type { ContentBlock, UserMessage } from '@deepseek-ai/dsh-llm';
 import type { PostToolDecision, PreToolDecision, ToolExecution, ToolExecutionResult } from '@deepseek-ai/dsh-tools';
 import type { GateApplied } from '../pixie-gate-contracts.ts';
 import type { GateInputDeps } from './pixie-gate-input.ts';
-import { executeTask, taskMatches, taskPoint } from './pixie-gate-task-executor.ts';
+import { executeTask, recordAppliedResult, taskMatches, taskPoint } from './pixie-gate-task-executor.ts';
 
 const textOf = (content: readonly ContentBlock[]) => content.filter(block => block.type === 'text').map(block => block.text).join('\n');
 export function gateTools(deps: GateInputDeps) {
@@ -43,6 +43,11 @@ export function gateTools(deps: GateInputDeps) {
     // Commit exactly once before finish. A later abort is the runtime caller's responsibility.
     const cancelled = exec.signal.aborted || result.verdict === 'cancelled';
     if (cancelled) { committed = decision; applied = 'none'; reason = 'cancelled'; }
+    recordAppliedResult(execution, {
+      replacement: !cancelled && committed.kind === 'accept' && 'content' in committed && committed.content !== ('content' in decision ? decision.content : undefined),
+      addition: !cancelled && applied === 'appended',
+      withheld: committed.kind === 'deny' || committed.kind === 'block' || committed.kind === 'cancel',
+    });
     const settlement = { status: cancelled ? 'cancelled' as const : result.verdict === 'error' ? 'error' as const : 'done' as const, result, output: execution.output, usage: execution.usage, applied, hooksInput, ...(reason ? { reason } : {}), turn, tool: { name: exec.name, callId: exec.callId } };
     await deps.recorder.finish(agent.id, run.id, settlement);
     deps.emit('pixie-gate/end', { ...run, ...settlement, endedAt: Date.now(), finalText: result.subject, usage: execution.usage });
