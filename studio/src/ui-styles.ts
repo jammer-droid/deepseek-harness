@@ -635,6 +635,24 @@ ${adapter}.studio-ui *, .studio-ui *::before, .studio-ui *::after { box-sizing: 
 .studio-ui .studio-gate-sentence > span:last-child { min-width: 0; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .studio-ui .studio-gate-task { display: grid; gap: 12px; min-width: 0; }
 .studio-ui textarea.studio-gate-instruction { min-height: 140px; }
+.studio-ui .studio-gate-folder { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.studio-ui .studio-gate-folder input { flex: 1 1 260px; width: auto; min-width: 0; }
+.studio-ui .studio-gate-folder .studio-button { margin: 0; }
+.studio-ui .studio-gate-scope-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 12px; }
+.studio-ui ul.studio-gate-scope-list { display: grid; margin: 0; padding: 0; list-style: none; }
+.studio-ui .studio-gate-scope-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 12px; margin: 0; padding: 8px 0; border-top: .5px solid var(--studio-line); }
+.studio-ui .studio-gate-scope-row:first-child { border-top: 0; }
+.studio-ui .studio-gate-scope-name { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; min-width: 0; }
+.studio-ui .studio-gate-scope-name strong { font-weight: 500; }
+.studio-ui .studio-gate-scope-row .studio-inline-actions .studio-button { margin: 0; }
+.studio-ui .studio-pixie-thread.studio-gate-run-item { gap: 2px; padding: 6px 10px; }
+.studio-ui .studio-gate-facts { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 12px; align-items: baseline; margin: 0; font-size: 13px; }
+.studio-ui .studio-gate-facts dt { color: var(--studio-muted); font-size: 12px; }
+.studio-ui .studio-gate-facts dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.studio-ui .studio-gate-block { display: grid; gap: 6px; padding-top: 10px; border-top: .5px solid var(--studio-line); }
+.studio-ui .studio-gate-block > .studio-section-head, .studio-ui .studio-gate-block h3 { margin: 0; }
+.studio-ui .studio-gate-text { max-height: 168px; overflow: auto; padding: 8px 10px; border-radius: var(--studio-small-radius); background: var(--studio-hover); font-size: 12px; overflow-wrap: anywhere; }
+.studio-ui .studio-gate-compact { display: grid; gap: 10px; }
 .studio-ui .studio-gate-path { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 12px; }
 .studio-ui .studio-gate-path code { padding: 1px 6px; border-radius: var(--studio-small-radius); background: var(--studio-inset); overflow-wrap: anywhere; }
 .studio-ui .studio-gate-path .studio-button { margin: 0; }

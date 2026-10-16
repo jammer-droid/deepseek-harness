@@ -38,7 +38,8 @@ interface PixieRemote {
   cancel(sessionId: string): RemoteValue<boolean>;
   follow(sessionId: string): AsyncIterable<PixieAskFrame> & { dispose(): void };
   trialGate(payload: string, signal: AbortSignal): RemoteValue<GateTrialResponse>;
-  gateScripts(): RemoteValue<{ directory: string; supported: boolean; scripts: string[] }>;
+  gateScripts(): RemoteValue<import('./pixie-gate-task-pages.tsx').GateScriptList>;
+  saveGateScriptDirectory(payload: string): RemoteValue<import('./pixie-gate-task-pages.tsx').GateScriptList>;
   gateDefinitions(): RemoteValue<import('./pixie-gate-definitions.ts').GateTasksRead>;
   saveGateDefinitions(payload: string): RemoteValue<unknown>;
   readSettings(): RemoteValue<PixieSettings>;
@@ -75,6 +76,7 @@ export function pixieDescriptors() {
     descriptor('trialGate', ['payload'], { cancellation: { parameter: 'signal' } }),
     descriptor('gateDefinitions', []),
     descriptor('gateScripts', []),
+    descriptor('saveGateScriptDirectory', ['payload']),
     descriptor('saveGateDefinitions', ['payload']),
     descriptor('readSettings', []),
     descriptor('saveSettings', ['payload']),
@@ -126,6 +128,7 @@ export function mountPixie(ctx: StudioContext, options: { navFooter?: (locale: s
     read: () => unwrap(remote().gateDefinitions()),
     save: (entries: GateTask[]) => unwrap(remote().saveGateDefinitions(JSON.stringify(entries))),
     scripts: () => unwrap(remote().gateScripts()),
+    saveScriptDirectory: (scriptDirectory: string) => unwrap(remote().saveGateScriptDirectory(JSON.stringify({ scriptDirectory }))),
     presets: () => {
       const catalog = ctx.get('remote.studioCatalog' as never) as unknown as { listPresets(): RemoteValue<{ id: string; name: string }[]> };
       return unwrap(catalog.listPresets());

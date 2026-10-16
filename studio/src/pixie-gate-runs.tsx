@@ -47,6 +47,8 @@ export function GateRunsPanel({ actions, locale }: { actions: GateRunActions; lo
     void refresh();
     return () => { active = false; stop(); };
   }, [actions]);
+  const time = (at: number) => Number.isFinite(at) && at > 0 && Number.isFinite(new Date(at).getTime()) ? new Date(at).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '—';
+  const fullTime = (at: number) => Number.isFinite(at) && at > 0 && Number.isFinite(new Date(at).getTime()) ? new Date(at).toLocaleString(locale) : '—';
   const sorted = [...runs].sort((a, b) => Number(b.rejection?.status === 'pending') - Number(a.rejection?.status === 'pending') || b.startedAt - a.startedAt);
   const opened = sorted.find(run => run.id === openId);
   const shown = opened ?? sorted[0];
@@ -67,36 +69,40 @@ export function GateRunsPanel({ actions, locale }: { actions: GateRunActions; lo
       <div className="studio-pixie-list">
         <div className="studio-pixie-list-head"><span className="studio-pixie-list-title">{t('allRuns')}<span className="studio-count">{runs.length}</span></span></div>
         <ul className="studio-pixie-thread-list">{sorted.map(run => <li key={run.id}>
-          <button type="button" className="studio-pixie-thread" aria-current={shown?.id === run.id ? 'true' : undefined} onClick={() => setOpenId(run.id)}>
+          <button type="button" className="studio-pixie-thread studio-gate-run-item" aria-current={shown?.id === run.id ? 'true' : undefined} onClick={() => setOpenId(run.id)}>
             <span className="studio-card-head"><strong>{run.gateName}</strong>{badges(run)}</span>
-            <span className="studio-card-meta">{gatePointText(locale, run.point)} · {Number.isFinite(run.startedAt) && run.startedAt > 0 && Number.isFinite(new Date(run.startedAt).getTime()) ? new Date(run.startedAt).toLocaleString(locale) : '—'}</span>
-            <span className="studio-pixie-thread-preview">{run.original}</span>
-            {run.hooksInput === 'unverified' && <span className="studio-card-meta">{t('unverified')}</span>}
+            <span className="studio-card-meta">{gatePointText(locale, run.point)} · {time(run.startedAt)}{run.tool ? ` · ${run.tool.name}` : ''}</span>
           </button>
         </li>)}</ul>
       </div>
       {shown && <div className="studio-pixie-detail">
         <div className="studio-pixie-detail-head"><span className="studio-pixie-back"><IconButton label={t('allRuns')} onClick={() => setOpenId(undefined)}><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5L5.5 8l4.5 4.5" fill="none" stroke="currentColor" strokeWidth="1.4" /></svg></IconButton></span><strong>{shown.gateName}</strong>{badges(shown)}</div>
-        <p className="studio-card-meta">{gatePointText(locale, shown.point)} · {t('applied')}: {t(shown.applied)}{shown.hooksInput === 'unverified' ? ` · ${t('unverified')}` : ''}</p>
-        {shown.reason && <p className="studio-pixie-answer">{t('reason')}: {shown.reason}</p>}
-        {shown.point === 'turn-end' && <p className="studio-card-meta">{t('turn')}: {shown.turn ?? '—'} · {t('steerCount')}: {shown.steerCount ?? '—'}</p>}
-        {shown.point.startsWith('tool-') && shown.tool && <p className="studio-card-meta">{t('tool')}: {shown.tool.name} · {t('callId')}: {shown.tool.callId}</p>}
-        {shown.rejection && <section>
-          {rejectionOriginal && <section><SectionHead title={t('original')} /><p className="studio-pixie-answer">{rejectionOriginal}</p></section>}
-          <section><SectionHead title={t('reason')} /><p className="studio-pixie-answer">{shown.rejection.reason}</p></section>
-          {shown.rejection.suggestion && <section><SectionHead title={t('suggestion')} /><p className="studio-pixie-answer">{shown.rejection.suggestion}</p></section>}
+        <p className="studio-card-meta">{gatePointText(locale, shown.point)} · {fullTime(shown.startedAt)}{shown.hooksInput === 'unverified' ? ` · ${t('unverified')}` : ''}</p>
+        <dl className="studio-gate-facts">
+          <dt>{t('applied')}</dt><dd><Badge tone={shown.applied === 'none' || shown.applied === 'pass' ? 'neutral' : 'info'}>{t(shown.applied)}</Badge></dd>
+          {shown.output && <><dt>{t('verdict')}</dt><dd><Badge tone={shown.output.verdict === 'stop' ? 'warning' : 'success'}>{t(shown.output.verdict === 'stop' ? 'stop' : 'pass')}</Badge></dd></>}
+          {shown.output?.reason !== undefined && !shown.rejection && <><dt>{t('reason')}</dt><dd>{shown.output.reason}</dd></>}
+          {shown.reason && <><dt>{t('applyNote')}</dt><dd>{shown.reason}</dd></>}
+          {shown.point === 'turn-end' && <><dt>{t('turn')}</dt><dd>{shown.turn ?? '—'} · {t('steerCount')}: {shown.steerCount ?? '—'}</dd></>}
+          {shown.point.startsWith('tool-') && shown.tool && <><dt>{t('tool')}</dt><dd>{shown.tool.name} <span className="studio-card-meta">{t('callId')}: {shown.tool.callId}</span></dd></>}
+          {(shown.usage?.inputTokens ?? 0) + (shown.usage?.outputTokens ?? 0) > 0 && <><dt>{t('tokens')}</dt><dd>{t('usage').replace('{input}', String(shown.usage.inputTokens ?? 0)).replace('{output}', String(shown.usage.outputTokens ?? 0))}</dd></>}
+        </dl>
+        {shown.rejection && <section className="studio-gate-block" aria-label={t('rejected')}>
+          {rejectionOriginal && <><SectionHead title={t('original')} /><p className="studio-pixie-answer studio-gate-text">{rejectionOriginal}</p></>}
+          <SectionHead title={t('reason')} />
+          <p className="studio-pixie-answer">{shown.rejection.reason}</p>
+          {shown.rejection.suggestion && <><SectionHead title={t('suggestion')} /><p className="studio-pixie-answer studio-gate-text">{shown.rejection.suggestion}</p></>}
           {shown.rejection.status === 'pending' && <><Note>{t('draftNote')}</Note><div className="studio-inline-actions">
             <Button small disabled={busy} onClick={() => { try { actions.fillDraft(shown.rejection!.suggestion || rejectionOriginal); setError(''); } catch { setError(t('composerUnavailable')); } }}>{t('editSend')}</Button>
             <Button small disabled={busy} onClick={() => { void resolve(shown, 'resent'); }}>{t('resent')}</Button>
             <Button small disabled={busy} onClick={() => { void resolve(shown, 'dismissed'); }}>{t('dismissed')}</Button>
           </div></>}
         </section>}
-        {shown.output && <section aria-label={t('output')}>
-          <SectionHead title={t('output')} actions={<Badge tone={shown.output.verdict === 'stop' ? 'warning' : 'neutral'}>{t(shown.output.verdict === 'stop' ? 'stop' : 'pass')}</Badge>} />
-          {(['reason', 'replace', 'append', 'note'] as const).map(key => shown.output![key] !== undefined && <p key={key} className="studio-pixie-answer">{t(key === 'note' ? 'notes' : key)}: {shown.output![key]}</p>)}
-          <p className="studio-card-meta">{t('usage').replace('{input}', String(shown.usage.inputTokens)).replace('{output}', String(shown.usage.outputTokens))}</p>
+        {shown.output && (['replace', 'append', 'note'] as const).some(key => shown.output![key] !== undefined) && <section className="studio-gate-block" aria-label={t('output')}>
+          <SectionHead title={t('output')} />
+          <dl className="studio-gate-facts">{(['replace', 'append', 'note'] as const).map(key => shown.output![key] !== undefined && <React.Fragment key={key}><dt>{t(key === 'note' ? 'notes' : key)}</dt><dd className="studio-gate-text">{shown.output![key]}</dd></React.Fragment>)}</dl>
         </section>}
-        {shown.result ? <GateResultDetails result={shown.result} locale={locale} /> : <p className="studio-pixie-answer">{shown.original}</p>}
+        {shown.result ? <GateResultDetails result={shown.result} locale={locale} compact hideOriginal={!!shown.rejection} /> : !shown.rejection && shown.original && <section className="studio-gate-block"><SectionHead title={t('original')} /><p className="studio-pixie-answer studio-gate-text">{shown.original}</p></section>}
       </div>}
     </div>
   </div>;

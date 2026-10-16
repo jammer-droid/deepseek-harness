@@ -20,7 +20,7 @@ Pixie Gate lets the **Pixie model read, judge, and rework content** at a set mom
 3. Set **When** and **What Pixie does**. Write the task in plain words: whether to pass or stop, what to replace or add, and what note to show only to you.
 4. Put a sample in **Try it** and run it. The configured Pixie model really answers; nothing is recorded or sent to a session.
 5. Press **Apply**, then **Save** at the top of the page. Only saved gates apply to runs.
-6. In **Gates → Scope**, turn the gate on, choose the presets it applies to, and save. A gate runs only for agents using those presets.
+6. In **Gates → Scope**, turn the gate on, choose the presets it applies to, and save. The page groups gates by preset; gates without a preset are listed last. A gate runs only for agents using those presets.
 
 Only one enabled gate per preset and **When** is allowed. Saved definitions live in `<profile>/studio-data/pixie-gate/definitions.json`.
 
@@ -64,7 +64,7 @@ When the verdict is stop, the replacement and addition never reach the main mode
 
 Build flows the two fields cannot express — only certain tools, translate → judge → retranslate loops, external measurements — as a script. Studio does not build features one by one; it gives scripts the means.
 
-- **Location:** only executable files (`chmod +x`) in `<profile>/studio-data/pixie-gate/commands/` can be chosen. Subfolders, links pointing outside the folder, and names containing `..` are excluded. Press **Refresh list** after adding a file.
+- **Location:** the default is `<profile>/studio-data/pixie-gate/commands/`; change it under **Gates → Scope → Script folder** to another absolute or `~/…` path. Leave it empty to restore the default; the folder is not created for you. Only executable files (`chmod +x`) in that folder can be chosen. Subfolders, links pointing outside the folder, and names containing `..` are excluded. Press **Refresh list** after adding a file.
 - **Supported environments:** available only when DSH runs with a bash profile (macOS and Linux). Windows is not supported yet; where scripts are unsupported the gate does not run them and applies its error policy.
 - **Working directory and sandbox:** scripts run in the session working directory through the DSH shell service, under the session's sandbox policy. A read-only session cannot write files.
 - **Trials** do not run the script because no session policy is known. Check it in a real session.

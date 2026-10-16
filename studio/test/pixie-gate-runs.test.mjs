@@ -35,7 +35,9 @@ test('cards map every applied action and no-action lifecycle without inferring v
   const f = await setup([...Object.keys(labels).map(applied => run(applied, { applied })), ...['running', 'error', 'cancelled'].map(status => run(status, { status }))]);
   const cards = [...f.host.querySelectorAll('.studio-pixie-thread')];
   for (const [id, label] of Object.entries({ ...labels, running: 'Running', error: 'Error', cancelled: 'Cancelled' })) assert.match(cards.find(c => c.textContent.includes(`Gate ${id}`)).querySelector('.studio-badge').textContent, new RegExp(label));
-  assert.doesNotMatch(f.host.textContent, /98765/); await f.close();
+  // Usage stays out of the compact list; the detail shows it next to the applied action.
+  assert.doesNotMatch(f.host.querySelector('.studio-pixie-list').textContent, /98765/);
+  assert.match(f.host.querySelector('.studio-gate-facts').textContent, /Tokens in 98765 · out 0/); await f.close();
 });
 test('pending sorts first, fills suggestion without resolving, and explicitly marks sent', async () => {
   const f = await setup([run('newer', { startedAt: 100 }), pending()]);
@@ -63,14 +65,14 @@ test('original fallback, dismiss arguments and failed resolution keep pending ac
   assert.ok(button(failed.host, 'Mark as sent')); await failed.close();
 });
 test('sync rereads, run upserts, detail fields and narrow navigation reuse container CSS', async () => {
-  const f = await setup([run('turn', { point: 'turn-end', turn: 4, steerCount: 2, reason: 'cap reached', applied: 'steered' })]);
-  assert.match(f.host.textContent, /Turn: 4.*Steer count: 2/);
+  const f = await setup([run('turn', { point: 'turn-end', turn: 4, steerCount: 2, reason: 'cap reached', applied: 'steered', output: { verdict: 'stop', reason: 'redo it' } })]);
+  assert.match(f.host.querySelector('.studio-gate-facts').textContent, /AppliedSteeredVerdictStoppedReasonredo itNot applied becausecap reachedTurn4 · Steer count: 2/);
   await f.emit({ type: 'sync' }); assert.equal(f.reads(), 2);
   await f.emit({ type: 'run', run: run('tool', { point: 'tool-before', startedAt: 2, tool: { name: 'bash', callId: 'call-42' } }) });
   const cards = f.host.querySelectorAll('.studio-pixie-thread'); assert.equal(cards.length, 2);
   await act(async () => cards[0].click());
   assert.equal(f.host.querySelector('[data-open]').dataset.open, 'true');
-  assert.match(f.host.querySelector('.studio-pixie-detail').textContent, /Tool: bash.*Call ID: call-42/);
+  assert.match(f.host.querySelector('.studio-pixie-detail').textContent, /Toolbash Call ID: call-42/);
   await act(async () => button(f.host, 'All gate runs').click());
   assert.equal(f.host.querySelector('[data-open]').dataset.open, 'false');
   assert.match(studioStyles, /@container studio-pixie \(max-width: 560px\)/);
@@ -160,7 +162,11 @@ test('a recorded live run shows Pixie output, usage, notes and helper calls', as
   const live = JSON.parse(readFileSync(new URL('./fixtures/pixie-gate-run-helper.json', import.meta.url), 'utf8'));
   const f = await setup([live], {}, GateRunsPanel, 'ko');
   const detail = f.host.querySelector('.studio-pixie-detail');
-  assert.match(detail.querySelector('section[aria-label="Pixie 출력"]').textContent, /통과.*덧붙임: Pixie 요약:.*메모: R5 input gate ran.*토큰 입력 \d+ · 출력 \d+/s);
+  assert.match(detail.querySelector('.studio-gate-facts').textContent, /적용덧붙임판정통과토큰토큰 입력 653 · 출력 799/);
+  assert.match(detail.querySelector('section[aria-label="Pixie 출력"]').textContent, /덧붙임Pixie 요약:.*메모R5 input gate ran/s);
+  assert.match(detail.querySelector('section[aria-label="원문"]').textContent, /원문 \(변경 없음\)\[GATE\]/);
+  assert.match(detail.querySelector('section[aria-label="전달"]').textContent, /함께 전달한 내용Pixie 요약:/);
+  assert.equal(f.host.querySelector('.studio-pixie-thread .studio-pixie-thread-preview'), null);
   const calls = detail.querySelector('section[aria-label="헬퍼 호출"]');
   assert.deepEqual([...calls.querySelectorAll('[data-gate-stage]')].map(el => el.dataset.gateStage), ['pixie-ask-1', 'pixie-judge-2']);
   assert.match(calls.textContent, /Summarize the request in one short English sentence|Read and follow/);

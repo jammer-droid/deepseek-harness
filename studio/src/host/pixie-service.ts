@@ -18,6 +18,7 @@ import { gateTurn } from './pixie-gate-turn.ts';
 import { gateTools } from './pixie-gate-tools.ts';
 import { GateTaskRunner } from './pixie-gate-task-runner.ts';
 import { HELPER_ROUTE, PixieGateHelper } from './pixie-gate-helper.ts';
+import { PixieGateSettings } from './pixie-gate-settings.ts';
 import { trialGate } from './pixie-gate-trial.ts';
 
 /** What the Pixie tab shows for one session. */
@@ -55,7 +56,10 @@ const llmOf = (ctx: Context) => ctx.get('llm') as unknown as LlmSlice;
  */
 export class PixieService extends TypertRemoteService {
   static inject = ['llm', 'sessionController', 'commands'];
-  private scriptDirectory: string;
+  private defaultScriptDirectory: string;
+  private gateSettings: PixieGateSettings;
+  /** The configured folder, or `<data>/pixie-gate/commands` when none is set. Read per run so a change applies at once. */
+  private async scriptDirectory() { return (await this.gateSettings.read()).scriptDirectory ?? this.defaultScriptDirectory; }
   private scriptSupported = () => process.platform !== 'win32' && !!this.ctx.get('shell');
   private store: PixieStore;
   private settings: PixieSettingsStore;
@@ -78,7 +82,8 @@ export class PixieService extends TypertRemoteService {
   get gateRecorder(): PixieGateRecorder { return this.gates; }
   constructor(ctx: Context, dataDir: string) {
     super(ctx, 'studioPixie');
-    this.scriptDirectory = resolve(dataDir, 'pixie-gate', 'commands');
+    this.defaultScriptDirectory = resolve(dataDir, 'pixie-gate', 'commands');
+    this.gateSettings = new PixieGateSettings(join(dataDir, 'pixie-gate', 'settings.json'));
     this.store = new PixieStore(join(dataDir, 'pixie'));
     this.gates = new PixieGateStore(join(dataDir, 'pixie'));
     this.settings = new PixieSettingsStore(join(dataDir, 'pixie-settings.json'));
@@ -104,9 +109,9 @@ export class PixieService extends TypertRemoteService {
           sandboxPolicy: policy?.resolve({ session: agent.session }), ...(tool ? { tool } : {}) };
       },
       runner: async () => {
-        const { model, judgeModel, judgeSystemPrompt } = await this.settings.read();
+        const [{ model, judgeModel, judgeSystemPrompt }, scriptDirectory] = await Promise.all([this.settings.read(), this.scriptDirectory()]);
         return new GateTaskRunner({
-        scriptDirectory: this.scriptDirectory, scriptSupported: this.scriptSupported(), shell: ctx.get('shell') as unknown as HookShell | undefined, helper: this.helper,
+        scriptDirectory, scriptSupported: this.scriptSupported(), shell: ctx.get('shell') as unknown as HookShell | undefined, helper: this.helper,
         llm: { stream: options => llmOf(ctx).stream(options) },
         ...(model ? { model } : {}),
         ...(judgeModel ? { judgeModel } : {}),
@@ -228,8 +233,19 @@ export class PixieService extends TypertRemoteService {
     }, signal);
   }
 
+  /** Scripts in the effective folder, plus whether that folder is the default. */
   @Remote
-  async gateScripts() { return listGateScripts(this.scriptDirectory, this.scriptSupported()); }
+  async gateScripts() {
+    const directory = await this.scriptDirectory();
+    return { ...await listGateScripts(directory, this.scriptSupported()), defaultDirectory: this.defaultScriptDirectory, custom: directory !== this.defaultScriptDirectory };
+  }
+
+  /** Payload `{ scriptDirectory?: string }`; empty or absent restores the default folder. The folder is not created. */
+  @Remote
+  async saveGateScriptDirectory(payload: string) {
+    await this.gateSettings.save(json(payload));
+    return this.gateScripts();
+  }
 
   @Remote
   async gateDefinitions() { return this.definitions.read(); }

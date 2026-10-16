@@ -26,7 +26,8 @@ export interface PixieSettingsActions {
 
 const SEP = '\u0000';
 const NO_GATES: GateTaskActions = {
-  read: async () => ({ entries: [], invalid: [] }), save: async () => undefined, scripts: async () => ({ directory: '', supported: false, scripts: [] }),
+  read: async () => ({ entries: [], invalid: [] }), save: async () => undefined, scripts: async () => ({ directory: '', defaultDirectory: '', custom: false, supported: false, scripts: [] }),
+  saveScriptDirectory: async () => ({ directory: '', defaultDirectory: '', custom: false, supported: false, scripts: [] }),
   trial: () => ({ result: Promise.reject(new Error('Gate API unavailable')), cancel() {} }), presets: async () => [],
 };
 type PageId = 'model' | 'threads' | 'prompt' | 'judge' | 'gate-composition' | 'gate-scope';

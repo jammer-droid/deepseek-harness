@@ -25,7 +25,7 @@ Help the user build a Pixie Gate: a task the Pixie model runs at one point of an
 
 ## Write a script
 
-- Bash only (macOS and Linux). Save it as an executable file in `<profile>/studio-data/pixie-gate/commands/` (`chmod +x`). Use letters, digits, `_`, `.`, `-`; no subfolders, no `..`.
+- Bash only (macOS and Linux). Save it as an executable file in the script folder (`chmod +x`): `<profile>/studio-data/pixie-gate/commands/` unless the user set another under Gates → Scope (`<profile>/studio-data/pixie-gate/settings.json`, `scriptDirectory`). Use letters, digits, `_`, `.`, `-`; no subfolders, no `..`.
 - Read the target from stdin. Print what the task needs to stdout (256 KB max); print a JSON object to fill `{{hooks.<name>.data}}`. `<name>` is the file name without its last extension.
 - Exit 0 to continue, 10 to skip the gate, anything else is an error.
 - Use `pixie ask "<instruction>" [--input]` and `pixie judge --question "…" [--threshold 0.5] [--input]`. With `--input` the helper reads stdin; otherwise it uses the gate target. `judge` exits 0 on pass, 1 below threshold, 2 on errors. At most 20 helper calls per run.

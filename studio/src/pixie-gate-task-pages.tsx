@@ -11,12 +11,14 @@ type Text = (key: GateTaskKey, values?: Record<string, string | number>) => stri
 const useText = (locale: string): Text => (key, values) => gateTaskText(locale, key, values);
 
 export interface GateTrialResponse { output: GateOutput; plan: ReturnType<typeof gateOutputPlan>; usage: PixieUsage; skipped?: 'script' }
-export interface GateScriptList { directory: string; supported: boolean; scripts: string[] }
+export interface GateScriptList { directory: string; defaultDirectory: string; custom: boolean; supported: boolean; scripts: string[] }
 /** Host Remote calls the gate pages use. */
 export interface GateTaskActions {
   read(): Promise<GateTasksRead>;
   save(tasks: GateTask[]): Promise<unknown>;
   scripts(): Promise<GateScriptList>;
+  /** Empty restores the default folder. */
+  saveScriptDirectory(directory: string): Promise<GateScriptList>;
   trial(request: { task: GateTask; text: string; toolName?: string }): { result: Promise<GateTrialResponse>; cancel(): void };
   presets(): Promise<{ id: string; name: string }[]>;
 }
@@ -218,26 +220,73 @@ export function GateTaskCompositionPage({ gates, locale }: { gates: GateTasks; l
   </div>;
 }
 
-/** Scope: turn gates on and choose presets. Target agents live in each gate's Advanced section. */
+/** Script folder shared by every gate: the profile default unless the user sets another. */
+function ScriptFolder({ actions, t }: { actions: GateTaskActions; t: Text }) {
+  const [list, setList] = React.useState<GateScriptList>();
+  const [draft, setDraft] = React.useState('');
+  const [busy, setBusy] = React.useState(false);
+  const [error, setError] = React.useState('');
+  const apply = async (value: string) => {
+    setBusy(true); setError('');
+    try { const next = await actions.saveScriptDirectory(value); setList(next); setDraft(next.custom ? next.directory : ''); }
+    catch (cause) { setError(cause instanceof Error ? cause.message : String(cause)); }
+    finally { setBusy(false); }
+  };
+  React.useEffect(() => {
+    let active = true;
+    actions.scripts().then(next => { if (active) { setList(next); setDraft(next.custom ? next.directory : ''); } }, cause => { if (active) setError(String(cause)); });
+    return () => { active = false; };
+  }, [actions]);
+  return <section className="studio-settings-card" aria-label={t('folderTitle')}>
+    <SettingsRow title={t('folderTitle')} description={t('folderHint')}>
+      <div className="studio-gate-folder">
+        <input aria-label={t('folderTitle')} placeholder={list?.defaultDirectory ?? GATE_SCRIPT_DIR} value={draft} disabled={busy} onChange={event => setDraft(event.target.value)} />
+        <Button small disabled={busy || !list || draft.trim() === (list.custom ? list.directory : '')} onClick={() => { void apply(draft); }}>{t('folderApply')}</Button>
+        <Button small disabled={busy || !list?.custom} onClick={() => { void apply(''); }}>{t('folderReset')}</Button>
+      </div>
+      {list && <p className="studio-card-meta">{t(list.custom ? 'folderCurrent' : 'folderDefault')}: <code>{list.directory}</code> · {t('folderCount', { count: list.scripts.length })}</p>}
+      {list && !list.supported && <Notice>{t('scriptUnsupported')}</Notice>}
+      {error && <Notice>{`${t('folderFailed')} (${error})`}</Notice>}
+    </SettingsRow>
+  </section>;
+}
+
+/** Scope grouped by preset: each preset lists the gates that run for it; gates without a preset come last. */
 export function GateTaskScopePage({ gates, presets, locale }: { gates: GateTasks; presets: readonly { id: string; name: string }[]; locale: string }) {
   const t = useText(locale);
-  // Preset choice opens a dialog so a card keeps its height however many presets exist.
+  // Preset choice opens a dialog so a row keeps its height however many presets exist.
   const [picking, setPicking] = React.useState<GateTask>();
   const [query, setQuery] = React.useState('');
   const choose = picking ? gates.tasks.find(task => task.id === picking.id) : undefined;
   const shown = presets.filter(preset => preset.name.toLowerCase().includes(query.trim().toLowerCase()));
+  const used = [...new Set(gates.tasks.flatMap(task => task.presetIds))];
+  const groups = [
+    ...presets.filter(preset => used.includes(preset.id)).map(preset => ({ id: preset.id, name: preset.name, hint: undefined as string | undefined })),
+    ...used.filter(id => !presets.some(preset => preset.id === id)).map(id => ({ id, name: `${id} ${t('unknownPreset')}`, hint: undefined })),
+  ];
+  const unassigned = gates.tasks.filter(task => !task.presetIds.length);
+  const row = (task: GateTask, group: string | undefined) => {
+    const conflict = group !== undefined && task.enabled && gates.tasks.some(other => other.id !== task.id && other.enabled && other.when === task.when && other.presetIds.includes(group));
+    return <li key={task.id} className="studio-gate-scope-row" data-gate-scope={task.id}>
+      <span className="studio-gate-scope-name"><strong>{task.name}</strong><span className="studio-card-meta">{t(`when-${task.when}`)}{task.advanced.script ? ` · ${task.advanced.script}` : ''}</span>{conflict && <Badge tone="warning">{t('conflict')}</Badge>}</span>
+      <span className="studio-inline-actions">
+        <Button small onClick={() => setPicking(task)}>{t('editPresets')}</Button>
+        <Toggle label={`${t('enabled')} ${task.name}`} checked={task.enabled} onChange={enabled => gates.update(task.id, item => ({ ...item, enabled }))} />
+      </span>
+    </li>;
+  };
+  const section = (id: string | undefined, name: string, hint: string | undefined, tasks: GateTask[]) => <section key={id ?? 'none'} className="studio-settings-card" aria-label={name} data-gate-preset={id ?? ''}>
+    <div className="studio-gate-scope-head"><strong>{name}</strong><span className="studio-card-meta">{t('gateCount', { count: tasks.length, on: tasks.filter(task => task.enabled).length })}</span></div>
+    {hint && <p className="studio-card-meta">{hint}</p>}
+    <ul className="studio-gate-scope-list">{tasks.map(task => row(task, id))}</ul>
+  </section>;
   return <div className="studio-page-stack">
     <GateHead gates={gates} title={t('scope')} description={t('scopeDescription')} t={t} />
+    <ScriptFolder actions={gates.actions} t={t} />
     {gates.loaded && !gates.tasks.length && <p role="status" className="studio-muted">{t('scopeEmpty')}</p>}
-    {gates.tasks.map(task => <section className="studio-settings-card" key={task.id} aria-label={task.name} data-gate-scope={task.id}>
-      <SettingsRow title={<span className="studio-card-head"><strong>{task.name}</strong><Badge tone="outline">{t(`when-${task.when}`)}</Badge></span>} control={<Toggle label={`${t('enabled')} ${task.name}`} checked={task.enabled} onChange={enabled => gates.update(task.id, item => ({ ...item, enabled }))} />} />
-      <SettingsRow title={t('presets')} description={t('presetsHint')} control={<span className="studio-inline-actions">
-        <span className="studio-muted">{task.presetIds.length ? t('presetCount', { count: task.presetIds.length }) : t('noPreset')}</span>
-        <Button small onClick={() => setPicking(task)}>{t('choosePresets')}</Button>
-      </span>}>
-        {task.presetIds.length > 0 && <div className="studio-gate-chips" aria-label={`${t('presets')} ${task.name}`}>{task.presetIds.map(id => <Badge key={id} tone="outline">{presets.find(preset => preset.id === id)?.name ?? id}</Badge>)}</div>}
-      </SettingsRow>
-    </section>)}
+    {gates.tasks.length > 0 && <p className="studio-muted">{t('presetGroupHint')}</p>}
+    {groups.map(group => section(group.id, group.name, group.hint, gates.tasks.filter(task => task.presetIds.includes(group.id))))}
+    {unassigned.length > 0 && section(undefined, t('noPresetGroup'), t('noPresetGroupHint'), unassigned)}
     <DetailDialog compact open={!!choose} title={t('choosePresets')} subtitle={choose?.name} onClose={() => { setPicking(undefined); setQuery(''); }} footer={<Button primary onClick={() => { setPicking(undefined); setQuery(''); }}>{t('done')}</Button>}>
       {presets.length > 8 && <input aria-label={t('searchPresets')} placeholder={t('searchPresets')} value={query} onChange={event => setQuery(event.target.value)} />}
       <div className="studio-gate-preset-list" role="group" aria-label={`${t('presets')} ${choose?.name ?? ''}`}>{choose && shown.map(preset => <CheckOption key={preset.id} label={preset.name} checked={choose.presetIds.includes(preset.id)} onChange={checked => gates.update(choose.id, item => ({ ...item, presetIds: checked ? [...item.presetIds, preset.id] : item.presetIds.filter(id => id !== preset.id) }))} />)}</div>

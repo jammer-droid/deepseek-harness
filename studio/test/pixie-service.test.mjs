@@ -72,7 +72,7 @@ for (const mode of ['read-only', 'workspace-write']) test(`hook service restores
     assert.deepEqual(requests[0].sandboxPolicy, { mode, workspaceRoot: '/session/workspace', sessionId: 's1' });
     assert.equal(requests[0].env.PIXIE_TURN, '7');
     const run = (await service.gateRuns('s1')).runs[0]; assert.equal(run.applied, 'none'); assert.ok(run.result.notes.includes('skipped by hook'));
-    assert.deepEqual(await service.gateScripts(), { directory, supported: true, scripts: ['skip.sh'] });
+    assert.deepEqual(await service.gateScripts(), { directory, defaultDirectory: directory, custom: false, supported: true, scripts: ['skip.sh'] });
   } finally { await fiber.dispose(); }
 });
 
@@ -117,6 +117,33 @@ test('helper URL works on rc.2 web servers without a protocol getter and reads t
     server.host = '::'; assert.equal(service.helperUrl, 'http://[::1]:5555/studio/pixie-gate/helper');
     server.host = '192.168.0.4'; server.protocol = 'https:'; assert.equal(service.helperUrl, 'https://192.168.0.4:5555/studio/pixie-gate/helper');
     server.port = undefined; assert.equal(service.helperUrl, undefined);
+  } finally { await fiber.dispose(); }
+});
+
+test('script folder setting: default, custom absolute or ~ path used by runs, relative rejected, reset', async () => {
+  const { homedir } = await import('node:os');
+  const h = await harness(); const requests = [];
+  const session = { header: { cwd: '/w' } }, agent = { id: 's1', ctx: h.ctx, session };
+  for (const key of ['shell', 'sandboxPolicy', 'agentPresets', 'agents']) h.ctx.provide(key);
+  h.ctx.set('agents', { roots: () => [agent] }); h.ctx.set('agentPresets', { composedPreset: () => 'p' });
+  h.ctx.set('sandboxPolicy', { resolve: () => ({ mode: 'read-only', workspaceRoot: '/w', sessionId: 's1' }) });
+  h.ctx.set('shell', { resolve(request) { requests.push(request.command); return request; }, async execute() { return { async result() { return { exitCode: 10, timedOut: false, stdout: { text: '', truncated: false }, stderr: { text: '' } }; } }; } });
+  const custom = join(h.dataDir, 'my-gates'); await mkdir(custom);
+  await writeFile(join(custom, 'mine.sh'), '#!/bin/bash\n', { mode: 0o755 });
+  const fiber = await start(h);
+  try {
+    const service = h.ctx.get('studioPixie'); const defaultDirectory = join(h.dataDir, 'pixie-gate/commands');
+    assert.deepEqual(await service.gateScripts(), { directory: defaultDirectory, defaultDirectory, custom: false, supported: true, scripts: [] });
+    assert.deepEqual(await service.saveGateScriptDirectory(JSON.stringify({ scriptDirectory: custom })), { directory: custom, defaultDirectory, custom: true, supported: true, scripts: ['mine.sh'] });
+    const task = makeTask('gate', 'user-message', 'check'); task.enabled = true; task.presetIds = ['p']; task.advanced.script = 'mine.sh';
+    await service.saveGateDefinitions(JSON.stringify([task]));
+    const decision = { kind: 'enter', messages: [{ id: 'm', role: 'user', source: { kind: 'user' }, content: [{ type: 'text', text: 'x' }] }] };
+    await h.ctx.waterfall('agent/pre-step', { agent, turn: 1, signal: new AbortController().signal }, async () => decision);
+    assert.match(requests[0], new RegExp(`${custom.replace(/[/.]/g, m => `\\${m}`)}/mine\\.sh`));
+    assert.equal((await service.saveGateScriptDirectory(JSON.stringify({ scriptDirectory: '~/x' }))).directory, join(homedir(), 'x'));
+    await assert.rejects(service.saveGateScriptDirectory(JSON.stringify({ scriptDirectory: 'relative/path' })), /absolute path/);
+    assert.equal((await service.gateScripts()).directory, join(homedir(), 'x'));
+    assert.deepEqual(await service.saveGateScriptDirectory(JSON.stringify({ scriptDirectory: '' })), { directory: defaultDirectory, defaultDirectory, custom: false, supported: true, scripts: [] });
   } finally { await fiber.dispose(); }
 });
 
