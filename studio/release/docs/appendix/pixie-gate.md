@@ -56,6 +56,7 @@ When the verdict is stop, the replacement and addition never reach the main mode
 | Option | Default | Description |
 | --- | --- | --- |
 | Pixie hook script | None | A script run before the task. See [below](#pixie-hook-scripts) |
+| Show the result in the chat | On | Shows the result right under what the gate checked. See [Chat notes](#chat-notes-and-per-session-switches) |
 | Confirm before replacing | Off | Stops a real replacement and shows it as a suggestion (message points) |
 | On error | Pass | Pass or stop on model or script errors and timeouts |
 | Target agents | Root (child for agent messages) | Root, child, or any |
@@ -245,6 +246,16 @@ On start, Studio installs a skill with this guide and the hook rules into `<DSH 
 | The agent finishes its answer | Right under that turn's answer |
 
 A rejected instruction has no message in the chat, so its result stays in the Pixie tab only.
+
+![Gate results under the instruction, the Read and Bash calls, and the answer](../images/en/pixie-gate-chat-results.png)
+
+When the turn is folded, the instruction and answer results stay visible; tool results fold with the steps.
+
+![The same turn folded](../images/en/pixie-gate-chat-results-folded.png)
+
+Turn the setting off in the gate editor under **Advanced → Show the result in the chat**. The gate still runs and its record stays in the Pixie tab.
+
+![Show the result in the chat](../images/en/pixie-gate-show-in-chat.png)
 
 - The block shows the note when there is one, for example a translation. Without a note it shows the verdict with its reason, and any replacement or addition in a collapsed section. A failed run shows one error line.
 - If the note's first line starts with a bracketed label such as `[한국어 번역]`, the label becomes the block title. A label containing `not verified` (or `미확인`) gets a **not verified** badge.
