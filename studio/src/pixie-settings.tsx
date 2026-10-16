@@ -184,16 +184,18 @@ function JevKeyRow({ actions, locale }: { actions: PixieSettingsActions['jevKey'
   const t = (key: PixieTextKey) => pixieText(locale, key);
   const [status, setStatus] = React.useState<JevKeyStatus>();
   const [value, setValue] = React.useState('');
-  const [busy, setBusy] = React.useState(false);
+  const [busy, setBusy] = React.useState<'save' | 'remove'>();
+  const [done, setDone] = React.useState<'save' | 'remove'>();
   const [error, setError] = React.useState('');
   React.useEffect(() => {
     if (!actions) { setStatus({ available: false, configured: false, writable: false }); return; }
     void actions.status().then(setStatus, reason => setError(reason instanceof Error ? reason.message : String(reason)));
   }, [actions]);
-  const run = async (call: () => Promise<JevKeyStatus>) => {
-    setBusy(true); setError('');
-    try { setStatus(await call()); setValue(''); } catch (reason) { setError(reason instanceof Error ? reason.message : String(reason)); }
-    finally { setBusy(false); }
+  // Overwriting a stored key leaves the status line unchanged, so the result is confirmed beside the buttons.
+  const run = async (kind: 'save' | 'remove', call: () => Promise<JevKeyStatus>) => {
+    setBusy(kind); setDone(undefined); setError('');
+    try { setStatus(await call()); setValue(''); setDone(kind); } catch (reason) { setError(reason instanceof Error ? reason.message : String(reason)); }
+    finally { setBusy(undefined); }
   };
   const source = status?.source ?? '';
   const state = !status ? t('loading') : !status.available ? t('jevKeyUnavailable')
@@ -203,9 +205,10 @@ function JevKeyRow({ actions, locale }: { actions: PixieSettingsActions['jevKey'
     <p role="status" className="studio-muted">{readOnly ? t('jevKeyReadOnly').replace('{source}', source) : state}</p>
     {error && <Notice action={<Button small onClick={() => setError('')}>{t('dismiss')}</Button>}>{`${t('jevKeyFailed')} (${error})`}</Notice>}
     {actions && status?.available && !readOnly && <div className="studio-inline-actions">
-      <input className="studio-compact" type="password" autoComplete="off" aria-label={t('jevKey')} placeholder={t('jevKeyPlaceholder')} value={value} onChange={event => setValue(event.target.value)} />
-      <Button small primary disabled={busy || !value.trim()} onClick={() => { void run(() => actions.save(value)); }}>{t('jevKeySave')}</Button>
-      {status.configured && <Button small disabled={busy} onClick={() => { void run(() => actions.remove()); }}>{t('jevKeyDelete')}</Button>}
+      <input className="studio-compact" type="password" autoComplete="off" aria-label={t('jevKey')} placeholder={t('jevKeyPlaceholder')} value={value} onChange={event => { setValue(event.target.value); setDone(undefined); }} />
+      <Button small primary disabled={!!busy || !value.trim()} onClick={() => { void run('save', () => actions.save(value)); }}>{t(busy === 'save' ? 'jevKeySaving' : 'jevKeySave')}</Button>
+      {status.configured && <Button small disabled={!!busy} onClick={() => { void run('remove', () => actions.remove()); }}>{t(busy === 'remove' ? 'jevKeyRemoving' : 'jevKeyDelete')}</Button>}
+      {done && <span role="status" className="studio-muted">{t(done === 'save' ? 'jevKeySaved' : 'jevKeyRemoved')}</span>}
     </div>}
   </SettingsRow>;
 }

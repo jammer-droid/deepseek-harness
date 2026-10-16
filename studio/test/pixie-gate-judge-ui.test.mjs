@@ -62,8 +62,26 @@ test('Jev engine shows the model field and a key row that never displays the val
   assert.deepEqual(keyCalls, [['save', 'ts-secret']]);
   assert.equal(input(host, 'TypeSafe API key').value, '');
   assert.match(host.textContent, /Set · Source: store/); assert.doesNotMatch(host.textContent, /ts-secret/);
+  // Overwriting keeps the status line, so the row confirms each result itself.
+  assert.match(host.textContent, /Key saved\./);
+  await change(input(host, 'TypeSafe API key'), 'next');
+  assert.doesNotMatch(host.textContent, /Key saved\./);
   await click(button(host, 'Remove key'));
   assert.deepEqual(keyCalls[1], ['remove']);
+  assert.match(host.textContent, /Key removed\./);
+});
+
+test('the key row shows progress while saving and no confirmation on failure', async t => {
+  let release;
+  const jevKey = { status: async () => ({ available: true, configured: false, writable: true }), save: () => new Promise((_, reject) => { release = () => reject(new Error('disk full')); }), remove: async () => assert.fail() };
+  const host = await render(t, PixieSettingsPage, { actions: { read: async () => ({ contextMode: 'fresh', systemPrompt: '', allowThreadModel: true, judgeEngine: 'jev' }), models: catalog, save: async v => v, jevKey } });
+  await openJudge(host);
+  await change(input(host, 'TypeSafe API key'), 'k');
+  await click(button(host, 'Save key'));
+  assert.ok(button(host, 'Saving…')?.disabled);
+  await act(async () => release());
+  assert.match(host.textContent, /Could not update the key\. \(disk full\)/); assert.doesNotMatch(host.textContent, /Key saved/);
+  assert.equal(input(host, 'TypeSafe API key').value, 'k');
 });
 
 test('a read-only key source hides the input; no credentials service explains why', async t => {
