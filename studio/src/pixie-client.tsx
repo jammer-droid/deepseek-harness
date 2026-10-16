@@ -129,9 +129,16 @@ export function mountPixie(ctx: StudioContext, options: { navFooter?: (locale: s
     save: (entries: GateTask[]) => unwrap(remote().saveGateDefinitions(JSON.stringify(entries))),
     scripts: () => unwrap(remote().gateScripts()),
     saveScriptDirectory: (scriptDirectory: string) => unwrap(remote().saveGateScriptDirectory(JSON.stringify({ scriptDirectory }))),
-    presets: () => {
-      const catalog = ctx.get('remote.studioCatalog' as never) as unknown as { listPresets(): RemoteValue<{ id: string; name: string }[]> };
-      return unwrap(catalog.listPresets());
+    // Studio-made presets only: Studio Master is a read-only view of the DSH composition, not a Studio preset.
+    presets: async () => {
+      const catalog = ctx.get('remote.studioCatalog' as never) as unknown as { listPresets(): RemoteValue<{ id: string; name: string; readOnly?: boolean }[]> };
+      return (await unwrap(catalog.listPresets())).filter(preset => !preset.readOnly).map(({ id, name }) => ({ id, name }));
+    },
+    // Public session Remote: verifies the Host path and opens it in Finder or Explorer.
+    openFolder: async (path: string) => {
+      const session = ctx.get('remote.session' as never) as unknown as { openWorkspacePath(request: { path: string; action?: 'reveal' }): RemoteValue<unknown> } | undefined;
+      if (!session) throw new Error('Opening folders is not available here');
+      await unwrap(session.openWorkspacePath({ path }));
     },
   };
   function SettingsPage() {

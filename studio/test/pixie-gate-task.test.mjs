@@ -5,7 +5,7 @@ import { createRoot } from 'react-dom/client';
 import { Simulate } from 'react-dom/test-utils';
 import { JSDOM } from 'jsdom';
 import { PixieSettingsPage } from '../src/pixie-settings.tsx';
-import { GATE_TEMPLATES, makeTask, taskProblem, taskVariables } from '../src/pixie-gate-task.ts';
+import { GATE_TEMPLATES, GATE_WHENS, makeTask, taskProblem, taskVariables } from '../src/pixie-gate-task.ts';
 const dom = new JSDOM('<!doctype html><body></body>');
 globalThis.window = dom.window; globalThis.document = dom.window.document; globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 const button = (h, name) => [...h.querySelectorAll('button')].find(b => (b.getAttribute('aria-label') || b.textContent) === name);
@@ -16,20 +16,21 @@ const change = async (el, value) => { assert.ok(el); await act(async () => { el.
 const SCRIPTS = ['only-search-tools.sh', 'measure-subtitle.sh', 'list-changed-files.sh'];
 async function settings(t, locale = 'en', options = {}) {
   const host = document.createElement('div'); document.body.append(host); const root = createRoot(host);
-  const saved = [], trials = [], folders = [];
+  const saved = [], trials = [], folders = [], opened = [];
   const defaultDirectory = '/profile/studio-data/pixie-gate/commands';
   const list = directory => ({ directory: directory || defaultDirectory, defaultDirectory, custom: !!directory, supported: options.supported ?? true, scripts: SCRIPTS });
   const gateActions = {
     read: async () => options.read ?? { entries: [], invalid: [] },
-    presets: async () => [{ id: 'p', name: 'Preset' }],
+    presets: async () => options.presets ?? [{ id: 'p', name: 'Preset' }, { id: 'q', name: 'Other' }],
     save: async tasks => { if (options.saveError) throw new Error(options.saveError); saved.push(structuredClone(tasks)); return tasks; },
     scripts: async () => list(''),
     saveScriptDirectory: async directory => { if (directory && !/^[~/]/.test(directory)) throw new Error('Gate script folder must be an absolute path'); folders.push(directory); return list(directory.replace(/^~/, '/home/me')); },
+    openFolder: async path => { opened.push(path); if (options.openError) throw new Error(options.openError); },
     trial: request => { trials.push(request); return { result: options.trial ? Promise.resolve(options.trial) : new Promise(() => {}), cancel() { trials.cancelled = true; } }; },
   };
   await act(async () => root.render(React.createElement(PixieSettingsPage, { locale, gateActions, actions: { read: async () => ({ contextMode: 'fresh', systemPrompt: '', allowThreadModel: false }), models: async () => ({ groups: [] }), save: async s => s } })));
   t.after(async () => { await act(async () => root.unmount()); host.remove(); });
-  host.saved = saved; host.trials = trials; host.folders = folders;
+  host.saved = saved; host.trials = trials; host.folders = folders; host.opened = opened;
   return host;
 }
 const page = (h, label) => h.querySelector(`section[aria-label="${label}"]`);
@@ -55,9 +56,9 @@ test('Save sends the whole edited list and reports failures', async t => {
   const editor = [...comp.querySelectorAll('dialog')].find(d => input(d, 'What Pixie does'));
   await click(button(editor, 'Apply'));
   assert.match(comp.textContent, /Unsaved changes/);
-  await click(input(page(host, 'Scope'), 'Enabled Instruction format check'));
+  await click(input(comp, 'Gate on Instruction format check'));
   await click(button(comp, 'Save'));
-  assert.equal(host.saved.length, 1); assert.equal(host.saved[0][0].name, 'Instruction format check'); assert.equal(host.saved[0][0].enabled, true);
+  assert.equal(host.saved.length, 1); assert.equal(host.saved[0][0].name, 'Instruction format check'); assert.equal(host.saved[0][0].enabled, false);
   assert.equal(button(comp, 'Saved').disabled, true); assert.doesNotMatch(comp.textContent, /Unsaved changes/);
 });
 test('a failed save keeps the draft and shows the Host error', async t => {
@@ -72,36 +73,37 @@ test('a failed save keeps the draft and shows the Host error', async t => {
   assert.equal(button(comp, 'Save').disabled, false);
 });
 
-test('new gate starts from templates; background tasks are listed but not selectable', async t => {
+test('new gate offers one template per point and the blank gate, with no coming-soon entries', async t => {
   const host = await settings(t);
   const comp = page(host, 'Gate composition');
   await click(button(comp, 'New gate'));
   const picker = comp.querySelector('dialog');
-  assert.match(picker.textContent, /Instruction format check/);
-  assert.equal(pick(picker, 'Pre-compaction'), undefined);
-  assert.match(picker.querySelector('[aria-disabled=true]').textContent, /Coming soon/);
-  await click(pick(picker, 'Translate the final answer'));
+  assert.deepEqual([...picker.querySelectorAll('.studio-pick-title')].map(el => el.textContent), [
+    'Instruction format checkWhen you send an instruction', 'Agent message protocolWhen agents message each other', 'Block risky commandsBefore a tool runs',
+    'Digest long tool resultsWhen a tool result arrives', 'Verify the final answerWhen the agent finishes its answer', 'Blank gate']);
+  assert.equal(picker.querySelector('[aria-disabled=true]'), null); assert.doesNotMatch(picker.textContent, /Coming soon/);
+  await click(pick(picker, 'Verify the final answer'));
   const editor = [...comp.querySelectorAll('dialog')].find(d => input(d, 'What Pixie does'));
   assert.equal(input(editor, 'When').value, 'turn-end');
-  assert.match(input(editor, 'What Pixie does').value, /translate it into Korean/);
-  assert.equal(input(editor, 'Confirm before replacing'), null);
+  assert.equal(input(editor, 'Judge question (passes when “yes” is likely)').value, 'Does this answer fully satisfy the user’s request?');
   await click(button(editor, 'Apply'));
   const card = comp.querySelector('[data-gate-task]');
-  assert.match(card.querySelector('.studio-gate-sentence').textContent, /When the agent finishes its answer→If the answer is in English/);
+  assert.match(card.querySelector('.studio-gate-sentence').textContent, /When the agent finishes its answer→Check that the answer covers/);
+  assert.equal(input(card, 'Gate on Verify the final answer').getAttribute('aria-checked'), 'true');
 });
 
 test('editor shows two fields up front; script, judge and limits live under Advanced', async t => {
   const host = await settings(t);
   const comp = page(host, 'Gate composition');
   await click(button(comp, 'New gate'));
-  await click(pick(comp.querySelector('dialog'), 'Subtitle translation prep'));
+  await click(pick(comp.querySelector('dialog'), 'Instruction format check'));
   const editor = [...comp.querySelectorAll('dialog')].find(d => input(d, 'What Pixie does'));
   const advanced = editor.querySelector('details.studio-disclosure');
   assert.ok(advanced.contains(input(editor, 'Pixie hook script')));
-  assert.equal(input(editor, 'Pixie hook script').value, 'measure-subtitle.sh');
+  assert.deepEqual([...input(editor, 'Pixie hook script').options].map(o => o.value), ['', ...SCRIPTS]);
+  await change(input(editor, 'Pixie hook script'), 'measure-subtitle.sh');
   assert.match(editor.querySelector('.studio-gate-vars').textContent, /\{\{hooks\.measure-subtitle\.text\}\}/);
   assert.match(advanced.textContent, /\/profile\/studio-data\/pixie-gate\/commands/);
-  assert.deepEqual([...input(editor, 'Pixie hook script').options].map(o => o.value), ['', ...SCRIPTS]);
   assert.ok(advanced.contains(input(editor, 'Decide the verdict with the judge model')));
   assert.ok(input(editor, 'Confirm before replacing'));
   await change(input(editor, 'What Pixie does'), '');
@@ -129,8 +131,9 @@ test('a running trial can be cancelled', async t => {
   const host = await settings(t);
   const comp = page(host, 'Gate composition');
   await click(button(comp, 'New gate'));
-  await click(pick(comp.querySelector('dialog'), 'Digest search results'));
+  await click(pick(comp.querySelector('dialog'), 'Digest long tool results'));
   const editor = [...comp.querySelectorAll('dialog')].find(d => input(d, 'What Pixie does'));
+  await change(input(editor, 'Pixie hook script'), 'only-search-tools.sh');
   assert.match(editor.textContent, /Trials do not run the hook script/);
   await change(input(editor, 'Sample tool name (optional)'), 'grep');
   await change(input(editor, 'Sample the tool result'), 'lines');
@@ -140,7 +143,7 @@ test('a running trial can be cancelled', async t => {
   assert.equal(host.trials.cancelled, true); assert.ok(button(editor, 'Run'));
 });
 
-test('scope groups gates by preset; unassigned gates come last and move when a preset is chosen', async t => {
+test('scope lists Studio presets, adds gates per preset, and switches one preset without touching another', async t => {
   const host = await settings(t);
   const comp = page(host, 'Gate composition');
   await click(button(comp, 'New gate'));
@@ -149,33 +152,58 @@ test('scope groups gates by preset; unassigned gates come last and move when a p
   await change(input(editor, 'What Pixie does'), 'Check it');
   await click(button(editor, 'Apply'));
   const scope = page(host, 'Scope');
-  const groups = () => [...scope.querySelectorAll('[data-gate-preset]')].map(el => [el.dataset.gatePreset, [...el.querySelectorAll('[data-gate-scope] strong')].map(s => s.textContent)]);
-  assert.deepEqual(groups(), [['', ['New gate']]]);
-  assert.match(scope.querySelector('[data-gate-preset=""]').textContent, /No preset.*1 gates · 0 on.*run for no agent/s);
-  await click(input(scope, 'Enabled New gate'));
-  await click(button(scope.querySelector('[data-gate-scope]'), 'Presets'));
-  await click(input(scope, 'Presets New gate').querySelector('input'));
-  await click(button(scope, 'Done'));
-  assert.deepEqual(groups(), [['p', ['New gate']]]);
-  assert.match(scope.querySelector('[data-gate-preset="p"]').textContent, /Preset.*1 gates · 1 on/);
-  assert.match(comp.querySelector('[data-gate-task]').textContent, /On.*1 presets/s);
+  const preset = id => scope.querySelector(`[data-gate-preset="${id}"]`);
+  assert.match(preset('p').textContent, /Preset.*0 gates · 0 on.*No gates on this preset/s);
+  assert.match(scope.querySelector('[data-gate-preset=""]').textContent, /Gates on no preset.*New gate/s);
+  for (const id of ['p', 'q']) {
+    await click(button(preset(id), 'Add gate'));
+    const dialog = [...scope.querySelectorAll('dialog')].find(d => d.open);
+    await click(pick(dialog, 'New gate'));
+  }
+  assert.equal(scope.querySelector('[data-gate-preset=""]'), null);
+  assert.match(comp.querySelector('[data-gate-task]').textContent, /2 presets/);
+  const toggle = id => input(preset(id), 'Enabled New gate');
+  assert.equal(toggle('p').getAttribute('aria-checked'), 'true'); assert.equal(toggle('q').getAttribute('aria-checked'), 'true');
+  await click(toggle('p'));
+  assert.equal(toggle('p').getAttribute('aria-checked'), 'false');
+  assert.equal(toggle('q').getAttribute('aria-checked'), 'true');
+  assert.match(preset('p').textContent, /1 gates · 0 on/); assert.match(preset('q').textContent, /1 gates · 1 on/);
+  await click(button(preset('q'), 'Add gate'));
+  assert.match([...scope.querySelectorAll('dialog')].find(d => d.open).textContent, /No gate to add/);
+  await click(button([...scope.querySelectorAll('dialog')].find(d => d.open), 'Close'));
   await click(button(comp.querySelector('[data-gate-task]'), 'Duplicate'));
-  const cards = comp.querySelectorAll('[data-gate-task]');
-  assert.equal(cards.length, 2); assert.match(cards[1].textContent, /Off/);
-  assert.deepEqual(groups(), [['p', ['New gate', 'New gate (Duplicate)']]]);
-  await click(input(scope, 'Enabled New gate (Duplicate)'));
-  assert.equal(scope.querySelectorAll('[data-gate-preset="p"] .studio-badge').length >= 2, true);
-  assert.match(scope.textContent, /More than one enabled gate at this moment/);
-  await click(button(cards[1], 'Delete'));
-  assert.equal(comp.querySelectorAll('[data-gate-task]').length, 1);
-  assert.doesNotMatch(scope.textContent, /More than one enabled gate/);
+  await click(button(preset('q'), 'Add gate'));
+  await click(pick([...scope.querySelectorAll('dialog')].find(d => d.open), 'New gate (Duplicate)'));
+  assert.match(preset('q').textContent, /More than one enabled gate at this moment/);
+  assert.doesNotMatch(preset('p').textContent, /More than one enabled gate/);
+  await click(button(preset('q').querySelector('[data-gate-scope]'), 'Remove from preset'));
+  assert.doesNotMatch(preset('q').textContent, /More than one enabled gate/);
+  await click(button(comp, 'Save'));
+  const [first, copy] = host.saved[0];
+  assert.deepEqual([first.presetIds, first.disabledPresetIds, first.enabled], [['p'], ['p'], true]);
+  assert.deepEqual([copy.presetIds, copy.disabledPresetIds], [['q'], undefined]);
+  await click(input(comp, 'Gate on New gate'));
+  assert.equal(toggle('p').disabled, true); assert.match(preset('p').textContent, /The gate is off everywhere/);
+});
+test('scope shows only presets the Host lists as Studio presets and keeps foreign attachments removable', async t => {
+  const task = { ...makeTask('Old'), instruction: 'x', presetIds: ['standard'] };
+  const host = await settings(t, 'en', { read: { entries: [task], invalid: [] }, presets: [] });
+  const scope = page(host, 'Scope');
+  assert.match(scope.textContent, /No presets made in Studio yet/);
+  const other = scope.querySelector('[data-gate-preset="other"]');
+  assert.match(other.textContent, /Old · standard/); assert.equal(input(other, 'Enabled Old · standard'), null);
+  await click(button(other, 'Remove from preset'));
+  assert.match(scope.querySelector('[data-gate-preset=""]').textContent, /Old/);
 });
 
 test('script folder shows the default, saves a custom folder and resets it', async t => {
   const host = await settings(t);
   const scope = page(host, 'Scope');
   const folder = scope.querySelector('section[aria-label="Script folder"]');
-  assert.match(folder.textContent, /Default folder: \/profile\/studio-data\/pixie-gate\/commands · 3 scripts/);
+  assert.match(folder.textContent, /Default folder: \/profile\/studio-data\/pixie-gate\/commands$/);
+  assert.doesNotMatch(folder.textContent, /\d+ scripts/);
+  await click(button(folder, 'Open folder'));
+  assert.deepEqual(host.opened, ['/profile/studio-data/pixie-gate/commands']);
   assert.equal(button(folder, 'Use default').disabled, true);
   await change(input(folder, 'Script folder'), '~/my-gates');
   await click(button(folder, 'Use folder'));
@@ -188,15 +216,21 @@ test('script folder shows the default, saves a custom folder and resets it', asy
   await click(button(folder, 'Use folder'));
   assert.match(folder.querySelector('[role=alert]').textContent, /Could not change the folder \(Gate script folder must be an absolute path\)/);
 });
+test('opening the script folder reports a failure', async t => {
+  const host = await settings(t, 'en', { openError: 'Path has no verified Host path' });
+  const folder = page(host, 'Scope').querySelector('section[aria-label="Script folder"]');
+  await click(button(folder, 'Open folder'));
+  assert.match(folder.querySelector('[role=alert]').textContent, /Could not open the folder \(Path has no verified Host path\)/);
+});
 
 test('hook script points to the guide instead of inlining its contract', async t => {
   const host = await settings(t);
   const comp = page(host, 'Gate composition');
   await click(button(comp, 'New gate'));
-  await click(pick(comp.querySelector('dialog'), 'Digest search results'));
+  await click(pick(comp.querySelector('dialog'), 'Digest long tool results'));
   const editor = [...comp.querySelectorAll('dialog')].find(d => input(d, 'What Pixie does'));
   assert.equal(input(editor, 'Tools'), null);
-  assert.equal(input(editor, 'Pixie hook script').value, 'only-search-tools.sh');
+  assert.equal(input(editor, 'Pixie hook script').value, '');
   const link = [...editor.querySelectorAll('a')].find(a => a.textContent === 'Script guide');
   assert.match(link.getAttribute('href'), /docs\/appendix\/pixie-gate\.md$/);
   assert.doesNotMatch(editor.textContent, /PIXIE_TOOL_NAME|exit code/i);
@@ -214,7 +248,7 @@ test('a stored script missing from the folder stays selectable and unsupported e
 });
 
 test('task model: templates, variables and problems', () => {
-  assert.equal(GATE_TEMPLATES.filter(item => !item.available).length, 2);
+  assert.deepEqual(GATE_TEMPLATES.map(item => item.when), GATE_WHENS);
   const task = makeTask('x'); task.instruction = 'do';
   assert.deepEqual(taskVariables(task), []);
   task.advanced.script = 'list-changed-files.sh';

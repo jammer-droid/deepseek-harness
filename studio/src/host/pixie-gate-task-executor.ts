@@ -1,5 +1,5 @@
 import type { HookContext } from './pixie-gate-script.ts';
-import type { GateTask } from '../pixie-gate-task.ts';
+import { enabledFor, type GateTask } from '../pixie-gate-task.ts';
 import type { GateResult } from '../pixie-gate-contracts.ts';
 import { gateOutputPlan, type GateOutput } from '../pixie-gate-task-contracts.ts';
 import type { GateTaskRunner, GateTaskExecution } from './pixie-gate-task-runner.ts';
@@ -37,4 +37,4 @@ export function recordAppliedResult(execution: Awaited<ReturnType<typeof execute
 }
 
 export const taskPoint = (task: GateTask) => task.when === 'user-message' || task.when === 'agent-message' ? 'input' as const : task.when;
-export const taskMatches = (task: GateTask, preset: string, root: boolean) => task.enabled && task.presetIds.includes(preset) && (task.advanced.agents === 'any' || (task.advanced.agents === 'root') === root);
+export const taskMatches = (task: GateTask, preset: string, root: boolean) => enabledFor(task, preset) && (task.advanced.agents === 'any' || (task.advanced.agents === 'root') === root);

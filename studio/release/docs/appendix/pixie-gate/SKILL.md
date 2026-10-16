@@ -41,9 +41,9 @@ Do not edit `definitions.json` unless the user asks you to; prefer guiding them 
 ```json
 { "id": "<uuid>", "name": "…", "enabled": true, "when": "user-message", "instruction": "…",
   "advanced": { "confirmReplace": false, "onError": "pass", "agents": "root", "timeoutMs": 60000, "maxSteers": 1, "script": "optional.sh", "judge": { "question": "…", "threshold": 0.5 } },
-  "presetIds": ["<preset id>"] }
+  "presetIds": ["<preset id>"], "disabledPresetIds": ["<attached preset where it is off>"] }
 ```
 
-Only one enabled gate per preset and `when`. Studio validates the file on save and on read; invalid entries are ignored at runtime.
+`enabled` switches the gate everywhere; `disabledPresetIds` (optional) switches it off for listed attached presets only. Only one gate per preset and `when` may be on for that preset. Studio validates the file on save and on read; invalid entries are ignored at runtime.
 
 Tell the user how to verify: run **Try it** in the editor (it skips scripts), then send a real message in a session using the chosen preset and open the gate record in the Pixie tab. Report what the record shows, not what should happen.

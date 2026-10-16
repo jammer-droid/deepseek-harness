@@ -32,6 +32,19 @@ test('bindings use when, not the combined input runtime point', () => {
   assert.throws(() => validateGateTasks([a, { ...b, id: a.id }]));
   assert.equal(validateGateTasks([a, { ...b, when: a.when, enabled: false }]).length, 2);
 });
+test('per-preset switch: off on one preset never affects another, and only that preset frees its binding', async () => {
+  const { taskMatches } = await import('../src/host/pixie-gate-task-executor.ts');
+  const shared = { ...task(), presetIds: ['p', 'q'], disabledPresetIds: ['p'] };
+  assert.equal(taskMatches(shared, 'p', true), false);
+  assert.equal(taskMatches(shared, 'q', true), true);
+  assert.equal(taskMatches({ ...shared, enabled: false }, 'q', true), false);
+  const other = { ...task(), id: 'other', presetIds: ['p'] };
+  assert.equal(validateGateTasks([shared, other]).length, 2);
+  assert.throws(() => validateGateTasks([{ ...shared, disabledPresetIds: [] }, other]), /Only one enabled gate/);
+  assert.deepEqual(validateGateTask({ ...shared, disabledPresetIds: ['p', 'p', 'gone'] }).disabledPresetIds, ['p']);
+  assert.equal('disabledPresetIds' in validateGateTask({ ...shared, disabledPresetIds: ['gone'] }), false);
+  assert.throws(() => validateGateTask({ ...shared, disabledPresetIds: 'p' }), /disabledPresetIds/);
+});
 test('output JSON defaults omitted verdict and rejects invalid explicit verdicts', () => {
   assert.deepEqual(parseGateOutput('{}'), { verdict: 'pass' });
   assert.deepEqual(parseGateOutput('{"append":"a"}'), { verdict: 'pass', append: 'a' });

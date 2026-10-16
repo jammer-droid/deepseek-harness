@@ -27,22 +27,22 @@ export interface GateTask {
     /** Turn end only. */
     maxSteers: number;
   };
+  /** Presets the gate is attached to. */
   presetIds: string[];
+  /** Attached presets where this gate is switched off; `enabled` stays the gate-wide switch. */
+  disabledPresetIds?: string[];
 }
 
-export type GateTemplateId = 'format-check' | 'agent-protocol' | 'translate-answer' | 'verify-answer' | 'search-digest' | 'subtitle-prep' | 'precompact' | 'file-index';
-export interface GateTemplate { id: GateTemplateId; when: GateWhen; available: boolean; script?: string; judge?: true }
+export type GateTemplateId = 'format-check' | 'agent-protocol' | 'command-guard' | 'tool-digest' | 'verify-answer';
+export interface GateTemplate { id: GateTemplateId; when: GateWhen; judge?: true }
 
-/** Templates first (U21). Background tasks are listed but not available until implemented. */
+/** One representative template per point (U21); the blank gate comes last. */
 export const GATE_TEMPLATES: readonly GateTemplate[] = [
-  { id: 'format-check', when: 'user-message', available: true },
-  { id: 'agent-protocol', when: 'agent-message', available: true },
-  { id: 'translate-answer', when: 'turn-end', available: true },
-  { id: 'verify-answer', when: 'turn-end', available: true, judge: true },
-  { id: 'search-digest', when: 'tool-after', available: true, script: 'only-search-tools.sh' },
-  { id: 'subtitle-prep', when: 'user-message', available: true, script: 'measure-subtitle.sh' },
-  { id: 'precompact', when: 'turn-end', available: false },
-  { id: 'file-index', when: 'tool-before', available: false },
+  { id: 'format-check', when: 'user-message' },
+  { id: 'agent-protocol', when: 'agent-message' },
+  { id: 'command-guard', when: 'tool-before' },
+  { id: 'tool-digest', when: 'tool-after' },
+  { id: 'verify-answer', when: 'turn-end', judge: true },
 ];
 
 /** Pixie Gate guide: result rules, script contract, environment, helpers, and examples (U22, U23). */
@@ -53,6 +53,9 @@ export const HOOK_EXIT = { continue: 0, skip: 10 } as const;
 export const HOOK_ENV: readonly string[] = ['PIXIE_POINT', 'PIXIE_TOOL_NAME', 'PIXIE_TOOL_ARGS', 'PIXIE_AGENT', 'PIXIE_SESSION_ID', 'PIXIE_TURN', 'PIXIE_GATE_NAME', 'PIXIE_URL', 'PIXIE_TOKEN'];
 export const HOOK_HELPERS: readonly string[] = ['pixie ask', 'pixie judge'];
 
+/** On for this preset: switched on, attached, and not switched off for that preset. */
+export const enabledFor = (task: GateTask, preset: string) => task.enabled && task.presetIds.includes(preset) && !task.disabledPresetIds?.includes(preset);
+
 /** Points whose message can be replaced or extended before the model reads it. */
 export const canReplace = (when: GateWhen) => when === 'user-message' || when === 'agent-message' || when === 'tool-after';
 export const isTool = (when: GateWhen) => when === 'tool-before' || when === 'tool-after';
@@ -60,7 +63,7 @@ export const isMessage = (when: GateWhen) => when === 'user-message' || when ===
 
 export function makeTask(name: string, when: GateWhen = 'user-message', instruction = ''): GateTask {
   return {
-    id: globalThis.crypto.randomUUID(), name, enabled: false, when, instruction,
+    id: globalThis.crypto.randomUUID(), name, enabled: true, when, instruction,
     advanced: { confirmReplace: false, onError: 'pass', agents: when === 'agent-message' ? 'child' : 'root', timeoutMs: 60000, maxSteers: 1 },
     presetIds: [],
   };
@@ -69,7 +72,6 @@ export function makeTask(name: string, when: GateWhen = 'user-message', instruct
 /** A gate built from a template; text comes from the caller's locale. */
 export function taskFromTemplate(template: GateTemplate, text: { name: string; instruction: string; question?: string }): GateTask {
   const task = makeTask(text.name, template.when, text.instruction);
-  if (template.script) task.advanced.script = template.script;
   if (template.judge && text.question) task.advanced.judge = { question: text.question, threshold: 0.5 };
   return task;
 }

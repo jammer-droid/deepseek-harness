@@ -1,4 +1,4 @@
-import { GATE_WHENS, taskProblem, type GateTask } from './pixie-gate-task.ts';
+import { GATE_WHENS, enabledFor, taskProblem, type GateTask } from './pixie-gate-task.ts';
 
 const object = (value: unknown): value is Record<string, unknown> => !!value && typeof value === 'object' && !Array.isArray(value);
 const text = (value: unknown): value is string => typeof value === 'string' && !!value.trim();
@@ -15,6 +15,7 @@ export function validateGateTask(value: unknown): GateTask {
   if (advanced.script !== undefined && (typeof advanced.script !== 'string' || (!/^[A-Za-z0-9][A-Za-z0-9_.-]*$/.test(advanced.script) || advanced.script.includes('..')))) throw new Error('Invalid gate script filename');
   if (advanced.judge !== undefined && (!object(advanced.judge) || typeof advanced.judge.question !== 'string' || typeof advanced.judge.threshold !== 'number')) throw new Error('Invalid gate judge');
   if (!Array.isArray(value.presetIds) || !value.presetIds.every(text)) throw new Error('Invalid gate presetIds');
+  if (value.disabledPresetIds !== undefined && (!Array.isArray(value.disabledPresetIds) || !value.disabledPresetIds.every(text))) throw new Error('Invalid gate disabledPresetIds');
   const name = typeof advanced.script === 'string' ? advanced.script.replace(/\.[^.]+$/, '') : undefined;
   for (const match of value.instruction.matchAll(/{{\s*([^{}]+?)\s*}}/g)) {
     if (!name || ![`hooks.${name}.text`, `hooks.${name}.data`].includes(match[1]!)) throw new Error(`Unknown prompt variable: ${match[1]}`);
@@ -23,6 +24,9 @@ export function validateGateTask(value: unknown): GateTask {
   const problem = taskProblem(task);
   if (problem) throw new Error(`Invalid gate ${problem}`);
   task.presetIds = [...new Set(task.presetIds)];
+  // Only attached presets can be switched off; an empty list is not stored.
+  const disabled = [...new Set(task.disabledPresetIds ?? [])].filter(id => task.presetIds.includes(id));
+  if (disabled.length) task.disabledPresetIds = disabled; else delete task.disabledPresetIds;
   return task;
 }
 
@@ -35,8 +39,9 @@ export function validateGateTasks(value: unknown): GateTask[] {
     ids.add(task.id);
     for (const preset of task.presetIds) {
       const key = JSON.stringify([preset, task.when]);
-      if (task.enabled && bindings.has(key)) throw new Error('Only one enabled gate per preset and when is supported');
-      if (task.enabled) bindings.add(key);
+      if (!enabledFor(task, preset)) continue;
+      if (bindings.has(key)) throw new Error('Only one enabled gate per preset and when is supported');
+      bindings.add(key);
     }
     return task;
   });

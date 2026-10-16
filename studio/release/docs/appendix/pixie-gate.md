@@ -16,13 +16,13 @@ Pixie Gate lets the **Pixie model read, judge, and rework content** at a set mom
 ## Create a gate
 
 1. In **Studio → Pixie → Settings → Model**, choose the Pixie model. Gates and the helper use it. To use a separate judge model, choose it on the **Judge** page.
-2. In **Gates → Gate composition**, press **New gate** and pick a template. The blank gate is last.
+2. In **Gates → Gate composition**, press **New gate** and pick a template. Each point has one representative template (instruction format check, agent message protocol, block risky commands, digest long tool results, verify the final answer); the blank gate is last. The switch on each card turns the gate on or off everywhere.
 3. Set **When** and **What Pixie does**. Write the task in plain words: whether to pass or stop, what to replace or add, and what note to show only to you.
 4. Put a sample in **Try it** and run it. The configured Pixie model really answers; nothing is recorded or sent to a session.
 5. Press **Apply**, then **Save** at the top of the page. Only saved gates apply to runs.
-6. In **Gates → Scope**, turn the gate on, choose the presets it applies to, and save. The page groups gates by preset; gates without a preset are listed last. A gate runs only for agents using those presets.
+6. **Gates → Scope** lists the presets made in Studio. Use **Add gate** on a preset to attach a gate, and the row switch to turn it on or off **for that preset only**. A gate can be attached to several presets; one preset's switch never affects another. Save to apply. A gate runs only for agents using those presets.
 
-Only one enabled gate per preset and **When** is allowed. Saved definitions live in `<profile>/studio-data/pixie-gate/definitions.json`.
+Only one enabled gate per preset and **When** is allowed (the page warns, and saving is refused). Saved definitions live in `<profile>/studio-data/pixie-gate/definitions.json`.
 
 ## When, and how results apply
 
@@ -64,7 +64,7 @@ When the verdict is stop, the replacement and addition never reach the main mode
 
 Build flows the two fields cannot express — only certain tools, translate → judge → retranslate loops, external measurements — as a script. Studio does not build features one by one; it gives scripts the means.
 
-- **Location:** the default is `<profile>/studio-data/pixie-gate/commands/`; change it under **Gates → Scope → Script folder** to another absolute or `~/…` path. Leave it empty to restore the default; the folder is not created for you. Only executable files (`chmod +x`) in that folder can be chosen. Subfolders, links pointing outside the folder, and names containing `..` are excluded. Press **Refresh list** after adding a file.
+- **Location:** the default is `<profile>/studio-data/pixie-gate/commands/`; change it under **Gates → Scope → Script folder** to another absolute or `~/…` path, and use **Open folder** to show it in Finder or Explorer (when DSH runs on your desktop). Leave it empty to restore the default; the folder is not created for you. Only executable files (`chmod +x`) in that folder can be chosen. Subfolders, links pointing outside the folder, and names containing `..` are excluded. Press **Refresh list** after adding a file.
 - **Supported environments:** available only when DSH runs with a bash profile (macOS and Linux). Windows is not supported yet; where scripts are unsupported the gate does not run them and applies its error policy.
 - **Working directory and sandbox:** scripts run in the session working directory through the DSH shell service, under the session's sandbox policy. A read-only session cannot write files.
 - **Trials** do not run the script because no session policy is known. Check it in a real session.
