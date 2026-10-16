@@ -7,7 +7,6 @@ import { JSDOM } from 'jsdom';
 import { GateComposer, stageVariables } from '../src/pixie-gate-composer.tsx';
 import { makeTemplateGate } from '../src/pixie-gate-editor.tsx';
 import { validateGateDefinition } from '../src/pixie-gate-contracts.ts';
-import { PixieSettingsPage } from '../src/pixie-settings.tsx';
 const dom = new JSDOM('<!doctype html><body></body>');
 globalThis.window = dom.window; globalThis.document = dom.window.document;
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
@@ -31,56 +30,6 @@ async function composer(t, entry = seed(), { onSave, locale = 'en' } = {}) {
     onSave: onSave ?? (async next => { saves.push(structuredClone(next)); return true; }) }));
   return { host, saves, closed: () => closed };
 }
-async function settings(t, overrides = {}, locale = 'en') {
-  const saves = [];
-  const gateActions = { read: async () => [seed()], presets: async () => [{ id: 'p', name: 'Preset' }, { id: 'q', name: 'Second' }], models: async () => ({ groups: [] }), save: async entries => { saves.push(structuredClone(entries)); }, trial, ...overrides };
-  const { host } = await mount(t, React.createElement(PixieSettingsPage, { locale, gateActions, actions: { read: async () => ({ contextMode: 'fresh', systemPrompt: '', allowThreadModel: false }), models: gateActions.models, save: async s => s } }));
-  return { host, saves };
-}
-const page = (h, label) => h.querySelector(`section[aria-label="${label}"]`);
-
-test('Pixie settings put gates in their own navigation group with composition and scope pages', async t => {
-  const { host } = await settings(t, {}, 'ko');
-  const nav = [...host.querySelectorAll('nav.studio-nav > *')].map(el => el.textContent);
-  assert.deepEqual(nav.slice(-3), ['게이트', '게이트 구성', '적용 범위']);
-  assert.ok(nav.indexOf('판정') < nav.indexOf('게이트'));
-  await click(button(host, '게이트 구성'));
-  assert.equal(page(host, '게이트 구성').hidden, false);
-  assert.ok(page(host, '게이트 구성').querySelector('[data-gate-card="gate1"]'));
-});
-
-test('composition cards summarize the flow and open the composer modal for editing', async t => {
-  const { host, saves } = await settings(t);
-  const comp = page(host, 'Gate composition');
-  const card = comp.querySelector('[data-gate-card="gate1"]');
-  assert.match(card.textContent, /Guard/); assert.match(card.textContent, /Input/); assert.match(card.textContent, /On/);
-  assert.match(card.querySelector('.studio-gate-strip').textContent, /Model · Revise/);
-  assert.match(card.textContent, /1 presets/);
-  await click(button(card, 'Edit'));
-  const dialog = comp.querySelector('dialog');
-  assert.ok(dialog.querySelector('[data-gate-node="point"]'));
-  await change(input(dialog, 'Name'), 'Renamed');
-  await click(button(dialog, 'Save'));
-  assert.equal(saves[0][0].definition.name, 'Renamed');
-  assert.deepEqual(saves[0][0].presetIds, ['p']);
-  assert.equal(button(dialog, 'Saved').disabled, true);
-});
-
-test('new gate, starter template, duplicate and delete persist through the cards', async t => {
-  const { host, saves } = await settings(t);
-  const comp = page(host, 'Gate composition');
-  await click(button(comp, 'Start from example'));
-  await click(button(comp.querySelector('dialog'), 'Save'));
-  assert.equal(saves[0].length, 2);
-  assert.deepEqual(saves[0][1].definition.stages.map(s => s.kind), ['command', 'judge', 'converse']);
-  assert.equal(saves[0][1].definition.enabled, false);
-  await click(button(comp.querySelector('dialog'), 'Close'));
-  await click(button(comp.querySelector('[data-gate-card="gate1"]'), 'Duplicate'));
-  assert.equal(saves[1].length, 3); assert.equal(saves[1][2].definition.enabled, false); assert.match(saves[1][2].definition.name, /Guard \(Duplicate\)/);
-  await click(button(comp.querySelector('[data-gate-card="gate1"]'), 'Delete'));
-  await click(button(comp, 'Confirm delete'));
-  assert.deepEqual(saves[2].map(e => e.definition.id).includes('gate1'), false);
-});
 
 test('starter template is valid and wires measured size into the judge and plan', () => {
   for (const locale of ['ko', 'en', 'zh']) {
@@ -175,76 +124,4 @@ test('save failure keeps the draft with a dismissible notice; unsaved close asks
   assert.equal(closed(), 0); assert.match(host.textContent, /unsaved changes/);
   await click(button(host, 'Discard and close')); assert.equal(closed(), 1);
   fail = false;
-});
-
-test('scope page edits enabled, presets, agents, sources and tools, and blocks binding conflicts', async t => {
-  const second = seed(); second.definition.id = 'gate2'; second.definition.name = 'Tools'; second.definition.point = 'tool-after'; second.definition.enabled = false; second.definition.match = { agents: 'root' }; second.definition.forward = { kind: 'original' }; second.definition.stages[0].role = 'check'; second.presetIds = [];
-  const third = seed(); third.definition.id = 'gate3'; third.definition.name = 'Other'; third.definition.enabled = false;
-  const { host, saves } = await settings(t, { read: async () => [seed(), second, third] });
-  const scope = page(host, 'Scope');
-  assert.equal(button(scope, 'Saved').disabled, true);
-  assert.equal(input(scope, 'Input sources Tools'), null);
-  await change(input(scope, 'Tool names Tools'), 'bash, read');
-  await change(input(scope, 'Target agents Tools'), 'child');
-  await click(input(scope, 'Enabled Tools'));
-  await click(input(scope, 'Connected presets Tools').querySelectorAll('input')[1]);
-  await click(input(scope, 'Input sources Guard').querySelectorAll('input')[1]);
-  await click(button(scope, 'Save'));
-  const saved = saves[0];
-  assert.deepEqual(saved[1].definition.match, { agents: 'child', tools: ['bash', 'read'] });
-  assert.equal(saved[1].definition.enabled, true); assert.deepEqual(saved[1].presetIds, ['q']);
-  assert.deepEqual(saved[0].definition.match.sources, ['user', 'agent-message']);
-  await click(input(scope, 'Enabled Other'));
-  assert.match(scope.textContent, /Only one enabled gate per preset/);
-  assert.equal(button(scope, 'Save').disabled, true);
-});
-
-test('scope edits survive saving a flow in the composer, and scope fields are not composer fields', async t => {
-  const { host, saves } = await settings(t);
-  const scope = page(host, 'Scope');
-  await click(input(scope, 'Enabled Guard'));
-  const comp = page(host, 'Gate composition');
-  await click(button(comp.querySelector('[data-gate-card="gate1"]'), 'Edit'));
-  const dialog = comp.querySelector('dialog');
-  assert.equal(input(dialog, 'Connected presets'), null); assert.equal(input(dialog, 'Target agents'), null);
-  await change(input(dialog, 'Name'), 'Flow saved'); await click(button(dialog, 'Save'));
-  assert.equal(saves[0][0].definition.enabled, true);
-  assert.equal(input(scope, 'Enabled Flow saved').getAttribute('aria-checked'), 'false');
-  await click(button(scope, 'Save'));
-  assert.equal(saves[1][0].definition.enabled, false); assert.equal(saves[1][0].definition.name, 'Flow saved');
-});
-
-test('invalid definitions show diagnostics and raw JSON, confirm overwrite, and remove on next save', async t => {
-  const invalid = [{ index: 2, raw: { broken: true }, error: { code: 'options', message: 'Empty option' } }];
-  const { host, saves } = await settings(t, { read: async () => ({ entries: [seed()], invalid }) });
-  const scope = page(host, 'Scope');
-  assert.match(scope.textContent, /1 gates could not be loaded/);
-  assert.match(scope.textContent, /"broken": true/);
-  await click(input(scope, 'Enabled Guard'));
-  await click(button(scope, 'Save'));
-  assert.equal(saves.length, 0); assert.match(scope.textContent, /permanently remove/);
-  await click(button(scope, 'Cancel'));
-  await click(button(scope, 'Remove from list'));
-  assert.doesNotMatch(scope.textContent, /1 gates could not be loaded/);
-  await click(button(scope, 'Save'));
-  assert.equal(saves.length, 1);
-});
-
-test('broken file requires confirmation before a composer save replaces it', async t => {
-  const { host, saves } = await settings(t, { read: async () => ({ entries: [seed()], invalid: [], error: { code: 'invalid-json', message: 'Malformed JSON' } }) });
-  const comp = page(host, 'Gate composition');
-  assert.match(comp.textContent, /original file was not changed/);
-  await click(button(comp.querySelector('[data-gate-card="gate1"]'), 'Edit'));
-  await change(input(comp.querySelector('dialog'), 'Name'), 'Changed');
-  await click(button(comp.querySelector('dialog'), 'Save'));
-  assert.equal(saves.length, 0);
-  await click(button(comp, 'Overwrite and save'));
-  assert.equal(saves.length, 1); assert.equal(saves[0][0].definition.name, 'Changed');
-});
-
-for (const [locale, label] of [['ko', '불러오지 못한 게이트 1개'], ['zh', '无法加载 1 个门控']]) test(`gate pages are localized: ${locale}`, async t => {
-  const { host } = await settings(t, { read: async () => ({ entries: [seed()], invalid: [{ index: 0, raw: null, error: { code: 'options', message: 'Empty option' } }] }) }, locale);
-  assert.ok(host.textContent.includes(label));
-  await click(button(page(host, locale === 'ko' ? '게이트 구성' : '门控构成').querySelector('[data-gate-card="gate1"]'), locale === 'ko' ? '편집' : '编辑'));
-  assert.doesNotMatch(host.querySelector('.studio-gate-flow').textContent, /Message text|Input|Original/);
 });

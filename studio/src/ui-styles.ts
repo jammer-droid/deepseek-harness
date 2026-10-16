@@ -628,6 +628,24 @@ ${adapter}.studio-ui *, .studio-ui *::before, .studio-ui *::after { box-sizing: 
 .studio-ui .studio-gate-vars { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; font-size: 12px; }
 .studio-ui .studio-gate-vars code { padding: 1px 6px; border-radius: var(--studio-small-radius); background: var(--studio-inset); }
 .studio-ui textarea.studio-gate-code { min-height: 96px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
+/* Pixie Gate task preview (R1): sentence cards and two-field editor. */
+.studio-ui .studio-gate-sentence { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px; margin: 0; font-size: 13px; }
+.studio-ui .studio-gate-sentence > span:first-child { color: var(--studio-muted); }
+.studio-ui .studio-gate-sentence > span[aria-hidden] { color: var(--studio-subtle); }
+.studio-ui .studio-gate-sentence > span:last-child { min-width: 0; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.studio-ui .studio-gate-task { display: grid; gap: 12px; min-width: 0; }
+.studio-ui textarea.studio-gate-instruction { min-height: 140px; }
+.studio-ui .studio-gate-path { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 12px; }
+.studio-ui .studio-gate-path code { padding: 1px 6px; border-radius: var(--studio-small-radius); background: var(--studio-inset); overflow-wrap: anywhere; }
+.studio-ui .studio-gate-path .studio-button { margin: 0; }
+.studio-ui .studio-gate-judge { display: grid; gap: 8px; }
+.studio-ui .studio-gate-judge .studio-field { margin: 0; }
+.studio-ui .studio-gate-trial { display: grid; gap: 8px; padding-top: 12px; border-top: .5px solid var(--studio-line); }
+.studio-ui .studio-gate-trial p, .studio-ui .studio-gate-trial h3 { margin: 0; }
+.studio-ui .studio-gate-result { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 12px; margin: 0; font-size: 13px; }
+.studio-ui .studio-gate-result dd { margin: 0; overflow-wrap: anywhere; }
+.studio-ui .studio-pick-disabled { cursor: default; opacity: .6; }
+.studio-ui .studio-pick-disabled:hover { background: transparent; }
 /* The composer lives in the top layer, so it narrows on its own width rather than the shell's. */
 .studio-ui .studio-gate-composer-frame { container: studio-gate / inline-size; }
 @container studio-gate (max-width: 720px) {

@@ -4,9 +4,9 @@
 import React from 'react';
 import { DEFAULT_JUDGE_SYSTEM_PROMPT } from './pixie-contracts.ts';
 import { judgeText } from './pixie-gate-judge-locale.ts';
-import { useGateEntries, type GateEditorActions } from './pixie-gate-editor.tsx';
+import type { GateEditorActions } from './pixie-gate-editor.tsx';
 import { gateEditorText } from './pixie-gate-editor-locale.ts';
-import { GateCompositionPage, GateScopePage } from './pixie-gate-pages.tsx';
+import { GateTaskCompositionPage, GateTaskScopePage, useGateTasks } from './pixie-gate-task-pages.tsx';
 import { gateComposeText } from './pixie-gate-compose-locale.ts';
 import { Button, Notice, PageHead, Segmented, SettingsRow, Toggle } from './ui.tsx';
 import { DetailLayout } from './detail-layout.tsx';
@@ -31,8 +31,10 @@ type PageId = 'model' | 'threads' | 'prompt' | 'judge' | 'gate-composition' | 'g
 export function PixieSettingsPage({ actions, gateActions, locale, navFooter }: { actions: PixieSettingsActions; gateActions?: GateEditorActions; locale: string; navFooter?: React.ReactNode }) {
   const t = (key: PixieTextKey) => pixieText(locale, key);
   const [page, setPage] = React.useState<PageId>('model');
-  // Both gate pages share one list so a flow saved in the composer appears in Scope without reloading.
-  const gates = useGateEntries(gateActions);
+  // R1 UI preview: both gate pages share local, unsaved state. The Host still uses the previous gate format.
+  const gates = useGateTasks();
+  const [gatePresets, setGatePresets] = React.useState<{ id: string; name: string }[]>([]);
+  React.useEffect(() => { if (gateActions) void gateActions.presets().then(setGatePresets, () => setGatePresets([])); }, [gateActions]);
   const gt = (key: Parameters<typeof gateComposeText>[1]) => gateComposeText(locale, key);
   const [draft, setDraft] = React.useState<PixieSettings>();
   const [catalog, setCatalog] = React.useState<PixieSettingsCatalog>();
@@ -146,8 +148,8 @@ export function PixieSettingsPage({ actions, gateActions, locale, navFooter }: {
     { id: 'prompt', group: t('settingsGroup'), label: t('pagePrompt'), content: promptPage },
     { id: 'judge', group: t('settingsGroup'), label: jt('judge'), content: judgePage },
     ...(gateActions ? [
-      { id: 'gate-composition', group: gt('group'), label: gt('composition'), content: <GateCompositionPage gates={gates} actions={gateActions} locale={locale} /> },
-      { id: 'gate-scope', group: gt('group'), label: gt('scope'), content: <GateScopePage gates={gates} locale={locale} onEditFlow={() => setPage('gate-composition')} /> },
+      { id: 'gate-composition', group: gt('group'), label: gt('composition'), content: <GateTaskCompositionPage gates={gates} locale={locale} /> },
+      { id: 'gate-scope', group: gt('group'), label: gt('scope'), content: <GateTaskScopePage gates={gates} presets={gatePresets} locale={locale} /> },
     ] : []),
   ]} />;
 }
