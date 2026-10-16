@@ -49,25 +49,27 @@ export interface GateOutput {
 /** No fences, coercion, unknown fields, or malformed-output fallback. */
 export function parseGateOutput(text: string): GateOutput {
   const value: unknown = JSON.parse(text);
-  if (!object(value) || !['pass', 'stop'].includes(value.verdict as string)) throw new Error('Gate output needs a pass/stop verdict');
+  if (!object(value) || (Object.hasOwn(value, 'verdict') && !['pass', 'stop'].includes(value.verdict as string))) throw new Error('Gate output needs a pass/stop verdict');
   for (const [key, field] of Object.entries(value)) {
     if (!['verdict', 'reason', 'replace', 'append', 'note'].includes(key) || typeof field !== 'string') throw new Error(`Invalid gate output field: ${key}`);
   }
-  return value as unknown as GateOutput;
+  return { verdict: 'pass', ...value } as GateOutput;
 }
 
 /** Point-specific forwarding plan. Stop never forwards replacement/addition. */
-export function gateOutputPlan(task: GateTask, output: GateOutput): { stop: boolean; replacement?: string; addition?: string; suggestion?: string; notes: string[] } {
+export function gateOutputPlan(task: GateTask, output: GateOutput, original: string): { stop: boolean; reason?: string; replacement?: string; addition?: string; suggestion?: string; notes: string[] } {
   const message = task.when === 'user-message' || task.when === 'agent-message';
   const mutable = message || task.when === 'tool-after';
-  const confirm = message && task.advanced.confirmReplace && output.replace !== undefined;
+  const changed = output.replace !== undefined && output.replace !== original;
+  const confirm = message && task.advanced.confirmReplace && changed;
   const stop = output.verdict === 'stop' || confirm;
   const notes = output.note === undefined ? [] : [output.note];
   if (output.replace !== undefined && (!mutable || (stop && !message))) notes.push(output.replace);
   if (output.append !== undefined && (!mutable || stop)) notes.push(output.append);
   return { stop, notes,
+    ...(output.reason !== undefined ? { reason: output.reason } : {}),
     ...(stop && message && output.replace !== undefined ? { suggestion: output.replace } : {}),
-    ...(!stop && mutable && output.replace !== undefined ? { replacement: output.replace } : {}),
+    ...(!stop && mutable && changed ? { replacement: output.replace } : {}),
     ...(!stop && mutable && output.append !== undefined ? { addition: output.append } : {}),
   };
 }

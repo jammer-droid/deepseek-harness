@@ -317,15 +317,16 @@ interface GateResult {
 | U12 | 사용자 입장의 구성은 **언제 + Pixie가 할 일(자연어 지시)** 두 칸이다. 개입 지점·단계·역할·forward 같은 내부 용어는 화면에 노출하지 않는다. |
 | U13 | **출력 고정 계약**(모든 지점 공통, 모두 선택): 결론(통과/막음, 기본 통과) · 이유 · 바꿀 내용 · 덧붙일 내용 · 메모. 지점별 적용은 Pixie가 정하고, 지점에서 불가능한 출력은 오류가 아니라 메모로 대체한다. |
 | U14 | 결론이 막음이면 바꿀 내용·덧붙일 내용은 메인 모델로 보내지 않는다(입력 지점에서는 바꿀 내용을 거부 카드의 제안으로, 덧붙일 내용은 메모로). |
-| U15 | 판정 모델(질문·통과 기준)은 결론을 엄밀하게 정하고 싶을 때 고르는 **고급 옵션**이다. |
+| U15 | 판정 모델(질문·통과 기준)은 결론을 엄밀하게 정하고 싶을 때 고르는 **고급 옵션**이다. 판정은 원문을 평가하고 최종 결론을 정한다. stop이면 일반 모델 reason 우선, 없으면 기준 미달 질문·판정 실패 사유를 이유로 쓰고 replace/append는 전달하지 않는다(U14). pass이면 일반 모델의 stop도 덮어쓰며 일반 reason은 결론 이유에서 제거하고 사용자 전용 note에 `Pixie 지시 판단: <reason>`으로 보존한다(replace/append/기존 note 유지). |
 | U16 | 다단계 파이프라인(단계 1–5), 단계 종류·역할, 명령 단계, 시작·종료 훅은 **삭제**한다. 배포 전이라 마이그레이션은 없다(격리 데이터만). 판정 엔진·실행 기록·지점별 적용·거부 카드는 재사용한다. |
 | U17 | 외부 DSH 훅은 그대로 두며 Pixie는 그 출력을 읽지 않는다(Q14·Q19의 봉투/`next()` 읽기 방식은 폐기). |
 | U18 | Pixie에 연결하는 훅은 게이트 안의 **진입 지점 하나**: 고급 옵션 "준비 스크립트". 사용자는 명령을 입력하지 않고 **전용 경로의 스크립트를 고른다**. Pixie가 할 일 전에 실행하며 출력은 `{{hooks.<스크립트 이름>.text/data}}`로 쓴다. 실행 위치는 세션 작업 디렉터리, 세션 샌드박스 정책을 명시 전달한다. |
 | U19 | 스크립트 경로는 `<프로필>/studio-data/pixie-gate/commands/` 하나. 화면에는 경로 표시·복사와 목록 새로고침을 둔다(공개 API에 폴더 열기 기능이 없음). 작업 공간별 경로는 후속. |
-| U20 | 스크립트는 OS 셸에 맞게 쓴다(macOS·Linux bash, Windows PowerShell). 설정 화면의 시험 실행에서는 세션 정책을 알 수 없어 스크립트를 실행하지 않는다. |
+| U20 | 스크립트는 macOS·Linux의 bash 실행기 환경만 지원한다(Windows는 U24에 따라 후속). 설정 화면의 시험 실행에서는 세션 정책을 알 수 없어 스크립트를 실행하지 않는다. |
 | U21 | 새 게이트는 **템플릿 우선**으로 시작한다(빈 게이트는 마지막 선택지). 백그라운드형 작업(미리 압축, 파일 인덱싱)은 구현 전까지 "곧 지원" 템플릿으로만 보인다. |
 | U22 | 에이전트가 읽고 게이트·스크립트를 조립할 수 있는 `pixie-gate` 스킬 문서를 Studio에 포함한다. 결과 적용 규칙(U13·U14의 지점별 표)은 사용자 가이드 문서의 Pixie Gate 항목 설명에 넣는다. |
-| U23 | **Pixie 훅 스크립트 계약 확장.** Studio는 기능을 하나씩 만들지 않고, 스크립트가 쓸 수 있는 수단(입출력·환경 변수·헬퍼)만 제공한다. 실행 조건(예: 특정 도구만)·반복(번역→판정→재번역)·외부 작업은 스크립트가 구현한다. 화면의 도구 지정 칸은 두지 않는다. **입력** stdin = 대상 텍스트. **출력** stdout → `{{hooks.<이름>.text}}`, JSON 객체면 `{{hooks.<이름>.data}}`. **종료 코드** 0 계속 · 10 이 게이트 건너뜀(원래 흐름) · 그 밖·시간 초과 = 오류(오류 정책). **환경 변수** `PIXIE_POINT`(user-message·agent-message·tool-before·tool-after·turn-end), `PIXIE_TOOL_NAME`·`PIXIE_TOOL_ARGS`(도구 지점), `PIXIE_AGENT`(root·child), `PIXIE_SESSION_ID`, `PIXIE_TURN`, `PIXIE_GATE_NAME`, 헬퍼용 `PIXIE_URL`·`PIXIE_TOKEN`(실행별 발급·종료 시 폐기). **헬퍼** `pixie ask "<지시>" [--input]` → stdout 답, `pixie judge --question … [--threshold] [--input]` → 통과 exit 0 / 미달 exit 1, 확률 stdout. 통로는 Studio `webServer.register` 전용 경로 + 실행별 토큰(조사 결과 Q11), 권한은 그 실행의 ask·judge만, 요청 크기·호출 횟수 상한, 호출은 게이트 사용량·실행 기록에 포함. 첫 버전 헬퍼는 bash(macOS·Linux)만 보장, Windows는 후속. 이 계약과 예시 스크립트(도구 필터, 번역 반복, 자막 측정, 변경 파일)는 가이드 문서에 상세히 쓴다. |
+| U23 | **Pixie 훅 스크립트 계약 확장.** Studio는 기능을 하나씩 만들지 않고, 스크립트가 쓸 수 있는 수단(입출력·환경 변수·헬퍼)만 제공한다. 실행 조건(예: 특정 도구만)·반복(번역→판정→재번역)·외부 작업은 스크립트가 구현한다. 화면의 도구 지정 칸은 두지 않는다. **입력** stdin = 대상 텍스트. **출력** stdout → `{{hooks.<이름>.text}}`, JSON 객체면 `{{hooks.<이름>.data}}`. **종료 코드** 0 계속 · 10 이 게이트 건너뜀(원래 흐름) · 그 밖·시간 초과 = 오류(오류 정책). **환경 변수** `PIXIE_POINT`(user-message·agent-message·tool-before·tool-after·turn-end), `PIXIE_TOOL_NAME`·`PIXIE_TOOL_ARGS`(도구 지점), `PIXIE_AGENT`(root·child), `PIXIE_SESSION_ID`, `PIXIE_TURN`, `PIXIE_GATE_NAME`, 헬퍼용 `PIXIE_URL`·`PIXIE_TOKEN`(실행별 발급·종료 시 폐기). **헬퍼** `pixie ask "<지시>" [--input]` → stdout 답, `pixie judge --question … [--threshold] [--input]` → 통과 exit 0 / 미달 exit 1, 확률 stdout. 통로는 Studio `webServer.register` 전용 경로 + 실행별 토큰(조사 결과 Q11), 권한은 그 실행의 ask·judge만, 요청 크기·호출 횟수 상한, 호출은 게이트 사용량·실행 기록에 포함. 스크립트와 헬퍼 모두 macOS·Linux의 bash 실행기 환경만 지원하며 Windows는 U24에 따라 후속 구현한다. 이 계약과 예시 스크립트(도구 필터, 번역 반복, 자막 측정, 변경 파일)는 가이드 문서에 상세히 쓴다. |
+| U24 | **훅 스크립트·`pixie` 헬퍼 지원 환경:** macOS·Linux(bash 실행기 환경)만 지원하며 Windows는 후속 구현으로 미룬다. 실행 시점에 `ctx.shell`이 bash 실행기가 아니면 스크립트를 실행하지 않고 `이 환경에서는 훅 스크립트를 지원하지 않음` 오류를 기록하고 오류 정책을 적용한다. 샌드박스를 우회하는 경로는 만들지 않는다. 실행기 판별 방법은 R2-b에서 확인한다. 사용자 안내 문구는 "DSH에서 bash 프로필을 지원하는 경우에만 사용 가능합니다."다. |
 
 ### 지점별 이름과 결과 적용 (내부 규칙, 가이드 문서용)
 
@@ -345,11 +346,14 @@ interface GateResult {
 
 - 범위: `pixie-gate-task-contracts.ts`에 런타임 의존 없는 GateTask 검증·엄격 JSON 출력 파서·지점별 적용 계획, Host `GateTaskRunner`에 일반 모델 1회 + 선택 판정 모델 1회 실행을 추가했다. **아직 저장소·Remote·미들웨어에 연결하지 않았다. 기존 실행 경로는 그대로다.**
 - 저장 계약 선택: UI `GateTask`를 기준으로 검증하며 같은 프리셋의 켜진 게이트 중복은 `when` 기준이다. user-message와 agent-message는 같은 input 내부 지점이어도 서로 다른 작업이므로 공존한다. 기존 GateDefinition 래퍼는 이 검증에서 invalid다. U16에 따라 배포 전 형식을 변환하지 않으며, a2에서 항목별 invalid 표시·원본 보존 읽기에 연결한다.
-- 출력 계약 선택: verdict는 호출 요청의 고정 JSON 계약대로 필수다. 누락·비문자열·알 수 없는 필드·마크다운은 오류이며 통과로 보정하지 않는다. 판정 옵션은 기존 LlmJudgeEngine/noul을 사용하고 판정 모델 → 일반 모델 순으로 선택한다. 판정 실패는 stop과 기존 모델 reason 또는 판정 실패 사유를 남긴다. usage는 두 호출을 합산한다.
-- stop/확인 요청 시 replace·append를 전달 계획에서 제외한다. 불가 지점의 replace·append는 notes에 보존한다. 메시지 지점의 replace는 거부 제안으로 보존한다. 이 계획의 5 when × 4 출력 매트릭스는 단위 테스트이며 실제 미들웨어 적용 증거는 아니다.
+- 출력 계약 선택: U13에 따라 verdict는 선택이며 키가 없으면 pass다. 키가 있으면 pass/stop 문자열만 허용하며 null·비문자열·알 수 없는 값/필드·마크다운은 오류다. 모델 출력 안내도 생략 가능·기본 통과로 맞췄다. 판정 옵션은 기존 LlmJudgeEngine/noul을 사용하고 판정 모델 → 일반 모델 순으로 선택한다. 판정 실패는 stop과 기존 모델 reason 또는 판정 실패 사유를 남긴다. usage는 두 호출을 합산한다.
+- 적용 계획은 원문을 받아 실제로 다른 메시지 교체에만 확인 요청을 한다. 동일 교체는 교체 없음(pass)이며 append는 유지한다. reason을 계획에 전달한다. stop/확인 요청 시 replace·append를 전달 계획에서 제외한다. 불가 지점의 replace·append는 notes에 보존한다. 메시지 지점의 replace는 거부 제안으로 보존한다. 이 계획의 5 when × 4 출력 매트릭스는 단위 테스트이며 실제 미들웨어 적용 증거는 아니다.
 - 스크립트는 파일명 검증만 하고 실행하지 않는다. 실행기에 지정하면 `스크립트 미지원` error다. 오류 정책 적용은 a2 미들웨어 책임이며 trial의 `skipped: script` 처리도 a2에 남았다.
 - 삭제/유지: 이번 a1에서 삭제 없음. 기존 단계 실행기·pipeline·저장·기록·UI 모두 유지. a2에서 저장·3 미들웨어·trial·service를 동시에 전환하고 기존 기록 필드의 호환 전략을 확정한 뒤 b에서 구형 Host 및 테스트를 제거한다.
 - 검증: 신규 결정론적 단위 테스트 31개(검증·출력·판정·usage·취소·타임아웃·적용 계획). Studio typecheck 통과. `npm --prefix studio test` 2회 연속 각각 460/460 통과(실패 0), `git diff --check` 통과. 저장 invalid 격리·실제 middleware onError/agents/maxSteers·trial·독립 설치·실모델은 a1에서 미검증. 사용자 GUI/프로필·Client Inspect 접근·배포 없음. S1 표는 변경하지 않았다.
+
+- **a1 리뷰 수정:** U13 선택 verdict, 실제 변경만 확인, U15 판정 결론·이유 귀속을 수정했다. stop의 suggestion/notes 내용·reason, 동일/상이 교체, pass+replace+append, 판정 후 적용 계획 회귀를 보강했다. red 증거: `/tmp/pixie-r2a1-fix/red.txt`(verdict·출력 안내·confirm·판정 이유). 검증: 집중 테스트 36/36, Studio typecheck, 전체 테스트 2회 연속 각각 465/465(실패 0), `git diff --check` 통과. 런타임 연결·화면 마크업/문구 변경 없음. S1 표 불변.
+- **a2 인수조건:** when→runtime 지점·source 매핑(user-message→input/source user, agent-message→input/source agent-message, 나머지 tool-before/tool-after/turn-end 동명 지점)을 검증한다. 저장 항목별 invalid 격리와 원본 보존, 실제 middleware의 onError/agents/maxSteers 적용, trial의 새 출력 계약·스크립트 건너뜀을 연결·검증한다. 이 항목들은 a1에서 구현하지 않는다.
 
 - **R3 — UI 연결:** 시안을 Host에 연결, 시험 실행 결과를 출력 계약 모양으로, 실행 카드 용어 정리, 기존 다단계 편집기 삭제.
 - **R4 — 문서·스킬:** `pixie-gate` 스킬, 템플릿, 가이드 문서의 Pixie Gate 항목(결과 적용 규칙 포함).

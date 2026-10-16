@@ -32,22 +32,40 @@ test('bindings use when, not the combined input runtime point', () => {
   assert.throws(() => validateGateTasks([a, { ...b, id: a.id }]));
   assert.equal(validateGateTasks([a, { ...b, when: a.when, enabled: false }]).length, 2);
 });
-test('output JSON rejects fences, unknown keys, missing verdict and wrong field types', () => {
-  for (const text of ['{}', 'null', '[]', '```json\n{"verdict":"pass"}\n```', '{"verdict":"fail"}', '{"verdict":"pass","append":1}', '{"verdict":"pass","extra":"x"}', '{']) assert.throws(() => parseGateOutput(text));
+test('output JSON defaults omitted verdict and rejects invalid explicit verdicts', () => {
+  assert.deepEqual(parseGateOutput('{}'), { verdict: 'pass' });
+  assert.deepEqual(parseGateOutput('{"append":"a"}'), { verdict: 'pass', append: 'a' });
+  for (const text of ['{"verdict":null}', '{"verdict":1}', '{"verdict":true}', '{"verdict":{}}', 'null', '[]', '```json\n{"verdict":"pass"}\n```', '{"verdict":"fail"}', '{"verdict":"pass","append":1}', '{"verdict":"pass","extra":"x"}', '{']) assert.throws(() => parseGateOutput(text));
   assert.deepEqual(parseGateOutput('{"verdict":"pass","replace":"","note":"n"}'), { verdict: 'pass', replace: '', note: 'n' });
 });
 for (const when of GATE_WHENS) for (const field of ['stop', 'replace', 'append', 'note']) test(`output plan ${when} / ${field}`, () => {
   const value = { ...task(), when };
   const output = field === 'stop' ? { verdict: 'stop', replace: 'r', append: 'a' } : { verdict: 'pass', [field]: 'text' };
-  const plan = gateOutputPlan(value, output);
+  const plan = gateOutputPlan(value, output, 'original');
   const mutable = ['user-message', 'agent-message', 'tool-after'].includes(when);
-  if (field === 'stop') { assert.equal(plan.stop, true); assert.equal(plan.replacement, undefined); assert.equal(plan.addition, undefined); }
+  if (field === 'stop') {
+    const message = ['user-message', 'agent-message'].includes(when);
+    assert.deepEqual(plan, message ? { stop: true, notes: ['a'], suggestion: 'r' } : { stop: true, notes: ['r', 'a'] });
+  }
   else if (field === 'note' || !mutable) assert.ok(plan.notes.includes('text'));
   else assert.equal(plan[field === 'replace' ? 'replacement' : 'addition'], 'text');
 });
+test('confirmation only blocks a real message change', () => {
+  for (const when of ['user-message', 'agent-message']) {
+    const value = { ...task(), when }; value.advanced.confirmReplace = true;
+    assert.deepEqual(gateOutputPlan(value, { verdict: 'pass', replace: 'original', append: 'a' }, 'original'), { stop: false, notes: [], addition: 'a' });
+    assert.deepEqual(gateOutputPlan(value, { verdict: 'pass', replace: 'changed', append: 'a' }, 'original'), { stop: true, notes: ['a'], suggestion: 'changed' });
+  }
+});
 test('confirmation blocks both replacement and addition and retains suggestion', () => {
   const value = task(); value.advanced.confirmReplace = true;
-  assert.deepEqual(gateOutputPlan(value, { verdict: 'pass', replace: 'r', append: 'a' }), { stop: true, notes: ['a'], suggestion: 'r' });
+  assert.deepEqual(gateOutputPlan(value, { verdict: 'pass', replace: 'r', append: 'a' }, 'original'), { stop: true, notes: ['a'], suggestion: 'r' });
+});
+test('ordinary executor accepts omitted verdict and advertises its default', async () => {
+  const calls = [];
+  const result = await new GateTaskRunner({ model, llm: llm(['{}'], calls) }).run(task(), 'target', signal());
+  assert.deepEqual(result.output, { verdict: 'pass' });
+  assert.match(calls[0].system, /optional verdict.*omitted.*pass/);
 });
 test('ordinary executor makes exactly one call and retains usage on invalid output', async () => {
   const calls = [];
@@ -64,6 +82,21 @@ for (const probability of [0.2, 0.8]) test(`judge decides verdict at ${probabili
   const result = await new GateTaskRunner({ model, judgeModel: { ...model, model: 'judge' }, llm: llm(['{"verdict":"stop","replace":"r","note":"n"}', JSON.stringify({ answers: { gate: { noul: probability } } })], calls) }).run(value, 'target', signal());
   assert.equal(result.output.verdict, probability >= 0.5 ? 'pass' : 'stop'); assert.equal(result.output.replace, 'r');
   assert.equal(calls.length, 2); assert.equal(calls[1].model, 'judge'); assert.deepEqual(result.usage, { inputTokens: 4, outputTokens: 6 });
+});
+test('judge pass preserves ordinary stop reason only as a user note', async () => {
+  const value = task(); value.advanced.judge = { question: 'Good?', threshold: 0.5 };
+  const calls = [];
+  const result = await new GateTaskRunner({ model, llm: llm(['{"verdict":"stop","reason":"ordinary concern","replace":"r","append":"a","note":"n"}', '{"answers":{"gate":{"noul":0.8}}}'], calls) }).run(value, 'original', signal());
+  assert.deepEqual(result.output, { verdict: 'pass', replace: 'r', append: 'a', note: 'n\nPixie 지시 판단: ordinary concern' });
+  assert.deepEqual(gateOutputPlan(value, result.output, 'original'), { stop: false, replacement: 'r', addition: 'a', notes: ['n\nPixie 지시 판단: ordinary concern'] });
+  assert.match(JSON.stringify(calls[1].messages), /original/);
+});
+for (const reason of [undefined, 'ordinary reason']) test(`judge stop reason and forwarding: ${reason}`, async () => {
+  const value = task(); value.advanced.judge = { question: 'Good?', threshold: 0.5 };
+  const result = await new GateTaskRunner({ model, llm: llm([JSON.stringify({ verdict: 'pass', reason, replace: 'r', append: 'a', note: 'n' }), '{"answers":{"gate":{"noul":0.2}}}']) }).run(value, 'original', signal());
+  const expectedReason = reason ?? 'Good?: noul must be >= 0.5';
+  assert.equal(result.output.reason, expectedReason);
+  assert.deepEqual(gateOutputPlan(value, result.output, 'original'), { stop: true, reason: expectedReason, suggestion: 'r', notes: ['n', 'a'] });
 });
 test('judge malformed answer stops with a reason rather than allowing input', async () => {
   const value = task(); value.advanced.judge = { question: 'Good?', threshold: 0.5 };
