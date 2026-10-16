@@ -8,6 +8,8 @@ import type { GateTasksRead } from './pixie-gate-definitions.ts';
 import type { PixieUsage } from './pixie-contracts.ts';
 
 type Text = (key: GateTaskKey, values?: Record<string, string | number>) => string;
+/** Place a link where `{link}` sits in a localized sentence, keeping the word order of each locale. */
+const withLink = (text: string, link: React.ReactNode) => { const [before, after = ''] = text.split('{link}'); return <>{before}{link}{after}</>; };
 const useText = (locale: string): Text => (key, values) => gateTaskText(locale, key, values);
 
 export interface GateTrialResponse { output: GateOutput; plan: ReturnType<typeof gateOutputPlan>; usage: PixieUsage; skipped?: 'script' }
@@ -61,9 +63,9 @@ export function useGateTasks(actions: GateTaskActions) {
 export type GateTasks = ReturnType<typeof useGateTasks>;
 
 /** Page head with Save, plus the shared load/save/invalid lines. */
-function GateHead({ gates, title, description, t }: { gates: GateTasks; title: string; description: string; t: Text }) {
+function GateHead({ gates, title, description, t }: { gates: GateTasks; title: string; description?: string; t: Text }) {
   return <>
-    <PageHead title={title} description={description} actions={gates.loaded ? <Button primary disabled={gates.status === 'saving' || !gates.dirty} onClick={() => { void gates.saveAll(); }}>{gates.status === 'saving' ? t('saving') : gates.dirty ? t('save') : t('saved')}</Button> : undefined} />
+    <PageHead title={title} {...(description ? { description } : {})} actions={gates.loaded ? <Button primary disabled={gates.status === 'saving' || !gates.dirty} onClick={() => { void gates.saveAll(); }}>{gates.status === 'saving' ? t('saving') : gates.dirty ? t('save') : t('saved')}</Button> : undefined} />
     {gates.saveError && <Notice action={<Button small onClick={gates.clearSaveError}>{t('dismiss')}</Button>}>{`${t('saveFailed')} (${gates.saveError})`}</Notice>}
     {gates.error && <Notice action={<Button small onClick={() => { void gates.load(); }}>{t('retry')}</Button>}>{gates.error}</Notice>}
     {!gates.error && !gates.loaded && <p role="status" className="studio-muted">{t('loading')}</p>}
@@ -133,12 +135,12 @@ export function GateTaskEditor({ task: initial, open, locale, actions, onApply, 
       <SettingsRow title={t('when')} control={<select className="studio-compact" aria-label={t('when')} value={task.when} onChange={event => { const when = event.target.value as GateTask['when']; set({ when, advanced: { ...task.advanced, ...(!isMessage(when) ? { confirmReplace: false } : {}) } }); }}>
         {GATE_WHENS.map(when => <option key={when} value={when}>{t(`when-${when}`)}</option>)}
       </select>} />
-      <SettingsRow title={t('what')} description={t('whatHint', { target })}>
+      <SettingsRow title={t('what')} description={<>{t('whatHint')} <a href={GATE_GUIDE_URL} target="_blank" rel="noreferrer">{t('resultGuide')}</a></>}>
         <textarea className="studio-gate-instruction" aria-label={t('what')} value={task.instruction} onChange={event => set({ instruction: event.target.value })} />
         {variables.length > 0 && <div className="studio-gate-vars"><span className="studio-muted">{t('variables')}</span>{variables.map((value, i) => <code key={value} title={t(i === 0 ? 'var-text' : 'var-data')}>{value}</code>)}</div>}
         {problemAt('instruction')}
       </SettingsRow>
-      <Disclosure title={t('advanced')} description={t('advancedHint')}>
+      <Disclosure title={t('advanced')}>
         <SettingsRow title={t('script')} description={t('scriptHint')} control={<select className="studio-compact" aria-label={t('script')} value={task.advanced.script ?? ''} onChange={event => { const { script: _, ...rest } = task.advanced; set({ advanced: event.target.value ? { ...rest, script: event.target.value } : rest }); }}>
           <option value="">{t('noScript')}</option>
           {(scripts?.scripts ?? []).map(name => <option key={name} value={name}>{name}</option>)}
@@ -151,7 +153,7 @@ export function GateTaskEditor({ task: initial, open, locale, actions, onApply, 
           {scriptError && <Notice>{`${t('scriptsFailed')} (${scriptError})`}</Notice>}
           {scripts && !scripts.supported && <Notice>{t('scriptUnsupported')}</Notice>}
           <p className="studio-muted">{t('scriptEnv')}</p>
-          <p className="studio-muted">{t('scriptShell')} <a href={GATE_GUIDE_URL} target="_blank" rel="noreferrer">{t('guideLink')}</a></p>
+          <p className="studio-muted">{withLink(t('scriptShell'), <a href={GATE_GUIDE_URL} target="_blank" rel="noreferrer">{t('guideLink')}</a>)}</p>
         </SettingsRow>
         {isMessage(task.when) && <SettingsRow title={t('confirmReplace')} description={t('confirmReplaceHint')} control={<Toggle label={t('confirmReplace')} checked={task.advanced.confirmReplace} onChange={confirmReplace => adv({ confirmReplace })} />} />}
         <SettingsRow title={t('onError')} control={<Segmented label={t('onError')} value={task.advanced.onError} options={[{ value: 'pass', label: t('errorPass') }, { value: 'block', label: t('errorBlock') }]} onChange={onError => adv({ onError })} />} />
@@ -194,7 +196,7 @@ export function GateTaskCompositionPage({ gates, locale }: { gates: GateTasks; l
   // Summarize with the first line that is plain language, not a bare variable line.
   const firstLine = (text: string) => (text.split('\n').map(line => line.trim()).find(line => line && !/\{\{[^}]+\}\}\s*$/.test(line)) ?? text.trim()).slice(0, 80);
   return <div className="studio-page-stack">
-    <GateHead gates={gates} title={t('composition')} description={t('compositionDescription')} t={t} />
+    <GateHead gates={gates} title={t('composition')} t={t} />
     {gates.loaded && <div className="studio-inline-actions"><Button onClick={() => setPicking(true)}>{t('newGate')}</Button></div>}
     {gates.loaded && !gates.tasks.length && <p role="status" className="studio-muted">{t('empty')}</p>}
     {gates.tasks.length > 0 && <div className="studio-tool-cards studio-card-pair">{gates.tasks.map(task => <article className="studio-preset-card studio-gate-card" key={task.id} data-gate-task={task.id}>
@@ -251,9 +253,6 @@ export function GateTaskScopePage({ gates, presets, locale }: { gates: GateTasks
   const t = useText(locale);
   const [adding, setAdding] = React.useState<{ id: string; name: string }>();
   const attachedTo = (preset: string) => gates.tasks.filter(task => task.presetIds.includes(preset));
-  // A gate whose only presets are not Studio presets is shown here too; adding it to a Studio preset is the way forward.
-  const studio = new Set(presets.map(preset => preset.id));
-  const unused = gates.tasks.filter(task => !task.presetIds.some(id => studio.has(id)));
   const detach = (task: GateTask, preset: string) => gates.update(task.id, item => ({ ...item, presetIds: item.presetIds.filter(id => id !== preset), ...(item.disabledPresetIds ? { disabledPresetIds: item.disabledPresetIds.filter(id => id !== preset) } : {}) }));
   const switchFor = (task: GateTask, preset: string, on: boolean) => gates.update(task.id, item => {
     const off = new Set(item.disabledPresetIds ?? []);
@@ -288,10 +287,6 @@ export function GateTaskScopePage({ gates, presets, locale }: { gates: GateTasks
     <SectionHead title={t('presetsTitle')} description={t('presetsTitleHint')} />
     {!presets.length && <p role="status" className="studio-muted">{t('noStudioPresets')}</p>}
     {presets.map(presetCard)}
-    {unused.length > 0 && <section className="studio-settings-card" aria-label={t('unusedGates')} data-gate-preset="">
-      <div className="studio-gate-scope-head"><strong>{t('unusedGates')}</strong></div><p className="studio-card-meta">{t('unusedGatesHint')}</p>
-      <ul className="studio-gate-scope-list">{unused.map(task => <li key={task.id} className="studio-gate-scope-row" data-gate-scope={task.id}><span className="studio-gate-scope-name"><strong>{task.name}</strong><span className="studio-card-meta">{t(`when-${task.when}`)}</span></span></li>)}</ul>
-    </section>}
     <DetailDialog compact open={!!adding} title={adding ? t('addGateTo', { preset: adding.name }) : ''} onClose={() => setAdding(undefined)} footer={<Button onClick={() => setAdding(undefined)}>{t('close')}</Button>}>
       {!candidates.length && <p className="studio-muted">{t('noGateToAdd')}</p>}
       <ul className="studio-pick-list" aria-label={adding ? t('addGateTo', { preset: adding.name }) : ''}>{candidates.map(task => <li key={task.id}>

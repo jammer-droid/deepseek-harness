@@ -2,10 +2,9 @@ import { listGateScripts, type HookShell, type HookContext } from './pixie-gate-
 import type { Context } from '@deepseek-ai/cordis';
 import { Remote, TypertRemoteService } from '@deepseek-ai/dsh-typert-protocol';
 import { join, resolve } from 'node:path';
-import type { JudgeRequest, PixieAskFrame, PixieContextMode, PixieSessionRecord, PixieSettings, PixieTurn, PixieUsageTotal } from '../pixie-contracts.ts';
+import type { PixieAskFrame, PixieContextMode, PixieSessionRecord, PixieSettings, PixieTurn, PixieUsageTotal } from '../pixie-contracts.ts';
 import { totalUsage } from '../pixie-contracts.ts';
 import { pixieCommand } from './pixie-command.ts';
-import { LlmJudgeEngine } from './pixie-judge.ts';
 import { PixieLive } from './pixie-live.ts';
 import { PixieGateStore, type PixieGateRecorder } from './pixie-gate-store.ts';
 import type { GateRejection, GateRunFrame } from '../pixie-gate-contracts.ts';
@@ -109,13 +108,11 @@ export class PixieService extends TypertRemoteService {
           sandboxPolicy: policy?.resolve({ session: agent.session }), ...(tool ? { tool } : {}) };
       },
       runner: async () => {
-        const [{ model, judgeModel, judgeSystemPrompt }, scriptDirectory] = await Promise.all([this.settings.read(), this.scriptDirectory()]);
+        const [{ model }, scriptDirectory] = await Promise.all([this.settings.read(), this.scriptDirectory()]);
         return new GateTaskRunner({
         scriptDirectory, scriptSupported: this.scriptSupported(), shell: ctx.get('shell') as unknown as HookShell | undefined, helper: this.helper,
         llm: { stream: options => llmOf(ctx).stream(options) },
         ...(model ? { model } : {}),
-        ...(judgeModel ? { judgeModel } : {}),
-        ...(judgeSystemPrompt !== undefined ? { judgeSystemPrompt } : {}),
         });
       },
       recorder: this.gates,
@@ -276,15 +273,5 @@ export class PixieService extends TypertRemoteService {
   @Remote
   async models() {
     return (this.ctx.get('sessionController') as unknown as SessionControllerSlice).modelCatalog();
-  }
-
-  /** Manual judge trial with the configured Pixie model; Jev-shaped request and result. */
-  @Remote
-  async judge(payload: string, signal: AbortSignal) {
-    const settings = await this.settings.read();
-    const model = settings.judgeModel ?? settings.model;
-    if (!model) return { ok: false, error: '[pixie/no-model] No Pixie model is configured in Studio settings' };
-    const engine = new LlmJudgeEngine({ stream: options => llmOf(this.ctx).stream(options) }, model, settings.judgeSystemPrompt);
-    return engine.judge(json<JudgeRequest>(payload), signal);
   }
 }

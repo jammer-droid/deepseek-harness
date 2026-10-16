@@ -119,17 +119,12 @@ test('without a configured model the tab says so and offers no ask', async () =>
   assert.equal(button(host, 'Ask'), undefined);
 });
 
-test('judge trial sends the Jev-shaped request and shows answers', async () => {
+test('the Pixie tab has threads and gate runs, with no judge tab', async () => {
   const view = { record: { sessionId: 's1', threads: [] }, total: { requests: 0, inputTokens: 0, outputTokens: 0 }, running: false, frames: [], settings };
   const fake = fakeActions(view);
   const { host } = await render(React.createElement(PixieTab, { locale: 'en', actions: fake.actions }));
-  await act(async () => { button(host, 'Judge').click(); });
-  const [state, questions] = host.querySelectorAll('textarea');
-  await type(state, '{"request":"fix login"}');
-  await type(questions, '{"clear":{"type":"noul","question":"Is it clear?"}}');
-  await act(async () => { button(host, 'Run judge').click(); });
-  assert.deepEqual(fake.calls.at(-1), ['judge', { state: { request: 'fix login' }, questions: { clear: { type: 'noul', question: 'Is it clear?' } } }]);
-  assert.match(host.textContent, /0\.7/);
+  assert.deepEqual([...host.querySelectorAll('[role=tab]')].map(tab => tab.textContent), ['Threads', 'Gates']);
+  assert.equal(button(host, 'Judge'), undefined);
 });
 
 test('settings page saves the chosen model, effort, and mode', async () => {
@@ -143,7 +138,7 @@ test('settings page saves the chosen model, effort, and mode', async () => {
   const { host } = await render(React.createElement(PixieSettingsPage, { actions, locale: 'en', navFooter: React.createElement('span', { className: 'footer' }, 'v1') }));
   const { Simulate } = await import('react-dom/test-utils');
   // Same frame as the preset service: grouped left menu, pages, and the shared footer; no service title.
-  assert.deepEqual([...host.querySelectorAll('nav.studio-nav .studio-nav-item')].map(item => item.textContent), ['Model', 'Threads', 'System prompt', 'Judge']);
+  assert.deepEqual([...host.querySelectorAll('nav.studio-nav .studio-nav-item')].map(item => item.textContent), ['Model', 'Threads', 'System prompt']);
   assert.ok(host.querySelector('nav.studio-nav .footer'));
   assert.equal(host.querySelector('.studio-nav-title'), null);
   const saveButton = () => [...host.querySelectorAll('section:not([hidden]) button.studio-primary')][0];

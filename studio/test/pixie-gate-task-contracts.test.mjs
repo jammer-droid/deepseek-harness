@@ -118,6 +118,6 @@ test('the removed judge option is dropped on validation and never adds a model c
   const valid = validateGateTask(stored);
   assert.equal('judge' in valid.advanced, false); assert.equal('judge' in stored.advanced, true);
   const calls = [];
-  const result = await new GateTaskRunner({ model, judgeModel: { ...model, model: 'judge' }, llm: llm(['{"verdict":"pass","note":"n"}'], calls) }).run(stored, 'target', signal());
+  const result = await new GateTaskRunner({ model, llm: llm(['{"verdict":"pass","note":"n"}'], calls) }).run(stored, 'target', signal());
   assert.equal(calls.length, 1); assert.deepEqual(result.output, { verdict: 'pass', note: 'n' });
 });

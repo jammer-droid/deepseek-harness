@@ -2,9 +2,6 @@
  * Uses the same {@link DetailLayout} frame as the preset service so every Studio service looks alike.
  */
 import React from 'react';
-import { DEFAULT_JUDGE_SYSTEM_PROMPT } from './pixie-contracts.ts';
-import { judgeText } from './pixie-gate-judge-locale.ts';
-import { gateEditorText } from './pixie-gate-editor-locale.ts';
 import { GateTaskCompositionPage, GateTaskScopePage, useGateTasks, type GateTaskActions } from './pixie-gate-task-pages.tsx';
 import { gateComposeText } from './pixie-gate-compose-locale.ts';
 import { Button, Notice, PageHead, Segmented, SettingsRow, Toggle } from './ui.tsx';
@@ -30,7 +27,7 @@ const NO_GATES: GateTaskActions = {
   saveScriptDirectory: async () => ({ directory: '', defaultDirectory: '', custom: false, supported: false, scripts: [] }),
   trial: () => ({ result: Promise.reject(new Error('Gate API unavailable')), cancel() {} }), presets: async () => [],
 };
-type PageId = 'model' | 'threads' | 'prompt' | 'judge' | 'gate-composition' | 'gate-scope';
+type PageId = 'model' | 'threads' | 'prompt' | 'gate-composition' | 'gate-scope';
 
 export function PixieSettingsPage({ actions, gateActions, locale, navFooter }: { actions: PixieSettingsActions; gateActions?: GateTaskActions; locale: string; navFooter?: React.ReactNode }) {
   const t = (key: PixieTextKey) => pixieText(locale, key);
@@ -102,7 +99,7 @@ export function PixieSettingsPage({ actions, gateActions, locale, navFooter }: {
             <option value="">{t('settingsEffortDefault')}</option>
             {efforts.map(effort => <option key={effort.id} value={effort.id}>{effort.name}</option>)}
           </select>} />
-        <SettingsRow title={t('settingsMaxTokens')} description={t('settingsMaxTokensHint')} control={
+        <SettingsRow title={t('settingsMaxTokens')} control={
           <input className="studio-compact" aria-label={t('settingsMaxTokens')} type="number" min={1} step={1} disabled={!draft.model} placeholder={t('settingsEffortDefault')} value={draft.model?.maxTokens ?? ''} onChange={event => {
             if (!draft.model) return;
             const { maxTokens: _previous, ...model } = draft.model;
@@ -127,30 +124,10 @@ export function PixieSettingsPage({ actions, gateActions, locale, navFooter }: {
     </SettingsRow>
   </section>);
 
-  const jt = (key: Parameters<typeof judgeText>[1]) => judgeText(locale, key);
-  const judgePage = <div className="studio-page-stack">
-    <PageHead title={jt('judge')} description={jt('settingsDescription')} actions={draft && catalog && <Button primary disabled={status === 'saving' || !dirty} onClick={() => void save()}>{status === 'saving' ? t('saving') : dirty ? t('save') : t('savedButton')}</Button>} />
-    {saveError && <Notice action={<Button small onClick={() => setSaveError('')}>{t('dismiss')}</Button>}>{`${t('saveFailed')} (${saveError})`}</Notice>}
-    {error && <Notice action={<Button small onClick={() => void load()}>{t('retry')}</Button>}>{error}</Notice>}
-    {!error && (!draft || !catalog) && <p role="status">{t('loading')}</p>}
-    {draft && catalog && <fieldset disabled={status === 'saving'} className="studio-config-root studio-settings-card">
-      <SettingsRow title={jt('model')} description={jt('modelHint')} control={<select className="studio-compact" aria-label={jt('model')} value={draft.judgeModel ? JSON.stringify([draft.judgeModel.provider, draft.judgeModel.model]) : ''} onChange={e => {
-        const { judgeModel: _, ...rest } = draft;
-        const route = e.target.value ? JSON.parse(e.target.value) as string[] : undefined;
-        replace(route ? { ...rest, judgeModel: { provider: route[0]!, model: route[1]! } } : rest);
-      }}><option value="">{gateEditorText(locale, 'defaultModel')}</option>{catalog.groups.map(group => <optgroup key={group.id} label={group.name}>{group.models.map(model => <option key={model.id} value={JSON.stringify([group.id, model.id])}>{model.name}</option>)}</optgroup>)}</select>} />
-      <SettingsRow title={jt('prompt')} description={jt('promptHint')}>
-        <textarea className="studio-pixie-prompt" aria-label={jt('prompt')} placeholder={DEFAULT_JUDGE_SYSTEM_PROMPT} value={draft.judgeSystemPrompt ?? ''} onChange={e => { const { judgeSystemPrompt: _, ...rest } = draft; replace(e.target.value ? { ...rest, judgeSystemPrompt: e.target.value } : rest); }} />
-        <div className="studio-inline-actions studio-pixie-actions"><Button disabled={!draft.judgeSystemPrompt || draft.judgeSystemPrompt === DEFAULT_JUDGE_SYSTEM_PROMPT} onClick={() => { const { judgeSystemPrompt: _, ...rest } = draft; replace(rest); }}>{jt('reset')}</Button></div>
-      </SettingsRow>
-    </fieldset>}
-  </div>;
-
   return <DetailLayout footer={navFooter} navigation={t('settingsNavigation')} selected={page} onSelect={next => setPage(next as PageId)} pages={[
     { id: 'model', group: t('settingsGroup'), label: t('pageModel'), content: modelPage },
     { id: 'threads', group: t('settingsGroup'), label: t('pageThreads'), content: threadsPage },
     { id: 'prompt', group: t('settingsGroup'), label: t('pagePrompt'), content: promptPage },
-    { id: 'judge', group: t('settingsGroup'), label: jt('judge'), content: judgePage },
     ...(gateActions ? [
       { id: 'gate-composition', group: gt('group'), label: gt('composition'), content: <GateTaskCompositionPage gates={gates} locale={locale} /> },
       { id: 'gate-scope', group: gt('group'), label: gt('scope'), content: <GateTaskScopePage gates={gates} presets={gatePresets} locale={locale} /> },

@@ -3,7 +3,7 @@ import React from 'react';
 import { GateRunsPanel, type GateRunActions } from './pixie-gate-runs.tsx';
 import { gateText } from './pixie-gate-locale.ts';
 import { Badge, Button, IconButton, Notice, Note, Segmented, StudioSurface, TabBar, TabPanel } from './ui.tsx';
-import type { JudgeRequest, JudgeResult, PixieAskFrame, PixieContextMode, PixieModel, PixieSessionRecord, PixieSettings, PixieThread, PixieTurn, PixieUsageTotal } from './pixie-contracts.ts';
+import type { PixieAskFrame, PixieContextMode, PixieModel, PixieSessionRecord, PixieSettings, PixieThread, PixieTurn, PixieUsageTotal } from './pixie-contracts.ts';
 import { pixieError, pixieText, type PixieTextKey } from './pixie-locale.ts';
 
 /** What the Host returns for one session (mirrors `PixieView` on the Host). */
@@ -29,7 +29,6 @@ export interface PixieTabActions extends GateRunActions {
   activate(threadId: string): Promise<boolean>;
   deleteThread(threadId: string): Promise<boolean>;
   models(): Promise<PixieModelCatalog>;
-  judge(request: JudgeRequest): Promise<JudgeResult>;
 }
 
 const PlusIcon = () => <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10M3 8h10" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" /></svg>;
@@ -76,38 +75,7 @@ const threadMeta = (thread: PixieThread, locale: string, model: string) => [
   model, pixieText(locale, thread.mode === 'fork' ? 'forkMeta' : 'freshMeta'), `${thread.turns.length}${pixieText(locale, 'turnCount')}`,
 ].join(' · ');
 
-function JudgePanel({ actions, locale }: { actions: PixieTabActions; locale: string }) {
-  const t = (key: PixieTextKey) => pixieText(locale, key);
-  const [state, setState] = React.useState('');
-  const [questions, setQuestions] = React.useState('');
-  const [result, setResult] = React.useState<JudgeResult>();
-  const [busy, setBusy] = React.useState(false);
-  const run = async () => {
-    let request: JudgeRequest;
-    try {
-      const parsedState: unknown = (() => { try { return JSON.parse(state); } catch { return state; } })();
-      request = { state: parsedState, questions: JSON.parse(questions) as JudgeRequest['questions'] };
-    } catch { setResult({ ok: false, error: t('judgeQuestionsJson') }); return; }
-    setBusy(true);
-    try { setResult(await actions.judge(request)); } catch (error) { setResult({ ok: false, error: messageOf(error) }); }
-    finally { setBusy(false); }
-  };
-  return <div className="studio-pixie-judge">
-    <Note>{t('judgeNote')}</Note>
-    <label className="studio-field"><span>{t('judgeState')}</span><textarea value={state} onChange={event => setState(event.target.value)} /></label>
-    <label className="studio-field"><span>{t('judgeQuestions')}</span><textarea value={questions} placeholder={'{"clear":{"type":"noul","question":"…"}}'} onChange={event => setQuestions(event.target.value)} /></label>
-    <div className="studio-inline-actions studio-pixie-actions"><Button primary small disabled={busy || !questions.trim()} onClick={() => { void run(); }}>{t('runJudge')}</Button></div>
-    {result && !result.ok && <p className="studio-pixie-error" role="alert">{pixieError(locale, result.error)}</p>}
-    {result?.ok && <dl className="studio-pixie-answers">{Object.entries(result.answers).map(([id, answer]) => <React.Fragment key={id}>
-      <dt>{id}</dt>
-      <dd>{answer.type === 'choice' ? `${answer.choice} (${t('confidence')} ${answer.confidence})`
-        : answer.type === 'score' ? `${answer.score} (${t('confidence')} ${answer.confidence})`
-          : `${t('yesProbability')} ${answer.noul}`}</dd>
-    </React.Fragment>)}</dl>}
-  </div>;
-}
-
-/** Pixie for one session: every thread at a glance, one open thread with its conversation, and the judge trial.
+/** Pixie for one session: every thread at a glance, one open thread with its conversation, and gate runs.
  * Wide panes show the thread list beside the open thread; narrow panes show one at a time.
  */
 export function PixieTab({ actions, locale }: { actions: PixieTabActions; locale: string }) {
@@ -117,7 +85,7 @@ export function PixieTab({ actions, locale }: { actions: PixieTabActions; locale
   const [actionError, setActionError] = React.useState('');
   const [question, setQuestion] = React.useState('');
   const [live, setLive] = React.useState<Live>();
-  const [section, setSection] = React.useState<'chat' | 'judge' | 'gates'>('chat');
+  const [section, setSection] = React.useState<'chat' | 'gates'>('chat');
   // The thread shown in detail; undefined shows the overview on narrow panes and the /pixie target on wide ones.
   const [openId, setOpenId] = React.useState<string>();
   const [newMode, setNewMode] = React.useState<PixieContextMode | ''>('');
@@ -256,9 +224,9 @@ export function PixieTab({ actions, locale }: { actions: PixieTabActions; locale
   </div>;
 
   return <StudioSurface className="studio-pixie">
-    <TabBar label={t('title')} value={section} onChange={setSection} items={[{ value: 'chat', label: t('chat') }, { value: 'judge', label: t('judge') }, { value: 'gates', label: gateText(locale, 'gates') }]} />
+    <TabBar label={t('title')} value={section} onChange={setSection} items={[{ value: 'chat', label: t('chat') }, { value: 'gates', label: gateText(locale, 'gates') }]} />
     <TabPanel>
-      {section === 'gates' ? <GateRunsPanel actions={actions} locale={locale} /> : section === 'judge' ? (configured ? <JudgePanel actions={actions} locale={locale} /> : <Note>{t('noModel')}</Note>) : <div className="studio-pixie-chat">
+      {section === 'gates' ? <GateRunsPanel actions={actions} locale={locale} /> : <div className="studio-pixie-chat">
         {!configured && <Note>{t('noModel')}</Note>}
         {actionError && <p className="studio-pixie-error" role="alert">{pixieError(locale, actionError)}</p>}
         <div className="studio-pixie-threads" data-open={opened ? 'true' : 'false'}>

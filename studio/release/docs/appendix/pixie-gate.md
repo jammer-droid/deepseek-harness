@@ -15,7 +15,7 @@ Pixie Gate lets the **Pixie model read, judge, and rework content** at a set mom
 
 ## Create a gate
 
-1. In **Studio → Pixie → Settings → Model**, choose the Pixie model. Gates and the helper use it. Scripts' `pixie judge` uses the judge model chosen on the **Judge** page (or the Pixie model).
+1. In **Studio → Pixie → Settings → Model**, choose the Pixie model. Gates and the helper (`pixie ask`, `pixie judge`) all use it.
 2. In **Gates → Gate composition**, press **New gate** and pick a template. Each point has one representative template (instruction format check, agent message protocol, block risky commands, digest long tool results, verify the final answer); the blank gate is last. The switch on each card turns the gate on or off everywhere.
 3. Set **When** and **What Pixie does**. Write the task in plain words: whether to pass or stop, what to replace or add, and what note to show only to you.
 4. Put a sample in **Try it** and run it. The configured Pixie model really answers; nothing is recorded or sent to a session.
@@ -103,7 +103,7 @@ pixie judge --question "<question>" [--threshold 0.5] [--input]
 
 - With `--input` the helper reads its input from stdin; otherwise it uses the gate target.
 - `ask` prints the answer and exits 0, using the Pixie model.
-- `judge` prints the "yes" probability and exits 0 at or above the threshold, 1 below it, using the judge model (or the Pixie model).
+- `judge` prints the "yes" probability and exits 0 at or above the threshold, 1 below it, using the Pixie model.
 - Usage, token, limit, and model errors exit 2 with a message on stderr. A failed helper call never decides the gate; the script's exit code does.
 - Limits: 20 calls and 256 KB per request for each run. Calls follow the gate time limit and cancellation; their usage is added to the gate and listed under **Helper calls** in the run record.
 - A token reaches only that run's ask and judge. The helper uses a Studio route on the DSH web server, so it is unavailable without one (for example, headless).

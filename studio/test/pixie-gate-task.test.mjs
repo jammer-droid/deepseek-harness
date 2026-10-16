@@ -53,7 +53,7 @@ test('Save sends the whole edited list and reports failures', async t => {
   const comp = page(host, 'Gate composition');
   await click(button(comp, 'New gate'));
   await click(pick(comp.querySelector('dialog'), 'Instruction format check'));
-  const editor = [...comp.querySelectorAll('dialog')].find(d => input(d, 'What Pixie does'));
+  const editor = [...comp.querySelectorAll('dialog')].find(d => input(d, 'What to send Pixie'));
   await click(button(editor, 'Apply'));
   assert.match(comp.textContent, /Unsaved changes/);
   await click(input(comp, 'Gate on Instruction format check'));
@@ -66,8 +66,8 @@ test('a failed save keeps the draft and shows the Host error', async t => {
   const comp = page(host, 'Gate composition');
   await click(button(comp, 'New gate'));
   await click(pick(comp.querySelector('dialog'), 'Blank gate'));
-  const editor = [...comp.querySelectorAll('dialog')].find(d => input(d, 'What Pixie does'));
-  await change(input(editor, 'What Pixie does'), 'x'); await click(button(editor, 'Apply'));
+  const editor = [...comp.querySelectorAll('dialog')].find(d => input(d, 'What to send Pixie'));
+  await change(input(editor, 'What to send Pixie'), 'x'); await click(button(editor, 'Apply'));
   await click(button(comp, 'Save'));
   assert.match(comp.querySelector('[role=alert]').textContent, /Could not save \(Only one enabled gate/);
   assert.equal(button(comp, 'Save').disabled, false);
@@ -83,7 +83,7 @@ test('new gate offers one template per point and the blank gate, with no coming-
     'Digest long tool resultsWhen a tool result arrives', 'Verify the final answerWhen the agent finishes its answer', 'Blank gate']);
   assert.equal(picker.querySelector('[aria-disabled=true]'), null); assert.doesNotMatch(picker.textContent, /Coming soon/);
   await click(pick(picker, 'Verify the final answer'));
-  const editor = [...comp.querySelectorAll('dialog')].find(d => input(d, 'What Pixie does'));
+  const editor = [...comp.querySelectorAll('dialog')].find(d => input(d, 'What to send Pixie'));
   assert.equal(input(editor, 'When').value, 'turn-end');
   assert.equal(input(editor, 'Judge question (passes when “yes” is likely)'), null);
   await click(button(editor, 'Apply'));
@@ -97,7 +97,7 @@ test('editor shows two fields up front; script, judge and limits live under Adva
   const comp = page(host, 'Gate composition');
   await click(button(comp, 'New gate'));
   await click(pick(comp.querySelector('dialog'), 'Instruction format check'));
-  const editor = [...comp.querySelectorAll('dialog')].find(d => input(d, 'What Pixie does'));
+  const editor = [...comp.querySelectorAll('dialog')].find(d => input(d, 'What to send Pixie'));
   const advanced = editor.querySelector('details.studio-disclosure');
   assert.ok(advanced.contains(input(editor, 'Pixie hook script')));
   assert.deepEqual([...input(editor, 'Pixie hook script').options].map(o => o.value), ['', ...SCRIPTS]);
@@ -106,7 +106,7 @@ test('editor shows two fields up front; script, judge and limits live under Adva
   assert.match(advanced.textContent, /\/profile\/studio-data\/pixie-gate\/commands/);
   assert.equal(input(editor, 'Decide the verdict with the judge model'), null);
   assert.ok(input(editor, 'Confirm before replacing'));
-  await change(input(editor, 'What Pixie does'), '');
+  await change(input(editor, 'What to send Pixie'), '');
   await click(button(editor, 'Apply'));
   assert.match(editor.textContent, /Describe what Pixie should do/);
   assert.equal(comp.querySelector('[data-gate-task]'), null);
@@ -118,8 +118,9 @@ test('trial calls the Host and shows the five output fields, the applied plan an
   const comp = page(host, 'Gate composition');
   await click(button(comp, 'New gate'));
   await click(pick(comp.querySelector('dialog'), 'Instruction format check'));
-  const editor = [...comp.querySelectorAll('dialog')].find(d => input(d, 'What Pixie does'));
+  const editor = [...comp.querySelectorAll('dialog')].find(d => input(d, 'What to send Pixie'));
   assert.match(editor.textContent, /Calls the configured Pixie model/);
+  assert.match(editor.textContent, /Pixie checks the content and decides the gate result\. See the guide for details on results\. Guide/);
   await change(input(editor, 'Sample your instruction'), 'fix login');
   await click(button(editor, 'Run'));
   assert.equal(host.trials[0].text, 'fix login'); assert.equal(host.trials[0].task.when, 'user-message');
@@ -132,9 +133,9 @@ test('a running trial can be cancelled', async t => {
   const comp = page(host, 'Gate composition');
   await click(button(comp, 'New gate'));
   await click(pick(comp.querySelector('dialog'), 'Digest long tool results'));
-  const editor = [...comp.querySelectorAll('dialog')].find(d => input(d, 'What Pixie does'));
+  const editor = [...comp.querySelectorAll('dialog')].find(d => input(d, 'What to send Pixie'));
   await change(input(editor, 'Pixie hook script'), 'only-search-tools.sh');
-  assert.match(editor.textContent, /Trials do not run the hook script/);
+  assert.match(editor.textContent, /Gate tests do not run the script\./);
   await change(input(editor, 'Sample tool name (optional)'), 'grep');
   await change(input(editor, 'Sample the tool result'), 'lines');
   await click(button(editor, 'Run'));
@@ -148,13 +149,13 @@ test('scope lists Studio presets, adds gates per preset, and switches one preset
   const comp = page(host, 'Gate composition');
   await click(button(comp, 'New gate'));
   await click(pick(comp.querySelector('dialog'), 'Blank gate'));
-  const editor = [...comp.querySelectorAll('dialog')].find(d => input(d, 'What Pixie does'));
-  await change(input(editor, 'What Pixie does'), 'Check it');
+  const editor = [...comp.querySelectorAll('dialog')].find(d => input(d, 'What to send Pixie'));
+  await change(input(editor, 'What to send Pixie'), 'Check it');
   await click(button(editor, 'Apply'));
   const scope = page(host, 'Scope');
   const preset = id => scope.querySelector(`[data-gate-preset="${id}"]`);
   assert.match(preset('p').textContent, /Preset.*0 gates · 0 on.*No gates on this preset/s);
-  assert.match(scope.querySelector('[data-gate-preset=""]').textContent, /Gates on no preset.*New gate/s);
+  assert.equal(scope.querySelector('[data-gate-preset=""]'), null);
   for (const id of ['p', 'q']) {
     await click(button(preset(id), 'Add gate'));
     const dialog = [...scope.querySelectorAll('dialog')].find(d => d.open);
@@ -185,13 +186,13 @@ test('scope lists Studio presets, adds gates per preset, and switches one preset
   await click(input(comp, 'Gate on New gate'));
   assert.equal(toggle('p').disabled, true); assert.match(preset('p').textContent, /The gate is off everywhere/);
 });
-test('scope shows only Studio presets; gates on other presets are listed as not added yet', async t => {
+test('scope shows only Studio presets; gates only reach a preset through Add gate', async t => {
   const task = { ...makeTask('Old'), instruction: 'x', presetIds: ['standard'] };
   const host = await settings(t, 'en', { read: { entries: [task], invalid: [] }, presets: [] });
   const scope = page(host, 'Scope');
   assert.match(scope.textContent, /No presets made in Studio yet/);
-  assert.equal(scope.querySelector('[data-gate-preset="other"]'), null);
-  assert.match(scope.querySelector('[data-gate-preset=""]').textContent, /Old/);
+  assert.equal(scope.querySelector('[data-gate-preset]'), null);
+  assert.doesNotMatch(scope.textContent, /Old/);
   assert.equal(scope.querySelector('section').getAttribute('aria-label'), 'Script folder');
 });
 
@@ -227,10 +228,11 @@ test('hook script points to the guide instead of inlining its contract', async t
   const comp = page(host, 'Gate composition');
   await click(button(comp, 'New gate'));
   await click(pick(comp.querySelector('dialog'), 'Digest long tool results'));
-  const editor = [...comp.querySelectorAll('dialog')].find(d => input(d, 'What Pixie does'));
+  const editor = [...comp.querySelectorAll('dialog')].find(d => input(d, 'What to send Pixie'));
   assert.equal(input(editor, 'Tools'), null);
   assert.equal(input(editor, 'Pixie hook script').value, '');
-  const link = [...editor.querySelectorAll('a')].find(a => a.textContent === 'Script guide');
+  const link = [...editor.querySelectorAll('a')].find(a => a.textContent === 'script guide');
+  assert.equal(link.closest('p').textContent, 'See the script guide for the full script rules.');
   assert.match(link.getAttribute('href'), /docs\/appendix\/pixie-gate\.md$/);
   assert.doesNotMatch(editor.textContent, /PIXIE_TOOL_NAME|exit code/i);
   assert.match(editor.textContent, /Available only when DSH runs with a bash profile\./);
@@ -240,7 +242,7 @@ test('a stored script missing from the folder stays selectable and unsupported e
   const host = await settings(t, 'en', { read: { entries: [task], invalid: [] }, supported: false });
   const comp = page(host, 'Gate composition');
   await click(button(comp.querySelector('[data-gate-task]'), 'Edit'));
-  const editor = [...comp.querySelectorAll('dialog')].find(d => input(d, 'What Pixie does'));
+  const editor = [...comp.querySelectorAll('dialog')].find(d => input(d, 'What to send Pixie'));
   assert.equal(input(editor, 'Pixie hook script').value, 'gone.sh');
   assert.match(editor.textContent, /gone\.sh \(not in folder\)/);
   assert.match(editor.textContent, /Hook scripts are not supported in this environment/);

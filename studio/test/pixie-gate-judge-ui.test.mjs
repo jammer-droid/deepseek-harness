@@ -26,16 +26,16 @@ test('judge answer summary uses recorded labels, falls back to ids and keeps fai
   delete result.stages.first.data.questions;
   const fallback = await render(t, GateResultDetails, { result }); assert.match(fallback.textContent, /c: yes/); assert.match(fallback.textContent, /s: 1/);
 });
-test('judge settings legacy fields, save states, model fallback and reset', async t => {
-  const saves = []; let resolve;
-  const host = await render(t, PixieSettingsPage, { actions: { read: async () => ({ contextMode: 'fresh', systemPrompt: 'original', allowThreadModel: true }), models: async () => ({ groups: [{ id: 'p', name: 'Provider', models: [{ id: 'm', name: 'Model' }] }] }), save: settings => { saves.push(structuredClone(settings)); return new Promise(r => { resolve = () => r(settings); }); } } });
-  await click(button(host, 'Judge')); const page = host.querySelector('section[aria-label="Judge"]');
-  assert.equal(input(page, 'Judge model').value, ''); assert.equal(input(page, 'Judge system prompt').value, ''); assert.equal(button(page, 'Saved').disabled, true);
-  await change(input(page, 'Judge model'), JSON.stringify(['p', 'm'])); await change(input(page, 'Judge system prompt'), 'Custom JSON instruction');
-  await click(button(page, 'Save')); assert.equal(button(page, 'Saving…').disabled, true); assert.equal(page.querySelector('fieldset').disabled, true);
-  await act(async () => resolve()); assert.equal(button(page, 'Saved').disabled, true); assert.equal(saves[0].systemPrompt, 'original'); assert.deepEqual(saves[0].judgeModel, { provider: 'p', model: 'm' });
-  await click(button(page, 'Restore default')); await change(input(page, 'Judge model'), ''); await click(button(page, 'Save')); await act(async () => resolve());
-  assert.equal(Object.hasOwn(saves[1], 'judgeSystemPrompt'), false); assert.equal(Object.hasOwn(saves[1], 'judgeModel'), false);
+test('settings have no judge page; stored judge fields survive a save unchanged', async t => {
+  const saves = [];
+  const stored = { contextMode: 'fresh', systemPrompt: 'original', allowThreadModel: true, judgeModel: { provider: 'p', model: 'j' }, judgeSystemPrompt: 'Custom' };
+  const host = await render(t, PixieSettingsPage, { actions: { read: async () => stored, models: async () => ({ groups: [{ id: 'p', name: 'P', models: [{ id: 'm', name: 'M' }] }] }), save: async value => { saves.push(value); return value; } }, locale: 'en' });
+  assert.equal(button(host, 'Judge'), undefined);
+  assert.equal(host.querySelector('section[aria-label="Judge"]'), null);
+  const select = host.querySelector('select');
+  await change(select, 'p\u0000m');
+  await click([...host.querySelectorAll('section:not([hidden]) button')].find(b => b.textContent === 'Save'));
+  assert.deepEqual(saves[0].judgeModel, { provider: 'p', model: 'j' }); assert.equal(saves[0].judgeSystemPrompt, 'Custom');
 });
 
 test('structured failures localize all types and fall back to ids without definitions', async t => {

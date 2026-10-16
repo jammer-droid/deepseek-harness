@@ -11,7 +11,7 @@ import { StudioSurface } from './ui.tsx';
 import { PixieCommandRow, PixieTab, type PixieCommandRowActions, type PixieTabActions } from './pixie-tab.tsx';
 import { PixieSettingsPage, type PixieSettingsActions } from './pixie-settings.tsx';
 import { pixieText } from './pixie-locale.ts';
-import type { JudgeResult, PixieAskFrame, PixieSettings, PixieThread } from './pixie-contracts.ts';
+import type { PixieAskFrame, PixieSettings, PixieThread } from './pixie-contracts.ts';
 
 const NAMESPACE = 'studioPixie';
 const TAB_ID = `${PACKAGE_NAME}/pixie`;
@@ -45,7 +45,6 @@ interface PixieRemote {
   readSettings(): RemoteValue<PixieSettings>;
   saveSettings(payload: string): RemoteValue<PixieSettings>;
   models(): RemoteValue<unknown>;
-  judge(payload: string): RemoteValue<JudgeResult>;
 }
 
 async function unwrap<T>(call: RemoteValue<T>): Promise<T> {
@@ -81,7 +80,6 @@ export function pixieDescriptors() {
     descriptor('readSettings', []),
     descriptor('saveSettings', ['payload']),
     descriptor('models', []),
-    descriptor('judge', ['payload'], { cancellation: { parameter: 'signal' } }),
   ];
 }
 
@@ -171,7 +169,6 @@ export function mountPixie(ctx: StudioContext, options: { navFooter?: (locale: s
     activate: threadId => unwrap(remote().activate(sessionId, threadId)),
     deleteThread: threadId => unwrap(remote().deleteThread(sessionId, threadId)),
     models: () => unwrap(remote().models()) as ReturnType<PixieTabActions['models']>,
-    judge: request => unwrap(remote().judge(JSON.stringify(request))),
   });
 
   // The right sidebar may load after Studio; register the tab and the /pixie row once its services exist.
