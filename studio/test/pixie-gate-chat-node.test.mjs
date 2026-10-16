@@ -133,3 +133,11 @@ test('a row keeps a live result that arrives before its snapshot', async () => {
   assert.ok(host.querySelector('[data-gate-tail]'), 'the stale snapshot must not erase the live result');
   await act(async () => root.unmount()); host.remove();
 });
+
+test('the replay buffer keeps one frame per run and one session frame', async () => {
+  const { bufferGateFrame } = await import('../src/pixie-gate-chat-node.ts');
+  const frames = [];
+  for (let i = 0; i < 50; i++) bufferGateFrame(frames, { type: 'run', run: run('a', { status: i < 49 ? 'running' : 'done' }) });
+  bufferGateFrame(frames, { type: 'session', disabledGateIds: ['x'] }); bufferGateFrame(frames, { type: 'run', run: run('b') }); bufferGateFrame(frames, { type: 'session', disabledGateIds: [] });
+  assert.deepEqual(frames.map(f => f.type === 'run' ? f.run.id + ':' + f.run.status : 'session:' + f.disabledGateIds.length), ['a:done', 'b:done', 'session:0']);
+});

@@ -3,7 +3,7 @@ import React from 'react';
 import type { GateRun, GateRunFrame, GateRunRecord } from './pixie-gate-contracts.ts';
 import { gatePointText, gateText, type GateTextKey } from './pixie-gate-locale.ts';
 import { Badge, Button, Disclosure, ModelText, Notice } from './ui.tsx';
-import { applyGateFrame } from './pixie-gate-chat-node.ts';
+import { applyGateFrame, bufferGateFrame } from './pixie-gate-chat-node.ts';
 
 export interface GateTailActions {
   gateRuns(): Promise<GateRunRecord>;
@@ -81,7 +81,7 @@ export function GateResults({ actions, anchor, locale, Surface = React.Fragment 
     const stop = actions.followGates(frame => {
       if (!active) return;
       if (frame.type === 'sync') { refresh(); return; }
-      refreshing?.frames.push(frame);
+      if (refreshing) bufferGateFrame(refreshing.frames, frame);
       if (frame.type === 'session') { setDisabled(frame.disabledGateIds); return; }
       setRuns(current => [...current.filter(run => run.id !== frame.run.id), frame.run]);
     });

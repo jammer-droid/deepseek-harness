@@ -67,6 +67,13 @@ export function applyGateFrame(record: GateRunRecord, frame: Exclude<GateRunFram
     : { ...record, runs: [...record.runs.filter(run => run.id !== frame.run.id), frame.run] };
 }
 
+/** Buffers a frame for replay, keeping only the latest frame per run and the latest session frame, so a stalled fetch stays bounded. */
+export function bufferGateFrame(frames: Exclude<GateRunFrame, { type: 'sync' }>[], frame: Exclude<GateRunFrame, { type: 'sync' }>): void {
+  const same = frames.findIndex(old => old.type === frame.type && (frame.type === 'session' || (old.type === 'run' && old.run.id === frame.run.id)));
+  if (same >= 0) frames.splice(same, 1);
+  frames.push(frame);
+}
+
 /**
  * Many Chat rows read the same session's gate runs. One stream and one fetch per sync serve them all.
  * Frames that arrive while a fetch is pending are replayed onto its snapshot, so a late snapshot never drops a live result.
@@ -99,7 +106,7 @@ export function gateRunHub(fetch: () => Promise<GateRunRecord>, connect: (listen
     if (frame.type === 'sync') { state = undefined; void load(); }
     else {
       if (state) state = applyGateFrame(state, frame);
-      pending?.frames.push(frame);
+      if (pending) bufferGateFrame(pending.frames, frame);
     }
     for (const listener of [...listeners]) listener(frame);
   };
