@@ -1,6 +1,6 @@
 import type { Context } from '@deepseek-ai/cordis';
 import { createScope } from '@deepseek-ai/dsh-scope';
-import { renderPrompt, renderContextSnapshot } from '@deepseek-ai/dsh-system-prompt';
+import { renderPrompt, renderContextSnapshot, renderContextSections } from '@deepseek-ai/dsh-system-prompt';
 import { randomUUID } from 'node:crypto';
 import { type PreviewRequest, type PreviewResult } from '../prompt-composition.ts';
 import { compositionPlan, parseComposition } from './composition-plan.ts';
@@ -36,7 +36,7 @@ export async function assemblePreview(ctx: Context, input: PreviewRequest): Prom
         return {
           prompt: renderPrompt(assembly),
           sections: assembly.sections.map(section => ({ name: section.name, text: renderPrompt({ ...assembly, sections: [section] }) })).filter(section => section.text),
-          context: renderContextSnapshot(assembly), tools: assembly.tools,
+          context: renderContextSnapshot(assembly), contexts: renderContextSections(assembly).map(({ name, text }) => ({ name, text })), tools: assembly.tools,
           injections: await turnInjections(entries, ctx.get('loader' as never) as ModuleImporter | undefined, { cwd: process.cwd() }),
         };
       } finally { await child.dispose(); }

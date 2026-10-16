@@ -83,3 +83,24 @@ test('the preview dialog shows turn-start content in its own view, not under the
     assert.match(dialog().textContent, /Time sampled…/);
   } finally { await act(async () => root.unmount()); dom.window.close(); }
 });
+
+test('runtime context has its own preview view, by contributor', async () => {
+  const dom = new JSDOM('<div id="root"></div>');
+  globalThis.window = dom.window; globalThis.document = dom.window.document; globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+  dom.window.HTMLDialogElement.prototype.showModal = function () { this.open = true; };
+  dom.window.HTMLDialogElement.prototype.close = function () { this.open = false; };
+  const { createRoot } = await import('react-dom/client');
+  const { PromptToolsPrototype } = await import('../src/prompt-tools-prototype.tsx');
+  const root = createRoot(document.getElementById('root'));
+  const result = { prompt: 'p', context: '', sections: [], tools: [], injections: [], contexts: [{ name: 'sandbox:policy', text: 'Current DSH file policy: danger-full-access.' }] };
+  try {
+    await act(async () => root.render(React.createElement(PromptToolsPrototype, { locale: 'en', prompt: '', onPromptChange() {}, provided: [], onProvidedChange() {},
+      catalog: { presets: [{ id: 'studio-master', tools: [], sections: [], promptProviders: [] }], tools: [] }, onPreview: async () => result, configOverrides: {}, onConfigOverridesChange() {} })));
+    assert.match(document.body.textContent, /attaches to each session directly/);
+    await act(async () => [...document.querySelectorAll('button')].find(b => /preview/i.test(b.textContent)).click());
+    const dialog = () => document.querySelector('dialog[open]');
+    await act(async () => [...dialog().querySelectorAll('[role=radio]')].find(b => b.textContent.startsWith('Runtime context')).click());
+    assert.match(dialog().textContent, /sandbox:policy.*danger-full-access/);
+    assert.match(dialog().textContent, /only while running/);
+  } finally { await act(async () => root.unmount()); dom.window.close(); }
+});
