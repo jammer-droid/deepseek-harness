@@ -176,6 +176,11 @@ test('run detail names who concluded; older records without it show no row', asy
   const result = { verdict: 'fail', original: 'o', subject: 'o', notes: [], stages: {}, records: [], hooks: {}, forward: { kind: 'none' } };
   const f = await setup([run('script', { applied: 'rejected', result: { ...result, concludedBy: 'script' }, output: { verdict: 'stop', reason: 'missing fields' } })]);
   assert.match(f.host.querySelector('.studio-gate-facts').textContent, /Concluded byHook script/); await f.close();
+  const appended = await setup([run('appended', { applied: 'appended', result: { ...result, concludedBy: 'script' }, output: { verdict: 'pass', append: '[Jev] bug' } })]);
+  assert.ok(appended.host.querySelector('section[aria-label="Pixie output"]'));
+  assert.match(appended.host.textContent, /Script output/); assert.doesNotMatch(appended.host.textContent, /Pixie output/); await appended.close();
+  const byPixie = await setup([run('pixie', { applied: 'appended', result: { ...result, concludedBy: 'pixie' }, output: { verdict: 'pass', append: 'x' } })]);
+  assert.match(byPixie.host.textContent, /Pixie output/); await byPixie.close();
   const old = await setup([run('old', { result })]);
   assert.doesNotMatch(old.host.querySelector('.studio-gate-facts').textContent, /Concluded by/); await old.close();
 });

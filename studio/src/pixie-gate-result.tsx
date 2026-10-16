@@ -5,6 +5,16 @@ import type { GateResult, StageResult, JudgeFailedCondition } from './pixie-gate
 import { gateText } from './pixie-gate-locale.ts';
 import { Badge, ModelText, Notice, SectionHead } from './ui.tsx';
 
+/** `pixie judge` record line: type, label, and engine (#27). Records from before #27 carry none and show nothing here. */
+function helperSummary(data: unknown, t: (key: Parameters<typeof gateText>[1]) => string): string | undefined {
+  if (!data || typeof data !== 'object') return undefined;
+  const value = data as { type?: unknown; label?: unknown; engine?: unknown; answer?: { confidence?: unknown } };
+  if (typeof value.type !== 'string' || typeof value.label !== 'string') return undefined;
+  const line = t('helperLabel').replace('{type}', value.type).replace('{label}', value.label).replace('{engine}', typeof value.engine === 'string' ? value.engine : '?');
+  const confidence = value.answer?.confidence;
+  return typeof confidence === 'number' ? `${line} · ${t('helperConfidence').replace('{confidence}', `${Math.round(confidence * 100)}%`)}` : line;
+}
+
 function wasSkipped(result: StageResult): boolean {
   return !!result.data && typeof result.data === 'object' && 'skipped' in result.data && result.data.skipped === true;
 }
@@ -45,6 +55,7 @@ export function GateResultDetails({ result, locale, durations = {}, skipped = []
           </> : <>{judgeCriterionText(q, answer.score) ?? answer.score} · {judgeText(locale, 'confidence')}: {percent(answer.confidence)}</>}</p>;
         })}
       </section>}
+      {helperSummary(value.data, t) && <p className="studio-card-meta">{helperSummary(value.data, t)}</p>}
       {!!value.data && typeof value.data === 'object' && 'noul' in value.data && 'threshold' in value.data && <p className="studio-card-meta">{t('helperNoul').replace('{noul}', String(value.data.noul)).replace('{threshold}', String(value.data.threshold))}</p>}
       {value.error && <Notice>{t('error')}: {value.error}</Notice>}
       {durations[id] !== undefined && <p className="studio-muted">{t('elapsed')}: {duration(durations[id]!)}</p>}

@@ -100,7 +100,7 @@ export function GateRunsPanel({ actions, locale }: { actions: GateRunActions; lo
           </div></>}
         </section>}
         {shown.output && (['replace', 'append', 'note'] as const).some(key => shown.output![key] !== undefined) && <section className="studio-gate-block" aria-label={t('output')}>
-          <SectionHead title={t('output')} />
+          <SectionHead title={t(shown.result?.concludedBy === 'script' ? 'scriptOutput' : 'output')} />
           <dl className="studio-gate-facts">{(['replace', 'append', 'note'] as const).map(key => shown.output![key] !== undefined && <React.Fragment key={key}><dt>{t(key === 'note' ? 'notes' : key)}</dt><dd className="studio-gate-text">{shown.output![key]}</dd></React.Fragment>)}</dl>
         </section>}
         {shown.result ? <GateResultDetails result={shown.result} locale={locale} compact hideOriginal={!!shown.rejection} /> : !shown.rejection && shown.original && <section className="studio-gate-block"><SectionHead title={t('original')} /><p className="studio-pixie-answer studio-gate-text">{shown.original}</p></section>}

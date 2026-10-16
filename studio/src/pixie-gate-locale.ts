@@ -10,7 +10,7 @@ const en = {
   skippedForward: 'The forwarded result cannot be calculated because command stages were skipped in this trial.',
   skippedCommand: 'Command was not executed in this trial.',
   skippedCount: 'Includes {count} skipped stages', milliseconds: '{value} ms', seconds: '{value} s',
-  output: 'Pixie output', notes: 'Notes', helperCalls: 'Helper calls', helperNoul: 'Yes probability {noul} · threshold {threshold}', tokens: 'Tokens', applyNote: 'Not applied because', originalSame: 'Original (unchanged)', sentAlong: 'Sent along', usage: 'Tokens in {input} · out {output}', stop: 'Stopped',
+  output: 'Pixie output', scriptOutput: 'Script output', helperLabel: '{type} → {label} · {engine}', helperConfidence: 'confidence {confidence}', notes: 'Notes', helperCalls: 'Helper calls', helperNoul: 'Yes probability {noul} · threshold {threshold}', tokens: 'Tokens', applyNote: 'Not applied because', originalSame: 'Original (unchanged)', sentAlong: 'Sent along', usage: 'Tokens in {input} · out {output}', stop: 'Stopped',
 } as const;
 export type GateTextKey = keyof typeof en;
 const ko: Record<GateTextKey, string> = {
@@ -23,7 +23,7 @@ const ko: Record<GateTextKey, string> = {
   skippedForward: '시험 실행에서 명령 단계를 건너뛰어 전달 결과를 계산할 수 없음',
   skippedCommand: '시험 실행에서 명령을 실행하지 않았습니다.',
   skippedCount: '건너뛴 단계 {count}개 포함', milliseconds: '{value} ms', seconds: '{value}초',
-  output: 'Pixie 출력', notes: '메모', helperCalls: '헬퍼 호출', helperNoul: '예 확률 {noul} · 기준 {threshold}', tokens: '토큰', applyNote: '미적용 이유', originalSame: '원문 (변경 없음)', sentAlong: '함께 전달한 내용', usage: '토큰 입력 {input} · 출력 {output}', stop: '막음',
+  output: 'Pixie 출력', scriptOutput: '스크립트 출력', helperLabel: '{type} → {label} · {engine}', helperConfidence: '확신도 {confidence}', notes: '메모', helperCalls: '헬퍼 호출', helperNoul: '예 확률 {noul} · 기준 {threshold}', tokens: '토큰', applyNote: '미적용 이유', originalSame: '원문 (변경 없음)', sentAlong: '함께 전달한 내용', usage: '토큰 입력 {input} · 출력 {output}', stop: '막음',
 };
 const zh: Record<GateTextKey, string> = {
   concludedBy: '结论来源', concludedPixie: 'Pixie', concludedScript: '钩子脚本', concludedSkipped: '钩子跳过',
@@ -35,7 +35,7 @@ const zh: Record<GateTextKey, string> = {
   skippedForward: '本次试运行跳过了命令阶段，无法计算传递结果。',
   skippedCommand: '本次试运行未执行命令。',
   skippedCount: '包含 {count} 个已跳过阶段', milliseconds: '{value} ms', seconds: '{value} 秒',
-  output: 'Pixie 输出', notes: '备注', helperCalls: '辅助调用', helperNoul: '“是”的概率 {noul} · 阈值 {threshold}', tokens: '令牌', applyNote: '未应用原因', originalSame: '原文（未更改）', sentAlong: '一并传递的内容', usage: '令牌 输入 {input} · 输出 {output}', stop: '已拦下',
+  output: 'Pixie 输出', scriptOutput: '脚本输出', helperLabel: '{type} → {label} · {engine}', helperConfidence: '置信度 {confidence}', notes: '备注', helperCalls: '辅助调用', helperNoul: '“是”的概率 {noul} · 阈值 {threshold}', tokens: '令牌', applyNote: '未应用原因', originalSame: '原文（未更改）', sentAlong: '一并传递的内容', usage: '令牌 输入 {input} · 输出 {output}', stop: '已拦下',
 };
 export function gateText(locale: string, key: GateTextKey): string {
   return (locale.startsWith('ko') ? ko : locale.startsWith('zh') ? zh : en)[key];

@@ -17,24 +17,41 @@ Pixie Gate 훅 스크립트가 부르는 판정 엔진에 TypeSafe Jev를 추가
 
 ## 현재 진행 상황
 
-S1–S7 구현과 로컬 검증을 마쳤다. 실제 Jev API 호출과 실세션 게이트 실행은 **미검증**이다(TypeSafe 키 없음, 세션 모델 키 없음).
+S1–S7 구현과 검증을 마쳤다. 실제 Jev API 호출, 실세션의 Jev 판정 게이트(exit 11), Pixie Markdown 표시까지 확인했다. 남은 미검증은 아래에 적었다.
 
 | 단계 | 상태 | 커밋 |
 | --- | --- | --- |
 | S1 판정 계약 정렬 | 완료 | `49086773fd` |
-| S2 JevJudgeEngine과 키 | 완료(가짜 fetch) | `49086773fd` |
+| S2 JevJudgeEngine과 키 | 완료, 실호출 확인 | `49086773fd` |
 | S3 엔진 선택과 키 설정 화면 | 완료, 설치 화면 확인 | `49086773fd` |
 | S4 `pixie judge` 확장 | 완료 | `a35be44af1` |
 | S5 스크립트 직접 결론(exit 11) | 완료 | `a35be44af1` |
-| S6 Pixie 출력 Markdown 표시 | 완료(렌더러 주입은 단위 테스트, 실제 렌더 화면은 미확인) | `e67d5eb5cd` |
-| S7 가이드와 검증 | 가이드·스킬 갱신 완료, 실호출 미검증 | 이 커밋 |
+| S6 Pixie 출력 Markdown 표시 | 완료, 사용자가 웹 빌드에서 확인 | `e67d5eb5cd` |
+| S7 가이드와 검증 | 완료 | `7de926200e` |
+| 사용자 피드백: 키 저장·삭제 확인 문구, 설명의 백틱 제거 | 완료 | `c87d6f5c46` |
+| 실행 기록: 스크립트 결론이면 `스크립트 출력`, 판정 헬퍼 호출에 형식·라벨·엔진·확신도 | 완료 | 이 커밋 |
 
 ### 검증 기록
 
 - **로컬:** `npm run typecheck`, `node build.mjs`, `node --import tsx --test test/*.test.mjs` 479/479 통과, `git diff --check` 통과. 작업 트리에 의존성이 없어 메인 체크아웃의 `node_modules`를 심볼릭 링크로 썼다(커밋하지 않음). DSH 패키지 재빌드는 하지 않았다.
 - **가이드 예시 스크립트:** ko·en 가이드의 `translate-check.sh`·`claim-check.sh`를 문서에서 추출해 실제 bash·curl·`jq`와 실제 헬퍼 경로(가짜 판정 엔진)로 실행했다. 문서에 적은 exit·출력과 일치했다(일회성 검사, 저장소에 넣지 않음).
 - **독립 설치:** 수정하지 않은 DSH `0.2.0-rc.2`(`/Applications/DeepSeek Harness.app`, `dsh --version`)에 `start-web.mjs`로 pack한 `@matamt-dbg/dsh-studio@0.3.0` tarball을 격리 `studio/.dsh-home` / `lean-agent-web`에 설치했다. 19388은 다른 프로세스가 쓰고 있어 같은 프로필을 19390에서 다시 띄웠다. Loader 로딩 성공, Pixie 설정에 **결정 엔진** 페이지 표시. 키 저장 → `설정됨 · 출처: file`, 입력칸 비워짐, 페이지에 키 문자열 없음, 키 삭제 → `설정 안 됨`(DSH credentials 실제 서비스). 화면: [라이트 1440 LLM](../verification/jev-27/judge-llm-light-1440.png), [라이트 1440 Jev 키 저장 후](../verification/jev-27/judge-jev-saved-light-1440.png), [다크 520 Jev](../verification/jev-27/judge-jev-dark-520.png). 콘솔 오류 없음. 사용자 GUI(19387)·사용자 프로필은 건드리지 않았다.
-- **미검증:** 실제 Jev 응답(세 형식, 한국어 state), 실세션에서 exit 11·Jev 판정 게이트, 실제 `MarkdownText` 렌더 화면(Pixie 답변이 필요해 모델 키 필요), `0.2.1-alpha.2` 설치.
+- **Jev 실호출 (2026-10-16):** 출시 코드의 `JevJudgeEngine`, 모델 `jev-1.13.0`, 격리 프로필 credentials의 키.
+
+  | 입력 | 결과 | 시간 |
+  | --- | --- | --- |
+  | 영어 요청(로그인 500, 오늘 수정) | noul 급함 0.96 · choice `bug` 1.0 · score 0.93(작은 변경) | 260ms |
+  | 같은 요청 한국어 | 0.96 · `bug` 1.0 · 0.92 | 204ms |
+  | 번역 충실도(원문 "4xx면 재시도 안 함", 번역 "4xx에서도 재시도") | noul 0.02 | 166ms |
+
+  세 형식 모두 계약 검증을 통과했고 사용량(`input_tokens`·`output_tokens`)이 기록됐다. 이 사례에서 한국어 판단은 영어와 거의 같았다.
+- **실세션 게이트:** 격리 프로필 `lean-agent-web`을 19390에서 실행(사용자의 웹 빌드 19388은 건드리지 않음). Studio UI로 `사용자가 지시를 보낼 때` 게이트 `#27 Jev 라우팅`을 **할 일 없이** 만들고 스크립트 `jev-route.sh`(Jev select → `{"append": …}` + exit 11)를 지정해 `Optimized` 프리셋에 붙였다. `Optimized` 세션에 한국어 지시를 보내자:
+  - 실행 기록 `applied: appended`, **결론: 훅 스크립트**, Pixie 모델 호출 0회.
+  - 헬퍼 호출 `pixie-judge-1`: `select → bug · jev · 확신도 94%`(bug 0.96, other 0.04), 사용량 입력 372·출력 38.
+  - 세션 로그에 `studio-pixie-gate` 출처의 `[Jev] bug (confidence 0.94)` 메시지가 에이전트 입력으로 들어갔다. 화면: [Pixie 탭 실행 기록](../verification/jev-27/gate-run-jev-light-1440.png).
+- **키 저장 피드백:** 같은 서버에서 키 저장 → `키를 저장했습니다.`, 다시 입력하면 문구가 사라짐, 키 삭제 → `키를 삭제했습니다.`, 페이지에 키 문자열 없음. 설명은 `'pixie judge'`로 표시. 화면: [라이트 1440](../verification/jev-27/key-saved-light-1440.png), [다크 520](../verification/jev-27/key-dark-520.png). 확인용 키로 덮어쓰고 지우면서 저장돼 있던 키도 같이 지워졌으므로, 검사 전에 백업한 `studio/.dsh-home/.credentials.yaml`로 복원했다(`TYPESAFE_API_KEY` 외 항목은 같음을 확인).
+- **Markdown:** 사용자가 웹 빌드에서 Pixie 답변의 Markdown 표시를 확인했다.
+- **미검증:** `claim-check.sh`의 실세션 실행(답변 끝 지점), `0.2.1-alpha.2` 설치, Windows.
 
 ## 범위
 
