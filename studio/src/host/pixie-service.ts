@@ -17,6 +17,7 @@ import { gateInput, type GateInputDeps } from './pixie-gate-input.ts';
 import { gateTurn } from './pixie-gate-turn.ts';
 import { gateTools } from './pixie-gate-tools.ts';
 import { GateTaskRunner } from './pixie-gate-task-runner.ts';
+import { HELPER_ROUTE, PixieGateHelper } from './pixie-gate-helper.ts';
 import { trialGate } from './pixie-gate-trial.ts';
 
 /** What the Pixie tab shows for one session. */
@@ -39,6 +40,10 @@ interface SessionControllerSlice {
 
 /** How often records of deleted sessions are pruned while the Host runs. */
 const PRUNE_INTERVAL_MS = 10 * 60 * 1000;
+interface WebServerSlice {
+  readonly host: string; readonly port: number; readonly protocol: 'http:' | 'https:';
+  register(route: { kind: 'prefix'; path: string; handler: PixieGateHelper['handle'] }): () => void;
+}
 interface LlmSlice extends PixieLlm { resolveModelInfo(provider: string, model: string, signal?: AbortSignal): Promise<{ context?: { contextWindow: number } }> }
 
 const json = <T>(payload: string): T => JSON.parse(payload) as T;
@@ -59,6 +64,8 @@ export class PixieService extends TypertRemoteService {
   private gates: PixieGateStore;
   private definitions: PixieGateDefinitions;
   private gateRunner: GateInputDeps['runner'];
+  private helper: PixieGateHelper;
+  private helperUrl: string | undefined;
   /** Internal producer API, intentionally not Remote. */
   get gateRecorder(): PixieGateRecorder { return this.gates; }
   constructor(ctx: Context, dataDir: string) {
@@ -68,6 +75,17 @@ export class PixieService extends TypertRemoteService {
     this.gates = new PixieGateStore(join(dataDir, 'pixie'));
     this.settings = new PixieSettingsStore(join(dataDir, 'pixie-settings.json'));
     this.definitions = new PixieGateDefinitions(join(dataDir, 'pixie-gate', 'definitions.json'));
+    this.helper = new PixieGateHelper({ binDirectory: resolve(dataDir, 'pixie-gate', 'bin'), url: () => this.helperUrl });
+    // Helper route only while the DSH web server runs; without it scripts get no PIXIE_URL/PIXIE_TOKEN.
+    ctx.inject(['webServer'] as never, scope => {
+      const server = scope.get('webServer') as unknown as WebServerSlice;
+      scope.effect(() => {
+        const dispose = server.register({ kind: 'prefix', path: HELPER_ROUTE, handler: this.helper.handle });
+        const host = server.host.includes(':') ? `[${server.host}]` : server.host;
+        this.helperUrl = `${server.protocol}//${host}:${server.port}${HELPER_ROUTE}`;
+        return () => { this.helperUrl = undefined; dispose(); };
+      });
+    });
     const gateDeps: GateInputDeps = {
       definitions: () => this.definitions.read(),
       warn: message => ctx.logger.warn(message),
@@ -81,7 +99,7 @@ export class PixieService extends TypertRemoteService {
       runner: async () => {
         const { model, judgeModel, judgeSystemPrompt } = await this.settings.read();
         return new GateTaskRunner({
-        scriptDirectory: this.scriptDirectory, scriptSupported: this.scriptSupported(), shell: ctx.get('shell') as unknown as HookShell | undefined,
+        scriptDirectory: this.scriptDirectory, scriptSupported: this.scriptSupported(), shell: ctx.get('shell') as unknown as HookShell | undefined, helper: this.helper,
         llm: { stream: options => llmOf(ctx).stream(options) },
         ...(model ? { model } : {}),
         ...(judgeModel ? { judgeModel } : {}),

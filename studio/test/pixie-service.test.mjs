@@ -76,6 +76,33 @@ for (const mode of ['read-only', 'workspace-write']) test(`hook service restores
   } finally { await fiber.dispose(); }
 });
 
+test('hook service registers the helper route on webServer and passes PIXIE_URL/PIXIE_TOKEN only while it runs', async () => {
+  const h = await harness(); const requests = [], routes = new Map();
+  const session = { header: { cwd: '/w' } }, agent = { id: 's1', ctx: h.ctx, session };
+  for (const key of ['shell', 'sandboxPolicy', 'agentPresets', 'agents', 'webServer']) h.ctx.provide(key);
+  h.ctx.set('agents', { roots: () => [agent] }); h.ctx.set('agentPresets', { composedPreset: () => 'p' });
+  h.ctx.set('sandboxPolicy', { resolve: () => ({ mode: 'read-only', workspaceRoot: '/w', sessionId: 's1' }) });
+  h.ctx.set('shell', { resolve(request) { requests.push(structuredClone({ ...request, signal: undefined })); return request; }, async execute() { return { async result() { return { exitCode: 10, timedOut: false, stdout: { text: '', truncated: false }, stderr: { text: '' } }; } }; } });
+  h.ctx.set('webServer', { host: '127.0.0.1', port: 4321, protocol: 'http:', register(route) { routes.set(route.path, route); return () => routes.delete(route.path); } });
+  const directory = join(h.dataDir, 'pixie-gate/commands'); await mkdir(directory, { recursive: true });
+  await writeFile(join(directory, 'skip.sh'), '#!/bin/bash\n', { mode: 0o755 });
+  const fiber = await start(h);
+  try {
+    await until(() => routes.size === 1);
+    const route = routes.get('/studio/pixie-gate/helper'); assert.equal(route.kind, 'prefix');
+    const service = h.ctx.get('studioPixie'); const task = makeTask('gate', 'user-message', 'check');
+    task.enabled = true; task.presetIds = ['p']; task.advanced.script = 'skip.sh';
+    await service.saveGateDefinitions(JSON.stringify([task]));
+    const decision = { kind: 'enter', messages: [{ id: 'm', role: 'user', source: { kind: 'user' }, content: [{ type: 'text', text: 'original' }] }] };
+    await h.ctx.waterfall('agent/pre-step', { agent, turn: 1, signal: new AbortController().signal }, async () => decision);
+    assert.equal(requests[0].env.PIXIE_URL, 'http://127.0.0.1:4321/studio/pixie-gate/helper');
+    assert.match(requests[0].env.PIXIE_TOKEN, /^[0-9a-f]{64}$/);
+    assert.ok(requests[0].env.PATH.startsWith(join(h.dataDir, 'pixie-gate/bin')));
+    assert.deepEqual(await readdir(join(h.dataDir, 'pixie-gate/bin')), ['pixie']);
+  } finally { await fiber.dispose(); }
+  assert.equal(routes.size, 0);
+});
+
 const start = async (h) => { const fiber = h.ctx.plugin(PixieService, h.dataDir); await fiber; return fiber; };
 const until = async (check) => { for (let i = 0; i < 100; i++) { if (await check()) return; await new Promise(r => setTimeout(r, 10)); } throw new Error('timed out'); };
 

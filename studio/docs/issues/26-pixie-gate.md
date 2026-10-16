@@ -386,6 +386,16 @@ interface GateResult {
 - **검증:** 실행기/저장 검증 및 실제 PixieService/Cordis 세션 정책 조합 2건에서 red를 먼저 확인했다. [red 요약](</tmp/pixie-r2b1/red.txt>)에 실패 원인과 후속 경계 테스트(추가 시 이미 green)를 구분했다. 다섯 지점의 skip/원문/도구 환경·applied none, 경로 탈출, 비지원·정책 누락 onError, text/JSON, exit/timeout/출력 초과, 취소, 목록을 검증한다. 최종 `npm --prefix studio run typecheck`, `npm --prefix studio test` **404/404 두 회 연속 통과**(fail/cancelled/skipped 모두 0), `git diff --check` 통과. R2-a/b 기준 370개에서 스크립트 경계 32개와 서비스 조합 복원 2개를 추가했다. 로그는 `/tmp/pixie-r2b1/test-1.txt`, `/tmp/pixie-r2b1/test-2.txt`에 남겼다.
 - **미검증/후속:** 실제 bash 샌드박스 실행·macOS seatbelt·Linux bwrap·사용자 정의 비bash shell 식별·독립 설치/배포·실모델·GUI는 미검증이다. 사용자 GUI/프로필 접근·Client Inspect·본체 수정·하위 위임은 하지 않았다. R2-b2는 pixie ask/judge 헬퍼, 로컬 HTTP, 실행별 토큰·상한·사용량 통합을 맡는다. R3 화면 JSX·문구는 변경하지 않았다.
 
+#### R2-b2 — `pixie ask/judge` 헬퍼·로컬 HTTP·실행별 토큰
+
+- **통로:** 공개 `webServer.register({ kind: 'prefix', path: '/studio/pixie-gate/helper' })`. `ctx.inject(['webServer'])` 범위의 effect로 등록·해제하며, `PIXIE_URL`은 서버의 `protocol`/`host`/`port` 공개 getter로 만든다. webServer가 없는 구성에서는 스크립트에 `PIXIE_URL`/`PIXIE_TOKEN`을 주지 않고 `pixie`가 "helper is not available" 오류(exit 2)를 낸다. 별도 서버 listen·spawn·샌드박스 우회는 없다.
+- **토큰:** 스크립트 실행마다 32바이트 난수 토큰을 발급하고 Host는 SHA-256 해시만 보관한다. 스크립트 종료(성공·오류·취소·timeout) 즉시 `finally`에서 폐기하며, 폐기는 진행 중 헬퍼 호출도 abort한다. 토큰 권한은 그 실행의 `POST /ask`·`POST /judge`뿐이다. 다른 경로 404, 다른 메서드 405, 무효·폐기 토큰 401.
+- **상한:** 실행당 호출 20회(429), 요청 본문 256KB(413, 4배 초과 시 연결 종료). 헬퍼 호출 signal은 게이트 실행 signal(취소·`advanced.timeoutMs`)·토큰 폐기·클라이언트 연결 종료를 합친다.
+- **헬퍼 명령:** `<data>/pixie-gate/bin/pixie` bash 스크립트를 첫 실행 때 원자적으로 설치하고 스크립트 `PATH` 앞에 둔다. curl을 사용하며 토큰은 명령행이 아닌 `-K <(...)` 설정으로 전달하고 파일을 쓰지 않는다(read-only 샌드박스 대응). `pixie ask "<지시>" [--input]` → 답 stdout, exit 0. `pixie judge --question … [--threshold 0.5] [--input]` → noul 확률 stdout, 통과 exit 0 / 미달 exit 1. 사용법·HTTP 오류는 exit 2. `--input`이 없으면 입력은 게이트 대상 텍스트다.
+- **모델·기록:** ask는 Pixie 일반 모델, judge는 판정 모델 → 일반 모델 순(기존 판정 시스템 프롬프트·LlmJudgeEngine). 두 호출의 usage는 게이트 usage에 합산되고, 호출마다 `result.records`에 `pixie-ask-N`(note/error)·`pixie-judge-N`(pass/fail/error, data `{ noul, threshold }`) StageRecord로 남는다. 헬퍼 실패는 스크립트 안에서만 보이며 게이트 결과는 스크립트 종료 코드가 정한다. `HOOK_ENV`에 `PIXIE_URL`·`PIXIE_TOKEN`을 추가했다(화면 JSX·문구 불변).
+- **검증:** [헬퍼 테스트](../../test/pixie-gate-helper.test.mjs) 8개는 실제 node:http 서버 + 실제 bash·curl로 헬퍼 명령을 실행해 ask/judge·stdin·유니코드·임계값·토큰 폐기/위조/부재·호출/크기 상한·메서드/경로·취소 전파, runner를 통한 env 전달·usage 합산·records·실행 후 토큰 폐기·헬퍼 실패 후 스크립트 exit 10을 확인한다. [서비스 테스트](../../test/pixie-service.test.mjs)에 실제 Cordis PixieService의 webServer 라우트 등록/해제와 env 전달 1개를 추가했다. 테스트는 구현 전에 작성했으나 모듈 부재 외의 독립 red는 관찰하지 않았다. 최종 `npm --prefix studio run typecheck`, `npm --prefix studio test` **413/413 두 회 연속 통과**(fail/cancelled/skipped 0, 404 + 헬퍼 8 + 서비스 1), `git diff --check` 통과.
+- **미검증/한계:** 실제 DSH 샌드박스(macOS seatbelt·Linux bwrap) 안에서 loopback 접속 가능 여부, 실제 bash-local 실행기, curl이 없는 환경, webServer가 loopback이 아닌 주소에 바인드된 구성(토큰이 그 주소로 전송됨), TLS 자체 서명 인증서 구성, 실모델·독립 설치·GUI는 미검증이다. 사용자 GUI/프로필·Client Inspect·본체 수정·하위 위임·푸시는 하지 않았다.
+
 - **R3 — UI 연결:** 시안을 Host에 연결, 시험 실행 결과를 출력 계약 모양으로, 실행 카드 용어 정리. 기존 다단계 편집기 삭제는 R2-a/b에서 완료했다.
 - **R4 — 문서·스킬:** `pixie-gate` 스킬, 템플릿, 가이드 문서의 Pixie Gate 항목(결과 적용 규칙 포함).
 - **R5 — 검증:** 테스트, 격리 프로필 화면 확인, 일괄 리뷰.

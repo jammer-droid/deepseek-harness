@@ -36,7 +36,7 @@ export async function listGateScripts(directory: string, supported: boolean) {
   for (const name of names) { try { await scriptPath(directory, name); scripts.push(name); } catch { /* Not an executable, contained script. */ } }
   return { directory, supported, scripts: scripts.sort() };
 }
-export async function runHookScript(task: GateTask, target: string, signal: AbortSignal, deps: { scriptDirectory?: string; shell?: HookShell | undefined; scriptSupported?: boolean }, context?: HookContext) {
+export async function runHookScript(task: GateTask, target: string, signal: AbortSignal, deps: { scriptDirectory?: string; shell?: HookShell | undefined; scriptSupported?: boolean }, context?: HookContext, helperEnv: () => Promise<Record<string, string>> = async () => ({})) {
   if (!deps.scriptSupported || !deps.shell) throw new Error('hook-script-unsupported: 이 환경에서는 훅 스크립트를 지원하지 않음');
   if (!context?.cwd || !context.sandboxPolicy || context.sandboxPolicy.sessionId !== context.sessionId || !context.sandboxPolicy.workspaceRoot || !['read-only', 'workspace-write', 'danger-full-access'].includes(context.sandboxPolicy.mode)) throw new Error('Session sandbox policy and cwd are required');
   if (!deps.scriptDirectory) throw new Error('Hook script directory is required');
@@ -44,6 +44,8 @@ export async function runHookScript(task: GateTask, target: string, signal: Abor
   signal.throwIfAborted();
   const env: Record<string, string> = { PIXIE_POINT: task.when, PIXIE_AGENT: context.agent, PIXIE_SESSION_ID: context.sessionId, PIXIE_TURN: String(context.turn), PIXIE_GATE_NAME: task.name };
   if (context.tool) { env.PIXIE_TOOL_NAME = context.tool.name; env.PIXIE_TOOL_ARGS = JSON.stringify(context.tool.arguments) ?? ''; }
+  Object.assign(env, await helperEnv());
+  signal.throwIfAborted();
   const spec = deps.shell.resolve({ command: `'${path.replace(/'/g, `'"'"'`)}'`, workdir: context.cwd, sandboxPolicy: context.sandboxPolicy,
     timeoutMs: task.advanced.timeoutMs, onExpiry: 'kill', stdoutMaxBytes: 256 * 1024, signal, stdin: target, env });
   const output = await (await deps.shell.execute(spec)).result();

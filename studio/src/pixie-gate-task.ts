@@ -53,7 +53,7 @@ export const GATE_GUIDE_URL = 'https://github.com/matamt-dbg/dsh-studio/blob/mai
 
 /** Pixie hook script contract (U23), documented in the guide. */
 export const HOOK_EXIT = { continue: 0, skip: 10 } as const;
-export const HOOK_ENV: readonly string[] = ['PIXIE_POINT', 'PIXIE_TOOL_NAME', 'PIXIE_TOOL_ARGS', 'PIXIE_AGENT', 'PIXIE_SESSION_ID', 'PIXIE_TURN', 'PIXIE_GATE_NAME'];
+export const HOOK_ENV: readonly string[] = ['PIXIE_POINT', 'PIXIE_TOOL_NAME', 'PIXIE_TOOL_ARGS', 'PIXIE_AGENT', 'PIXIE_SESSION_ID', 'PIXIE_TURN', 'PIXIE_GATE_NAME', 'PIXIE_URL', 'PIXIE_TOKEN'];
 export const HOOK_HELPERS: readonly string[] = ['pixie ask', 'pixie judge'];
 
 /** Points whose message can be replaced or extended before the model reads it. */
