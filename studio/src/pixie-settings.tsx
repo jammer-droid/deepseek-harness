@@ -6,7 +6,7 @@ import { GateTaskCompositionPage, GateTaskScopePage, useGateTasks, type GateTask
 import { gateComposeText } from './pixie-gate-compose-locale.ts';
 import { Button, Notice, PageHead, Segmented, SettingsRow, Toggle } from './ui.tsx';
 import { DetailLayout } from './detail-layout.tsx';
-import type { PixieContextMode, PixieSettings } from './pixie-contracts.ts';
+import type { JevKeyStatus, JudgeEngineKind, PixieContextMode, PixieModel, PixieSettings } from './pixie-contracts.ts';
 import { pixieText, type PixieTextKey } from './pixie-locale.ts';
 
 /** Model catalog as `sessionController.modelCatalog()` returns it. */
@@ -19,6 +19,8 @@ export interface PixieSettingsActions {
   read(): Promise<PixieSettings>;
   save(settings: PixieSettings): Promise<PixieSettings>;
   models(): Promise<PixieSettingsCatalog>;
+  /** Jev key in DSH credentials; absent when the Host does not offer it. Values go in only. */
+  jevKey?: { status(): Promise<JevKeyStatus>; save(value: string): Promise<JevKeyStatus>; remove(): Promise<JevKeyStatus> };
 }
 
 const SEP = '\u0000';
@@ -27,7 +29,7 @@ const NO_GATES: GateTaskActions = {
   saveScriptDirectory: async () => ({ directory: '', defaultDirectory: '', custom: false, supported: false, scripts: [] }),
   trial: () => ({ result: Promise.reject(new Error('Gate API unavailable')), cancel() {} }), presets: async () => [],
 };
-type PageId = 'model' | 'threads' | 'prompt' | 'gate-composition' | 'gate-scope';
+type PageId = 'model' | 'threads' | 'prompt' | 'judge' | 'gate-composition' | 'gate-scope';
 
 export function PixieSettingsPage({ actions, gateActions, locale, navFooter }: { actions: PixieSettingsActions; gateActions?: GateTaskActions; locale: string; navFooter?: React.ReactNode }) {
   const t = (key: PixieTextKey) => pixieText(locale, key);
@@ -72,6 +74,18 @@ export function PixieSettingsPage({ actions, gateActions, locale, navFooter }: {
     {!error && (!draft || !catalog) && <p role="status" className="studio-muted">{t('loading')}</p>}
     {draft && catalog && body(draft, catalog)}
   </div>;
+
+  /** One route select over the catalog; empty selects `emptyLabel`. */
+  const modelSelect = (label: string, emptyLabel: string, value: PixieModel | undefined, onChange: (model: PixieModel | undefined) => void, catalog: PixieSettingsCatalog) =>
+    <select className="studio-compact" aria-label={label} value={value ? `${value.provider}${SEP}${value.model}` : ''} onChange={event => {
+      const [provider, model] = event.target.value.split(SEP);
+      onChange(provider && model ? { provider, model } : undefined);
+    }}>
+      <option value="">{emptyLabel}</option>
+      {catalog.groups.map(group => <optgroup key={group.id} label={group.name}>
+        {group.models.map(model => <option key={model.id} value={`${group.id}${SEP}${model.id}`}>{model.name}</option>)}
+      </optgroup>)}
+    </select>;
 
   const modelPage = section('pageModel', 'pageModelDescription', (draft, catalog) => {
     const selected = draft.model ? catalog.groups.find(group => group.id === draft.model!.provider)?.models.find(model => model.id === draft.model!.model) : undefined;
@@ -124,13 +138,74 @@ export function PixieSettingsPage({ actions, gateActions, locale, navFooter }: {
     </SettingsRow>
   </section>);
 
+  const judgePage = section('pageJudge', 'pageJudgeDescription', (draft, catalog) => {
+    const engine: JudgeEngineKind = draft.judgeEngine ?? 'llm';
+    return <section className="studio-settings-card">
+      <SettingsRow title={t('judgeEngine')} description={t(engine === 'jev' ? 'judgeEngineJevHint' : 'judgeEngineLlmHint')} control={
+        <Segmented label={t('judgeEngine')} value={engine} onChange={(judgeEngine: JudgeEngineKind) => update({ judgeEngine })}
+          options={[{ value: 'llm', label: t('judgeEngineLlm') }, { value: 'jev', label: t('judgeEngineJev') }]} />} />
+      {engine === 'llm' ? <>
+        <SettingsRow title={t('judgeModel')} description={t('judgeModelHint')} control={modelSelect(t('judgeModel'), t('judgeModelPixie'), draft.judgeModel, judgeModel => {
+          const { judgeModel: _previous, ...rest } = draft;
+          replace(judgeModel ? { ...rest, judgeModel } : rest);
+        }, catalog)} />
+        <SettingsRow title={t('judgePrompt')} description={t('judgePromptHint')}>
+          <textarea className="studio-pixie-prompt" aria-label={t('judgePrompt')} value={draft.judgeSystemPrompt ?? ''} onChange={event => {
+            const { judgeSystemPrompt: _previous, ...rest } = draft;
+            replace(event.target.value ? { ...rest, judgeSystemPrompt: event.target.value } : rest);
+          }} />
+        </SettingsRow>
+      </> : <>
+        <SettingsRow title={t('jevModel')} description={t('jevModelHint')} control={
+          <input className="studio-compact" aria-label={t('jevModel')} placeholder="jev-latest" value={draft.jevModel ?? ''} onChange={event => {
+            const { jevModel: _previous, ...rest } = draft;
+            const value = event.target.value.trim();
+            replace(value ? { ...rest, jevModel: value } : rest);
+          }} />} />
+        <JevKeyRow actions={actions.jevKey} locale={locale} />
+      </>}
+    </section>;
+  });
+
   return <DetailLayout footer={navFooter} navigation={t('settingsNavigation')} selected={page} onSelect={next => setPage(next as PageId)} pages={[
     { id: 'model', group: t('settingsGroup'), label: t('pageModel'), content: modelPage },
     { id: 'threads', group: t('settingsGroup'), label: t('pageThreads'), content: threadsPage },
     { id: 'prompt', group: t('settingsGroup'), label: t('pagePrompt'), content: promptPage },
+    { id: 'judge', group: t('settingsGroup'), label: t('pageJudge'), content: judgePage },
     ...(gateActions ? [
       { id: 'gate-composition', group: gt('group'), label: gt('composition'), content: <GateTaskCompositionPage gates={gates} locale={locale} /> },
       { id: 'gate-scope', group: gt('group'), label: gt('scope'), content: <GateTaskScopePage gates={gates} presets={gatePresets} locale={locale} /> },
     ] : []),
   ]} />;
+}
+
+/** Jev key row: saves immediately (outside the page draft), shows only presence and source. */
+function JevKeyRow({ actions, locale }: { actions: PixieSettingsActions['jevKey']; locale: string }) {
+  const t = (key: PixieTextKey) => pixieText(locale, key);
+  const [status, setStatus] = React.useState<JevKeyStatus>();
+  const [value, setValue] = React.useState('');
+  const [busy, setBusy] = React.useState(false);
+  const [error, setError] = React.useState('');
+  React.useEffect(() => {
+    if (!actions) { setStatus({ available: false, configured: false, writable: false }); return; }
+    void actions.status().then(setStatus, reason => setError(reason instanceof Error ? reason.message : String(reason)));
+  }, [actions]);
+  const run = async (call: () => Promise<JevKeyStatus>) => {
+    setBusy(true); setError('');
+    try { setStatus(await call()); setValue(''); } catch (reason) { setError(reason instanceof Error ? reason.message : String(reason)); }
+    finally { setBusy(false); }
+  };
+  const source = status?.source ?? '';
+  const state = !status ? t('loading') : !status.available ? t('jevKeyUnavailable')
+    : status.configured ? `${t('jevKeySet')}${source ? ` · ${t('jevKeyFrom').replace('{source}', source)}` : ''}` : t('jevKeyMissing');
+  const readOnly = !!status?.available && status.configured && !status.writable;
+  return <SettingsRow title={t('jevKey')} description={t('jevKeyHint')}>
+    <p role="status" className="studio-muted">{readOnly ? t('jevKeyReadOnly').replace('{source}', source) : state}</p>
+    {error && <Notice action={<Button small onClick={() => setError('')}>{t('dismiss')}</Button>}>{`${t('jevKeyFailed')} (${error})`}</Notice>}
+    {actions && status?.available && !readOnly && <div className="studio-inline-actions">
+      <input className="studio-compact" type="password" autoComplete="off" aria-label={t('jevKey')} placeholder={t('jevKeyPlaceholder')} value={value} onChange={event => setValue(event.target.value)} />
+      <Button small primary disabled={busy || !value.trim()} onClick={() => { void run(() => actions.save(value)); }}>{t('jevKeySave')}</Button>
+      {status.configured && <Button small disabled={busy} onClick={() => { void run(() => actions.remove()); }}>{t('jevKeyDelete')}</Button>}
+    </div>}
+  </SettingsRow>;
 }

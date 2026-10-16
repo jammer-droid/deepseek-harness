@@ -2,7 +2,7 @@ import { listGateScripts, type HookShell, type HookContext } from './pixie-gate-
 import type { Context } from '@deepseek-ai/cordis';
 import { Remote, TypertRemoteService } from '@deepseek-ai/dsh-typert-protocol';
 import { join, resolve } from 'node:path';
-import type { PixieAskFrame, PixieContextMode, PixieSessionRecord, PixieSettings, PixieTurn, PixieUsageTotal } from '../pixie-contracts.ts';
+import type { JevKeyStatus, PixieAskFrame, PixieContextMode, PixieSessionRecord, PixieSettings, PixieTurn, PixieUsageTotal } from '../pixie-contracts.ts';
 import { totalUsage } from '../pixie-contracts.ts';
 import { pixieCommand } from './pixie-command.ts';
 import { PixieLive } from './pixie-live.ts';
@@ -19,6 +19,7 @@ import { GateTaskRunner } from './pixie-gate-task-runner.ts';
 import { HELPER_ROUTE, PixieGateHelper } from './pixie-gate-helper.ts';
 import { PixieGateSettings } from './pixie-gate-settings.ts';
 import { trialGate } from './pixie-gate-trial.ts';
+import { JEV_KEY_REF, judgeEngineFor, type JevCredentials } from './jev-judge.ts';
 
 /** What the Pixie tab shows for one session. */
 export interface PixieView {
@@ -44,6 +45,12 @@ interface WebServerSlice {
   readonly host: string; readonly port: number | undefined; readonly protocol?: 'http:' | 'https:';
   register(route: { kind: 'prefix'; path: string; handler: PixieGateHelper['handle'] }): () => void;
 }
+/** The slice of DSH `credentials` behind the Jev key; values are written and resolved, never returned to the Client. */
+interface CredentialsSlice extends JevCredentials {
+  describe(ref: string): Promise<{ configured: boolean; source?: string; writable: boolean }>;
+  set(ref: string, value: string): Promise<void>;
+  unset(ref: string): Promise<void>;
+}
 interface LlmSlice extends PixieLlm { resolveModelInfo(provider: string, model: string, signal?: AbortSignal): Promise<{ context?: { contextWindow: number } }> }
 
 const json = <T>(payload: string): T => JSON.parse(payload) as T;
@@ -59,6 +66,8 @@ export class PixieService extends TypertRemoteService {
   private gateSettings: PixieGateSettings;
   /** The configured folder, or `<data>/pixie-gate/commands` when none is set. Read per run so a change applies at once. */
   private async scriptDirectory() { return (await this.gateSettings.read()).scriptDirectory ?? this.defaultScriptDirectory; }
+  /** Optional: the DSH credentials service, read per call so a later mount applies. */
+  private credentials = () => this.ctx.get('credentials') as unknown as CredentialsSlice | undefined;
   private scriptSupported = () => process.platform !== 'win32' && !!this.ctx.get('shell');
   private store: PixieStore;
   private settings: PixieSettingsStore;
@@ -108,11 +117,12 @@ export class PixieService extends TypertRemoteService {
           sandboxPolicy: policy?.resolve({ session: agent.session }), ...(tool ? { tool } : {}) };
       },
       runner: async () => {
-        const [{ model }, scriptDirectory] = await Promise.all([this.settings.read(), this.scriptDirectory()]);
+        const [settings, scriptDirectory] = await Promise.all([this.settings.read(), this.scriptDirectory()]);
+        const llm: PixieLlm = { stream: options => llmOf(ctx).stream(options) };
+        const judge = judgeEngineFor(settings, { llm, credentials: this.credentials() });
         return new GateTaskRunner({
         scriptDirectory, scriptSupported: this.scriptSupported(), shell: ctx.get('shell') as unknown as HookShell | undefined, helper: this.helper,
-        llm: { stream: options => llmOf(ctx).stream(options) },
-        ...(model ? { model } : {}),
+        llm, ...(settings.model ? { model: settings.model } : {}), ...(judge ? { judge } : {}),
         });
       },
       recorder: this.gates,
@@ -269,6 +279,34 @@ export class PixieService extends TypertRemoteService {
 
   @Remote
   async saveSettings(payload: string) { return this.settings.save(json(payload)); }
+
+  /** Jev API key state. Never includes the value. */
+  @Remote
+  async jevKeyStatus(): Promise<JevKeyStatus> {
+    const credentials = this.credentials();
+    if (!credentials) return { available: false, configured: false, writable: false };
+    const info = await credentials.describe(JEV_KEY_REF);
+    return { available: true, configured: info.configured, writable: info.writable, ...(info.source ? { source: info.source } : {}) };
+  }
+
+  /** Store the Jev API key in DSH credentials; payload `{ value }`. Returns the new state, not the value. */
+  @Remote
+  async saveJevKey(payload: string): Promise<JevKeyStatus> {
+    const value = json<{ value?: unknown }>(payload).value;
+    if (typeof value !== 'string' || !value.trim()) throw new Error('Jev API key is required');
+    const credentials = this.credentials();
+    if (!credentials) throw new Error('DSH credentials service is unavailable');
+    await credentials.set(JEV_KEY_REF, value.trim());
+    return this.jevKeyStatus();
+  }
+
+  @Remote
+  async deleteJevKey(): Promise<JevKeyStatus> {
+    const credentials = this.credentials();
+    if (!credentials) throw new Error('DSH credentials service is unavailable');
+    await credentials.unset(JEV_KEY_REF);
+    return this.jevKeyStatus();
+  }
 
   @Remote
   async models() {

@@ -7,10 +7,10 @@ export function validateJudgePassRule(value: unknown, questions: Record<string, 
     const question = questions[condition.question]!;
     if (condition.type !== question.type) throw new JudgeValidationError('conditionType', 'Judge condition type must match question');
     if (condition.type === 'choice') {
-      if (question.type !== 'choice' || !Array.isArray(condition.allowed) || !condition.allowed.length || condition.allowed.some(key => typeof key !== 'string' || !Object.hasOwn(question.options, key))) throw new JudgeValidationError('allowed', 'Judge condition needs known allowed choices');
+      if (question.type !== 'choice' || !Array.isArray(condition.allowed) || !condition.allowed.length || condition.allowed.some(key => typeof key !== 'string' || !Object.hasOwn(question.criteria, key))) throw new JudgeValidationError('allowed', 'Judge condition needs known allowed choices');
     } else {
       const number = condition.type === 'noul' ? condition.threshold : condition.min;
-      const max = question.type === 'score' ? question.levels.length - 1 : 1;
+      const max = question.type === 'score' ? question.criteria.length - 1 : 1;
       if (typeof number !== 'number' || !Number.isFinite(number) || number < 0 || number > max) throw new JudgeValidationError('range', 'Judge condition threshold out of range');
     }
   }

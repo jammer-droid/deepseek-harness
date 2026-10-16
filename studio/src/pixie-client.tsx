@@ -45,6 +45,9 @@ interface PixieRemote {
   readSettings(): RemoteValue<PixieSettings>;
   saveSettings(payload: string): RemoteValue<PixieSettings>;
   models(): RemoteValue<unknown>;
+  jevKeyStatus(): RemoteValue<import('./pixie-contracts.ts').JevKeyStatus>;
+  saveJevKey(payload: string): RemoteValue<import('./pixie-contracts.ts').JevKeyStatus>;
+  deleteJevKey(): RemoteValue<import('./pixie-contracts.ts').JevKeyStatus>;
 }
 
 async function unwrap<T>(call: RemoteValue<T>): Promise<T> {
@@ -80,6 +83,9 @@ export function pixieDescriptors() {
     descriptor('readSettings', []),
     descriptor('saveSettings', ['payload']),
     descriptor('models', []),
+    descriptor('jevKeyStatus', []),
+    descriptor('saveJevKey', ['payload']),
+    descriptor('deleteJevKey', []),
   ];
 }
 
@@ -117,6 +123,11 @@ export function mountPixie(ctx: StudioContext, options: { navFooter?: (locale: s
     read: () => unwrap(remote().readSettings()),
     save: settings => unwrap(remote().saveSettings(JSON.stringify(settings))),
     models: () => unwrap(remote().models()) as ReturnType<PixieSettingsActions['models']>,
+    jevKey: {
+      status: () => unwrap(remote().jevKeyStatus()),
+      save: value => unwrap(remote().saveJevKey(JSON.stringify({ value }))),
+      remove: () => unwrap(remote().deleteJevKey()),
+    },
   };
   const gateActions = {
     trial: (request: { task: GateTask; text: string; toolName?: string }) => {

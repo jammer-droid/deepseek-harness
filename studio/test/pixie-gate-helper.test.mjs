@@ -7,6 +7,7 @@ import { mkdtemp, mkdir, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { HELPER_ROUTE, PixieGateHelper } from '../src/host/pixie-gate-helper.ts';
+import { LlmJudgeEngine } from '../src/host/pixie-judge.ts';
 import { GateTaskRunner } from '../src/host/pixie-gate-task-runner.ts';
 import { executeTask } from '../src/host/pixie-gate-task-executor.ts';
 import { makeTask } from '../src/pixie-gate-task.ts';
@@ -117,7 +118,8 @@ async function runnerFixture(t, script) {
   } };
   const task = makeTask('gate', 'user-message', 'Use {{hooks.prepare.text}}'); task.advanced.script = 'prepare.sh';
   const context = { sessionId: 's', cwd: data, turn: 1, agent: 'root', sandboxPolicy: { mode: 'read-only', workspaceRoot: data, sessionId: 's' } };
-  const runner = new GateTaskRunner({ scriptDirectory: directory, scriptSupported: true, shell, helper, llm, model: { provider: 'p', model: 'm' } });
+  const model = { provider: 'p', model: 'm' };
+  const runner = new GateTaskRunner({ scriptDirectory: directory, scriptSupported: true, shell, helper, llm, model, judge: new LlmJudgeEngine(llm, model) });
   return { task, context, runner, requests, calls };
 }
 test('runner exposes the helper to the script, counts usage, records calls and revokes the token afterwards', async t => {
