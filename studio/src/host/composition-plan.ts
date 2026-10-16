@@ -1,4 +1,4 @@
-import { applyConfigOverrides, configEntries } from '../config-overrides.ts';
+import { applyConfigExclusions, applyConfigOverrides, configEntries } from '../config-overrides.ts';
 import { MASTER_PRESET_ID } from '../master-preset.ts';
 import { providerFields } from '../provider-fields.ts';
 import type { Context } from '@deepseek-ai/cordis';
@@ -29,7 +29,10 @@ export async function compositionPlan(ctx: Context, input: PreviewRequest) {
   const request = parsePreviewRequest(input);
   const base = request.preset;
   if (request.configOverrides && base !== MASTER_PRESET_ID) throw new Error('Config overrides require Studio Master');
-  const source = applyConfigOverrides(parseComposition((await ctx.agentPresets.readDocument(base)).content), request.configOverrides ?? {});
+  if (request.configExclusions && base !== MASTER_PRESET_ID) throw new Error('Config exclusions require Studio Master');
+  // Base declaration, then field overrides, then whole-entry exclusions; everything else keeps DSH defaults.
+  const declared = parseComposition((await ctx.agentPresets.readDocument(base)).content);
+  const source = applyConfigExclusions(applyConfigOverrides(declared, request.configOverrides ?? {}), request.configExclusions ?? [], request.configOverrides ?? {});
   if (request.configOverrides && Object.keys(request.configOverrides).length) {
     for (const { id, row } of configEntries(source)) {
       if (row.name === '@deepseek-ai/dsh-compaction-basic') {
@@ -75,6 +78,11 @@ export async function compositionPlan(ctx: Context, input: PreviewRequest) {
   const usesSource = request.tools.length > 0 || base === MASTER_PRESET_ID;
   const inSource = new Set(usesSource ? findProviders(source).map(row => row.name) : []);
   const selected = [...new Set(request.providers)];
+  if (request.configExclusions?.length) {
+    const kept = new Set(findProviders(source).map(row => row.name));
+    const excludedSelection = selected.filter(name => findProviders(declared).some(row => row.name === name) && !kept.has(name));
+    if (excludedSelection.length) throw new Error(`Excluded Config entries are selected prompt providers: ${excludedSelection.join(', ')}`);
+  }
   for (const name of selected) if (!available.has(name)) throw new Error(`Unavailable prompt provider: ${name}`);
   // Providers taken from another built-in declaration are hoisted; source providers are edited in place.
   const plugins = selected.filter(name => !inSource.has(name)).map((name, index) => {
@@ -101,5 +109,7 @@ export async function compositionPlan(ctx: Context, input: PreviewRequest) {
   const compaction = plugins.filter(row => ['@deepseek-ai/dsh-compaction-basic', '@deepseek-ai/dsh-compaction-tool-result-pruner'].includes(row.name));
   const isolated: CompositionRow[] = plugins.filter(row => !compaction.includes(row));
   if (compaction.length) isolated.push({ id: 'studio-compaction', name: 'cordis:group', group: true, isolate: { compaction: true, toolResultPruner: true }, config: compaction });
-  return { request, plugins: isolated };
+  // Effective Master entries after overrides and exclusions, for per-turn previews.
+  const entries = base === MASTER_PRESET_ID ? configEntries(source).map(({ id, row }) => ({ id, name: row.name, config: row.config })) : [];
+  return { request, plugins: isolated, entries };
 }

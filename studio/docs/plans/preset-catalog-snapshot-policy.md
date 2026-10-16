@@ -1,7 +1,7 @@
 # DSH 기본 동작을 보존하는 프리셋 덮어쓰기 — #26 이후 구현 계획
 
-- 계획 준비 상태: **draft**. 제품 방향은 확정이며, #26 이후 코드·지원 API 재확인과 아래 미결정 사항 정리가 끝나면 ready로 전환한다.
-- 구현 상태: **압축 누락 긴급 수정(P1·P2)만 완료**([15절](#15-선행-처리-압축-누락-긴급-수정)). 나머지는 미착수이며 다음 단계는 **S0**이다. 이 문서는 구현·배포 승인이 아니다.
+- 계획 준비 상태: **draft**. S0에서 도구 정책 결정은 닫았다([16절](#16-s0-기록--26-이후-기준과-도구-정책-결정)). 13절의 저장 형식·스냅샷 결정은 S1·S3 착수 시 닫는다.
+- 구현 상태: P1·P2, S0, S1, S2, S3, S4a, S5 구현 완료(로컬 테스트). own-scope 차단 해소는 사용자가 설치 앱에서 확인했다. 남은 단계는 **S6**(독립 설치 검증)이다. 이 문서는 구현·배포 승인이 아니다([17절](#17-s1s5-구현-기록)).
 
 ## 상태와 재개 위치
 
@@ -266,7 +266,7 @@ DSH Host에서 제공되는 공용 기능 (복제하지 않음)
 
 ## 11. 의존 순서별 구현 단계
 
-현재 진행: **S0 대기 / S1–S6 미착수**. 단, S2의 "프롬프트 provider 선택에 따른 비도구 기능 일괄 제거 제거"와 S5의 Optimized 템플릿 재정렬 일부는 [15절](#15-선행-처리-압축-누락-긴급-수정)에서 먼저 처리했다. 해당 단계 착수 시 15절 결과를 기준으로 남은 범위만 진행한다. 단계 ID는 코드가 바뀌어도 유지하며 파일·함수명은 착수 시 다시 매핑한다. 선행 단계의 검증을 통과한 후 다음 단계로 진행한다.
+현재 진행: **S0–S5 완료 / S6 남음**([16절](#16-s0-기록--26-이후-기준과-도구-정책-결정), [17절](#17-s1s5-구현-기록)). 단, S2의 "프롬프트 provider 선택에 따른 비도구 기능 일괄 제거 제거"와 S5의 Optimized 템플릿 재정렬 일부는 [15절](#15-선행-처리-압축-누락-긴급-수정)에서 먼저 처리했다. 해당 단계 착수 시 15절 결과를 기준으로 남은 범위만 진행한다. 단계 ID는 코드가 바뀌어도 유지하며 파일·함수명은 착수 시 다시 매핑한다. 선행 단계의 검증을 통과한 후 다음 단계로 진행한다.
 
 ### S0 — #26 이후 기준 재확인과 지원 경계 확정
 
@@ -387,3 +387,162 @@ DSH Host에서 제공되는 공용 기능 (복제하지 않음)
 1. **S0**부터 시작한다. 15절 변경을 #26 이후 기준에 포함된 것으로 기록한다.
 2. S2 착수 시: own-scope 도구 차단([preset-policy.ts](<../../src/host/preset-policy.ts>)의 `installPolicy` 탐침과 전역 `guard`)과 [Optimized JSDoc](<../../src/optimized-preset.ts#L5-L12>) 수정이 남은 핵심이다. 조합 경계(P1)는 완료되었다.
 3. S4·S5: 압축 포함·자동 ON/OFF·`/compact` 표시, 명시적 제외 설정과 저장 형식, 기존 사용자 프리셋의 누락 탐지·복구 안내가 남아 있다.
+
+## 16. S0 기록 — #26 이후 기준과 도구 정책 결정
+
+### 16.1 기준
+
+- 기준 브랜치·커밋: `studio/feat/workflow` `49cfd6a996`(#26 완료 기록 `e8a0552cd5`와 15절 수정 포함). `studio/research/catalog-scope`는 이 커밋의 조상으로 병합되어 있고, 계획에 적힌 별도 worktree는 더 이상 없다. 작업은 메인 checkout에서 진행했다.
+- Studio `0.2.9`, peer 범위 `0.2.0-rc.2 || 0.2.1-alpha.2`. 설치 앱 런타임은 `0.2.0-rc.2`(`~/.dsh/dsh-runtimes/dsh-primary-runtime/runtime.json`), workspace 소스는 `0.2.1-alpha.2`다.
+- #26 Pixie Gate는 `tools/pre-execute`·`agent/pre-step`·`agent/turn-stopping` 리스너와 `agentPresets.composedPreset`으로 프리셋을 판별한다([pixie-service.ts](<../../src/host/pixie-service.ts>)). 프리셋 정책의 restrict·guard와 독립이므로 이번 정책 변경의 영향을 받지 않는다.
+
+### 16.2 own-scope 차단 원인 — 설치 런타임과 workspace 소스의 차이
+
+1절의 미확인 사항을 설치 앱 `app.asar`의 `0.2.0-rc.2` 산출물에서 확인했다(읽기만 함).
+
+- 설치 런타임에는 `@deepseek-ai/dsh-tool-schedule` 패키지가 없다. `@deepseek-ai/dsh-schedule` 서비스가 `agent/created` 때 **root Agent마다 `agent.ctx`로 네 도구를 등록**한다(`registerScheduleTools(rootCtx, agent.ctx, agent)`). 즉 Agent own-scope 등록이 이 버전의 정상 경로다.
+- workspace 소스(`0.2.1-alpha.2`)는 이를 `tool-schedule` 플러그인으로 분리해 `standard`·`ptc`·`cordis` 프리셋 scope(Agent의 상위)에 등록한다. 로컬 소스만 보고 "프리셋 선언이라 상속 도구로 보인다"고 판단했던 것이 설치 런타임과 맞지 않았다.
+- 따라서 예약 플러그인을 켜면 모든 root Agent에 own-scope 도구가 생기고, 이전 정책의 own-scope 탐침이 매 설치를 거절하여 `block` guard가 전체 호출을 막았다. 지원하는 두 런타임 모두에서 own-scope 등록은 정상 DSH 동작으로 취급해야 한다.
+
+### 16.3 공개 API 확인표
+
+설치 `0.2.0-rc.2` 산출물에서 존재를 확인했다. workspace 소스와 같은 의미다.
+
+| 계약 | 확인 결과 |
+| --- | --- |
+| `tools.restrict({ allow/deny })` | 상속 도구만 가린다. own-scope 등록은 가리지 않는다. 등록 시점에 알려진 상속 이름만 받는다(미지 이름은 오류). |
+| `tools.guard` | 모든 실행 이름에 적용되는 단조 거절. 동적 도구까지 막으므로 기본 구성 용도로 쓰지 않는다. |
+| `tools.schemas/get(scope)` | scope별 실효 목록. 제공자 출처 없음. |
+| `agentPresets.register/resolve/readDocument/acquireScope/composeFrom/serviceFor/recompose/select/compositionInventory` | 모두 존재. |
+| 하위 Agent `toolFilter` | `applyChildComposition`이 child scope에 `restrict(toolFilter)`를 건다. 기존 role 필터 경로는 그대로다. |
+| `dsh-compaction`·`dsh-commands`·`dsh-config-editor`·`dsh-compaction-basic` | 설치 산출물에 존재. S4에서 상태 표시 계약을 다시 읽는다. |
+
+### 16.4 결정 (사용자 확인)
+
+| 항목 | 결정 |
+| --- | --- |
+| 기본 도구 선택의 적용 | **설치 시점 deny 스냅샷.** 정책 설치 때 보이는 상속 도구 중 미선택 이름만 `restrict({ deny })`로 가린다. 이후 새 이름으로 등록되는 도구와 Agent own-scope 도구는 DSH 기본 흐름을 따른다. `restrict({ allow })`와 전역 실행 guard는 쓰지 않는다. |
+| 알려진 한계 | 설치 시 가린 이름이 같은 Agent 수명 중 해제 후 재등록되면 계속 가려진다. own-scope 도구는 같은 layer에서 덮어쓸 수 없으므로 설명·실행 기본값 덮어쓰기를 적용하지 못하고 경고만 남긴다. 미선택 own-scope 도구도 가리지 않는다(2절의 "선택 해제는 영구 deny가 아님"과 같은 방향). |
+| 선택한 도구가 없을 때 | **경고 후 계속.** 없는 도구는 건너뛰고 나머지 정책을 적용한다. `DSH에 다시 반영`과 시작 시 복원은 `applyWarning`으로, 실행 중 Agent 설치는 Host 로그 경고로 알린다. |
+| 여전히 차단하는 경우 | 정책 데이터 자체가 잘못된 경우(알 수 없는 파라미터 경로, PTC 표시, 프롬프트 섹션 충돌)만 기존처럼 이유를 담아 해당 Agent의 호출을 막는다. 덮어쓰기가 반쯤 적용된 상태로 실행하지 않기 위해서다. |
+
+### 16.5 S2 진행 — own-scope 차단 해소
+
+| 변경 | 파일 |
+| --- | --- |
+| own-scope 탐침 거절·누락 도구 거절·전역 실행 guard 제거, 설치 시점 deny 스냅샷과 `warn` 콜백 도입 | [preset-policy.ts](<../../src/host/preset-policy.ts>) |
+| 반영·복원 경고를 `applyWarning`으로 표시, 누락 도구로 반영 실패하지 않음 | [preset-store.ts](<../../src/host/preset-store.ts>) |
+| 미리보기는 미설치 선택 도구를 건너뛰고, 미선택 도구가 보이면만 실패 | [prompt-preview.ts](<../../src/host/prompt-preview.ts>) |
+| Optimized JSDoc을 "고정 시작 선택이며 실행 allowlist가 아님"으로 수정 | [optimized-preset.ts](<../../src/optimized-preset.ts>) |
+| 회귀 테스트: 늦게 등록된 상속·own-scope 도구 실행, 제거 반영과 무관 도구 정상, root Agent의 예약 도구 4종, own-scope 도구가 있어도 정책 적용, 잘못된 정책만 차단, 누락 도구 경고 | [preset-policy.test.mjs](<../../test/preset-policy.test.mjs>), [policy-reselect.test.mjs](<../../test/policy-reselect.test.mjs>), [preset-store.test.mjs](<../../test/preset-store.test.mjs>), [execution-defaults.test.mjs](<../../test/execution-defaults.test.mjs>) |
+
+검증: `npm --prefix studio test`(타입 검사·빌드 포함) 417개 통과. **미검증:** 설치 앱(`0.2.0-rc.2`)에 패키징한 Studio를 넣어 예약 플러그인 ON 상태에서 `bash`·`skill` 호출과 `schedule_*` 호출을 확인하는 것. 실제 Loader/scope 통합 테스트(S2 수용 조건)도 남아 있다. [정책 정렬 검증 기록](<../verification/policy-alignment.md>)의 "외부 제공자는 ancestor scope 등록을 사용해야 한다"는 이번 변경 이전의 제약이다.
+
+S2에 남은 것: `selectPromptProviders` 정리 여부, 실제 Loader 통합 테스트, 설치 검증.
+
+### 16.6 다음 세션 재개 지점
+
+1. (완료 — 사용자 확인) 설치 검증을 먼저 한다: 앱 종료 후 `DSH_HOME="$HOME/.dsh" npm --prefix studio run dev:desktop`(15.3 주의), 예약 플러그인 ON, Optimized·사용자 복사 프리셋의 새 세션에서 일반 도구와 `schedule_list` 호출을 확인한다.
+2. 이어서 **S1**(변경 의도·기본 구성 계약)을 시작한다.
+
+## 17. S1–S5 구현 기록
+
+### 17.1 결정 (사용자 확인)
+
+| 항목 | 결정 |
+| --- | --- |
+| 실행 설정 계약 | Studio Master의 실행 설정 항목은 **모두 기본 반영**한다. 값을 바꾸면 그 필드만 **덮어쓰고**, 덮어쓰기 해제는 기본값 복귀다. 특정 항목은 **반영에서 제외**할 수 있다. |
+| 제외 대상 | 도구 외 실행 기능 6개(`agent-instructions`, `time-context`, `skill-filesystem`, `compaction-basic`, `command-compact`, `tool-result-pruner`). 도구 제공자는 도구 선택으로만 관리해 선택한 도구가 사라지는 충돌을 막는다. |
+| 변경 안내 | 재시작 후 차이가 있으면 안내하고, **사용자가 확인해야** 정리하고 새 기준을 저장한다. 확인 전에는 저장 데이터를 바꾸지 않는다. |
+| S4 범위 | **S4a**(포함 스위치·3상태·압축 상태·변경 안내)만 구현했다. 11절 S4의 미리보기 편집·편집 단위·주입 컨텍스트 표시는 **S4b**로 나눴다. |
+| 복구 | 프리셋별 `복구` 버튼 → 추가될 기능 미리보기 → 확인 후 다시 반영. |
+
+### 17.2 단계별 변경
+
+| 단계 | 결과 | 파일 |
+| --- | --- | --- |
+| S1 | 저장 필드 `configExclusions`(Master Config 항목 id)를 추가했다. 조합 순서는 기준 선언 → 필드 덮어쓰기 → 제외다. 알 수 없는 id, 도구 제공자 제외, 덮어쓰기와 제외 동시 지정, 제외한 prompt provider를 편집 선택한 경우는 오류다. `command-compact`는 `compaction-basic`과 함께 빠진다(`CONFIG_REQUIRES`). 빈 목록은 저장하지 않으므로 기존 데이터는 모두 기본 반영으로 해석된다. | [config-overrides.ts](<../../src/config-overrides.ts>), [composition-plan.ts](<../../src/host/composition-plan.ts>), [prompt-composition.ts](<../../src/prompt-composition.ts>) |
+| S2 잔여 | 쓰이지 않던 `selectPromptProviders`를 제거했다. | [prompt-composition.ts](<../../src/prompt-composition.ts>) |
+| S3 | 프로필별 `studio-data/catalog-snapshot.json`에 도구 이름·정규화한 파라미터 스키마와 Config id·패키지 이름만 저장한다. Config 값은 저장하지 않는다. Config 항목 하나라도 로드 오류가 있으면 스냅샷을 만들지 않아 기준 교체나 삭제가 일어나지 않는다. 첫 정상 수집은 기준만 저장한다. 같은 id가 다른 패키지를 가리키면 제거+추가로 다룬다. 확인하면 Optimized를 뺀 사용자 프리셋에서 해당 도구 선택·설명·실행 기본값·batch·서브에이전트/역할 필터와 Config 덮어쓰기·제외만 지우고, 반영된 프리셋은 `다시 반영 필요`로 표시한다. 반영된 등록은 다시 만들지 않는다. 반복 확인은 저장 없이 끝난다. | [master-snapshot.ts](<../../src/master-snapshot.ts>), [catalog-baseline.ts](<../../src/host/catalog-baseline.ts>), [shell.ts](<../../src/host/shell.ts>), [preset-store.ts](<../../src/host/preset-store.ts>) |
+| S4a | 실행 설정 탭 위쪽에 포함 스위치(기본값/덮어쓰기/제외 배지), 자동 압축 ON/OFF 표시, "선언 기준이며 실행 중 세션 상태가 아님" 안내를 두었다. 제외한 항목은 아래 Config 편집 목록에서 숨긴다. 탭 설명 문구를 기본 반영 규칙으로 바꿨다. 프리셋 목록에 변경 안내(`+`/`-`/`~`, 정리될 프리셋 설정)를 추가했다. | [feature-inclusion.tsx](<../../src/feature-inclusion.tsx>), [master-change-notice.tsx](<../../src/master-change-notice.tsx>), [optimization-prototype.tsx](<../../src/optimization-prototype.tsx>), [preset-manager.tsx](<../../src/preset-manager.tsx>) |
+| S5 | 반영본에 없는데 제외하지도 않은 기능을 `missingFeatures`로 보고한다. 레거시 데이터의 부재는 의도로 해석하지 않고 자동으로 켜지도 않는다. `복구`는 확인 후 기존 `apply`를 호출하므로 덮어쓰기·역할·Pixie Gate 연결·ID가 보존되고, 실패하면 이전 반영본이 유지된다. 현재 desktop 프로필의 세 프리셋은 15절 재반영 이후라 누락이 없음을 읽기 전용으로 확인했다. | [preset-store.ts](<../../src/host/preset-store.ts>), [preset-manager.tsx](<../../src/preset-manager.tsx>) |
+
+### 17.3 검증
+
+- 로컬: `npm --prefix studio test`(Host·Client 타입 검사와 빌드 포함) 430개 통과, `git diff --check` 통과.
+- 새 테스트: [composition-plan.test.mjs](<../../test/composition-plan.test.mjs>)(기본 반영·덮어쓰기·제외·의존 정리·오류), [master-snapshot.test.mjs](<../../test/master-snapshot.test.mjs>)(부분 수집 거부, 추가/제거/스키마 변경, 출처 변경, 정리 범위·멱등, 기준 파일 손상 보존), [preset-store.test.mjs](<../../test/preset-store.test.mjs>)(확인 후 정리, 반영 등록 유지), [feature-inclusion.test.mjs](<../../test/feature-inclusion.test.mjs>)(3상태 UI, 의존 잠금, 누락 탐지, 복구 확인, 확인 전 무변경).
+- 화면: 새 부품을 DSH 토큰 CSS와 Studio 스타일로 정적 렌더링해 라이트·다크, ko/en/zh, 340px 폭을 확인했다. 실제 Studio 화면 안의 배치는 설치 검증에서 확인한다.
+- **미검증:** 설치 앱에서의 변경 안내·제외·복구 흐름, 실제 Loader 통합 테스트, 자동 압축(`compaction/start → summary → end`)과 `/compact` 실행. 독립 배포 검증(S6)은 하지 않았다.
+
+### 17.4 남은 작업
+
+1. **S4b** — 프롬프트 미리보기에 `agent-instructions`·`time-context` 주입 내용을 표시하고, 미리보기에서 Config 필드를 편집한다(실행 설정과 같은 덮어쓰기 저장값 공유).
+2. **S6** — 수정하지 않은 DSH에 패키징한 Studio만 설치해 Master/Optimized/사용자 복사 흐름, 리로드·재시작·세션 재개, 압축 자동·수동 실행을 검증한다.
+3. S2 수용 조건의 실제 Loader/scope 통합 테스트(S6과 함께).
+
+## 18. 포함 대상 확대와 도구 제공자 탭 통합
+
+### 18.1 결정 (사용자 확인)
+
+- **A 방식:** Studio 기준 구성의 모든 플러그인을 제외할 수 있다. 6개로 고정한 목록은 없앴다. 서브에이전트 플러그인만 예외로, 반영할 때 `subagent_role`로 바뀌므로 서브에이전트 탭이 관리한다. 6개 목록은 이전 빌드의 누락 탐지(S5)에만 쓴다(`LEGACY_DROPPED_PACKAGES`).
+- **반영 검사:** 선택한 도구를 제공하는 플러그인을 빼면 `DSH에 반영`이 실패하고 이전 반영본을 유지한다. DSH 재시작 후 복원은 16.4 결정대로 경고만 남긴다.
+- **도구 제공자 탭 제거:** Master에 없는 플러그인 추가는 `포함할 플러그인`의 `플러그인 추가` 대화상자로 옮겼다. 후보는 DSH 기본 프리셋(`standard`·`ptc`·`minimal`·`cordis`)에 선언됐지만 Master에 없는 플러그인이고, 패키지 이름을 직접 입력할 수도 있다. 프리셋 선언의 config가 JSON이면 함께 가져오고, 아니면 config 없이 추가해 덮어쓰기로 편집한다. 저장 위치는 기존 `master-extensions.json`이며 추가 전 활성화 검사와 실패 복구도 기존 흐름을 그대로 쓴다.
+- **UI 통일:** 포함 목록은 Config 편집과 같은 검색·스크롤 목록을 쓴다. Config 편집의 필터에서 `켜짐`을 빼고 `전체/변경됨`만 남겼다. 체크는 덮어쓰기 대상 선택이라 `켜짐`이 플러그인 활성화로 읽히기 때문이다.
+
+### 18.2 검증
+
+- `npm --prefix studio test` 432개 통과. 포함 목록의 검색·필터·상태·의존 잠금, 플러그인 추가·제거 호출, 엄격한 반영 검사(이전 반영본 유지) 테스트를 추가했다.
+- 화면: 포함 목록을 DSH 토큰 CSS로 정적 렌더링해 라이트·다크를 확인했다.
+- **미검증:** 설치 앱에서 `플러그인 추가`로 실제 플러그인(예: `tool-schedule`)을 추가해 도구 목록에 나타나는지, 추가 후 활성화 실패 시 복구되는지.
+
+### 18.3 플러그인 추가 수정
+
+- `addMasterPlugin`의 Host 매개변수 이름이 Client descriptor(`payload`)와 달라 게이트웨이가 거절했다. 이름을 맞추고 모든 `studioCatalog` 메서드의 이름 일치를 검사하는 [remote-signatures.test.mjs](<../../test/remote-signatures.test.mjs>)를 추가했다.
+- `terminal-bash`를 단독으로 추가하면 같은 그룹의 `dsh-terminal`(격리된 `terminals` 서비스)이 없어 `waiting for terminals`로 활성화되지 않았다. 이제 DSH 프리셋에서 그룹 안에 선언된 플러그인은 **그 그룹 전체(격리 설정과 형제 플러그인)** 를 함께 추가한다. 후보 설명에 함께 추가될 플러그인을 표시한다.
+- `!!js` 비활성 조건은 DSH 프리셋이 쓰는 `process.platform ===/!== '<os>'` 형태만 평가하고, 그 밖의 식은 꺼진 것으로 보고 후보와 추가 대상에서 뺀다. 이 플랫폼에서 꺼진 변형(macOS의 pwsh 계열 등)은 더 이상 후보에 나오지 않는다.
+- 남은 제한: 함께 추가된 그룹이 Master에 이미 있는 도구와 같은 이름을 등록하면(예: `tool-bash-persistent`의 `bash`와 Master의 `tool-bash`) 추가 전 활성화 검사가 실패하고 이전 상태로 되돌린다. 이 충돌은 활성화해 보기 전에는 공개 API로 알 수 없다.
+
+## 19. Master를 DSH standard 기준으로 재구성
+
+### 19.1 결정 (사용자 확인)
+
+손으로 고정한 Master가 standard와 비슷하지만 같지 않아 생기는 혼란(예: `terminal-bash` 추가 시 `waiting for terminals`, 대체 구현의 도구 이름 충돌, 버전별 차이)을 없애기 위해 출처가 보이는 4층으로 바꿨다.
+
+| 층 | 내용 | 표시 |
+| --- | --- | --- |
+| DSH standard | 실행 중인 DSH의 `standard` 선언을 캡처할 때마다 읽는다. 읽지 못하면 Studio에 들어 있는 사본을 쓰고 안내한다. 플랫폼 조건은 이 Host 기준으로 풀어 비활성 행은 뺀다. | 배지 `standard` |
+| Studio 추가 | `spill-policy`, `read_batch`(`studio-batch`), `tool-cordis`, `plugin-manager/tools`. standard가 이미 제공하는 패키지는 중복으로 넣지 않는다. | 배지 `Studio` |
+| Studio 대체 | standard의 `subagent`·`subagent_fork` → `subagent_role`. 역할 플러그인은 standard의 delegation 그룹에 들어가 같은 워크플로 엔진을 쓴다. | 포함 목록에 나오지 않고 서브에이전트 탭이 안내 |
+| 사용자 추가 | `플러그인 추가`에서 패키지 이름으로만 추가(`studio-added/…`). 다른 DSH 프리셋에서 가져오는 후보 목록은 대체 구현과 충돌하므로 없앴다. | 배지 `추가함` |
+
+### 19.2 변경과 영향
+
+- [master-composition.ts](<../../src/host/master-composition.ts>): `masterComposition(standard, added)`, `pluginOrigins`, `disabledHere`/`enabledRows`, 사본 `standardFallback`. standard 행의 id와 그룹을 그대로 쓰므로 기존 Config 덮어쓰기 id(`tool-fs`, `compaction/compaction-basic` 등)와 Studio 추가 항목 id(`spill-policy`, `studio-batch`)가 유지된다.
+- Master에만 있던 설정 차이(짧은 plan-mode 문구, 서브에이전트 `toolFilter`)는 standard 값으로 바뀐다. Optimized의 덮어쓰기에는 넣지 않았다. standard를 따르기로 한 결정의 결과다.
+- standard가 바뀌면 Master가 따라 바뀌고, 변화는 17절의 변경 안내(`+`/`-`/`~`)로 확인 후 반영된다. 설치된 0.2.0-rc.2와 0.2.1-alpha.2의 standard는 `time-context`, `tool-schedule`, plan-mode 문구, 서브에이전트 설정이 다르다.
+- 검증: `npm --prefix studio test` 437개 통과. standard 실제 선언으로 Master를 만들어 id 유지·플랫폼 조건 해소·역할 플러그인 위치·출처 판정을 검사한다([master-addition.test.mjs](<../../test/master-addition.test.mjs>)). 포함 목록의 출처 배지를 정적 렌더링으로 확인했다.
+- **미검증:** 설치 앱에서 standard를 실제로 읽어 Master가 구성되는지, 첫 재시작 때 변경 안내에 나오는 차이(이전 Master 대비), Optimized 재구성 결과.
+
+## 20. S4b — 턴 시작 주입 내용 미리보기와 편집
+
+- 미리보기 대화상자 아래에 **턴 시작에 들어가는 내용** 영역을 두었다([turn-injection-panel.tsx](<../../src/turn-injection-panel.tsx>)). 포함된 플러그인만 나오므로 제외하면 사라진다.
+  - `agent-instructions`: 설치된 DSH의 공개 export `loadBaselineInstructions`를 `ctx.loader`로 불러 현재 덮어쓰기가 반영된 Config로 실제 렌더링한다([turn-injections.ts](<../../src/host/turn-injections.ts>)). Studio Host의 작업 폴더 기준이라 세션 폴더와 다를 수 있어 `예시`로 표시한다. export가 없거나 실패하면 이유를 적고 미리보기는 계속된다.
+  - `time-context`: 패키지가 형식 함수를 export하지 않아 같은 형식(턴 1·스텝 1, 브라우저 시간대 없음)을 Studio가 그대로 만든다. 설정한 `timeZone`이 반영된다.
+  - `skill-filesystem`: 설치 스킬과 세션 폴더에 따라 달라 내용은 보여 주지 않고 이유만 표시한다.
+- 각 영역 아래 Config 필드(`timeZone`, `refreshIntervalMs`, `maxBytes`, 지침 파일 후보, `customSkillDirs`)를 편집한다. 실행 설정 탭과 **같은 Config 덮어쓰기 값**을 쓰므로 양쪽이 같은 상태(`기본값`/`덮어쓰기`)를 보이고, `원래대로`는 그 키만 지운다. 명시적 `0`은 그대로 저장한다. 바꾼 뒤에는 기존 "설정이 바뀌었습니다. 다시 실행" 안내가 뜬다.
+- 본문(AGENTS.md 내용, 시각 문장, 스킬 목록)은 편집할 수 없고 그 이유를 표시한다. 렌더링된 텍스트를 저장하지 않는다(3절).
+- 검증: `npm --prefix studio test` 440개 통과. 실제 `@deepseek-ai/dsh-agent-instructions` 소스로 렌더링해 이 저장소의 AGENTS.md 블록이 나오는 것을 확인했다. 라이트·다크 정적 렌더링 확인.
+- **미검증:** 설치 앱(0.2.0-rc.2)에서 `loadBaselineInstructions` export와 결과(설치 산출물에 export가 있음은 16절 조사 때 확인).
+
+## 21. 웹 확인 후 수정
+
+- **복구 후에도 `기능 누락`이 남던 문제:** 누락 판정이 실행 중인 Master가 아니라 Studio에 들어 있는 standard 사본과 비교했다. 사본에는 `time-context`가 있지만 0.2.0-rc.2 standard에는 없어서, 복구해도 계속 누락으로 보였다. 이제 캡처한 Master와 비교한다(`PresetStore.setMaster`).
+- **미리보기 가독성:** 턴 시작 내용을 프롬프트·도구 영역 아래에 붙이지 않고, 미리보기 위쪽의 `시스템 프롬프트·도구 / 턴 시작 내용` 전환으로 따로 보여 준다.
+- **플러그인 제목:** 포함 목록과 Config 목록이 같은 제목·용도 표([plugin-labels.ts](<../../src/plugin-labels.ts>), ko/en/zh)를 쓴다. 표에 없는 패키지는 패키지 이름을 제목으로 쓴다. 검색은 제목에도 걸린다.
+- 검증: `npm --prefix studio test` 441개 통과.
+
+## 22. 미리보기의 주입 종류 구분과 세션 전용 도구 안내
+
+- 미리보기 전환을 `시스템 프롬프트·도구 / 런타임 컨텍스트 / 턴 시작 내용` 셋으로 나눴다. 런타임 컨텍스트는 공개 `renderContextSections`(0.2.0-rc.2 산출물에서 export 확인)로 기여자별로 보여 준다. 실행 중에만 생기는 도구 결과 뒤 안내(하위 폴더 AGENTS.md)와 압축 요약은 미리보기에 없다는 안내를 붙였다.
+- 예약 작업처럼 DSH가 세션의 Agent마다 직접(own-scope) 등록하는 도구는 Studio 도구 목록에 나오지 않는다는 안내를 도구 목록에 추가했다. 사용자가 자동화 작업을 껐다 켰을 때 세션에는 도구가 붙고 프리셋 도구 목록에는 나오지 않음을 확인했다(웹, 0.2.0-rc.2). 이는 의도된 동작이다: 이 도구들은 프리셋 선택 대상이 아니며 16절 정책상 Studio가 가리지 않는다.
+- 검증: `npm --prefix studio test` 442개 통과.

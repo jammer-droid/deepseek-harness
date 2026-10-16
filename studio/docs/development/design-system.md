@@ -69,7 +69,7 @@ primitives는 CSS 모듈을 함께 불러오므로 Node 단위 테스트에서 �
 | 부품 | 쓰는 곳 |
 | --- | --- |
 | `StudioSurface` | 마운트된 Studio 화면의 최상위. 스타일시트를 함께 넣고 마운트 해제 시 제거한다 |
-| `ItemPicker` ([item-picker.tsx](../../src/item-picker.tsx)) | 도구·Config 선택. 한 목록에서 행의 체크로 켜고 끄며, 켠 행은 자리를 옮기지 않고 강조된다. 검색과 전체/선택됨/변경됨 필터로 좁혀 본다. 켠 행에만 `설정`이 있으며 `DetailDialog`로 연다. `lockedReason`을 준 행은 켜진 채로 잠기고 이유를 설명으로 보여 준다(예: 프리셋 기본값에서 온 Tool Filter 도구). 두 열 이동 방식은 쓰지 않는다 |
+| `ItemPicker` ([item-picker.tsx](../../src/item-picker.tsx)) | 도구·Config 선택. 한 목록에서 행의 체크로 켜고 끄며, 켠 행은 자리를 옮기지 않고 강조된다. 검색과 전체/선택됨/변경됨 필터로 좁혀 본다. 켠 행에만 `설정`이 있으며 `DetailDialog`로 연다. `lockedReason`을 준 행은 켜진 채로 잠기고 이유를 설명으로 보여 준다(예: 프리셋 기본값에서 온 Tool Filter 도구). 두 열 이동 방식은 쓰지 않는다. `filters`로 보일 필터를 고르고(Config 편집은 전체/변경됨), `badge`로 제목 옆 상태 태그를 단다 |
 | `Button` | 모든 버튼 동작. 기본은 DSH outline, `primary`는 채운 주 버튼, `small`은 카드·행 안의 보조 동작 |
 | `PageHead` | 섹션당 하나의 제목·설명·우측 동작. 상태줄은 children으로 넣는다 |
 | `SectionHead` | 페이지 안의 제목 행과 우측 동작. 입력 필드를 담을 때 `field` |
@@ -87,6 +87,9 @@ primitives는 CSS 모듈을 함께 불러오므로 Node 단위 테스트에서 �
 | `DetailDialog` | 한 항목의 설정을 여는 모달. `wide`는 프롬프트 미리보기처럼 본문과 오른쪽 목록을 함께 보여줄 때 쓴다. 머리(제목·보조 문구·닫기), 스크롤되는 본문, 선택적 하단 동작으로 구성한다. 닫으면 연 버튼으로 포커스를 돌려준다. 페이지 안에서 카드를 펼쳐 편집하지 않고 이 모달을 쓴다 |
 | `SplitButton` | 주 동작과 관련 보조 동작을 한 컨트롤로 묶는다. 예: `DSH에 다시 반영` + 메뉴의 `반영 해제` |
 | `Disclosure` | 고급 설정처럼 평소 접어 두는 블록. 컴포넌트 카드와 같은 테두리·제목 행을 쓴다 |
+| `FeatureInclusion` ([feature-inclusion.tsx](../../src/feature-inclusion.tsx)) | 프리셋에 포함할 플러그인. Config 편집과 같은 `ItemPicker`(검색·스크롤, 필터는 전체/포함)로 보여 주고, 행마다 출처(`standard`/`Studio`/`추가함`)와 기본값/덮어쓰기/제외 `Badge`를 단다. 의존 플러그인은 "함께 제외"로 잠근다. `플러그인 추가` 대화상자에서 패키지 이름으로 Studio 기준 구성에 추가·제거한다 |
+| `CatalogChangeNotice` ([master-change-notice.tsx](../../src/master-change-notice.tsx)) | 재시작 후 도구·Config 변경 안내. `Notice`와 `DetailDialog`에 `+`/`-`/`~`와 정리될 프리셋 설정을 보여 주고, 확인해야 정리한다 |
+| `TurnInjectionPanel` ([turn-injection-panel.tsx](../../src/turn-injection-panel.tsx)) | 프롬프트 미리보기 안의 턴 시작 주입 예시(`pre.studio-turn-text`)와 그 내용을 만드는 Config 필드. 실행 설정과 같은 덮어쓰기 값을 쓰고 `원래대로`로 키를 지운다. 본문은 편집 불가 사유를 표시한다 |
 
 ### ui-host.tsx 부품
 

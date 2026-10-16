@@ -15,7 +15,7 @@ const messages = {
   sentence: ['{when} → {what}', '{when} → {what}', '{when} → {what}'],
   name: ['이름', 'Name', '名称'],
   when: ['언제', 'When', '何时'], what: ['Pixie에게 보낼 내용', 'What to send Pixie', '发送给 Pixie 的内容'],
-  whatHint: ['Pixie가 내용을 확인해 게이트의 결과를 결정합니다. 결과에 대한 자세한 내용은 가이드를 참고해 주세요.', 'Pixie checks the content and decides the gate result. See the guide for details on results.', 'Pixie 检查内容并决定门控结果。结果详情请参阅指南。'],
+  whatHint: ['Pixie가 이 내용을 보고 게이트 결과를 정합니다. 결과 종류는 가이드를 참고하세요.', 'Pixie checks the content and decides the gate result. See the guide for details on results.', 'Pixie 检查内容并决定门控结果。结果详情请参阅指南。'],
   'out-verdict': ['결론', 'Verdict', '结论'], 'out-reason': ['이유', 'Reason', '原因'], 'out-replace': ['바꿀 내용', 'Replacement', '替换内容'], 'out-append': ['덧붙일 내용', 'Addition', '追加内容'], 'out-note': ['메모', 'Note', '备注'],
   // when options
   'when-user-message': ['사용자가 지시를 보낼 때', 'When you send an instruction', '当你发送指令时'],
@@ -26,7 +26,7 @@ const messages = {
   'target-user-message': ['보낸 지시', 'your instruction', '你发送的指令'], 'target-agent-message': ['주고받는 메시지', 'the message between agents', '代理之间的消息'], 'target-tool-before': ['도구 호출 내용', 'the tool call', '工具调用内容'], 'target-tool-after': ['도구 결과', 'the tool result', '工具结果'], 'target-turn-end': ['마지막 답변', 'the final answer', '最后的回答'],
   // advanced
   advanced: ['고급', 'Advanced', '高级'],
-  script: ['Pixie 훅 스크립트', 'Pixie hook script', 'Pixie 钩子脚本'], scriptHint: ['Pixie에게 지시를 하기 전에 실행할 스크립트를 지정합니다. 스크립트의 결과를 Pixie에게 전달할 수 있습니다.', 'The script to run before instructing Pixie. Its output can be passed to Pixie.', '指定在向 Pixie 发出指令前运行的脚本。脚本结果可传递给 Pixie。'],
+  script: ['Pixie 훅 스크립트', 'Pixie hook script', 'Pixie 钩子脚本'], scriptHint: ['Pixie에게 지시하기 전에 실행할 스크립트를 고릅니다. 스크립트 결과를 Pixie에게 넘길 수 있습니다.', 'The script to run before instructing Pixie. Its output can be passed to Pixie.', '指定在向 Pixie 发出指令前运行的脚本。脚本结果可传递给 Pixie。'],
   guideLink: ['스크립트 작성 가이드', 'script guide', '脚本编写指南'], resultGuide: ['가이드', 'Guide', '指南'],
   scriptEnv: ['DSH에서 bash 프로필을 지원할 때만 사용할 수 있습니다.', 'Available only when DSH runs with a bash profile.', '仅在 DSH 支持 bash 配置文件时可用。'],
   noScript: ['사용 안 함', 'None', '不使用'], scriptDir: ['스크립트 폴더', 'Script folder', '脚本文件夹'], copyPath: ['경로 복사', 'Copy path', '复制路径'], refresh: ['목록 새로고침', 'Refresh list', '刷新列表'],
@@ -46,7 +46,7 @@ const messages = {
   editPresets: ['프리셋', 'Presets', '预设'],
   scriptMissing: ['(폴더에 없음)', '(not in folder)', '（文件夹中不存在）'], scriptUnsupported: ['이 환경에서는 훅 스크립트를 지원하지 않습니다.', 'Hook scripts are not supported in this environment.', '此环境不支持钩子脚本。'], scriptsFailed: ['스크립트 목록을 읽지 못했습니다', 'Could not list scripts', '无法读取脚本列表'],
   scriptShell: ['자세한 스크립트 규칙은 {link}에서 볼 수 있습니다.', 'See the {link} for the full script rules.', '完整的脚本规则请参阅{link}。'],
-  variables: ['픽시 훅의 결과로 사용할 수 있는 값', 'Values from the Pixie hook result', '可用作 Pixie 钩子结果的值'], 'var-text': ['스크립트 출력 텍스트', 'script output text', '脚本输出文本'], 'var-data': ['스크립트 출력 데이터(JSON)', 'script output data (JSON)', '脚本输出数据（JSON）'],
+  variables: ['Pixie 훅 결과로 쓸 수 있는 값', 'Values from the Pixie hook result', '可用作 Pixie 钩子结果的值'], 'var-text': ['스크립트 출력 텍스트', 'script output text', '脚本输出文本'], 'var-data': ['스크립트 출력 데이터(JSON)', 'script output data (JSON)', '脚本输出数据（JSON）'],
   confirmReplace: ['바꾸기 전에 확인', 'Confirm before replacing', '替换前确认'], confirmReplaceHint: ['바꿀 내용을 바로 보내지 않고 Pixie 카드에서 확인 후 보냅니다.', 'Holds the replacement on a Pixie card until you confirm.', '替换内容先保留在 Pixie 卡片，确认后再发送。'],
   onError: ['Pixie가 실패하면', 'If Pixie fails', '若 Pixie 失败'], errorPass: ['그대로 진행', 'Continue as usual', '照常继续'], errorBlock: ['막음', 'Stop it', '拦下'],
   agents: ['대상 에이전트', 'Target agents', '目标代理'], root: ['메인 에이전트', 'Main agent', '主代理'], child: ['서브에이전트', 'Subagents', '子代理'], any: ['모두', 'All', '全部'],
@@ -81,7 +81,7 @@ const messages = {
   'tplDesc-tool-digest': ['도구 결과가 길면 현재 작업과 관련 있는 내용만 골라 에이전트에게 줍니다.', 'When a tool result is long, gives the agent only what matters to the current task.', '工具结果过长时，只把与当前任务相关的内容交给代理。'],
   'tplText-tool-digest': ['도구 결과가 길면 현재 작업과 관련 있는 항목만 골라 요약해서 바꿀 내용에 넣어. 파일 경로·줄 번호·오류 문구는 그대로 남겨.\n결과가 짧으면 아무것도 하지 마.', 'If the tool result is long, put a summary of only the items relevant to the current task in the replacement. Keep file paths, line numbers and error text as they are.\nIf the result is short, do nothing.', '若工具结果较长，请只挑选与当前任务相关的条目并把摘要放入替换内容，文件路径、行号和错误文本保持原样。\n若结果较短，则不做任何事。'],
   'tpl-verify-answer': ['최종 답변 검증', 'Verify the final answer', '验证最终回答'],
-  'tplDesc-verify-answer': ['답변이 요청을 충족했는지 판정하고, 미달이면 다시 하라고 지시합니다.', 'Judges whether the answer meets the request; asks the agent to redo it if not.', '判定回答是否满足请求，不满足则让代理重做。'],
+  'tplDesc-verify-answer': ['답변이 요청을 다 채웠는지 판정하고, 모자라면 다시 하라고 지시합니다.', 'Judges whether the answer meets the request; asks the agent to redo it if not.', '判定回答是否满足请求，不满足则让代理重做。'],
   'tplText-verify-answer': ['답변이 사용자의 요청을 모두 다뤘는지 확인해.\n빠진 부분이 있으면 막고, 무엇을 더 해야 하는지 이유에 써.', 'Check that the answer covers everything the user asked.\nIf something is missing, stop it and say what still needs doing as the reason.', '检查回答是否涵盖用户的全部请求。\n若有遗漏，请拦下并在原因中写明还需完成的内容。'],
 } as const;
 export type GateTaskKey = keyof typeof messages;

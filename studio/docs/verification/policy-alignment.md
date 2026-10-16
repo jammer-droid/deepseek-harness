@@ -23,6 +23,8 @@ policy 플러그인은 `tools/change`에서 Agent 레지스트리를 훑어, sco
 
 ## 공개 API 제한
 
+> **2026-10-16 갱신:** 아래 제한은 own-scope 차단을 없앤 변경 이전의 기록이다. 현재 정책은 설치 시점에 보이는 미선택 상속 도구만 가리고, own-scope·늦게 등록된 도구는 DSH 기본 흐름을 따른다. 실행 guard는 더 이상 쓰지 않는다([계획 16절](../plans/preset-catalog-snapshot-policy.md#16-s0-기록--26-이후-기준과-도구-정책-결정)).
+
 Inspect의 tools 계약에서 `restrict`는 inherited 도구를 제한하지만 own-scope 등록은 숨기지 않는다. scope-local 도구를 선택적으로 숨기는 공개 API는 확인되지 않았다. 따라서 외부 제공자는 안정된 ancestor preset scope 등록을 사용해야 한다.
 
 정책 설치 이후 own-scope 도구를 추가하는 외부 제공자는 지원하지 않는다. 비선택 도구의 실행은 monotonic guard가 거절하지만 schema는 나타날 수 있다. 실행 거절과 모델 비노출을 모두 해결했다고 주장하지 않는다. 늦은 PTC 전환도 실행 guard가 거절한다. 이 경계를 해소하려면 지원 DSH의 공개 노출 제어 계약이 필요하며, 이번 작업에서는 코어 또는 비공개 registry를 수정하지 않았다.

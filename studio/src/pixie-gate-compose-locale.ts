@@ -50,7 +50,7 @@ const messages = {
   'roleOut-note': ['현재 텍스트는 그대로 두고, 출력은 {{stages.{id}.text}}로 보관해 뒤 단계나 덧붙임에 씁니다.', 'Keeps the current text and stores the output as {{stages.{id}.text}} for later stages or appending.', '保持当前文本，输出保存为 {{stages.{id}.text}}，供后续阶段或追加使用。'],
   'roleOut-judge': ['통과 조건을 만족하면 다음 단계로, 아니면 게이트를 실패로 끝냅니다.', 'Meets the pass rule → next stage; otherwise the gate fails.', '满足通过条件进入下一阶段，否则门控失败。'],
   commandHelp: ['exit 0은 통과(stdout은 텍스트 또는 {"verdict","text","reason","data"} JSON), exit 2는 실패(stderr가 이유), 그 밖의 종료는 오류입니다.', 'exit 0 passes (stdout is text or {"verdict","text","reason","data"} JSON), exit 2 fails (stderr is the reason), other exits are errors.', 'exit 0 为通过（stdout 为文本或 {"verdict","text","reason","data"} JSON），exit 2 为失败（stderr 为原因），其他退出为错误。'],
-  checkHelp: ['검사 역할은 모델에 {"pass":boolean,"reason"?,"fix"?} JSON만 답하도록 자동으로 지시합니다.', 'The check role automatically asks the model for {"pass":boolean,"reason"?,"fix"?} JSON only.', '检查角色会自动要求模型只返回 {"pass":boolean,"reason"?,"fix"?} JSON。'],
+  checkHelp: ['검사 역할이면 모델에게 {"pass":boolean,"reason"?,"fix"?} JSON으로만 답하라고 자동으로 지시합니다.', 'The check role automatically asks the model for {"pass":boolean,"reason"?,"fix"?} JSON only.', '检查角色会自动要求模型只返回 {"pass":boolean,"reason"?,"fix"?} JSON。'],
   'out-check': ['통과 / 실패', 'Pass / fail', '通过 / 失败'], 'out-revise': ['현재 텍스트를 수정', 'Revises the current text', '修改当前文本'], 'out-note': ['결과를 보관', 'Stores a result', '保存结果'], 'out-judge': ['통과 / 실패', 'Pass / fail', '通过 / 失败'],
   originalText: ['원문', 'Original', '原文'],
   variables: ['쓸 수 있는 변수', 'Available variables', '可用变量'], moveUp: ['위로', 'Move up', '上移'], moveDown: ['아래로', 'Move down', '下移'], removeStage: ['단계 삭제', 'Delete stage', '删除阶段'],

@@ -22,13 +22,13 @@ const messages = {
   question: ['질문 내용', 'Question text', '问题内容'], true: ['참 기준', 'True criterion', '为真标准'], false: ['거짓 기준', 'False criterion', '为假标准'],
   pass: ['통과 규칙', 'Pass rules', '通过规则'], mode: ['조건 모드', 'Condition mode', '条件模式'], all: ['모두 만족', 'All conditions', '满足全部'], any: ['하나라도 만족', 'Any condition', '满足任一'],
   addCondition: ['조건 추가', 'Add condition', '添加条件'], condition: ['조건', 'Condition', '条件'], selectQuestion: ['질문 선택', 'Select question', '选择问题'], threshold: ['기준값 (0–1)', 'Threshold (0–1)', '阈值（0–1）'], min: ['최소 점수 단계', 'Minimum score level', '最低评分等级'], allowed: ['허용 옵션', 'Allowed options', '允许的选项'],
-  invalid: ['설정을 확인하세요', 'Check this setting', '请检查此设置'], duplicate: ['ID는 고유해야 합니다', 'IDs must be unique', 'ID 必须唯一'],
+  invalid: ['설정을 확인하세요', 'Check this setting', '请检查此设置'], duplicate: ['ID가 겹치면 안 됩니다', 'IDs must be unique', 'ID 必须唯一'],
   settingsDescription: ['판정 기본값을 설정합니다. Pixie의 수동 판정 탭도 이 설정을 사용합니다.', 'Set judge defaults. The manual Judge tab in Pixie also uses these settings.', '设置判定默认值。Pixie 的手动判定标签页也使用这些设置'],
   model: ['판정 모델', 'Judge model', '判定模型'], modelHint: ['비우면 Pixie 기본 모델을 사용합니다.', 'Leave empty to use the Pixie default model.', '留空使用 Pixie 默认模型'],
   prompt: ['판정 시스템 프롬프트', 'Judge system prompt', '判定系统提示'], promptHint: ['비우면 기본 Jev JSON 지시문을 사용합니다.', 'Leave empty to use the default Jev JSON instructions.', '留空使用默认 Jev JSON 指令'], reset: ['기본값으로 되돌리기', 'Restore default', '恢复默认'],
   failedNoul: ['질문 "{question}": 예 확률 {actual} < 기준 {threshold}', 'Question "{question}": yes probability {actual} < threshold {threshold}', '问题“{question}”：是的概率 {actual} < 阈值 {threshold}'],
   failedScore: ['질문 "{question}": 점수 {actual} < 최소 {min}', 'Question "{question}": score {actual} < minimum {min}', '问题“{question}”：评分 {actual} < 最低 {min}'],
-  failedChoice: ['질문 "{question}": 선택 {actual}이 허용 옵션 아님', 'Question "{question}": selection {actual} is not allowed', '问题“{question}”：选择 {actual} 不在允许选项中'],
+  failedChoice: ['질문 "{question}": 허용 옵션이 아닌 선택값 {actual}', 'Question "{question}": selection {actual} is not allowed', '问题“{question}”：选择 {actual} 不在允许选项中'],
   answers: ['판정 답변', 'Judge answers', '判定回答'], probability: ['확률', 'Probability', '概率'], confidence: ['신뢰도', 'Confidence', '置信度'],
 } as const;
 export type JudgeTextKey = keyof typeof messages;
