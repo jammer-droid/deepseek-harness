@@ -368,7 +368,16 @@ interface GateResult {
 - **커버리지 복원:** tools/turn 실제 리스너 경계의 stop/교체/덧붙임/value-bearing 3종, downstream deny/cancel/block/ask, 기존 context, agents·preset·enabled 필터와 child 성공, 취소 6종, 누적 턴 예산·기존 steer, 기록 metadata 및 input 확인·취소를 포함한 47개 테스트를 추가했다. 실제 Cordis PixieService.trialGate 경로에서 전용 판정 모델·프롬프트·원문·usage와 pass/stop 2개를 복원했다. 구 sandwich/subtitle 단계 조합 자체는 새 단일 작업 계약에 없으므로 재현하지 않는다. shell/session 정책 서비스 조합 2개는 shell을 다시 연결하는 **R2-b에서 복원**한다.
 - **수치·증거:** 465→420은 skip이 아니라 구 tools 23·turn 11·judge-service 3·input-service 2·review-host 5 삭제, input +3·invalid-definitions -4·trial -5·task-contracts +5로 순감소 45였다. 이번에는 +49로 469개다. [red 기록](</tmp/pixie-a2-fix/red.txt>)에 value-bearing 3건과 추가 기록 정합 회귀 7건의 실패를 보존했다. 복원 시 이미 통과한 사례는 '기존 동작 확인'으로 구분했다(서비스 fixture의 stream model/system assertion 수정은 제품 결함 red가 아님). Studio typecheck, 전체 테스트 2회 연속 각각 **469/469 통과**, `git diff --check` 통과. 화면 JSX·문구 및 S1 표 불변; 본체·사용자 GUI·프로필·배포·Client query·하위 위임 없음.
 
-- **R3 — UI 연결:** 시안을 Host에 연결, 시험 실행 결과를 출력 계약 모양으로, 실행 카드 용어 정리, 기존 다단계 편집기 삭제.
+#### R2-a / b 구 다단계 파이프라인 삭제
+
+- **완료:** a2 재리뷰 잔여로 downstream ask 보존 시 실행 기록의 `hooksInput === 'observed'`를 직접 검증했다. 테스트 수는 469개로 동일하며 typecheck·전체 테스트 2회 연속 469/469·diff 검사 통과 후 별도 커밋했다.
+- **삭제:** Host `pixie-gate-pipeline.ts`·`pixie-gate-runner.ts`(StageRunner·command·시작/종료 hook), 구 UI `pixie-gate-pages.tsx`·`pixie-gate-composer.tsx`·`pixie-gate-editor.tsx`·`pixie-gate-judge-editor.tsx`·`pixie-gate-trial-panel.tsx`. 미사용 GateDefinition·StageDefinition·CommandSpec·GateInput·ForwardSpec·검증기와 GateEntry/GateDefinitionsRead도 제거했다. 삭제 직전에 각 모듈의 src/test 참조가 0건인지 전용 grep 도구로 확인하고 소비자부터 순서대로 삭제했다.
+- **유지:** GateRun/GateResult/StageResult/기록 호환 타입과 판정 규칙, 실행 카드·결과 표시·Pixie 탭·수동 판정 Remote·JudgeEngine/LlmJudgeEngine·새 작업 런타임. 판정 설정에서 쓰는 editor/compose locale은 문구 변경 없이 유지했다. presets 최소 구조 타입은 PixieSettingsPage의 props에 두어 구 편집기 의존만 없앴다. 결과 표시의 사용하지 않는 definition 타입 prop을 제거했으며 JSX·화면 문구는 변경하지 않았다.
+- **테스트 정리:** editor/trial-panel/review-host/구 gate 테스트 파일은 구 경로 전용이라 삭제했다. judge 테스트의 all/any 판정 규칙, judge-ui의 결과 표시·판정 설정 3건, store의 저장·수명·usage 합산은 유지했다(usage fixture만 파이프라인 실행에서 기록 데이터로 분리). timeout 테스트는 일반 PixieRuntime의 timeout을 검사하므로 유지했다. 새 task 실행기·middleware·trial·서비스 테스트는 유지했다.
+- **검증:** 469→370(구 파이프라인·명령·hook·단계 편집/시험 사례 99개 제거, skip 전환 없음). `npm --prefix studio run typecheck` 및 `npm --prefix studio test` 2회 연속 각각 **370/370 통과**, 실패·skip 0. diff 검사에서 테스트 EOF 공백 1건을 발견해 정리한 뒤 최종 재검증했다. S1 표·과거 S2–S9 본문은 보존하고 삭제된 파일 링크만 삭제됨으로 표시했다. 디자인 시스템 부품 표에는 삭제 대상 링크가 없었다.
+- **범위 밖/미검증:** R2-b 스크립트·헬퍼, R3 UI 연결, 실모델·독립 설치·시각 확인은 후속이다. 본체 변경·사용자 GUI/프로필·배포·Client query·하위 위임·푸시는 하지 않았다.
+
+- **R3 — UI 연결:** 시안을 Host에 연결, 시험 실행 결과를 출력 계약 모양으로, 실행 카드 용어 정리. 기존 다단계 편집기 삭제는 R2-a/b에서 완료했다.
 - **R4 — 문서·스킬:** `pixie-gate` 스킬, 템플릿, 가이드 문서의 Pixie Gate 항목(결과 적용 규칙 포함).
 - **R5 — 검증:** 테스트, 격리 프로필 화면 확인, 일괄 리뷰.
 
@@ -510,9 +519,9 @@ interface GateResult {
 
 #### S7 UI 재설계 — 게이트 구성과 적용 범위
 
-- **위치:** Pixie 설정 왼쪽 메뉴에서 `판정` 아래 `게이트` 그룹을 새로 두고 `게이트 구성`, `적용 범위` 두 페이지를 둔다. 기존 단일 `게이트` 편집 페이지는 제거했다([pixie-gate-pages.tsx](../../src/pixie-gate-pages.tsx)).
+- **위치:** Pixie 설정 왼쪽 메뉴에서 `판정` 아래 `게이트` 그룹을 새로 두고 `게이트 구성`, `적용 범위` 두 페이지를 둔다. 기존 단일 `게이트` 편집 페이지는 제거했다(`pixie-gate-pages.tsx`(R2-a/b에서 삭제됨)).
 - **게이트 구성:** 게이트를 카드(`studio-card-pair`)로 보여 준다. 카드에는 이름·개입 지점·켜짐 배지, 단계 흐름 요약(시작 훅 → 단계 종류·역할 → 종료 훅), 연결 프리셋 수와 편집·복제·삭제(확인 모달)가 있다. 상단에 `예시로 시작`과 `새 게이트`.
-- **흐름 편집 모달:** [pixie-gate-composer.tsx](../../src/pixie-gate-composer.tsx). 왼쪽은 개입 지점 → 시작 훅 → 단계 1–5(사이 `+`로 삽입, 5개면 사라짐) → 종료 훅 → 결과 → 시험 실행 노드 목록이고, 각 노드에 `입력 → 출력` 요약을 붙인다. 단계의 입력 요약은 앞의 `수정` 단계가 있으면 그 단계 수정본, 없으면 원문으로 표시한다. 오른쪽은 선택한 노드 하나의 설정과 입력/출력 상자(무엇이 들어오고 무엇이 나가는지)다.
+- **흐름 편집 모달:** `pixie-gate-composer.tsx`(R2-a/b에서 삭제됨). 왼쪽은 개입 지점 → 시작 훅 → 단계 1–5(사이 `+`로 삽입, 5개면 사라짐) → 종료 훅 → 결과 → 시험 실행 노드 목록이고, 각 노드에 `입력 → 출력` 요약을 붙인다. 단계의 입력 요약은 앞의 `수정` 단계가 있으면 그 단계 수정본, 없으면 원문으로 표시한다. 오른쪽은 선택한 노드 하나의 설정과 입력/출력 상자(무엇이 들어오고 무엇이 나가는지)다.
   - 개입 지점은 설명이 붙은 선택지로 고르며, 지점에서 불가능한 역할·전달 방식은 선택지에서 숨긴다(지점 변경 시 정리하고 안내).
   - 단계는 종류(명령/일반 모델/판정 모델)·역할을 분할 선택으로 고르고, 쓸 수 있는 변수(시작 훅 포함)를 칩으로 보여 준다.
   - 결과 노드는 전달 방식, 교체 전 확인(입력만), 지점별 실패 동작 설명, 오류 정책, 제한 시간, 턴당 교정 상한(턴 종료만)을 담는다.

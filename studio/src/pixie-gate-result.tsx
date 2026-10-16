@@ -1,7 +1,7 @@
 import React from 'react';
 import { judgeText } from './pixie-gate-judge-locale.ts';
 import type { JudgeAnswer, JudgeQuestion } from './pixie-contracts.ts';
-import type { GateDefinition, GateResult, StageResult, JudgeFailedCondition } from './pixie-gate-contracts.ts';
+import type { GateResult, StageResult, JudgeFailedCondition } from './pixie-gate-contracts.ts';
 import { gateText } from './pixie-gate-locale.ts';
 import { Badge, Notice, SectionHead } from './ui.tsx';
 
@@ -11,7 +11,7 @@ function wasSkipped(result: StageResult): boolean {
 
 /** Shared trial/run detail; deliberately omits model usage and never infers applied actions. */
 export function GateResultDetails({ result, locale, durations = {}, skipped = [] }: {
-  definition?: GateDefinition | undefined; result: GateResult; locale: string; durations?: Record<string, number>; skipped?: string[];
+  result: GateResult; locale: string; durations?: Record<string, number>; skipped?: string[];
 }): React.ReactElement {
   const t = (key: Parameters<typeof gateText>[1]) => gateText(locale, key);
   const skippedCount = new Set([...skipped.filter(id => !id.startsWith('hooks.')), ...Object.entries(result.stages).filter(([, value]) => wasSkipped(value)).map(([id]) => id)]).size;

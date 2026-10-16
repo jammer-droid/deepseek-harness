@@ -4,7 +4,6 @@
 import React from 'react';
 import { DEFAULT_JUDGE_SYSTEM_PROMPT } from './pixie-contracts.ts';
 import { judgeText } from './pixie-gate-judge-locale.ts';
-import type { GateEditorActions } from './pixie-gate-editor.tsx';
 import { gateEditorText } from './pixie-gate-editor-locale.ts';
 import { GateTaskCompositionPage, GateTaskScopePage, useGateTasks } from './pixie-gate-task-pages.tsx';
 import { gateComposeText } from './pixie-gate-compose-locale.ts';
@@ -28,10 +27,10 @@ export interface PixieSettingsActions {
 const SEP = '\u0000';
 type PageId = 'model' | 'threads' | 'prompt' | 'judge' | 'gate-composition' | 'gate-scope';
 
-export function PixieSettingsPage({ actions, gateActions, locale, navFooter }: { actions: PixieSettingsActions; gateActions?: Pick<GateEditorActions, 'presets'>; locale: string; navFooter?: React.ReactNode }) {
+export function PixieSettingsPage({ actions, gateActions, locale, navFooter }: { actions: PixieSettingsActions; gateActions?: { presets(): Promise<{ id: string; name: string }[]> }; locale: string; navFooter?: React.ReactNode }) {
   const t = (key: PixieTextKey) => pixieText(locale, key);
   const [page, setPage] = React.useState<PageId>('model');
-  // R1 UI preview: both gate pages share local, unsaved state. The Host still uses the previous gate format.
+  // R1 UI preview: both gate pages share local, unsaved state until R3 connects persistence.
   const gates = useGateTasks();
   const [gatePresets, setGatePresets] = React.useState<{ id: string; name: string }[]>([]);
   React.useEffect(() => { if (gateActions) void gateActions.presets().then(setGatePresets, () => setGatePresets([])); }, [gateActions]);

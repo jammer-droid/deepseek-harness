@@ -1,4 +1,4 @@
-/** Task-centred gate draft (U11–U22): "when → what Pixie does → result". UI prototype model only; Host still uses GateDefinition. Node-testable. */
+/** Task-centred gate draft (U11–U22): "when → what Pixie does → result". Shared task model for Host and UI drafts. Node-testable. */
 
 /** When a gate runs, in the user's words. Maps to a runtime point (and input source) inside Pixie. */
 export type GateWhen = 'user-message' | 'agent-message' | 'tool-before' | 'tool-after' | 'turn-end';

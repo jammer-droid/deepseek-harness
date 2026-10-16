@@ -1,4 +1,4 @@
-import type { GateDefinition } from './pixie-gate-contracts.ts';
+import type { GatePoint } from './pixie-gate-contracts.ts';
 /** Gate result copy shared by trials and execution details. */
 const en = {
   gates: 'Gates', emptyRuns: 'No gate runs yet', applied: 'Applied', replaced: 'Replaced', appended: 'Appended', rejected: 'Rejected', steered: 'Steered', blocked: 'Blocked', denied: 'Blocked', running: 'Running', pending: 'Pending rejection', unverified: 'Hook input unverified', suggestion: 'Suggestion', editSend: 'Edit and send', resent: 'Mark as sent', dismissed: 'Dismiss', draftNote: 'Replaces the composer draft with the suggestion (or original). Review and send it yourself. Mark as sent only records your confirmation; it does not send.', composerUnavailable: 'Session composer unavailable', turn: 'Turn', steerCount: 'Steer count', tool: 'Tool', callId: 'Call ID', allRuns: 'All gate runs',
@@ -36,7 +36,7 @@ export function gateText(locale: string, key: GateTextKey): string {
 }
 
 /** Point names shared by the editor, run cards and run details. */
-export function gatePointText(locale: string, point: GateDefinition['point']): string {
+export function gatePointText(locale: string, point: GatePoint): string {
   const names = {
     input: ['입력', 'Input', '输入'], 'turn-end': ['턴 종료', 'Turn end', '轮次结束'],
     'tool-before': ['도구 실행 전', 'Before tool', '工具执行前'], 'tool-after': ['도구 실행 후', 'After tool', '工具执行后'],

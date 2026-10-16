@@ -1,18 +1,16 @@
 import { randomUUID } from 'node:crypto';
 import { mkdir, readFile, readdir, rename, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import type { GateApplied, GateDefinition, GateRejection, GateResult, GateRun, GateRunFrame, GateRunRecord, GateRunStatus } from '../pixie-gate-contracts.ts';
+import type { GateApplied, GatePoint, GateRejection, GateResult, GateRun, GateRunFrame, GateRunRecord, GateRunStatus } from '../pixie-gate-contracts.ts';
 import type { PixieUsage } from '../pixie-contracts.ts';
 
 export const MAX_GATE_RUNS = 200;
 const SESSION_ID = /^[\w-]{1,200}$/;
 type Settlement = { output?: GateRun['output']; usage?: PixieUsage; tool?: { name: string; callId: string }; reason?: string; turn?: number; steerCount?: number; status: Exclude<GateRunStatus, 'running'>; result?: GateResult; applied: GateApplied; hooksInput?: 'observed' | 'unverified'; rejection?: { reason: string; suggestion?: string } };
 
-/** Internal producer port for S4–S6. Persist start before applying destructive decisions.
- * End hooks preserve the verdict on external cancellation: check signal before applying an action.
- */
+/** Persist start before applying destructive decisions. */
 export interface PixieGateRecorder {
-  start(sessionId: string, gate: Pick<GateDefinition, 'id' | 'name' | 'point'> & { when?: GateRun['when'] }, original: string): Promise<GateRun>;
+  start(sessionId: string, gate: { id: string; name: string; point: GatePoint; when?: GateRun['when'] }, original: string): Promise<GateRun>;
   finish(sessionId: string, runId: string, settlement: Settlement): Promise<boolean>;
 }
 
@@ -41,7 +39,7 @@ export class PixieGateStore implements PixieGateRecorder {
     return record;
   }
 
-  start(sessionId: string, gate: Pick<GateDefinition, 'id' | 'name' | 'point'> & { when?: GateRun['when'] }, original: string): Promise<GateRun> {
+  start(sessionId: string, gate: { id: string; name: string; point: GatePoint; when?: GateRun['when'] }, original: string): Promise<GateRun> {
     const snapshot = structuredClone(gate);
     return this.enqueue(sessionId, async () => {
       const record = await this.read(sessionId);
