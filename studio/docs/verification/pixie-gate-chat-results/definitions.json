@@ -1,0 +1,95 @@
+[
+  {
+    "id": "v28-user",
+    "name": "#28 지시 확인",
+    "enabled": true,
+    "when": "user-message",
+    "presetIds": [
+      "studio-user-ea6a5a1e-1c65-4865-b63a-c757f3414679"
+    ],
+    "advanced": {
+      "confirmReplace": false,
+      "onError": "pass",
+      "agents": "root",
+      "timeoutMs": 90000,
+      "maxSteers": 1,
+      "showInChat": true
+    },
+    "instruction": "Do not stop and do not replace. In note, write one short Korean sentence that restates what the user is asking for, starting with \"요청 요약: \"."
+  },
+  {
+    "id": "v28-agent",
+    "name": "#28 서브에이전트 메시지 확인",
+    "enabled": true,
+    "when": "agent-message",
+    "presetIds": [
+      "studio-user-ea6a5a1e-1c65-4865-b63a-c757f3414679"
+    ],
+    "advanced": {
+      "confirmReplace": false,
+      "onError": "pass",
+      "agents": "child",
+      "timeoutMs": 90000,
+      "maxSteers": 1,
+      "showInChat": true
+    },
+    "instruction": "Do not stop and do not replace. In note, write one short Korean sentence summarizing this message between agents, starting with \"에이전트 메시지: \"."
+  },
+  {
+    "id": "v28-tool-before",
+    "name": "#28 삭제 명령 차단",
+    "enabled": true,
+    "when": "tool-before",
+    "presetIds": [
+      "studio-user-ea6a5a1e-1c65-4865-b63a-c757f3414679"
+    ],
+    "advanced": {
+      "confirmReplace": false,
+      "onError": "pass",
+      "agents": "root",
+      "timeoutMs": 90000,
+      "maxSteers": 1,
+      "showInChat": true,
+      "script": "v28-tool-guard.sh"
+    },
+    "instruction": ""
+  },
+  {
+    "id": "v28-tool-after",
+    "name": "#28 읽은 파일 요약",
+    "enabled": true,
+    "when": "tool-after",
+    "presetIds": [
+      "studio-user-ea6a5a1e-1c65-4865-b63a-c757f3414679"
+    ],
+    "advanced": {
+      "confirmReplace": false,
+      "onError": "pass",
+      "agents": "root",
+      "timeoutMs": 90000,
+      "maxSteers": 1,
+      "showInChat": true,
+      "script": "v28-tool-digest.sh"
+    },
+    "instruction": ""
+  },
+  {
+    "id": "v28-turn",
+    "name": "#28 영어 답변 번역",
+    "enabled": true,
+    "when": "turn-end",
+    "presetIds": [
+      "studio-user-ea6a5a1e-1c65-4865-b63a-c757f3414679"
+    ],
+    "advanced": {
+      "confirmReplace": false,
+      "onError": "pass",
+      "agents": "root",
+      "timeoutMs": 90000,
+      "maxSteers": 1,
+      "showInChat": true,
+      "script": "v28-translate.sh"
+    },
+    "instruction": ""
+  }
+]
