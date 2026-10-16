@@ -84,6 +84,9 @@ test('missing features are detected only for applied snapshots that lack a non-e
   // An explicit exclusion is intent, not a gap; its dependant follows.
   assert.deepEqual(missingFeatures({ request: { ...request, configExclusions: ['compaction/compaction-basic', 'time-context', 'agent-instructions', 'skill-filesystem', 'compaction/tool-result-pruner'] }, applied: { name: 'a', description: '', plugins: legacy } }), []);
   assert.deepEqual(missingFeatures({ request }), [], 'drafts have nothing applied to compare');
+  // Compared against the running Master: a feature that standard does not declare is not missing.
+  const withoutTime = masterComposition().filter(row => row.id !== 'time-context');
+  assert.deepEqual(missingFeatures({ request, applied: { name: 'a', description: '', plugins: dump(withoutTime) } }, withoutTime), []);
 });
 
 test('preset list offers restore for missing features and reapplies only after confirmation', async () => {

@@ -61,3 +61,25 @@ test('panel edits write the same Config overrides and Reset removes the key', as
     assert.deepEqual(overrides['time-context'], {}, 'Reset removes only that key; an empty override is "use the default"');
   } finally { await act(async () => root.unmount()); dom.window.close(); }
 });
+
+test('the preview dialog shows turn-start content in its own view, not under the prompt grid', async () => {
+  const dom = new JSDOM('<div id="root"></div>');
+  globalThis.window = dom.window; globalThis.document = dom.window.document; globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+  dom.window.HTMLDialogElement.prototype.showModal = function () { this.open = true; };
+  dom.window.HTMLDialogElement.prototype.close = function () { this.open = false; };
+  const { createRoot } = await import('react-dom/client');
+  const { PromptToolsPrototype } = await import('../src/prompt-tools-prototype.tsx');
+  const root = createRoot(document.getElementById('root'));
+  const result = { prompt: 'p', context: '', sections: [{ name: 'harness:identity', text: 'You are…' }], tools: [], injections: [{ entry: 'time-context', name: '@deepseek-ai/dsh-time-context', text: 'Time sampled…' }] };
+  try {
+    await act(async () => root.render(React.createElement(PromptToolsPrototype, { locale: 'en', prompt: '', onPromptChange() {}, provided: [], onProvidedChange() {},
+      catalog: { presets: [{ id: 'studio-master', tools: [], sections: [], promptProviders: [] }], tools: [] }, onPreview: async () => result, configOverrides: {}, onConfigOverridesChange() {} })));
+    await act(async () => [...document.querySelectorAll('button')].find(b => /preview/i.test(b.textContent)).click());
+    const dialog = () => document.querySelector('dialog[open]');
+    assert.ok(dialog().querySelector('.studio-preview'));
+    assert.doesNotMatch(dialog().textContent, /Time sampled…/);
+    await act(async () => [...dialog().querySelectorAll('[role=radio]')].find(b => b.textContent.startsWith('Turn start')).click());
+    assert.equal(dialog().querySelector('.studio-preview'), null);
+    assert.match(dialog().textContent, /Time sampled…/);
+  } finally { await act(async () => root.unmount()); dom.window.close(); }
+});

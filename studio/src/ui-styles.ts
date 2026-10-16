@@ -475,6 +475,7 @@ ${adapter}.studio-ui *, .studio-ui *::before, .studio-ui *::after { box-sizing: 
 .studio-ui .studio-detail-dialog.studio-dialog-wide { width: min(1180px, calc(100vw - 48px)); height: calc(100dvh - 64px); }
 .studio-ui .studio-dialog-wide .studio-dialog-body { display: flex; flex-direction: column; padding-bottom: 16px; }
 .studio-ui .studio-preview { display: grid; flex: 1 1 auto; grid-template-columns: minmax(0, 1fr) 300px; gap: 16px; min-height: 0; }
+.studio-ui .studio-preview-scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
 .studio-ui .studio-preview .studio-prompt-document { max-height: none; min-height: 0; overflow-y: auto; border: .5px solid var(--studio-line); background: var(--studio-bg); }
 .studio-ui .studio-preview .studio-prompt-section { display: block; padding: 14px 18px; border-inline-start: 0; }
 .studio-ui .studio-preview .studio-prompt-section h3 { display: flex; align-items: center; gap: 8px; margin: 0 0 6px; color: var(--studio-muted); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; font-weight: 400; }

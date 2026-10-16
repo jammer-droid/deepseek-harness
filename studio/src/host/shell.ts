@@ -193,6 +193,7 @@ export default class StudioCatalog extends TypertRemoteService {
       if (preset.declaration) preset.promptProviders = promptProviders(parseComposition(preset.declaration));
     }
     const baseline = catalog.presets.find(p => p.id === MASTER_PRESET_ID)!;
+    this.store.setMaster(composition);
     await this.store.ensureOptimized(baseline.tools.map(t => t.name), composition);
     catalog.plugins = plugins;
     catalog.execution = executionCapabilities(catalog.tools);

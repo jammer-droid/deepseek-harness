@@ -1,4 +1,5 @@
 import { isDelegationPlugin } from './delegation.ts';
+import { pluginPurpose, pluginTitle } from './plugin-labels.ts';
 import React from 'react';
 import { hasChangedOverride } from './change-indicator.tsx';
 import { Button } from './ui.tsx';
@@ -310,7 +311,7 @@ function comparisonBase(raw: Schema | undefined, root: Schema | undefined, base:
 export function ConfigEditor({ entries, value, onChange, locale }: ConfigEditorProps) {
   const labels = copy[locale.startsWith('ko') ? 'ko' : locale.startsWith('zh') ? 'zh' : 'en'];
   const items: PickerItem[] = [
-    ...entries.map(entry => ({ name: entry.id, title: entry.name, subtitle: entry.id, description: '', searchText: JSON.stringify(entry.schema ?? {}),
+    ...entries.map(entry => ({ name: entry.id, title: pluginTitle(entry.name, locale), subtitle: pluginTitle(entry.name, locale) === entry.name ? entry.id : `${entry.id} · ${entry.name}`, description: pluginPurpose(entry.name, locale), searchText: `${entry.name} ${pluginTitle(entry.name, locale)} ${JSON.stringify(entry.schema ?? {})}`,
       ...(isDelegationPlugin(entry.name) ? { disabledReason: labels.delegated } : entry.error || !entry.schema ? { disabledReason: entry.error || labels.unavailable } : {}) })),
     ...Object.keys(value).filter(id => !entries.some(entry => entry.id === id)).map(id => ({ name: id, title: id, description: labels.unavailable })),
   ];

@@ -54,10 +54,10 @@ const packageNames = (rows: CompositionRow[]): string[] => rows.flatMap(row => r
  * selected). Legacy data has no exclusions, so absence is never read as the user's intent; it is
  * only reported, and restoring it waits for the user to reapply.
  */
-export function missingFeatures(row: Pick<StoredPreset, 'request' | 'applied'>): string[] {
+export function missingFeatures(row: Pick<StoredPreset, 'request' | 'applied'>, master: CompositionRow[] = masterComposition()): string[] {
   if (!row.applied || row.request.preset !== MASTER_PRESET_ID) return [];
   try {
-    const expected = packageNames(applyConfigExclusions(masterComposition(), row.request.configExclusions ?? [], row.request.configOverrides ?? {}))
+    const expected = packageNames(applyConfigExclusions(master, row.request.configExclusions ?? [], row.request.configOverrides ?? {}))
       .filter(name => LEGACY_DROPPED_PACKAGES.includes(name));
     const present = new Set(packageNames(parseComposition(row.applied.plugins)));
     return expected.filter(name => !present.has(name));
@@ -74,6 +74,9 @@ export function studioStorePath(env: NodeJS.ProcessEnv = process.env, profile?: 
 /** Serializes mutations; retains last applied composition separately from unsaved-to-DSH drafts. */
 export class PresetStore {
   private rows: StoredPreset[] = [];
+  /** Current Studio Master; missing-feature checks compare against it, never against a guess. */
+  private master: CompositionRow[] | undefined;
+  setMaster(rows: CompositionRow[]) { this.master = structuredClone(rows); }
   private disposers = new Map<string, () => Promise<void>>();
   private ready?: Promise<void>;
   private tail: Promise<unknown> = Promise.resolve();
@@ -153,7 +156,7 @@ export class PresetStore {
   }
   private public(row: StoredPreset): StudioPreset & { template?: boolean; nonDeletable?: boolean } {
     const { applied, ...value } = row;
-    const missing = missingFeatures(row);
+    const missing = this.master ? missingFeatures(row, this.master) : [];
     return structuredClone({ ...value, ...(missing.length ? { missingFeatures: missing } : {}), ...(row.id === OPTIMIZED_PRESET_ID ? { template: true, nonDeletable: true } : {}) });
   }
   /** Compose the Optimized applied snapshot: the template request over the current base composition. */

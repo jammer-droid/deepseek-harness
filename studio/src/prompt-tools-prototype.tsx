@@ -2,7 +2,7 @@ import { ChangeIndicator } from './change-indicator.tsx';
 import { BUILTIN_TOOL_PRESETS } from './optimized-preset.ts';
 import React from 'react';
 import { ItemPicker } from './item-picker.tsx';
-import { Button, DetailDialog, Note, SectionHead } from './ui.tsx';
+import { Button, DetailDialog, Note, SectionHead, Segmented } from './ui.tsx';
 import { type PresetCatalog } from './preset-catalog.ts';
 import { delegationTools, GENERIC_DELEGATION_TOOLS, LEGACY_ROLE_TOOL, renameLegacyRoleKey, ROLE_TOOL, WITHDRAWN_TOOLS } from './delegation.ts';
 import type { PreviewAction, PreviewResult } from './prompt-composition.ts';
@@ -29,6 +29,7 @@ export function PromptToolsPrototype({ locale, prompt, onPromptChange, provided,
   const [resultKey, setResultKey] = React.useState('');
   const [error, setError] = React.useState('');
   const [previewOpen, setPreviewOpen] = React.useState(false);
+  const [view, setView] = React.useState<'prompt' | 'turn'>('prompt');
   const idBase = React.useId();
   const closePreview = () => setPreviewOpen(false);
   const [busy, setBusy] = React.useState(false);
@@ -113,13 +114,15 @@ export function PromptToolsPrototype({ locale, prompt, onPromptChange, provided,
       {busy && <p role="status" className="studio-muted">{t('조립 중…', 'Assembling…', '组装中…')}</p>}
       {error && <p role="alert">{error}</p>}
       {result && resultKey !== requestKey && <Note>{t('설정이 바뀌었습니다. 미리보기를 다시 실행하세요.', 'Configuration changed. Run preview again.', '配置已更改，请重新预览。')}</Note>}
-      {result && <section className="studio-preview" aria-label={t('프롬프트 미리보기', 'Prompt preview', '提示词预览')}>
+      {result?.injections && <Segmented label={t('미리보기 내용', 'Preview content', '预览内容')} value={view} onChange={setView}
+        options={[{ value: 'prompt', label: t('시스템 프롬프트·도구', 'System prompt & tools', '系统提示词与工具') }, { value: 'turn', label: t(`턴 시작 내용 ${result.injections.length}`, `Turn start ${result.injections.length}`, `每轮开始 ${result.injections.length}`) }]} />}
+      {result && view === 'prompt' && <section className="studio-preview" aria-label={t('프롬프트 미리보기', 'Prompt preview', '提示词预览')}>
         <div className="studio-prompt-document" tabIndex={0} aria-label={t('조립 순서와 내용', 'Assembly order and content', '组装顺序和内容')}>
           {result.sections.map((section, index) => <section key={section.name} className="studio-prompt-section"><h3><span className="studio-prompt-index">{index + 1}</span>{section.name}</h3><p className="studio-tool-description">{section.text}</p></section>)}
         </div>
         <aside className="studio-prompt-tools"><h3>{t('모델에 전달되는 도구', 'Model-facing tool schemas', '提供给模型的工具定义')}<span className="studio-count">{result.tools.length}</span></h3>{result.tools.length ? result.tools.map(tool => <details className="studio-schema-tool" key={tool.name}><summary>{tool.name}</summary><p className="studio-tool-description">{tool.description}</p><SchemaValue value={tool.parameters} requiredLabel={t('필수', 'required', '必填')} /></details>) : <p className="studio-muted">{labels.empty}</p>}</aside>
       </section>}
-      {result?.injections && <TurnInjectionPanel locale={locale} injections={result.injections} overrides={configOverrides ?? {}} onChange={next => onConfigOverridesChange?.(next)} />}
+      {result?.injections && view === 'turn' && <div className="studio-preview-scroll"><TurnInjectionPanel locale={locale} injections={result.injections} overrides={configOverrides ?? {}} onChange={next => onConfigOverridesChange?.(next)} /></div>}
     </DetailDialog>
   </React.Fragment>;
 }

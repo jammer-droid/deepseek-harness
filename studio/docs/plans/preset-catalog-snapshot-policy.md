@@ -533,3 +533,10 @@ S2에 남은 것: `selectPromptProviders` 정리 여부, 실제 Loader 통합 �
 - 본문(AGENTS.md 내용, 시각 문장, 스킬 목록)은 편집할 수 없고 그 이유를 표시한다. 렌더링된 텍스트를 저장하지 않는다(3절).
 - 검증: `npm --prefix studio test` 440개 통과. 실제 `@deepseek-ai/dsh-agent-instructions` 소스로 렌더링해 이 저장소의 AGENTS.md 블록이 나오는 것을 확인했다. 라이트·다크 정적 렌더링 확인.
 - **미검증:** 설치 앱(0.2.0-rc.2)에서 `loadBaselineInstructions` export와 결과(설치 산출물에 export가 있음은 16절 조사 때 확인).
+
+## 21. 웹 확인 후 수정
+
+- **복구 후에도 `기능 누락`이 남던 문제:** 누락 판정이 실행 중인 Master가 아니라 Studio에 들어 있는 standard 사본과 비교했다. 사본에는 `time-context`가 있지만 0.2.0-rc.2 standard에는 없어서, 복구해도 계속 누락으로 보였다. 이제 캡처한 Master와 비교한다(`PresetStore.setMaster`).
+- **미리보기 가독성:** 턴 시작 내용을 프롬프트·도구 영역 아래에 붙이지 않고, 미리보기 위쪽의 `시스템 프롬프트·도구 / 턴 시작 내용` 전환으로 따로 보여 준다.
+- **플러그인 제목:** 포함 목록과 Config 목록이 같은 제목·용도 표([plugin-labels.ts](<../../src/plugin-labels.ts>), ko/en/zh)를 쓴다. 표에 없는 패키지는 패키지 이름을 제목으로 쓴다. 검색은 제목에도 걸린다.
+- 검증: `npm --prefix studio test` 441개 통과.
