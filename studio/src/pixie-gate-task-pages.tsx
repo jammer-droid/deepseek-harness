@@ -2,7 +2,7 @@
 import React from 'react';
 import { Badge, Button, CheckOption, DetailDialog, Disclosure, Notice, PageHead, PickOption, Segmented, SettingsRow, Toggle } from './ui.tsx';
 import { gateTaskText, type GateTaskKey } from './pixie-gate-task-locale.ts';
-import { GATE_SCRIPT_DIR, GATE_TEMPLATES, GATE_WHENS, HOOK_ENV, HOOK_EXIT, HOOK_HELPERS, PROTOTYPE_SCRIPTS, isMessage, makeTask, taskFromTemplate, taskProblem, taskVariables, type GateTask, type GateTemplate } from './pixie-gate-task.ts';
+import { GATE_GUIDE_URL, GATE_SCRIPT_DIR, GATE_TEMPLATES, GATE_WHENS, PROTOTYPE_SCRIPTS, isMessage, makeTask, taskFromTemplate, taskProblem, taskVariables, type GateTask, type GateTemplate } from './pixie-gate-task.ts';
 
 type Text = (key: GateTaskKey, values?: Record<string, string | number>) => string;
 const useText = (locale: string): Text => (key, values) => gateTaskText(locale, key, values);
@@ -75,15 +75,7 @@ export function GateTaskEditor({ task: initial, open, locale, onApply, onClose }
             <Button small onClick={async () => { try { await navigator.clipboard.writeText(GATE_SCRIPT_DIR); setCopied(true); } catch { setCopied(false); } }}>{copied ? '✓' : t('copyPath')}</Button>
             <Button small onClick={() => undefined}>{t('refresh')}</Button>
           </div>
-          <p className="studio-muted">{t('scriptShell')}</p>
-          {task.advanced.script && <dl className="studio-gate-contract" aria-label={t('contract')}>
-            <dt>{t('contractIn')}</dt><dd>{t('contractInText')}</dd>
-            <dt>{t('contractOut')}</dt><dd>{t('contractOutText', { name: task.advanced.script.replace(/\.[^.]+$/, '') })}</dd>
-            <dt>{t('contractExit')}</dt><dd>{t('contractExitText', { cont: HOOK_EXIT.continue, skip: HOOK_EXIT.skip })}</dd>
-            <dt>{t('contractEnv')}</dt><dd>{HOOK_ENV.map(name => <code key={name}>{name}</code>)}</dd>
-            <dt>{t('contractHelpers')}</dt><dd>{HOOK_HELPERS.map(name => <code key={name}>{name}</code>)} <span className="studio-muted">{t('contractHelpersText')}</span></dd>
-          </dl>}
-          {task.advanced.script && <p className="studio-muted">{t('contractGuide')}</p>}
+          <p className="studio-muted">{t('scriptShell')} <a href={GATE_GUIDE_URL} target="_blank" rel="noreferrer">{t('guideLink')}</a></p>
         </SettingsRow>
         <SettingsRow title={t('judge')} description={t('judgeHint')} control={<Toggle label={t('judge')} checked={!!task.advanced.judge} onChange={on => { const { judge: _, ...rest } = task.advanced; set({ advanced: on ? { ...rest, judge: { question: '', threshold: 0.5 } } : rest }); }} />}>
           {task.advanced.judge && <div className="studio-gate-judge">

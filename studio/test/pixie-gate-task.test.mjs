@@ -102,7 +102,7 @@ test('scope toggles gates and presets; cards duplicate disabled and delete', asy
   assert.equal(comp.querySelectorAll('[data-gate-task]').length, 1);
 });
 
-test('hook script shows its contract: stdin, output variables, exit codes, env and helpers', async t => {
+test('hook script points to the guide instead of inlining its contract', async t => {
   const host = await settings(t);
   const comp = page(host, 'Gate composition');
   await click(button(comp, 'New gate'));
@@ -110,12 +110,9 @@ test('hook script shows its contract: stdin, output variables, exit codes, env a
   const editor = [...comp.querySelectorAll('dialog')].find(d => input(d, 'What Pixie does'));
   assert.equal(input(editor, 'Tools'), null);
   assert.equal(input(editor, 'Pixie hook script').value, 'only-search-tools.sh');
-  const contract = input(editor, 'Script contract');
-  assert.match(contract.textContent, /\{\{hooks\.only-search-tools\.text\}\}/);
-  assert.match(contract.textContent, /0 continue · 10 skip this gate/);
-  assert.match(contract.textContent, /PIXIE_TOOL_NAME/); assert.match(contract.textContent, /pixie judge/);
-  await change(input(editor, 'Pixie hook script'), '');
-  assert.equal(input(editor, 'Script contract'), null);
+  const link = [...editor.querySelectorAll('a')].find(a => a.textContent === 'Script guide');
+  assert.match(link.getAttribute('href'), /docs\/guides\/pixie-gate\.md$/);
+  assert.doesNotMatch(editor.textContent, /PIXIE_TOOL_NAME|exit code/i);
 });
 
 test('task model: templates, variables and problems', () => {

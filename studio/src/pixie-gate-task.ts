@@ -48,7 +48,10 @@ export const GATE_TEMPLATES: readonly GateTemplate[] = [
 /** Example scripts shown in the prototype until the Host lists the real directory. */
 export const PROTOTYPE_SCRIPTS: readonly string[] = ['only-search-tools.sh', 'measure-subtitle.sh', 'translate-until-ok.sh', 'list-changed-files.sh'];
 
-/** Pixie hook script contract (U23), shown in the editor and documented in the guide. */
+/** Pixie Gate guide: script contract, environment, helpers, and examples (U23). Written in R4. */
+export const GATE_GUIDE_URL = 'https://github.com/matamt-dbg/dsh-studio/blob/main/docs/guides/pixie-gate.md';
+
+/** Pixie hook script contract (U23), documented in the guide. */
 export const HOOK_EXIT = { continue: 0, skip: 10 } as const;
 export const HOOK_ENV: readonly string[] = ['PIXIE_POINT', 'PIXIE_TOOL_NAME', 'PIXIE_TOOL_ARGS', 'PIXIE_AGENT', 'PIXIE_SESSION_ID', 'PIXIE_TURN', 'PIXIE_GATE_NAME'];
 export const HOOK_HELPERS: readonly string[] = ['pixie ask', 'pixie judge'];
