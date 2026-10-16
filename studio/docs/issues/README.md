@@ -14,7 +14,7 @@ description: "Studio 이슈별 구현 명세의 색인."
 ## 보조 모델
 
 - [#25 Pixie — 주요 컨텍스트와 분리된 보조 모델](25-pixie.md): `/pixie`·Pixie 탭으로 따로 묻기, 스레드 카드 목록·상세 탭, 프리셋과 같은 틀의 설정 화면, Judge 엔진 분리와 LLM 판정 시험. 사용자 기능 확인 후 마무리(제한 포함): alpha.2 설치 검증·사용자 앱 배포는 미완료, 배포는 후속 작업 이후 진행.
-- [#26 Pixie Gate — 작업 중심 런타임 게이트](26-pixie-gate.md): 정해진 순간(입력·에이전트 메시지·도구 전후·답변 끝)에 Pixie가 읽고 판단·가공한 결과를 보내는 프리셋 단위 게이트. 훅 스크립트와 `pixie ask/judge` 헬퍼 포함. R1–R5 구현·실모델 통합 검증 완료([R5 기록](../verification/pixie-gate-r5/README.md)), 남은 미검증·리뷰는 명세 참조. GitHub 이슈 미생성.
+- [#26 Pixie Gate — 작업 중심 런타임 게이트](26-pixie-gate.md): 정해진 순간(입력·에이전트 메시지·도구 전후·답변 끝)에 Pixie가 읽고 판단·가공한 결과를 보내는 프리셋 단위 게이트. 훅 스크립트와 `pixie ask/judge` 헬퍼 포함. 작업 완료(R1–R5, 판정 기능은 별도 기능으로 분리). 실모델 검증은 [R5 기록](../verification/pixie-gate-r5/README.md), 남은 미검증은 명세 참조. GitHub 이슈 미생성.
 
 ## 프리셋 구성 설계 기록
 
