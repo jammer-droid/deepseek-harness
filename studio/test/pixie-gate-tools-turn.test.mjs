@@ -69,6 +69,7 @@ for (const kind of ['deny', 'cancel', 'ask']) test(`tool-before preserves downst
   const h = harness('tool-before', { verdict: 'pass', replace: 'unused', append: 'unused' }, { decision });
   assert.deepEqual(await h.invoke(), decision);
   assert.equal(h.calls.length, kind === 'ask' ? 1 : 0);
+  if (kind === 'ask') assert.equal(h.runs.at(-1).hooksInput, 'observed');
 });
 test('tool-after preserves downstream block', async () => {
   const decision = { kind: 'block', feedback: text('other') };
