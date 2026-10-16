@@ -1,7 +1,6 @@
 import { RoleEditor } from './role-editor.tsx';
 // Studio preset creation and saved-preset management.
 import React from 'react';
-import { MasterExtensionsEditor, type MasterExtensionActions } from './master-extensions-editor.tsx';
 import { ConfigEditor } from './config-editor.tsx';
 import { FeatureInclusion } from './feature-inclusion.tsx';
 import type { ConfigOverrides } from './config-overrides.ts';
@@ -21,7 +20,7 @@ const seeds: Agent[] = [
   { name: 'Researcher', role: 'research', model: 'inherit', reasoning: 'inherit', spawn: 'fresh', persona: 'Investigate primary sources and cite the evidence.' },
   { name: 'Reviewer', role: 'review', model: 'inherit', reasoning: 'inherit', spawn: 'fork', persona: 'Review correctness and identify concrete risks.' },
 ];
-export function OptimizationPrototype({ locale, catalog, catalogError, onPreview, presetActions, extensionActions, navFooter, catalogChanges }: { catalogChanges?: import('./master-change-notice.tsx').CatalogChangeActions | undefined; navFooter?: React.ReactNode; extensionActions?: MasterExtensionActions | undefined; presetActions?: PresetActions | undefined; onPreview?: import('./prompt-composition.ts').PreviewAction | undefined; locale: string; catalog?: import('./preset-catalog.ts').PresetCatalog | undefined; catalogError?: string | undefined }) {
+export function OptimizationPrototype({ locale, catalog, catalogError, onPreview, presetActions, extensionActions, navFooter, catalogChanges }: { catalogChanges?: import('./master-change-notice.tsx').CatalogChangeActions | undefined; navFooter?: React.ReactNode; extensionActions?: import('./feature-inclusion.tsx').MasterPluginActions | undefined; presetActions?: PresetActions | undefined; onPreview?: import('./prompt-composition.ts').PreviewAction | undefined; locale: string; catalog?: import('./preset-catalog.ts').PresetCatalog | undefined; catalogError?: string | undefined }) {
   const t = (ko: string, en: string, zh: string) => locale.startsWith('ko') ? ko : locale.startsWith('zh') ? zh : en;
   const [page, setPage] = React.useState('list');
   const [common, setCommon] = React.useState<Settings>({ ...initial });
@@ -67,7 +66,7 @@ export function OptimizationPrototype({ locale, catalog, catalogError, onPreview
   const agentPage = <RoleEditor key={draftKey} locale={locale} roles={agents} onChange={setAgents} loadModels={presetActions?.models} defaultPersona={defaultPersona} tools={toolChoices} hiddenTools={hiddenFromSubagents} onHiddenToolsChange={setHiddenFromSubagents} delegates={delegates} />;
   const tabs = [
     { id: 'tools', label: t('프롬프트·도구', 'Prompts & tools', '提示词与工具'), content: <PromptToolsPrototype key={draftKey} initialRequest={editing?.request} locale={locale} catalog={catalog} catalogError={catalogError} onPreview={onPreview ? request => onPreview({ ...request, configOverrides, ...(configExclusions.length ? { configExclusions } : {}) }) : undefined} onRequestChange={setRequest} prompt={common.prompt} onPromptChange={value => setCommon(c => ({ ...c, prompt: value }))} provided={provided} onProvidedChange={setProvided} /> },
-    { id: 'convenience', label: t('실행 설정', 'Execution settings', '执行设置'), content: <><SectionHead title={t('실행 설정', 'Execution settings', '执行设置')} description={t('Studio 기준 구성의 실행 설정은 모두 DSH 기본값으로 포함됩니다. 켠 Config에서 바꾼 값만 덮어쓰고, 끄면 기본값으로 돌아갑니다.', 'Every execution setting in the Studio base composition is included with DSH defaults. Only the values you change in an enabled Config are overridden; turning it off returns to the defaults.', 'Studio 基础组成中的执行设置均以 DSH 默认值包含。只覆盖已启用 Config 中修改的值；关闭即恢复默认值')} /><FeatureInclusion locale={locale} entries={catalog?.plugins ?? []} overrides={configOverrides} excluded={configExclusions} onChange={next => { setConfigDraft(next.overrides); setConfigExclusions(next.excluded); }} /><ConfigEditor locale={locale} entries={(catalog?.plugins ?? []).filter(entry => !configExclusions.includes(entry.id))} value={configOverrides} onChange={setConfigDraft} /></> },
+    { id: 'convenience', label: t('실행 설정', 'Execution settings', '执行设置'), content: <><SectionHead title={t('실행 설정', 'Execution settings', '执行设置')} description={t('Studio 기준 구성의 실행 설정은 모두 DSH 기본값으로 포함됩니다. 켠 Config에서 바꾼 값만 덮어쓰고, 끄면 기본값으로 돌아갑니다.', 'Every execution setting in the Studio base composition is included with DSH defaults. Only the values you change in an enabled Config are overridden; turning it off returns to the defaults.', 'Studio 基础组成中的执行设置均以 DSH 默认值包含。只覆盖已启用 Config 中修改的值；关闭即恢复默认值')} /><FeatureInclusion locale={locale} entries={catalog?.plugins ?? []} overrides={configOverrides} excluded={configExclusions} candidates={catalog?.candidates} added={catalog?.added} actions={extensionActions} onChange={next => { setConfigDraft(next.overrides); setConfigExclusions(next.excluded); }} /><ConfigEditor locale={locale} entries={(catalog?.plugins ?? []).filter(entry => !configExclusions.includes(entry.id))} value={configOverrides} onChange={setConfigDraft} /></> },
     { id: 'agents', label: t('서브에이전트', 'Subagent settings', '子代理设置'), content: agentPage },
   ];
   const tabId = React.useId();
@@ -82,6 +81,5 @@ export function OptimizationPrototype({ locale, catalog, catalogError, onPreview
       <div className="studio-tabs studio-editor-tabs" role="tablist" aria-label={t('프리셋 구성', 'Preset configuration', '预设配置')}>{tabs.map((item, index) => <button type="button" role="tab" className="studio-tab" id={`${tabId}-${item.id}-tab`} aria-controls={`${tabId}-${item.id}`} aria-selected={tab === item.id} tabIndex={tab === item.id ? 0 : -1} key={item.id} onClick={() => setTab(item.id)} onKeyDown={e => { const next = e.key === 'ArrowRight' ? (index + 1) % tabs.length : e.key === 'ArrowLeft' ? (index + tabs.length - 1) % tabs.length : e.key === 'Home' ? 0 : e.key === 'End' ? tabs.length - 1 : -1; if (next < 0) return; e.preventDefault(); setTab(tabs[next]!.id); document.getElementById(`${tabId}-${tabs[next]!.id}-tab`)?.focus(); }}>{item.label}</button>)}</div>
       {tabs.map(item => <section role="tabpanel" className="studio-tab-body" id={`${tabId}-${item.id}`} aria-labelledby={`${tabId}-${item.id}-tab`} key={item.id} hidden={tab !== item.id}>{item.content}</section>)}
     </div> },
-    { id: 'providers', group: t('도구', 'Tools', '工具'), label: t('도구 제공자', 'Tool providers', '工具提供者'), content: <MasterExtensionsEditor locale={locale} actions={extensionActions} /> },
   ]} />;
 }

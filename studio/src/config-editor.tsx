@@ -320,7 +320,7 @@ export function ConfigEditor({ entries, value, onChange, locale }: ConfigEditorP
     ...names.filter(id => !own(value, id)).map(id => [id, {}]),
   ]));
   return <div className="studio-stack">
-    <ItemPicker label={labels.list} items={items} selected={selected} onChange={change} labels={labels.picker}
+    <ItemPicker label={labels.list} items={items} selected={selected} onChange={change} labels={labels.picker} filters={['all', 'modified']}
       hasDetails={id => entries.some(entry => entry.id === id && entry.schema && !entry.error)}
       isModified={id => { const entry = entries.find(item => item.id === id); return !!entry && own(value, id) && hasChangedOverride(comparisonBase(entry.schema, entry.schema, entry.config), value[id]); }}
       renderDetails={id => { const entry = entries.find(item => item.id === id); return entry?.schema && own(value, id) ? <Field schema={entry.schema} root={entry.schema} path={[]} base={entry.config} override={value[id]!} entryId={id} labels={labels} change={(path, next, reset) => onChange({ ...value, [id]: update(value[id]!, path, next, reset) })} /> : null; }} />

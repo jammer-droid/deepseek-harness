@@ -22,6 +22,9 @@ import { CatalogBaseline } from './catalog-baseline.ts';
 import { catalogSnapshot, compareCatalog, type CatalogChange, type CatalogSnapshot } from '../master-snapshot.ts';
 
 
+const flatRows = (rows: CompositionRow[]): CompositionRow[] => rows.flatMap(row => row.disabled === true ? [] : row.group && Array.isArray(row.config) ? flatRows(row.config as CompositionRow[]) : [row]);
+const flatNames = (rows: CompositionRow[]) => flatRows(rows).map(row => row.name);
+
 /** Catalog reads and temporary composition previews; no Agents or model calls. */
 export default class StudioCatalog extends TypertRemoteService {
   static inject = ['agentPresets', 'systemPrompt', 'tools', 'loader'];
@@ -79,8 +82,45 @@ export default class StudioCatalog extends TypertRemoteService {
   @Remote
   async readExtensions() { await this.snapshot; return this.extensions.read(); }
   @Remote
-  async saveExtensions(payload: string) {
-    const rows = validateExtensions(JSON.parse(payload));
+  async saveExtensions(payload: string) { return this.replaceExtensions(validateExtensions(JSON.parse(payload))); }
+  /**
+   * Add one installed plugin to the Studio Master. A DSH preset's declaration supplies its config
+   * when it is plain JSON; a typed package name starts without config (edit it as an override).
+   */
+  @Remote
+  async addMasterPlugin(name: string) {
+    const rows = await this.extensions.read();
+    if (rows.some(row => row.name === name) || this.masterNames().has(name)) throw new Error(`Already in the Studio Master: ${name}`);
+    const source = (await this.candidateRows()).get(name);
+    const base = (source?.id ?? name.split('/').pop() ?? 'plugin').toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/^[^a-z]+/, '').slice(0, 56) || 'plugin';
+    let id = base; for (let n = 2; rows.some(row => row.id === id); n++) id = `${base}-${n}`;
+    let config: unknown;
+    try { config = source?.config === undefined ? undefined : validateExtensions([{ id, name, config: source.config }])[0]!.config; } catch { config = undefined; }
+    return this.replaceExtensions(validateExtensions([...rows, { id, name, ...(config === undefined ? {} : { config }) }]));
+  }
+  @Remote
+  async removeMasterPlugin(id: string) {
+    const rows = await this.extensions.read();
+    if (!rows.some(row => row.id === id)) throw new Error(`Not added by Studio: ${id}`);
+    return this.replaceExtensions(rows.filter(row => row.id !== id));
+  }
+  private masterNames() { return new Set(flatNames(masterComposition())); }
+  /** Plugins declared by the DSH presets Studio reads, keyed by package name. */
+  private async candidateRows() {
+    const found = new Map<string, CompositionRow & { presets: string[] }>();
+    const registry = this.ctx.agentPresets;
+    for (const preset of await registry.list()) {
+      if (!BUILTIN_TOOL_PRESETS.includes(preset.id as typeof BUILTIN_TOOL_PRESETS[number])) continue;
+      let rows: CompositionRow[];
+      try { rows = parseComposition((await registry.readDocument(preset.id)).content); } catch { continue; }
+      for (const row of flatRows(rows)) {
+        const known = found.get(row.name);
+        if (known) known.presets.push(preset.id); else found.set(row.name, { ...row, presets: [preset.id] });
+      }
+    }
+    return found;
+  }
+  private async replaceExtensions(rows: CompositionRow[]) {
     const operation = this.changes.catch(() => {}).then(async () => {
       await this.snapshot;
       const previous = await this.extensions.read();
@@ -150,6 +190,9 @@ export default class StudioCatalog extends TypertRemoteService {
     await this.store.ensureOptimized(baseline.tools.map(t => t.name), composition);
     catalog.plugins = plugins;
     catalog.execution = executionCapabilities(catalog.tools);
+    const present = new Set(flatNames(composition));
+    catalog.candidates = [...(await this.candidateRows()).values()].filter(row => !present.has(row.name)).map(row => ({ name: row.name, presets: row.presets }));
+    catalog.added = (extra ?? await this.extensions.read()).map(row => ({ id: `studio-added/${row.id}`, name: row.name }));
     await this.observe(catalog.tools, plugins, composition);
     return catalog;
   }

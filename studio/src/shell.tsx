@@ -26,9 +26,9 @@ export async function apply(ctx: StudioContext) {
     }, ...['updateStatus', 'updateStudio'].map(method => ({
         id: `${PACKAGE_NAME}#studioCatalog/${method}`, service: 'studioCatalog', namespace: 'studioCatalog', method,
         invocation: { kind: 'direct' }, parameters: [{ name: method === 'updateStatus' ? 'force' : 'version', wire: method === 'updateStatus' ? 'force' : 'version', source: 'json', codec: { mode: 'strict', typeSymbol: 'string', create: () => ({ parse: (value: unknown) => { if (typeof value !== 'string') throw new TypeError('Expected a string'); return value; } }) } }], result: { mode: 'src-json' },
-    })), ...['listPresets', 'savePreset', 'applyPreset', 'unapplyPreset', 'roleModels', 'deletePreset', 'readExtensions', 'saveExtensions', 'catalogChange', 'confirmCatalogChange'].map(method => ({
+    })), ...['listPresets', 'savePreset', 'applyPreset', 'unapplyPreset', 'roleModels', 'deletePreset', 'readExtensions', 'saveExtensions', 'catalogChange', 'confirmCatalogChange', 'addMasterPlugin', 'removeMasterPlugin'].map(method => ({
         id: `${PACKAGE_NAME}#studioCatalog/${method}`, service: 'studioCatalog', namespace: 'studioCatalog', method,
-        invocation: { kind: 'direct' }, parameters: ['listPresets', 'readExtensions', 'roleModels', 'catalogChange', 'confirmCatalogChange'].includes(method) ? [] : [{ name: ['savePreset', 'saveExtensions'].includes(method) ? 'payload' : 'id', wire: ['savePreset', 'saveExtensions'].includes(method) ? 'payload' : 'id', source: 'json', codec: { mode: 'strict', typeSymbol: 'string', create: () => ({ parse: (value: unknown) => { if (typeof value !== 'string') throw new TypeError('Expected a string'); return value; } }) } }], result: { mode: 'src-json' },
+        invocation: { kind: 'direct' }, parameters: ['listPresets', 'readExtensions', 'roleModels', 'catalogChange', 'confirmCatalogChange'].includes(method) ? [] : [{ name: ['savePreset', 'saveExtensions', 'addMasterPlugin'].includes(method) ? 'payload' : 'id', wire: ['savePreset', 'saveExtensions', 'addMasterPlugin'].includes(method) ? 'payload' : 'id', source: 'json', codec: { mode: 'strict', typeSymbol: 'string', create: () => ({ parse: (value: unknown) => { if (typeof value !== 'string') throw new TypeError('Expected a string'); return value; } }) } }], result: { mode: 'src-json' },
     })), ...pixieDescriptors()] });
     // `updates` is created below; the footer reads it only when the page renders.
     mountPixie(ctx, { navFooter: locale => <VersionFooter store={updates} locale={locale} /> });
@@ -117,7 +117,9 @@ export async function apply(ctx: StudioContext) {
                 if (!result.ok) throw new Error(result.error?.message ?? 'Master update failed');
                 return result.value;
             };
-            return { read: () => call('readExtensions'), save: async (payload: string) => { setCatalog(await call('saveExtensions', payload) as import('./preset-catalog.ts').PresetCatalog); } };
+            const update = async (method: string, arg: string) => { setCatalog(await call(method, arg) as import('./preset-catalog.ts').PresetCatalog); };
+            return { read: () => call('readExtensions'), save: (payload: string) => update('saveExtensions', payload),
+                add: (name: string) => update('addMasterPlugin', name), remove: (id: string) => update('removeMasterPlugin', id) };
         }, []);
         const catalogChanges = React.useMemo(() => {
             const call = async (method: string) => {

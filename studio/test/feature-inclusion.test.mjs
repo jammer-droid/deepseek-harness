@@ -24,17 +24,19 @@ const entries = [
   { id: 'compaction/command-compact', name: '@deepseek-ai/dsh-command-compact' },
 ];
 
-test('plugin switches cover every Master entry except delegation, with defaults/override/excluded and dependencies', async () => {
+test('plugin list uses the searchable picker: every Master entry except delegation, states and dependencies', async () => {
   const { FeatureInclusion } = await import('../src/feature-inclusion.tsx');
   let state = { overrides: { 'compaction/compaction-basic': { auto: false } }, excluded: [] };
   const render = () => React.createElement(FeatureInclusion, { locale: 'en', entries, overrides: state.overrides, excluded: state.excluded, onChange: next => { state = next; } });
   const view = await mount(render());
   try {
-    const rows = () => [...document.querySelectorAll('.studio-settings-row')].map(row => row.textContent);
+    const rows = () => [...document.querySelectorAll('ul[aria-label="Included plugins"] .studio-picker-row')].map(row => row.textContent);
+    assert.ok(document.querySelector('input[type=search][aria-label="Search plugins"]'));
+    assert.deepEqual([...document.querySelectorAll('[role=radiogroup] [role=radio]')].map(b => b.textContent), ['All4', 'Included4']);
     assert.equal(rows().length, 4, 'tool providers are listed too; delegation plugins are not');
     assert.match(rows()[0], /@deepseek-ai\/dsh-tool-fs.*Defaults/);
     assert.match(rows()[1], /Current time notice.*Defaults/);
-    assert.match(rows()[2], /Automatic compaction.*Override.*Automatic compaction off \(auto: false\)/);
+    assert.match(rows()[2], /Automatic compaction.*Automatic compaction off \(auto: false\).*Override/);
     // auto:false is not exclusion: /compact stays included.
     assert.match(rows()[3], /Manual compaction.*Defaults/);
     const toggle = label => document.querySelector(`button[role=switch][aria-label="${label}"]`);
@@ -45,6 +47,30 @@ test('plugin switches cover every Master entry except delegation, with defaults/
     assert.equal(toggle('Manual compaction (/compact)').disabled, true);
     await act(async () => toggle('Automatic compaction').click());
     assert.deepEqual(state, { overrides: {}, excluded: [] }, 'turning it back on returns to defaults');
+    // Search narrows the same list.
+    const { Simulate } = await import('react-dom/test-utils');
+    await act(async () => Simulate.change(document.querySelector('input[type=search]'), { target: { value: 'compact' } }));
+    assert.equal(rows().length, 2);
+  } finally { await view.close(); }
+});
+
+test('add plugin dialog adds a DSH preset plugin or a typed package and removes Studio-added ones', async () => {
+  const { FeatureInclusion } = await import('../src/feature-inclusion.tsx');
+  const calls = [];
+  const actions = { add: async name => { calls.push(['add', name]); }, remove: async id => { calls.push(['remove', id]); } };
+  const view = await mount(React.createElement(FeatureInclusion, { locale: 'en', entries, overrides: {}, excluded: [], onChange() {},
+    candidates: [{ name: '@deepseek-ai/dsh-tool-schedule', presets: ['standard', 'cordis'] }], added: [{ id: 'studio-added/x', name: 'x-plugin' }], actions }));
+  try {
+    const click = async text => act(async () => [...document.querySelectorAll('button')].find(b => b.textContent.startsWith(text)).click());
+    await click('Add plugin');
+    const dialog = document.querySelector('dialog[open]');
+    assert.match(dialog.textContent, /@deepseek-ai\/dsh-tool-schedule.*Declared in: standard, cordis/);
+    await click('@deepseek-ai/dsh-tool-schedule');
+    const { Simulate } = await import('react-dom/test-utils');
+    await act(async () => Simulate.change(dialog.querySelector('input[aria-label="Add by package name"]'), { target: { value: 'my-plugin' } }));
+    await act(async () => [...dialog.querySelectorAll('button')].find(b => b.textContent === 'Add').click());
+    await act(async () => [...dialog.querySelectorAll('button')].find(b => b.textContent === 'Remove').click());
+    assert.deepEqual(calls, [['add', '@deepseek-ai/dsh-tool-schedule'], ['add', 'my-plugin'], ['remove', 'x']]);
   } finally { await view.close(); }
 });
 
