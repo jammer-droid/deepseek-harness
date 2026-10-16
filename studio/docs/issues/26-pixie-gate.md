@@ -13,7 +13,7 @@ Pixie Gate는 #25의 Pixie 모델을 DSH 런타임 개입 지점([조사](../res
 
 Studio는 특정 기능(양식 검증, 번역, 검색 요약, 선압축)을 직접 만들어 넣지 않는다. 그런 기능을 **만드는 재료**, 곧 개입 지점 바인딩, 단계 실행기, 결과 매핑, 실패 정책, 실행 기록을 제공한다. 예시 기능은 이 재료로 조립한 **레시피**로 검증한다.
 
-- GitHub 이슈: **아직 만들지 않음**(번호 26은 가정. 만들면 파일명·링크를 맞춘다)
+- GitHub 이슈: [#26](https://github.com/jammer-droid/deepseek-harness/issues/26) (완료 보고 후 닫음)
 - 선행: [#25 Pixie](25-pixie.md)(마무리, 제한 포함)
 - 기준 브랜치·시작 커밋: `studio/feat/workflow` @ `f989f09b61`
 - 대상 DSH: Studio peer 범위 `0.2.0-rc.2 || 0.2.1-alpha.2`. 공개 API 존재 여부는 S1에서 확인한다.
