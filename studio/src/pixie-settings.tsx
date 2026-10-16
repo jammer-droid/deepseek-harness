@@ -2,6 +2,8 @@
  * Uses the same {@link DetailLayout} frame as the preset service so every Studio service looks alike.
  */
 import React from 'react';
+import { GateTaskCompositionPage, GateTaskScopePage, useGateTasks, type GateTaskActions } from './pixie-gate-task-pages.tsx';
+import { gateComposeText } from './pixie-gate-compose-locale.ts';
 import { Button, Notice, PageHead, Segmented, SettingsRow, Toggle } from './ui.tsx';
 import { DetailLayout } from './detail-layout.tsx';
 import type { PixieContextMode, PixieSettings } from './pixie-contracts.ts';
@@ -20,11 +22,21 @@ export interface PixieSettingsActions {
 }
 
 const SEP = '\u0000';
-type PageId = 'model' | 'threads' | 'prompt';
+const NO_GATES: GateTaskActions = {
+  read: async () => ({ entries: [], invalid: [] }), save: async () => undefined, scripts: async () => ({ directory: '', defaultDirectory: '', custom: false, supported: false, scripts: [] }),
+  saveScriptDirectory: async () => ({ directory: '', defaultDirectory: '', custom: false, supported: false, scripts: [] }),
+  trial: () => ({ result: Promise.reject(new Error('Gate API unavailable')), cancel() {} }), presets: async () => [],
+};
+type PageId = 'model' | 'threads' | 'prompt' | 'gate-composition' | 'gate-scope';
 
-export function PixieSettingsPage({ actions, locale, navFooter }: { actions: PixieSettingsActions; locale: string; navFooter?: React.ReactNode }) {
+export function PixieSettingsPage({ actions, gateActions, locale, navFooter }: { actions: PixieSettingsActions; gateActions?: GateTaskActions; locale: string; navFooter?: React.ReactNode }) {
   const t = (key: PixieTextKey) => pixieText(locale, key);
   const [page, setPage] = React.useState<PageId>('model');
+  // Both gate pages share one draft list; Save replaces the stored definitions.
+  const gates = useGateTasks(gateActions ?? NO_GATES);
+  const [gatePresets, setGatePresets] = React.useState<{ id: string; name: string }[]>([]);
+  React.useEffect(() => { if (gateActions) void gateActions.presets().then(setGatePresets, () => setGatePresets([])); }, [gateActions]);
+  const gt = (key: Parameters<typeof gateComposeText>[1]) => gateComposeText(locale, key);
   const [draft, setDraft] = React.useState<PixieSettings>();
   const [catalog, setCatalog] = React.useState<PixieSettingsCatalog>();
   const [error, setError] = React.useState('');
@@ -87,7 +99,7 @@ export function PixieSettingsPage({ actions, locale, navFooter }: { actions: Pix
             <option value="">{t('settingsEffortDefault')}</option>
             {efforts.map(effort => <option key={effort.id} value={effort.id}>{effort.name}</option>)}
           </select>} />
-        <SettingsRow title={t('settingsMaxTokens')} description={t('settingsMaxTokensHint')} control={
+        <SettingsRow title={t('settingsMaxTokens')} control={
           <input className="studio-compact" aria-label={t('settingsMaxTokens')} type="number" min={1} step={1} disabled={!draft.model} placeholder={t('settingsEffortDefault')} value={draft.model?.maxTokens ?? ''} onChange={event => {
             if (!draft.model) return;
             const { maxTokens: _previous, ...model } = draft.model;
@@ -116,5 +128,9 @@ export function PixieSettingsPage({ actions, locale, navFooter }: { actions: Pix
     { id: 'model', group: t('settingsGroup'), label: t('pageModel'), content: modelPage },
     { id: 'threads', group: t('settingsGroup'), label: t('pageThreads'), content: threadsPage },
     { id: 'prompt', group: t('settingsGroup'), label: t('pagePrompt'), content: promptPage },
+    ...(gateActions ? [
+      { id: 'gate-composition', group: gt('group'), label: gt('composition'), content: <GateTaskCompositionPage gates={gates} locale={locale} /> },
+      { id: 'gate-scope', group: gt('group'), label: gt('scope'), content: <GateTaskScopePage gates={gates} presets={gatePresets} locale={locale} /> },
+    ] : []),
   ]} />;
 }

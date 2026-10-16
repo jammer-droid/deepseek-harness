@@ -8,8 +8,6 @@ import { tmpdir } from 'node:os';
 import { PixieGateStore, MAX_GATE_RUNS } from '../src/host/pixie-gate-store.ts';
 import { PixieStore } from '../src/host/pixie-store.ts';
 import { totalUsage } from '../src/pixie-contracts.ts';
-import { DefaultStageRunner } from '../src/host/pixie-gate-runner.ts';
-import { runGate } from '../src/host/pixie-gate-pipeline.ts';
 
 const gate = { id: 'g', name: 'Gate snapshot', point: 'input' };
 const root = () => mkdtemp(join(tmpdir(), 'studio-gate-store-'));
@@ -132,22 +130,10 @@ test('gate usage sums calls once, preserving optional fields and never touching 
   const thread = await pixie.createThread('s', { mode: 'fresh', model: { provider: 'p', model: 'm' } });
   const turn = await pixie.startTurn('s', thread.id, 'question');
   await pixie.finishTurn('s', thread.id, turn.id, { status: 'done', answer: 'answer', usage: { inputTokens: 100, outputTokens: 50 } });
-  const runner = new DefaultStageRunner({ model: { provider: 'p', model: 'm' }, shell: {}, llm: { async *stream() {
-    yield { type: 'text-delta', text: 'note' }; yield { type: 'usage', usage: { inputTokens: 2, outputTokens: 3, cacheReadTokens: 1 } }; yield { type: 'finish', reason: { kind: 'stop' } };
-  } } });
-  const definition = { ...gate, enabled: true, stages: ['a', 'b'].map(id => ({ id, kind: 'converse', role: 'note', prompt: '{{subject}}' })), limits: { stageTimeoutMs: 1000 }, forward: { kind: 'original' } };
-  const outcome = await runGate(definition, { sessionId: 's', original: 'original' }, runner, { signal: new AbortController().signal });
+  const outcome = { ...result(), records: ['a', 'b'].map(id => ({ id, result: { verdict: 'note', usage: { inputTokens: 2, outputTokens: 3, cacheReadTokens: 1 } }, subjectBytes: 8, textBytes: 4 })) };
   const run = await store.start('s', gate, 'original'); await store.finish('s', run.id, { ...done, result: outcome });
   assert.deepEqual((await store.read('s')).runs[0].usage, { inputTokens: 4, outputTokens: 6, cacheReadTokens: 2 });
   assert.equal(totalUsage(await pixie.read('s')).inputTokens, 100);
-});
-
-test('invalid converse output retains reported usage in its error result', async () => {
-  const runner = new DefaultStageRunner({ model: { provider: 'p', model: 'm' }, shell: {}, llm: { async *stream() {
-    yield { type: 'text-delta', text: 'not JSON' }; yield { type: 'usage', usage: { inputTokens: 2, outputTokens: 3 } }; yield { type: 'finish', reason: { kind: 'stop' } };
-  } } });
-  const value = await runner.run({ kind: 'converse', role: 'check', prompt: '{{subject}}' }, { subject: 'x', signal: new AbortController().signal });
-  assert.equal(value.verdict, 'error'); assert.deepEqual(value.usage, { inputTokens: 2, outputTokens: 3 });
 });
 
 test('invalid session ids are rejected at every file boundary', async () => {

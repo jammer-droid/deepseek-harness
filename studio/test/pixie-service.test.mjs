@@ -6,6 +6,27 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { Context } from '@deepseek-ai/cordis';
 import { PixieService } from '../src/host/pixie-service.ts';
+import { makeTask } from '../src/pixie-gate-task.ts';
+
+test('gate trial service uses the ordinary Pixie model once and reports its plan and usage', async () => {
+  const h = await harness(), calls = [];
+  h.ctx.set('llm', { stream: async function* (options) {
+    calls.push(options);
+    yield { type: 'text-delta', index: 0, text: '{"replace":"replacement","append":"addition"}' };
+    yield { type: 'usage', usage: { inputTokens: 2, outputTokens: 3 } };
+    yield { type: 'finish', reason: { kind: 'stop' } };
+  } });
+  const fiber = await start(h);
+  try {
+    const service = h.ctx.get('studioPixie');
+    await service.saveSettings(JSON.stringify({ model: { provider: 'p', model: 'ordinary' }, judgeModel: { provider: 'p', model: 'judge' }, contextMode: 'fresh', systemPrompt: '', allowThreadModel: true }));
+    const task = makeTask('Trial', 'tool-after', 'Check');
+    const result = await service.trialGate(JSON.stringify({ task, text: 'original' }), new AbortController().signal);
+    assert.equal(result.output.verdict, 'pass'); assert.equal(result.plan.replacement, 'replacement'); assert.equal(result.plan.addition, 'addition');
+    assert.equal(calls.length, 1); assert.equal(calls[0].model, 'ordinary');
+    assert.deepEqual(result.usage, { inputTokens: 2, outputTokens: 3 });
+  } finally { await fiber.dispose(); }
+});
 
 async function harness({ sessions = ['s1'] } = {}) {
   const dataDir = await mkdtemp(join(tmpdir(), 'studio-pixie-svc-'));
@@ -24,6 +45,104 @@ async function harness({ sessions = ['s1'] } = {}) {
   });
   return { ctx, dataDir, commands };
 }
+for (const mode of ['read-only', 'workspace-write']) test(`hook service restores session policy and cwd composition: ${mode}`, async () => {
+  const h = await harness(); const requests = [], policies = [];
+  const session = { header: { cwd: '/session/workspace' } };
+  const agent = { id: 's1', ctx: h.ctx, session };
+  for (const key of ['shell', 'sandboxPolicy', 'agentPresets', 'agents']) h.ctx.provide(key);
+  h.ctx.set('agents', { roots: () => [agent] });
+  h.ctx.set('agentPresets', { composedPreset: () => 'p' });
+  h.ctx.set('sandboxPolicy', { resolve(request) { policies.push(request); return { mode, workspaceRoot: '/session/workspace', sessionId: 's1' }; } });
+  h.ctx.set('shell', { resolve(request) { requests.push(request); return request; }, async execute() { return { async result() { return { exitCode: 10, timedOut: false, stdout: { text: '', truncated: false }, stderr: { text: '' } }; } }; } });
+  const directory = join(h.dataDir, 'pixie-gate/commands'); await mkdir(directory, { recursive: true });
+  await writeFile(join(directory, 'skip.sh'), '#!/bin/bash\n', { mode: 0o755 });
+  const fiber = await start(h);
+  try {
+    const service = h.ctx.get('studioPixie'); const task = makeTask('gate', 'user-message', 'check');
+    task.enabled = true; task.presetIds = ['p']; task.advanced.script = 'skip.sh';
+    await service.saveGateDefinitions(JSON.stringify([task]));
+    const decision = { kind: 'enter', messages: [{ id: 'm', role: 'user', source: { kind: 'user' }, content: [{ type: 'text', text: 'original' }] }] };
+    const result = await h.ctx.waterfall('agent/pre-step', { agent, turn: 7, signal: new AbortController().signal }, async () => decision);
+    assert.equal(result, decision); assert.equal(requests.length, 1);
+    assert.equal(policies[0].session, session); assert.equal(requests[0].workdir, '/session/workspace');
+    assert.deepEqual(requests[0].sandboxPolicy, { mode, workspaceRoot: '/session/workspace', sessionId: 's1' });
+    assert.equal(requests[0].env.PIXIE_TURN, '7');
+    const run = (await service.gateRuns('s1')).runs[0]; assert.equal(run.applied, 'none'); assert.ok(run.result.notes.includes('skipped by hook'));
+    assert.deepEqual(await service.gateScripts(), { directory, defaultDirectory: directory, custom: false, supported: true, scripts: ['skip.sh'] });
+  } finally { await fiber.dispose(); }
+});
+
+test('hook service registers the helper route on webServer and passes PIXIE_URL/PIXIE_TOKEN only while it runs', async () => {
+  const h = await harness(); const requests = [], routes = new Map();
+  const session = { header: { cwd: '/w' } }, agent = { id: 's1', ctx: h.ctx, session };
+  for (const key of ['shell', 'sandboxPolicy', 'agentPresets', 'agents', 'webServer']) h.ctx.provide(key);
+  h.ctx.set('agents', { roots: () => [agent] }); h.ctx.set('agentPresets', { composedPreset: () => 'p' });
+  h.ctx.set('sandboxPolicy', { resolve: () => ({ mode: 'read-only', workspaceRoot: '/w', sessionId: 's1' }) });
+  h.ctx.set('shell', { resolve(request) { requests.push(structuredClone({ ...request, signal: undefined })); return request; }, async execute() { return { async result() { return { exitCode: 10, timedOut: false, stdout: { text: '', truncated: false }, stderr: { text: '' } }; } }; } });
+  h.ctx.set('webServer', { host: '127.0.0.1', port: 4321, protocol: 'http:', register(route) { routes.set(route.path, route); return () => routes.delete(route.path); } });
+  const directory = join(h.dataDir, 'pixie-gate/commands'); await mkdir(directory, { recursive: true });
+  await writeFile(join(directory, 'skip.sh'), '#!/bin/bash\n', { mode: 0o755 });
+  const fiber = await start(h);
+  try {
+    await until(() => routes.size === 1);
+    const route = routes.get('/studio/pixie-gate/helper'); assert.equal(route.kind, 'prefix');
+    const service = h.ctx.get('studioPixie'); const task = makeTask('gate', 'user-message', 'check');
+    task.enabled = true; task.presetIds = ['p']; task.advanced.script = 'skip.sh';
+    await service.saveGateDefinitions(JSON.stringify([task]));
+    const decision = { kind: 'enter', messages: [{ id: 'm', role: 'user', source: { kind: 'user' }, content: [{ type: 'text', text: 'original' }] }] };
+    await h.ctx.waterfall('agent/pre-step', { agent, turn: 1, signal: new AbortController().signal }, async () => decision);
+    assert.equal(requests[0].env.PIXIE_URL, 'http://127.0.0.1:4321/studio/pixie-gate/helper');
+    assert.match(requests[0].env.PIXIE_TOKEN, /^[0-9a-f]{64}$/);
+    assert.ok(requests[0].env.PATH.startsWith(join(h.dataDir, 'pixie-gate/bin')));
+    assert.deepEqual(await readdir(join(h.dataDir, 'pixie-gate/bin')), ['pixie']);
+  } finally { await fiber.dispose(); }
+  assert.equal(routes.size, 0);
+});
+
+test('helper URL works on rc.2 web servers without a protocol getter and reads the listened port lazily', async () => {
+  const h = await harness(); const routes = new Map();
+  h.ctx.provide('webServer');
+  const server = { host: '0.0.0.0', port: undefined, register(route) { routes.set(route.path, route); return () => routes.delete(route.path); } };
+  h.ctx.set('webServer', server);
+  const fiber = await start(h);
+  try {
+    await until(() => routes.size === 1);
+    server.port = 5555;
+    const service = h.ctx.get('studioPixie');
+    assert.equal(service.helperUrl, 'http://127.0.0.1:5555/studio/pixie-gate/helper');
+    server.host = '::'; assert.equal(service.helperUrl, 'http://[::1]:5555/studio/pixie-gate/helper');
+    server.host = '192.168.0.4'; server.protocol = 'https:'; assert.equal(service.helperUrl, 'https://192.168.0.4:5555/studio/pixie-gate/helper');
+    server.port = undefined; assert.equal(service.helperUrl, undefined);
+  } finally { await fiber.dispose(); }
+});
+
+test('script folder setting: default, custom absolute or ~ path used by runs, relative rejected, reset', async () => {
+  const { homedir } = await import('node:os');
+  const h = await harness(); const requests = [];
+  const session = { header: { cwd: '/w' } }, agent = { id: 's1', ctx: h.ctx, session };
+  for (const key of ['shell', 'sandboxPolicy', 'agentPresets', 'agents']) h.ctx.provide(key);
+  h.ctx.set('agents', { roots: () => [agent] }); h.ctx.set('agentPresets', { composedPreset: () => 'p' });
+  h.ctx.set('sandboxPolicy', { resolve: () => ({ mode: 'read-only', workspaceRoot: '/w', sessionId: 's1' }) });
+  h.ctx.set('shell', { resolve(request) { requests.push(request.command); return request; }, async execute() { return { async result() { return { exitCode: 10, timedOut: false, stdout: { text: '', truncated: false }, stderr: { text: '' } }; } }; } });
+  const custom = join(h.dataDir, 'my-gates'); await mkdir(custom);
+  await writeFile(join(custom, 'mine.sh'), '#!/bin/bash\n', { mode: 0o755 });
+  const fiber = await start(h);
+  try {
+    const service = h.ctx.get('studioPixie'); const defaultDirectory = join(h.dataDir, 'pixie-gate/commands');
+    assert.deepEqual(await service.gateScripts(), { directory: defaultDirectory, defaultDirectory, custom: false, supported: true, scripts: [] });
+    assert.deepEqual(await service.saveGateScriptDirectory(JSON.stringify({ scriptDirectory: custom })), { directory: custom, defaultDirectory, custom: true, supported: true, scripts: ['mine.sh'] });
+    const task = makeTask('gate', 'user-message', 'check'); task.enabled = true; task.presetIds = ['p']; task.advanced.script = 'mine.sh';
+    await service.saveGateDefinitions(JSON.stringify([task]));
+    const decision = { kind: 'enter', messages: [{ id: 'm', role: 'user', source: { kind: 'user' }, content: [{ type: 'text', text: 'x' }] }] };
+    await h.ctx.waterfall('agent/pre-step', { agent, turn: 1, signal: new AbortController().signal }, async () => decision);
+    assert.match(requests[0], new RegExp(`${custom.replace(/[/.]/g, m => `\\${m}`)}/mine\\.sh`));
+    assert.equal((await service.saveGateScriptDirectory(JSON.stringify({ scriptDirectory: '~/x' }))).directory, join(homedir(), 'x'));
+    await assert.rejects(service.saveGateScriptDirectory(JSON.stringify({ scriptDirectory: 'relative/path' })), /absolute path/);
+    assert.equal((await service.gateScripts()).directory, join(homedir(), 'x'));
+    assert.deepEqual(await service.saveGateScriptDirectory(JSON.stringify({ scriptDirectory: '' })), { directory: defaultDirectory, defaultDirectory, custom: false, supported: true, scripts: [] });
+  } finally { await fiber.dispose(); }
+});
+
 const start = async (h) => { const fiber = h.ctx.plugin(PixieService, h.dataDir); await fiber; return fiber; };
 const until = async (check) => { for (let i = 0; i < 100; i++) { if (await check()) return; await new Promise(r => setTimeout(r, 10)); } throw new Error('timed out'); };
 

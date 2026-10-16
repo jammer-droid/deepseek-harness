@@ -68,6 +68,8 @@ export interface PixieSessionRecord {
 /** Studio-wide Pixie defaults, separate from presets. */
 export interface PixieSettings {
   model?: PixieModel;
+  judgeModel?: PixieModel;
+  judgeSystemPrompt?: string;
   contextMode: PixieContextMode;
   systemPrompt: string;
   allowThreadModel: boolean;
@@ -132,4 +134,43 @@ export type JudgeAnswer =
 export interface JudgeRequest { state: unknown; questions: Record<string, JudgeQuestion> }
 
 /** Failure stays a failure; it is never turned into a low score or a "no". */
-export type JudgeResult = { ok: true; answers: Record<string, JudgeAnswer> } | { ok: false; error: string };
+export type JudgeResult = ({ ok: true; answers: Record<string, JudgeAnswer> } | { ok: false; error: string }) & { usage?: PixieUsage };
+
+export const DEFAULT_JUDGE_SYSTEM_PROMPT = [
+  'You are a judgment component. Evaluate the given state against each question independently.',
+  'Reply with exactly one JSON object and nothing else: {"answers": {<question id>: <answer>}}.',
+  'choice answer: {"choice": <option name>, "probabilities": {<every option name>: number}} — probabilities sum to 1.',
+  'score answer: {"score": number from 0 to levels-1 (fractional allowed), "probabilities": [one number per level, in order]} — probabilities sum to 1.',
+  'noul answer: {"noul": probability from 0 to 1 that the answer is yes}.',
+].join('\n');
+
+/** Reject requests that a Jev endpoint would reject, so the LLM and Jev engines accept the same inputs.
+ * @returns the request, typed.
+ */
+export class JudgeValidationError extends Error {
+  constructor(public readonly code: string, message: string) { super(message); }
+}
+
+export function validateJudgeRequest(value: unknown): JudgeRequest {
+  if (!value || typeof value !== 'object') throw new Error('Judge request must be an object');
+  const { state, questions } = value as { state?: unknown; questions?: unknown };
+  if (state === undefined) throw new Error('Judge request needs a state');
+  if (!questions || typeof questions !== 'object' || Array.isArray(questions)) throw new Error('Judge request needs questions by id');
+  const entries = Object.entries(questions as Record<string, unknown>);
+  if (entries.length === 0) throw new JudgeValidationError('questions', 'Judge request needs at least one question');
+  for (const [id, raw] of entries) {
+    if (!/^[A-Za-z][A-Za-z0-9_-]*$/.test(id) || ['__proto__', 'constructor', 'prototype'].includes(id)) throw new JudgeValidationError('questionId', `Invalid judge question id: ${id}`);
+    const question = raw as Partial<JudgeQuestion> & Record<string, unknown>;
+    if (question?.type === 'choice') {
+      const options = question.options as Record<string, unknown> | undefined;
+      if (!options || typeof options !== 'object' || Array.isArray(options) || Object.keys(options).length < 2 || Object.values(options).some(item => typeof item !== 'string' || !item.trim())) throw new JudgeValidationError('options', `Choice "${id}" needs at least two options with descriptions`);
+    } else if (question?.type === 'score') {
+      const levels = question.levels as unknown;
+      if (!Array.isArray(levels) || levels.length < 2 || levels.length > 10 || levels.some(item => typeof item !== 'string')) throw new JudgeValidationError('levels', `Score "${id}" needs 2–10 levels`);
+    } else if (question?.type === 'noul') {
+      if (typeof question.question !== 'string' || !question.question.trim()) throw new JudgeValidationError('question', `Noul "${id}" needs a question`);
+      if (question.criteria !== undefined && (!question.criteria || typeof question.criteria !== 'object' || Array.isArray(question.criteria) || Object.entries(question.criteria).some(([key, value]) => !['true', 'false'].includes(key) || typeof value !== 'string'))) throw new JudgeValidationError('criteria', `Invalid noul criteria: ${id}`);
+    } else throw new JudgeValidationError('questionType', `Question "${id}" must be choice, score, or noul`);
+  }
+  return { state, questions: questions as Record<string, JudgeQuestion> };
+}

@@ -65,8 +65,13 @@ export function Note({ children }: React.PropsWithChildren) {
  * @param props Localized message and optional action.
  * @returns Alert row that stays until its state resolves.
  */
-export function Notice({ children, action }: React.PropsWithChildren<{ action?: React.ReactNode }>) {
-  return <div role="alert" className="studio-notice-row"><span>{children}</span>{action}</div>;
+export function Notice({ children, action, tone = 'error' }: React.PropsWithChildren<{ action?: React.ReactNode; tone?: 'error' | 'info' }>) {
+  return <div role={tone === 'error' ? 'alert' : 'status'} className={`studio-notice-row${tone === 'info' ? ' studio-notice-info' : ''}`}><span>{children}</span>{action}</div>;
+}
+
+/** Node-testable checkbox option shared by multi-selection lists. */
+export function CheckOption({ label, checked, onChange }: { label: string; checked: boolean; onChange: (checked: boolean) => void }) {
+  return <label><input type="checkbox" checked={checked} onChange={event => onChange(event.target.checked)} />{label}</label>;
 }
 
 /** One tab in a {@link TabBar}. */
@@ -280,6 +285,6 @@ export function Segmented<Value extends string>({ label, options, value, onChang
  * @param props Accessible label, state, and change callback.
  * @returns Switch button.
  */
-export function Toggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: (checked: boolean) => void }) {
-  return <button type="button" role="switch" className="studio-toggle" aria-label={label} aria-checked={checked} onClick={() => onChange(!checked)}><span aria-hidden="true" /></button>;
+export function Toggle({ label, checked, onChange, disabled = false }: { label: string; checked: boolean; onChange: (checked: boolean) => void; disabled?: boolean }) {
+  return <button type="button" role="switch" disabled={disabled} className="studio-toggle" aria-label={label} aria-checked={checked} onClick={() => onChange(!checked)}><span aria-hidden="true" /></button>;
 }

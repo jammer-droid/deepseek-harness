@@ -94,6 +94,10 @@ export class PixieStore {
       if (!name.endsWith('.json')) continue;
       const sessionId = name.slice(0, -'.json'.length);
       if (!SESSION_ID.test(sessionId) || this.queues.has(sessionId) || await exists(sessionId)) continue;
+      // This directory can contain legacy non-session JSON; never prune by filename alone.
+      let record: unknown;
+      try { record = JSON.parse(await readFile(join(this.root, name), 'utf8')); } catch { continue; }
+      if (!record || typeof record !== 'object' || Array.isArray(record) || (record as PixieSessionRecord).sessionId !== sessionId || !Array.isArray((record as PixieSessionRecord).threads)) continue;
       await rm(join(this.root, name), { force: true });
       removed.push(sessionId);
     }
@@ -139,6 +143,11 @@ export function parsePixieSettings(value: unknown): PixieSettings {
   if (typeof raw.allowThreadModel !== 'boolean') throw new Error('Pixie settings allowThreadModel must be a boolean');
   const settings: PixieSettings = { contextMode: raw.contextMode, systemPrompt: raw.systemPrompt, allowThreadModel: raw.allowThreadModel };
   if (raw.model !== undefined) settings.model = parsePixieModel(raw.model);
+  if (raw.judgeModel !== undefined) settings.judgeModel = parsePixieModel(raw.judgeModel);
+  if (raw.judgeSystemPrompt !== undefined) {
+    if (typeof raw.judgeSystemPrompt !== 'string') throw new Error('Pixie settings judgeSystemPrompt must be a string');
+    settings.judgeSystemPrompt = raw.judgeSystemPrompt;
+  }
   return settings;
 }
 

@@ -1,10 +1,10 @@
+import { listGateScripts, type HookShell, type HookContext } from './pixie-gate-script.ts';
 import type { Context } from '@deepseek-ai/cordis';
 import { Remote, TypertRemoteService } from '@deepseek-ai/dsh-typert-protocol';
-import { join } from 'node:path';
-import type { JudgeRequest, PixieAskFrame, PixieContextMode, PixieSessionRecord, PixieSettings, PixieTurn, PixieUsageTotal } from '../pixie-contracts.ts';
+import { join, resolve } from 'node:path';
+import type { PixieAskFrame, PixieContextMode, PixieSessionRecord, PixieSettings, PixieTurn, PixieUsageTotal } from '../pixie-contracts.ts';
 import { totalUsage } from '../pixie-contracts.ts';
 import { pixieCommand } from './pixie-command.ts';
-import { LlmJudgeEngine } from './pixie-judge.ts';
 import { PixieLive } from './pixie-live.ts';
 import { PixieGateStore, type PixieGateRecorder } from './pixie-gate-store.ts';
 import type { GateRejection, GateRunFrame } from '../pixie-gate-contracts.ts';
@@ -15,8 +15,9 @@ import { PixieGateDefinitions } from './pixie-gate-definitions.ts';
 import { gateInput, type GateInputDeps } from './pixie-gate-input.ts';
 import { gateTurn } from './pixie-gate-turn.ts';
 import { gateTools } from './pixie-gate-tools.ts';
-import { DefaultStageRunner, type GateShell } from './pixie-gate-runner.ts';
-import type { GateInput } from '../pixie-gate-contracts.ts';
+import { GateTaskRunner } from './pixie-gate-task-runner.ts';
+import { HELPER_ROUTE, PixieGateHelper } from './pixie-gate-helper.ts';
+import { PixieGateSettings } from './pixie-gate-settings.ts';
 import { trialGate } from './pixie-gate-trial.ts';
 
 /** What the Pixie tab shows for one session. */
@@ -39,6 +40,10 @@ interface SessionControllerSlice {
 
 /** How often records of deleted sessions are pruned while the Host runs. */
 const PRUNE_INTERVAL_MS = 10 * 60 * 1000;
+interface WebServerSlice {
+  readonly host: string; readonly port: number | undefined; readonly protocol?: 'http:' | 'https:';
+  register(route: { kind: 'prefix'; path: string; handler: PixieGateHelper['handle'] }): () => void;
+}
 interface LlmSlice extends PixieLlm { resolveModelInfo(provider: string, model: string, signal?: AbortSignal): Promise<{ context?: { contextWindow: number } }> }
 
 const json = <T>(payload: string): T => JSON.parse(payload) as T;
@@ -50,6 +55,11 @@ const llmOf = (ctx: Context) => ctx.get('llm') as unknown as LlmSlice;
  */
 export class PixieService extends TypertRemoteService {
   static inject = ['llm', 'sessionController', 'commands'];
+  private defaultScriptDirectory: string;
+  private gateSettings: PixieGateSettings;
+  /** The configured folder, or `<data>/pixie-gate/commands` when none is set. Read per run so a change applies at once. */
+  private async scriptDirectory() { return (await this.gateSettings.read()).scriptDirectory ?? this.defaultScriptDirectory; }
+  private scriptSupported = () => process.platform !== 'win32' && !!this.ctx.get('shell');
   private store: PixieStore;
   private settings: PixieSettingsStore;
   private runtime: PixieRuntime;
@@ -57,34 +67,50 @@ export class PixieService extends TypertRemoteService {
   private gates: PixieGateStore;
   private definitions: PixieGateDefinitions;
   private gateRunner: GateInputDeps['runner'];
+  private helper: PixieGateHelper;
+  private helperServer: WebServerSlice | undefined;
+  /** Read at each issue: the port is known only after listen, and rc.2 has no `protocol` getter (plain HTTP). */
+  get helperUrl(): string | undefined {
+    const server = this.helperServer;
+    if (!server || typeof server.port !== 'number' || !server.port) return undefined;
+    // Scripts reach a wildcard bind through loopback; a concrete address is used as-is.
+    const host = server.host === '0.0.0.0' ? '127.0.0.1' : server.host === '::' ? '::1' : server.host;
+    return `${server.protocol ?? 'http:'}//${host.includes(':') ? `[${host}]` : host}:${server.port}${HELPER_ROUTE}`;
+  }
   /** Internal producer API, intentionally not Remote. */
   get gateRecorder(): PixieGateRecorder { return this.gates; }
   constructor(ctx: Context, dataDir: string) {
     super(ctx, 'studioPixie');
+    this.defaultScriptDirectory = resolve(dataDir, 'pixie-gate', 'commands');
+    this.gateSettings = new PixieGateSettings(join(dataDir, 'pixie-gate', 'settings.json'));
     this.store = new PixieStore(join(dataDir, 'pixie'));
     this.gates = new PixieGateStore(join(dataDir, 'pixie'));
     this.settings = new PixieSettingsStore(join(dataDir, 'pixie-settings.json'));
-    this.definitions = new PixieGateDefinitions(join(dataDir, 'pixie', 'gates.json'));
+    this.definitions = new PixieGateDefinitions(join(dataDir, 'pixie-gate', 'definitions.json'));
+    this.helper = new PixieGateHelper({ binDirectory: resolve(dataDir, 'pixie-gate', 'bin'), url: () => this.helperUrl });
+    // Helper route only while the DSH web server runs; without it scripts get no PIXIE_URL/PIXIE_TOKEN.
+    ctx.inject(['webServer'] as never, scope => {
+      const server = scope.get('webServer') as unknown as WebServerSlice;
+      scope.effect(() => {
+        const dispose = server.register({ kind: 'prefix', path: HELPER_ROUTE, handler: this.helper.handle });
+        this.helperServer = server;
+        return () => { this.helperServer = undefined; dispose(); };
+      });
+    });
     const gateDeps: GateInputDeps = {
       definitions: () => this.definitions.read(),
+      warn: message => ctx.logger.warn(message),
       preset: agent => ctx.get('agentPresets')?.composedPreset(agent.ctx),
       isRoot: agent => ctx.get('agents')?.roots().some(root => root.id === agent.id) ?? false,
-      policy: agent => {
-        const service = ctx.get('sandboxPolicy') as unknown as { resolve(request: { session: unknown }): GateInput['sandboxPolicy'] } | undefined;
-        return service?.resolve({ session: agent.session });
+      hookContext: (agent, turn, tool) => {
+        const policy = ctx.get('sandboxPolicy') as unknown as { resolve(request: { session: typeof agent.session }): HookContext['sandboxPolicy'] } | undefined;
+        return { sessionId: agent.id, cwd: agent.session.header.cwd, turn, agent: gateDeps.isRoot(agent) ? 'root' : 'child',
+          sandboxPolicy: policy?.resolve({ session: agent.session }), ...(tool ? { tool } : {}) };
       },
       runner: async () => {
-        const model = (await this.settings.read()).model;
-        return new DefaultStageRunner({
-        shell: {
-          resolve: request => {
-            if (!request.workdir) throw new Error('Agent working directory is required');
-            const shell = ctx.get('shell') as unknown as GateShell | undefined;
-            if (!shell) throw new Error('Shell service is unavailable');
-            return shell.resolve(request);
-          },
-          execute: spec => (ctx.get('shell') as unknown as GateShell).execute(spec),
-        },
+        const [{ model }, scriptDirectory] = await Promise.all([this.settings.read(), this.scriptDirectory()]);
+        return new GateTaskRunner({
+        scriptDirectory, scriptSupported: this.scriptSupported(), shell: ctx.get('shell') as unknown as HookShell | undefined, helper: this.helper,
         llm: { stream: options => llmOf(ctx).stream(options) },
         ...(model ? { model } : {}),
         });
@@ -200,14 +226,22 @@ export class PixieService extends TypertRemoteService {
   async trialGate(payload: string, signal: AbortSignal) {
     return trialGate(json(payload), {
       runner: this.gateRunner,
-      session: id => {
-        const agent = this.ctx.get('agents')?.roots().find(agent => agent.id === id);
-        if (!agent) throw new Error('An active root session is required for commands');
-        const policy = this.ctx.get('sandboxPolicy') as unknown as { resolve(request: { session: unknown }): GateInput['sandboxPolicy'] } | undefined;
-        const sandboxPolicy = policy?.resolve({ session: agent.session });
-        return { sessionId: id, cwd: agent.session.header.cwd ?? '', ...(sandboxPolicy ? { sandboxPolicy } : {}) };
-      },
+
     }, signal);
+  }
+
+  /** Scripts in the effective folder, plus whether that folder is the default. */
+  @Remote
+  async gateScripts() {
+    const directory = await this.scriptDirectory();
+    return { ...await listGateScripts(directory, this.scriptSupported()), defaultDirectory: this.defaultScriptDirectory, custom: directory !== this.defaultScriptDirectory };
+  }
+
+  /** Payload `{ scriptDirectory?: string }`; empty or absent restores the default folder. The folder is not created. */
+  @Remote
+  async saveGateScriptDirectory(payload: string) {
+    await this.gateSettings.save(json(payload));
+    return this.gateScripts();
   }
 
   @Remote
@@ -239,14 +273,5 @@ export class PixieService extends TypertRemoteService {
   @Remote
   async models() {
     return (this.ctx.get('sessionController') as unknown as SessionControllerSlice).modelCatalog();
-  }
-
-  /** Manual judge trial with the configured Pixie model; Jev-shaped request and result. */
-  @Remote
-  async judge(payload: string, signal: AbortSignal) {
-    const settings = await this.settings.read();
-    if (!settings.model) return { ok: false, error: '[pixie/no-model] No Pixie model is configured in Studio settings' };
-    const engine = new LlmJudgeEngine({ stream: options => llmOf(this.ctx).stream(options) }, settings.model);
-    return engine.judge(json<JudgeRequest>(payload), signal);
   }
 }

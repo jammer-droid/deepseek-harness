@@ -2,13 +2,16 @@
  * The tab registers only where the right sidebar exists, so Studio still loads without it.
  */
 import React from 'react';
+import type { GateRunFrame, GateRunRecord } from './pixie-gate-contracts.ts';
+type GateTrialResponse = { output: import('./pixie-gate-task-contracts.ts').GateOutput; plan: ReturnType<typeof import('./pixie-gate-task-contracts.ts').gateOutputPlan>; usage: import('./pixie-contracts.ts').PixieUsage; skipped?: 'script' };
+import type { GateTask } from './pixie-gate-task.ts';
 import type { StudioContext } from './contracts.js';
 import { PACKAGE_NAME } from './package-name.ts';
 import { StudioSurface } from './ui.tsx';
 import { PixieCommandRow, PixieTab, type PixieCommandRowActions, type PixieTabActions } from './pixie-tab.tsx';
 import { PixieSettingsPage, type PixieSettingsActions } from './pixie-settings.tsx';
 import { pixieText } from './pixie-locale.ts';
-import type { JudgeResult, PixieAskFrame, PixieSettings, PixieThread } from './pixie-contracts.ts';
+import type { PixieAskFrame, PixieSettings, PixieThread } from './pixie-contracts.ts';
 
 const NAMESPACE = 'studioPixie';
 const TAB_ID = `${PACKAGE_NAME}/pixie`;
@@ -23,6 +26,9 @@ const descriptor = (method: string, parameters: string[], extra: Record<string, 
 
 type RemoteValue<T> = Promise<{ ok: true; value: T } | { ok: false; error: { message: string } }>;
 interface PixieRemote {
+  gateRuns(sessionId: string): RemoteValue<GateRunRecord>;
+  followGates(sessionId: string): AsyncIterable<GateRunFrame> & { dispose(): void };
+  resolveGateRejection(sessionId: string, runId: string, status: string): RemoteValue<unknown>;
   view(sessionId: string): RemoteValue<import('./pixie-tab.tsx').PixieViewValue>;
   createThread(sessionId: string, payload: string): RemoteValue<PixieThread>;
   activate(sessionId: string, threadId: string): RemoteValue<boolean>;
@@ -31,10 +37,14 @@ interface PixieRemote {
   ask(sessionId: string, payload: string): RemoteValue<{ threadId: string; turnId: string }>;
   cancel(sessionId: string): RemoteValue<boolean>;
   follow(sessionId: string): AsyncIterable<PixieAskFrame> & { dispose(): void };
+  trialGate(payload: string, signal: AbortSignal): RemoteValue<GateTrialResponse>;
+  gateScripts(): RemoteValue<import('./pixie-gate-task-pages.tsx').GateScriptList>;
+  saveGateScriptDirectory(payload: string): RemoteValue<import('./pixie-gate-task-pages.tsx').GateScriptList>;
+  gateDefinitions(): RemoteValue<import('./pixie-gate-definitions.ts').GateTasksRead>;
+  saveGateDefinitions(payload: string): RemoteValue<unknown>;
   readSettings(): RemoteValue<PixieSettings>;
   saveSettings(payload: string): RemoteValue<PixieSettings>;
   models(): RemoteValue<unknown>;
-  judge(payload: string): RemoteValue<JudgeResult>;
 }
 
 async function unwrap<T>(call: RemoteValue<T>): Promise<T> {
@@ -51,6 +61,9 @@ interface SidebarServices {
 /** Pixie Remote descriptors. The runtime accepts one contribution per package, so the shell mounts these with its own. */
 export function pixieDescriptors() {
   return [
+    descriptor('gateRuns', ['sessionId']),
+    descriptor('followGates', ['sessionId'], { mode: 'stream', cancellation: { parameter: 'signal' } }),
+    descriptor('resolveGateRejection', ['sessionId', 'runId', 'status']),
     descriptor('view', ['sessionId']),
     descriptor('createThread', ['sessionId', 'payload']),
     descriptor('activate', ['sessionId', 'threadId']),
@@ -59,11 +72,35 @@ export function pixieDescriptors() {
     descriptor('ask', ['sessionId', 'payload']),
     descriptor('cancel', ['sessionId']),
     descriptor('follow', ['sessionId'], { mode: 'stream', cancellation: { parameter: 'signal' } }),
+    descriptor('trialGate', ['payload'], { cancellation: { parameter: 'signal' } }),
+    descriptor('gateDefinitions', []),
+    descriptor('gateScripts', []),
+    descriptor('saveGateScriptDirectory', ['payload']),
+    descriptor('saveGateDefinitions', ['payload']),
     descriptor('readSettings', []),
     descriptor('saveSettings', ['payload']),
     descriptor('models', []),
-    descriptor('judge', ['payload'], { cancellation: { parameter: 'signal' } }),
   ];
+}
+
+/** Shared #25 stream lifecycle: the Host emits sync on each new connection. */
+export function followPixieStream<T>(connect: () => AsyncIterable<T> & { dispose(): void }, listener: (frame: T) => void): () => void {
+  let stopped = false;
+  let handle: (AsyncIterable<T> & { dispose(): void }) | undefined;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  let wake: (() => void) | undefined;
+  const run = async () => {
+    while (!stopped) {
+      try {
+        handle = connect();
+        for await (const frame of handle) { if (stopped) break; listener(frame); }
+      } catch { /* carrier loss: reconnect and receive a fresh sync */ }
+      finally { handle?.dispose(); handle = undefined; }
+      if (!stopped) await new Promise<void>(resolve => { wake = resolve; timer = setTimeout(resolve, 1000); });
+    }
+  };
+  void run();
+  return () => { stopped = true; handle?.dispose(); clearTimeout(timer); wake?.(); };
 }
 
 /** Register Pixie's settings service (with the shared Studio menu footer), right-sidebar tab, and /pixie row. Call after the shell mounted {@link pixieDescriptors}. */
@@ -81,10 +118,31 @@ export function mountPixie(ctx: StudioContext, options: { navFooter?: (locale: s
     save: settings => unwrap(remote().saveSettings(JSON.stringify(settings))),
     models: () => unwrap(remote().models()) as ReturnType<PixieSettingsActions['models']>,
   };
+  const gateActions = {
+    trial: (request: { task: GateTask; text: string; toolName?: string }) => {
+      const controller = new AbortController();
+      return { result: unwrap(remote().trialGate(JSON.stringify(request), controller.signal)), cancel: () => controller.abort() };
+    },
+    read: () => unwrap(remote().gateDefinitions()),
+    save: (entries: GateTask[]) => unwrap(remote().saveGateDefinitions(JSON.stringify(entries))),
+    scripts: () => unwrap(remote().gateScripts()),
+    saveScriptDirectory: (scriptDirectory: string) => unwrap(remote().saveGateScriptDirectory(JSON.stringify({ scriptDirectory }))),
+    // Studio-made presets only: Studio Master is a read-only view of the DSH composition, not a Studio preset.
+    presets: async () => {
+      const catalog = ctx.get('remote.studioCatalog' as never) as unknown as { listPresets(): RemoteValue<{ id: string; name: string; readOnly?: boolean }[]> };
+      return (await unwrap(catalog.listPresets())).filter(preset => !preset.readOnly).map(({ id, name }) => ({ id, name }));
+    },
+    // Public session Remote: verifies the Host path and opens it in Finder or Explorer.
+    openFolder: async (path: string) => {
+      const session = ctx.get('remote.session' as never) as unknown as { openWorkspacePath(request: { path: string; action?: 'reveal' }): RemoteValue<unknown> } | undefined;
+      if (!session) throw new Error('Opening folders is not available here');
+      await unwrap(session.openWorkspacePath({ path }));
+    },
+  };
   function SettingsPage() {
     const active = useLocale();
     // Rendered inside the shell surface, like the preset service, so both services share one frame.
-    return <PixieSettingsPage actions={settingsActions} locale={active} navFooter={options.navFooter?.(active)} />;
+    return <PixieSettingsPage actions={settingsActions} gateActions={gateActions} locale={active} navFooter={options.navFooter?.(active)} />;
   }
   ctx.slots.inject('local.dsh-studio.services', () => ctx.slots.register({
     name: 'local.dsh-studio.services', id: 'pixie', order: 10, label: () => pixieText(locale(), 'settingsTitle'),
@@ -92,21 +150,18 @@ export function mountPixie(ctx: StudioContext, options: { navFooter?: (locale: s
 
   const tabActions = (sessionId: string): PixieTabActions => ({
     view: () => unwrap(remote().view(sessionId)),
-    follow: listener => {
-      let stopped = false;
-      let handle: (AsyncIterable<PixieAskFrame> & { dispose(): void }) | undefined;
-      const run = async () => {
-        // Reconnect after a carrier loss while the tab stays open.
-        while (!stopped) {
-          try {
-            handle = remote().follow(sessionId);
-            for await (const frame of handle) { if (stopped) break; listener(frame); }
-          } catch { /* fall through to retry */ }
-          if (!stopped) await new Promise(resolve => setTimeout(resolve, 1000));
-        }
-      };
-      void run();
-      return () => { stopped = true; handle?.dispose(); };
+    follow: listener => followPixieStream(() => remote().follow(sessionId), listener),
+    gateRuns: () => unwrap(remote().gateRuns(sessionId)),
+    followGates: listener => followPixieStream(() => remote().followGates(sessionId), listener),
+    resolveGateRejection: (runId, status) => unwrap(remote().resolveGateRejection(sessionId, runId, status)),
+    fillDraft: text => {
+      const sessions = ctx.get('sessions' as never) as unknown as { scope(id: string): { get(name: string): unknown } | undefined } | undefined;
+      const actx = sessions?.scope(sessionId);
+      const conversation = actx?.get('conversation') as { input: { for(scope: unknown): { setDraft(text: string): void; focus(): void } } } | undefined;
+      if (!actx || !conversation) throw new Error('Session composer unavailable');
+      const input = conversation.input.for(actx);
+      input.setDraft(text);
+      input.focus();
     },
     ask: (question, threadId) => unwrap(remote().ask(sessionId, JSON.stringify({ question, ...(threadId ? { threadId } : {}) }))),
     cancel: () => unwrap(remote().cancel(sessionId)),
@@ -114,7 +169,6 @@ export function mountPixie(ctx: StudioContext, options: { navFooter?: (locale: s
     activate: threadId => unwrap(remote().activate(sessionId, threadId)),
     deleteThread: threadId => unwrap(remote().deleteThread(sessionId, threadId)),
     models: () => unwrap(remote().models()) as ReturnType<PixieTabActions['models']>,
-    judge: request => unwrap(remote().judge(JSON.stringify(request))),
   });
 
   // The right sidebar may load after Studio; register the tab and the /pixie row once its services exist.

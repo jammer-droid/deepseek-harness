@@ -22,7 +22,11 @@ Studio는 특정 기능(양식 검증, 번역, 검색 요약, 선압축)을 직�
 
 ## 현재 진행 상황
 
-`ready`. 사용자 결정 U1–U8을 [확정된 결정](#확정된-결정)에 기록했다. GitHub 이슈는 아직 만들지 않았다.
+`ready`. 사용자 결정 U1–U8을 [확정된 결정](#확정된-결정)에 기록했다.
+
+- **재설계(U11–U24):** 작업 중심 게이트로 다시 정했다. [재설계 절](#재설계-작업-중심-게이트-u11u22) 참조. R1–R5 구현·로컬 검증과 실모델 통합 검증을 마쳤다([R5 기록](../verification/pixie-gate-r5/README.md)). 남은 것은 미검증 항목과 코드 리뷰다.
+- **S7 UI 재설계(U10):** 사용자 피드백(필드 나열형 편집기가 혼란스러움)에 따라 게이트를 Pixie 설정의 별도 메뉴 그룹 `게이트 › 게이트 구성 / 적용 범위`로 분리하고, 편집을 흐름 시각화 모달로 바꿨다. 아래 [S7 UI 재설계](#s7-ui-재설계--게이트-구성과-적용-범위) 참조. 이 변경은 일괄 리뷰 이후라 리뷰를 거치지 않았다.
+- **일괄 리뷰 완료·수정 반영:** Host `db8499c716`, Client `dbdd703856`. [리뷰 수정 기록](#일괄-리뷰-수정-기록)을 참조한다. S9는 부분 검증이며 전체 완료가 아니다. 남은 미검증은 모델이 필요한 R2/R3/tool/판정 실제 호출 및 alpha.2의 일부 흐름이다. 아래 단계별 과거 기록과 S1 표는 당시 증거로 보존한다.
 
 - **S1 부분 확인:** rc.2 설치 모듈 + 가짜 모델 수준이며 전체 통과가 아니다. 미확인 목록은 [S1 결과 표](#s1-확인-결과)를 참조한다. 실험 스크립트·로그가 삭제되어 표는 재현 가능한 첨부 증거가 아닌 작업자 기록 수준이다. 표 내용은 그대로 보존한다.
 - **S2 구현·로컬 검증 완료:** 게이트 계약·command/converse 실행기·순차 파이프라인, 내부 결과 분리 및 회귀 테스트를 구현했다. `npm --prefix studio run typecheck`, `npm --prefix studio test`(빌드 포함), `git diff --check` 통과. Studio **219개 테스트 통과**(게이트 파이프라인 39개 + Pixie 선택 타임아웃 1개 포함). 이번 보강에서 회귀 8개를 추가했다. Node deprecation 및 기존 React DOM nesting 경고는 있으나 실패는 없다. 설치 앱·실제 모델·GUI 검증을 대신하지 않는다.
@@ -62,6 +66,8 @@ Studio는 특정 기능(양식 검증, 번역, 검색 요약, 선압축)을 직�
 - 검증: `npm --prefix studio run typecheck`, `npm --prefix studio test`(빌드 포함, **274개 통과**), `git diff --check` 통과. 실제 모델·GUI·독립 설치는 이 보강 범위에서 미검증이다.
 
 ### S4 구현 결과와 남은 검증
+
+- **정의 저장 경로 보강:** 일반 Pixie 세션 prune이 `<pixie root>/gates.json`을 sessionId `gates`로 오인해 삭제하는 경합을 발견했다. 정의는 `<data>/pixie-gate/definitions.json`으로 분리하며 첫 읽기에서 기존 파일을 검증 후 원자적 rename한다(실패 시 원본 유지, 없으면 빈 목록). 일반 prune도 파일명과 일치하는 sessionId·threads 배열을 가진 세션 envelope만 삭제한다. 결정적 이전·실패·prune 보존 테스트를 추가했다.
 
 - 정의는 `<pixie root>/gates.json`의 `{ definition, presetIds }[]`로 저장한다. 전체 목록을 검증·정규화한 뒤 직렬화된 임시 파일 rename으로 교체하며 검증/저장 오류는 Remote에 반환한다. `gateDefinitions()`·`saveGateDefinitions(payload)`는 S7 편집기용이다. 같은 프리셋·지점의 활성 게이트 중복은 거부한다(복수 게이트 실행 순서는 후속). 실행 기록 디렉터리 `gates/`와 충돌하지 않는다.
 - 프리셋 판별은 공개 `agentPresets.composedPreset(agent.ctx)`를 매 호출 사용한다. `preset-policy`의 scope ancestry 방식과 달리 연결 id 목록을 직접 대조하므로 재선택/recompose 후 별도 리스너 재설치가 필요 없다. root/child는 공개 `agents.roots()`의 현재 runtime 소유 관계이며 durable parent lineage를 추정하지 않는다.
@@ -211,7 +217,7 @@ interface GateResult {
 - **프롬프트 변수:** `{{subject}}`(현재 작업 텍스트), `{{original}}`(원문), `{{stages.<id>.text}}`, `{{stages.<id>.reason}}`, `{{stages.<id>.data}}`(JSON 문자열), `{{hooks.context}}`(일반 훅이 붙인 컨텍스트). 알 수 없는 변수는 저장 시 오류다.
 - **게이트 출력(`forward`):** 파이프라인이 `fail`이면 `forward`와 상관없이 지점의 fail 동작을 한다. 통과하면 `forward`가 다음 모델 입력을 정한다. `append`는 원문 메시지를 그대로 두고 단계 텍스트를 별도 컨텍스트 메시지(source `studio-pixie-gate`)로 붙인다. `replace`는 대상 메시지 텍스트만 바꾼다. `turn-end`·`tool-before`의 `forward`는 `original`만 허용하며 `replace`·`append`는 저장 시 거부한다. 지정 단계에 text가 없어 forward 계산이 실패하면 `forwardError`에 기록하고 `onError`를 적용한다.
 - **converse `check` 출력:** JSON `{ "pass": boolean, "reason"?: string, "fix"?: string }`을 요구하고 엄격히 검증한다. 잘못된 출력은 `error`이며 통과로 바꾸지 않는다(#25 판정 검증과 같은 원칙). `fix`는 fail일 때 교정 지시·다시 쓰기 제안으로 쓴다.
-- **judge 단계(확장):** #25 `JudgeEngine.judge({ state, questions })`를 그대로 쓴다. `state`는 `{ subject, original, stages }`. `pass` 규칙(예: noul ≥ 0.7, choice ∈ 허용 목록, score ≥ n)이 answers를 `pass`/`fail`로 바꾼다. 파이프라인은 `StageResult`만 보므로 judge 추가가 파이프라인·지점 매핑을 바꾸지 않는다. S8 전까지 정의 검증은 judge 단계를 "아직 지원하지 않음"으로 거부한다.
+- **judge 단계(확장):** #25 `JudgeEngine.judge({ state, questions })`를 그대로 쓴다. `state`는 `{ subject, original, stages, hooks }`. `pass` 규칙(예: noul ≥ 0.7, choice ∈ 허용 목록, score ≥ n)이 answers를 `pass`/`fail`로 바꾼다. 파이프라인은 `StageResult`만 보므로 judge 추가가 파이프라인·지점 매핑을 바꾸지 않는다. S8 전까지 정의 검증은 judge 단계를 "아직 지원하지 않음"으로 거부한다.
 - 조건부 건너뛰기, 병렬 그룹, 분기 그래프는 후속이다.
 
 ### 훅 계약
@@ -294,6 +300,132 @@ interface GateResult {
 - 거부된 입력 카드에는 원문, 실패 이유, 다시 쓴 제안(있으면)과 "수정해서 보내기"를 둔다(U3 결과에 따름).
 - 게이트 정의는 Studio → Pixie 설정에 `게이트` 페이지로 둔다. 단계 목록 편집, 지점별로 허용되는 결과 표시, 샘플 텍스트로 **시험 실행**(에이전트에 연결하지 않고 파이프라인만 실행)을 제공한다.
 
+## 재설계: 작업 중심 게이트 (U11–U22)
+
+사용자 피드백("단계를 세분화한 구조가 오히려 복잡하다", "UI/UX는 단순하게")에 따라 grilling으로 다시 정했다. 이 절의 결정이 아래 [확정된 결정](#확정된-결정)의 U6–U8·U10과 충돌하면 이 절이 우선한다. **현재 상태: R1–R5 구현·검증 완료(미검증 항목은 R5 기록 참조).**
+
+### 핵심 개념
+
+- Pixie Gate는 **에이전트 런타임 미들웨어**다. 명령 훅(DSH `hooks-claude-code`·`hooks-codex`)이 "규칙으로 막거나 외부 작업"을 한다면, Pixie Gate는 "정해진 순간에 **모델이 읽고 판단·가공**한 결과를 보낸다".
+- 화면의 한 문장: **언제 → Pixie가 할 일 → 결과**. 사용자는 앞의 두 칸만 고른다. 결과는 고정 계약에 따라 Pixie가 지점별로 적용한다.
+
+### 결정
+
+| ID | 결정 |
+|---|---|
+| U11 | 게이트는 "명령 훅의 대체"가 아니라 "명령 훅 위에서 모델로 판단·가공하는 층"으로 설명한다. 훅이 없어도 원문만으로 동작하는 것이 기본이다. |
+| U12 | 사용자 입장의 구성은 **언제 + Pixie가 할 일(자연어 지시)** 두 칸이다. 개입 지점·단계·역할·forward 같은 내부 용어는 화면에 노출하지 않는다. |
+| U13 | **출력 고정 계약**(모든 지점 공통, 모두 선택): 결론(통과/막음, 기본 통과) · 이유 · 바꿀 내용 · 덧붙일 내용 · 메모. 지점별 적용은 Pixie가 정하고, 지점에서 불가능한 출력은 오류가 아니라 메모로 대체한다. |
+| U14 | 결론이 막음이면 바꿀 내용·덧붙일 내용은 메인 모델로 보내지 않는다(입력 지점에서는 바꿀 내용을 거부 카드의 제안으로, 덧붙일 내용은 메모로). |
+| U15 | 판정 모델(질문·통과 기준)은 결론을 엄밀하게 정하고 싶을 때 고르는 **고급 옵션**이다. 판정은 원문을 평가하고 최종 결론을 정한다. stop이면 일반 모델 reason 우선, 없으면 기준 미달 질문·판정 실패 사유를 이유로 쓰고 replace/append는 전달하지 않는다(U14). pass이면 일반 모델의 stop도 덮어쓰며 일반 reason은 결론 이유에서 제거하고 사용자 전용 note에 `Pixie 지시 판단: <reason>`으로 보존한다(replace/append/기존 note 유지). |
+| U16 | 다단계 파이프라인(단계 1–5), 단계 종류·역할, 명령 단계, 시작·종료 훅은 **삭제**한다. 배포 전이라 마이그레이션은 없다(격리 데이터만). 판정 엔진·실행 기록·지점별 적용·거부 카드는 재사용한다. |
+| U17 | 외부 DSH 훅은 그대로 두며 Pixie는 그 출력을 읽지 않는다(Q14·Q19의 봉투/`next()` 읽기 방식은 폐기). |
+| U18 | Pixie에 연결하는 훅은 게이트 안의 **진입 지점 하나**: 고급 옵션 "준비 스크립트". 사용자는 명령을 입력하지 않고 **전용 경로의 스크립트를 고른다**. Pixie가 할 일 전에 실행하며 출력은 `{{hooks.<스크립트 이름>.text/data}}`로 쓴다. 실행 위치는 세션 작업 디렉터리, 세션 샌드박스 정책을 명시 전달한다. |
+| U19 | 스크립트 경로는 `<프로필>/studio-data/pixie-gate/commands/` 하나. 화면에는 경로 표시·복사와 목록 새로고침을 둔다(공개 API에 폴더 열기 기능이 없음). 작업 공간별 경로는 후속. |
+| U20 | 스크립트는 macOS·Linux의 bash 실행기 환경만 지원한다(Windows는 U24에 따라 후속). 설정 화면의 시험 실행에서는 세션 정책을 알 수 없어 스크립트를 실행하지 않는다. |
+| U21 | 새 게이트는 **템플릿 우선**으로 시작한다(빈 게이트는 마지막 선택지). 백그라운드형 작업(미리 압축, 파일 인덱싱)은 구현 전까지 "곧 지원" 템플릿으로만 보인다. |
+| U22 | 에이전트가 읽고 게이트·스크립트를 조립할 수 있는 `pixie-gate` 스킬 문서를 Studio에 포함한다. 결과 적용 규칙(U13·U14의 지점별 표)은 사용자 가이드 문서의 Pixie Gate 항목 설명에 넣는다. |
+| U23 | **Pixie 훅 스크립트 계약 확장.** Studio는 기능을 하나씩 만들지 않고, 스크립트가 쓸 수 있는 수단(입출력·환경 변수·헬퍼)만 제공한다. 실행 조건(예: 특정 도구만)·반복(번역→판정→재번역)·외부 작업은 스크립트가 구현한다. 화면의 도구 지정 칸은 두지 않는다. **입력** stdin = 대상 텍스트. **출력** stdout → `{{hooks.<이름>.text}}`, JSON 객체면 `{{hooks.<이름>.data}}`. **종료 코드** 0 계속 · 10 이 게이트 건너뜀(원래 흐름) · 그 밖·시간 초과 = 오류(오류 정책). **환경 변수** `PIXIE_POINT`(user-message·agent-message·tool-before·tool-after·turn-end), `PIXIE_TOOL_NAME`·`PIXIE_TOOL_ARGS`(도구 지점), `PIXIE_AGENT`(root·child), `PIXIE_SESSION_ID`, `PIXIE_TURN`, `PIXIE_GATE_NAME`, 헬퍼용 `PIXIE_URL`·`PIXIE_TOKEN`(실행별 발급·종료 시 폐기). **헬퍼** `pixie ask "<지시>" [--input]` → stdout 답, `pixie judge --question … [--threshold] [--input]` → 통과 exit 0 / 미달 exit 1, 확률 stdout. 통로는 Studio `webServer.register` 전용 경로 + 실행별 토큰(조사 결과 Q11), 권한은 그 실행의 ask·judge만, 요청 크기·호출 횟수 상한, 호출은 게이트 사용량·실행 기록에 포함. 스크립트와 헬퍼 모두 macOS·Linux의 bash 실행기 환경만 지원하며 Windows는 U24에 따라 후속 구현한다. 이 계약과 예시 스크립트(도구 필터, 번역 반복, 자막 측정, 변경 파일)는 가이드 문서에 상세히 쓴다. |
+| U24 | **훅 스크립트·`pixie` 헬퍼 지원 환경:** macOS·Linux(bash 실행기 환경)만 지원하며 Windows는 후속 구현으로 미룬다. 실행 시점에 `ctx.shell`이 bash 실행기가 아니면 스크립트를 실행하지 않고 `이 환경에서는 훅 스크립트를 지원하지 않음` 오류를 기록하고 오류 정책을 적용한다. 샌드박스를 우회하는 경로는 만들지 않는다. 실행기 판별 방법은 R2-b에서 확인한다. 사용자 안내 문구는 "DSH에서 bash 프로필을 지원하는 경우에만 사용 가능합니다."다. |
+
+### 지점별 이름과 결과 적용 (내부 규칙, 가이드 문서용)
+
+| 화면의 "언제" | 내부 지점 | 막음 + 이유 | 바꿀 내용 | 덧붙일 내용 | 메모 |
+|---|---|---|---|---|---|
+| 사용자가 지시를 보낼 때 | input(source user) | 거부 + 원문 복구 카드 | 메시지 교체(확인 옵션) | 함께 전달 | 카드 |
+| 에이전트끼리 메시지를 주고받을 때 | input(source agent-message) | 거부(보낸 쪽 피드백 경로는 구현 단계에서 확인) | 메시지 교체 | 함께 전달 | 카드 |
+| 도구를 실행하기 전 | tool-before | 실행 거부 | → 메모 | → 메모 | 카드 |
+| 도구 결과가 나왔을 때 | tool-after | 결과 차단 | 결과 교체 | 함께 전달 | 카드 |
+| 에이전트 답변이 끝났을 때 | turn-end | 다시 하라고 지시(턴당 상한) | → 메모 | → 메모 | 카드 |
+
+### 구현 단계 (재설계)
+
+- **R1 — UI 시안 (R3에서 Host 연결):** [pixie-gate-task-pages.tsx](../../src/pixie-gate-task-pages.tsx), [pixie-gate-task.ts](../../src/pixie-gate-task.ts). 게이트 구성 카드("언제 → 할 일" 한 줄)·템플릿 선택(백그라운드형 2개는 "곧 지원")·두 칸 편집 모달(언제·Pixie가 할 일, 나머지는 고급)·결과 다섯 칸 모양만 보이는 시험 실행·적용 범위(켜짐·프리셋). 상태는 화면 안에만 있고 저장·실행에 쓰이지 않는다는 안내를 두 페이지에 표시한다. 결과 적용 규칙은 화면에 쓰지 않는다(U22, 가이드 문서로). 후속 반영: 적용 범위의 프리셋 선택을 작은 창으로 옮겨 카드 높이를 고정했고, 도구 지정 칸을 없애고(U23) 고급의 Pixie 훅 스크립트 아래에 스크립트 규칙(입력·출력·종료 코드·환경 변수·헬퍼)을 요약해 보여 준다. 이전 흐름 편집기 모듈은 R3에서 지운다. 검증: Studio 테스트 428개 통과, 격리 프로필 라이트·다크 × 1440·520 화면 확인(콘솔 오류 없음).
+- **R2 — Host:** 새 저장 형식(GateTask), 출력 계약 실행기(일반 모델 JSON 출력 / 판정 옵션), 지점별 적용 규칙, Pixie 훅 스크립트 실행(U23 계약, 스크립트 목록 Remote), `pixie` 헬퍼와 로컬 HTTP·토큰 경로. 기능 단위로 나눠 각각 리뷰한다.
+#### R2-a / a1 기반 구현 (2026-07-14)
+
+- 범위: `pixie-gate-task-contracts.ts`에 런타임 의존 없는 GateTask 검증·엄격 JSON 출력 파서·지점별 적용 계획, Host `GateTaskRunner`에 일반 모델 1회 + 선택 판정 모델 1회 실행을 추가했다. **아직 저장소·Remote·미들웨어에 연결하지 않았다. 기존 실행 경로는 그대로다.**
+- 저장 계약 선택: UI `GateTask`를 기준으로 검증하며 같은 프리셋의 켜진 게이트 중복은 `when` 기준이다. user-message와 agent-message는 같은 input 내부 지점이어도 서로 다른 작업이므로 공존한다. 기존 GateDefinition 래퍼는 이 검증에서 invalid다. U16에 따라 배포 전 형식을 변환하지 않으며, a2에서 항목별 invalid 표시·원본 보존 읽기에 연결한다.
+- 출력 계약 선택: U13에 따라 verdict는 선택이며 키가 없으면 pass다. 키가 있으면 pass/stop 문자열만 허용하며 null·비문자열·알 수 없는 값/필드·마크다운은 오류다. 모델 출력 안내도 생략 가능·기본 통과로 맞췄다. 판정 옵션은 기존 LlmJudgeEngine/noul을 사용하고 판정 모델 → 일반 모델 순으로 선택한다. 판정 실패는 stop과 기존 모델 reason 또는 판정 실패 사유를 남긴다. usage는 두 호출을 합산한다.
+- 적용 계획은 원문을 받아 실제로 다른 메시지 교체에만 확인 요청을 한다. 동일 교체는 교체 없음(pass)이며 append는 유지한다. reason을 계획에 전달한다. stop/확인 요청 시 replace·append를 전달 계획에서 제외한다. 불가 지점의 replace·append는 notes에 보존한다. 메시지 지점의 replace는 거부 제안으로 보존한다. 이 계획의 5 when × 4 출력 매트릭스는 단위 테스트이며 실제 미들웨어 적용 증거는 아니다.
+- 스크립트는 파일명 검증만 하고 실행하지 않는다. 실행기에 지정하면 `스크립트 미지원` error다. 오류 정책 적용은 a2 미들웨어 책임이며 trial의 `skipped: script` 처리도 a2에 남았다.
+- 삭제/유지: 이번 a1에서 삭제 없음. 기존 단계 실행기·pipeline·저장·기록·UI 모두 유지. a2에서 저장·3 미들웨어·trial·service를 동시에 전환하고 기존 기록 필드의 호환 전략을 확정한 뒤 b에서 구형 Host 및 테스트를 제거한다.
+- 검증: 신규 결정론적 단위 테스트 31개(검증·출력·판정·usage·취소·타임아웃·적용 계획). Studio typecheck 통과. `npm --prefix studio test` 2회 연속 각각 460/460 통과(실패 0), `git diff --check` 통과. 저장 invalid 격리·실제 middleware onError/agents/maxSteers·trial·독립 설치·실모델은 a1에서 미검증. 사용자 GUI/프로필·Client Inspect 접근·배포 없음. S1 표는 변경하지 않았다.
+
+- **a1 리뷰 수정:** U13 선택 verdict, 실제 변경만 확인, U15 판정 결론·이유 귀속을 수정했다. stop의 suggestion/notes 내용·reason, 동일/상이 교체, pass+replace+append, 판정 후 적용 계획 회귀를 보강했다. red 증거: `/tmp/pixie-r2a1-fix/red.txt`(verdict·출력 안내·confirm·판정 이유). 검증: 집중 테스트 36/36, Studio typecheck, 전체 테스트 2회 연속 각각 465/465(실패 0), `git diff --check` 통과. 런타임 연결·화면 마크업/문구 변경 없음. S1 표 불변.
+- **a2 인수조건:** when→runtime 지점·source 매핑(user-message→input/source user, agent-message→input/source agent-message, 나머지 tool-before/tool-after/turn-end 동명 지점)을 검증한다. 저장 항목별 invalid 격리와 원본 보존, 실제 middleware의 onError/agents/maxSteers 적용, trial의 새 출력 계약·스크립트 건너뜀을 연결·검증한다. 이 항목들은 a1에서 구현하지 않는다.
+
+#### R2-a / a2 런타임 전환
+
+- 정의 저장·fail-open reader·input/tools/turn·trial·service를 GateTask와 단일 GateTaskRunner 실행으로 전환했다. input은 메시지마다 user/agent-message source에 대응하는 when을 선택하며, enabled·composedPreset·advanced.agents를 필터링한다. 결과 적용은 gateOutputPlan을 사용한다. next 결정 우선, 입력 트랜잭션, signal 확인 후 단일 확정, pending 거부 제안, 턴별 누적 steering 상한을 유지한다.
+- 저장은 validateGateTasks를 사용한다. 항목별 index/raw/error를 격리하고 GateEntry 래퍼는 `legacy-gate-definition`으로 표시한다. 읽기는 원본 파일을 변경하지 않는다. `<data>/pixie/gates.json` fallback 이전은 구 GateEntry 전용이므로 제거했다. 자동 변환·이전 없이 기존 파일을 보존한다.
+- 실행 기록에 when/output/usage를 저장한다. R3 전까지 카드 호환을 위해 point와 result.verdict/subject/notes/빈 stages·records·hooks/forward를 최소 투영한다. 런타임은 이 투영의 stages를 실행하지 않는다. 구 GateDefinitionsRead/GateEntry 타입은 미사용 구 편집기 컴파일용으로 유지하고 실제 Remote는 GateTasksRead를 사용한다. 카드가 gateDefinitions를 호출하지 않음을 grep으로 확인하여 소비 필드를 제거했다.
+- trial 입력은 `{ task, text, toolName? }`, 응답은 `{ output, plan, usage }`다. script 지정은 실행기·모델 호출 없이 `skipped: script` 메모와 skipped 필드를 반환한다. 일반 런타임의 script는 `스크립트 미지원` 오류와 onError 정책을 따른다. service의 DefaultStageRunner·shell·sandboxPolicy 의존을 제거했다. 설정 시안의 로컬 상태·presets 호출과 화면 JSX·문구는 유지했다.
+- 삭제: 구 런타임 계약에 종속된 input-service/judge-service/tools/turn 테스트 파일과 review-host의 구 입력 confirmation 사례. 대체 실제 미들웨어 테스트는 input 테스트에 모았다. 유지: 구 파이프라인/runner/command/hook 모듈, 구 UI 및 그 테스트, 카드/결과 표시. 참조 확인 후 삭제하는 b는 후속이다.
+- 검증: 실제 미들웨어 when 5종/source 공존/agents/enabled/preset/onError/confirmReplace/maxSteers/취소/확정 경계/기록, 저장 invalid·legacy·원본 보존, trial, 판정 설정 중 일반 출력 오류·판정 API 오류 reason 우선순위·판정 중 timeout/cancel 회귀를 포함한다. 최종 검증: `npm --prefix studio run typecheck` 통과, `npm --prefix studio test` 2회 연속 각각 420/420 통과(실패 0), `git diff --check` 통과.
+- 미검증: 사용자 GUI·프로필·실모델·독립 설치·배포·에이전트 송신 측 피드백 경로. Client Inspect 접근 없음. R2-b 스크립트/헬퍼 및 R3 화면 연결은 구현하지 않았다.
+- **a2 리뷰 보완 — 기록은 실제 적용 결과 기준:** middleware의 단일 commit 결정 이후 result.subject/forward와 end.finalText를 확정한다. 적용하지 못한 replace/append는 notes에 보존한다. value-bearing 도구 결과의 교체 금지, tool-before/turn-end의 불가 출력, stop·confirmReplace 거부·취소·입력 트랜잭션 rollback을 같은 원칙으로 처리한다. turn-end는 원래 답변을 유지하며 steer 여부와 억제 이유(existing steering/maxSteers)는 applied/reason/steerCount로 구분한다. finish 중 뒤늦은 취소는 이미 확정한 기록·동작을 바꾸지 않는다.
+- **커버리지 복원:** tools/turn 실제 리스너 경계의 stop/교체/덧붙임/value-bearing 3종, downstream deny/cancel/block/ask, 기존 context, agents·preset·enabled 필터와 child 성공, 취소 6종, 누적 턴 예산·기존 steer, 기록 metadata 및 input 확인·취소를 포함한 47개 테스트를 추가했다. 실제 Cordis PixieService.trialGate 경로에서 전용 판정 모델·프롬프트·원문·usage와 pass/stop 2개를 복원했다. 구 sandwich/subtitle 단계 조합 자체는 새 단일 작업 계약에 없으므로 재현하지 않는다. shell/session 정책 서비스 조합 2개는 shell을 다시 연결하는 **R2-b에서 복원**한다.
+- **수치·증거:** 465→420은 skip이 아니라 구 tools 23·turn 11·judge-service 3·input-service 2·review-host 5 삭제, input +3·invalid-definitions -4·trial -5·task-contracts +5로 순감소 45였다. 이번에는 +49로 469개다. [red 기록](</tmp/pixie-a2-fix/red.txt>)에 value-bearing 3건과 추가 기록 정합 회귀 7건의 실패를 보존했다. 복원 시 이미 통과한 사례는 '기존 동작 확인'으로 구분했다(서비스 fixture의 stream model/system assertion 수정은 제품 결함 red가 아님). Studio typecheck, 전체 테스트 2회 연속 각각 **469/469 통과**, `git diff --check` 통과. 화면 JSX·문구 및 S1 표 불변; 본체·사용자 GUI·프로필·배포·Client query·하위 위임 없음.
+
+#### R2-a / b 구 다단계 파이프라인 삭제
+
+- **완료:** a2 재리뷰 잔여로 downstream ask 보존 시 실행 기록의 `hooksInput === 'observed'`를 직접 검증했다. 테스트 수는 469개로 동일하며 typecheck·전체 테스트 2회 연속 469/469·diff 검사 통과 후 별도 커밋했다.
+- **삭제:** Host `pixie-gate-pipeline.ts`·`pixie-gate-runner.ts`(StageRunner·command·시작/종료 hook), 구 UI `pixie-gate-pages.tsx`·`pixie-gate-composer.tsx`·`pixie-gate-editor.tsx`·`pixie-gate-judge-editor.tsx`·`pixie-gate-trial-panel.tsx`. 미사용 GateDefinition·StageDefinition·CommandSpec·GateInput·ForwardSpec·검증기와 GateEntry/GateDefinitionsRead도 제거했다. 삭제 직전에 각 모듈의 src/test 참조가 0건인지 전용 grep 도구로 확인하고 소비자부터 순서대로 삭제했다.
+- **유지:** GateRun/GateResult/StageResult/기록 호환 타입과 판정 규칙, 실행 카드·결과 표시·Pixie 탭·수동 판정 Remote·JudgeEngine/LlmJudgeEngine·새 작업 런타임. 판정 설정에서 쓰는 editor/compose locale은 문구 변경 없이 유지했다. presets 최소 구조 타입은 PixieSettingsPage의 props에 두어 구 편집기 의존만 없앴다. 결과 표시의 사용하지 않는 definition 타입 prop을 제거했으며 JSX·화면 문구는 변경하지 않았다.
+- **테스트 정리:** editor/trial-panel/review-host/구 gate 테스트 파일은 구 경로 전용이라 삭제했다. judge 테스트의 all/any 판정 규칙, judge-ui의 결과 표시·판정 설정 3건, store의 저장·수명·usage 합산은 유지했다(usage fixture만 파이프라인 실행에서 기록 데이터로 분리). timeout 테스트는 일반 PixieRuntime의 timeout을 검사하므로 유지했다. 새 task 실행기·middleware·trial·서비스 테스트는 유지했다.
+- **검증:** 469→370(구 파이프라인·명령·hook·단계 편집/시험 사례 99개 제거, skip 전환 없음). `npm --prefix studio run typecheck` 및 `npm --prefix studio test` 2회 연속 각각 **370/370 통과**, 실패·skip 0. diff 검사에서 테스트 EOF 공백 1건을 발견해 정리한 뒤 최종 재검증했다. S1 표·과거 S2–S9 본문은 보존하고 삭제된 파일 링크만 삭제됨으로 표시했다. 디자인 시스템 부품 표에는 삭제 대상 링크가 없었다.
+- **범위 밖/미검증:** R2-b 스크립트·헬퍼, R3 UI 연결, 실모델·독립 설치·시각 확인은 후속이다. 본체 변경·사용자 GUI/프로필·배포·Client query·하위 위임·푸시는 하지 않았다.
+
+#### R2-b1 — Pixie 훅 스크립트 실행
+
+- **범위:** 전용 `<data>/pixie-gate/commands/`의 실행 가능 파일만 선택한다. 이름의 구분자·절대 경로·`..`를 거부하고 파일 realpath의 부모와 commands realpath를 비교한다. 외부 심볼릭 링크·디렉터리·비실행 파일은 실행/목록에서 제외한다. 디렉터리가 없으면 생성하지 않고 빈 목록을 반환한다. realpath 확인과 프로세스 실행 사이의 파일 교체 경쟁까지 원자적으로 막는 API는 없으므로, 프로필 commands 디렉터리는 신뢰하는 사용자가 관리해야 한다.
+- **U24 판별 근거/한계:** Host Inspect `Service.listService(shell)`은 shell을 **Abstract bash execution service**로 정의하고 `resolve`/`execute`만 제공한다. `sandboxPolicy.resolve({session})` 계약도 확인했다. 서비스 카탈로그와 `configEditor`의 `entries`/`configuration`은 설정 행만 제공하고 해당 행이 현재 `ctx.shell` 인스턴스를 소유하는지 또는 bash 실행기인지 보장하는 공개 판별 계약은 없다(`loader`는 catalogued service가 아님). 따라서 요청에서 허용한 `process.platform !== 'win32'`를 1차 기준으로 하고 shell 서비스 존재를 추가 확인한다. 이는 비-Windows 사용자 정의 shell 구현이 공개 bash 계약을 지키는지까지 검증하지 못한다. 비지원이면 `hook-script-unsupported: 이 환경에서는 훅 스크립트를 지원하지 않음` 오류 후 onError를 적용한다. 사용자 프로필 설정 값은 조회하지 않았다.
+- **실행:** 공개 shell.resolve/execute/result만 사용한다. session.header.cwd와 sandboxPolicy.resolve({session}) 결과를 명시 전달하며 누락/세션 불일치는 실행하지 않는다. stdin은 대상 텍스트, 환경은 PIXIE_POINT/TOOL_NAME/TOOL_ARGS/AGENT/SESSION_ID/TURN/GATE_NAME이다. PIXIE_URL/PIXIE_TOKEN은 전달하지 않는다. advanced.timeoutMs·kill·256KB stdout 상한과 취소 signal을 전달하고 결과의 timeout/abort/truncation/실제 바이트 길이를 확인한다. 별도 spawn 또는 샌드박스 우회는 없다.
+- **출력:** exit 0은 앞뒤 개행만 정리한 text 및 JSON 객체 data를 instruction에 치환한다(이름은 기존 taskVariables처럼 마지막 확장자를 제거). 저장 시 미정의 변수를 거부한다. exit 10은 모델/판정을 호출하지 않고 원래 흐름과 applied none을 유지하며 note에 `skipped by hook`을 남긴다. 다른 exit/실행 실패는 onError로 간다. trial의 `skipped: script`는 유지한다. gateScripts Remote는 directory 절대 경로·scripts 이름 목록·supported를 반환하며 Client는 타입만 추가했다.
+- **검증:** 실행기/저장 검증 및 실제 PixieService/Cordis 세션 정책 조합 2건에서 red를 먼저 확인했다. [red 요약](</tmp/pixie-r2b1/red.txt>)에 실패 원인과 후속 경계 테스트(추가 시 이미 green)를 구분했다. 다섯 지점의 skip/원문/도구 환경·applied none, 경로 탈출, 비지원·정책 누락 onError, text/JSON, exit/timeout/출력 초과, 취소, 목록을 검증한다. 최종 `npm --prefix studio run typecheck`, `npm --prefix studio test` **404/404 두 회 연속 통과**(fail/cancelled/skipped 모두 0), `git diff --check` 통과. R2-a/b 기준 370개에서 스크립트 경계 32개와 서비스 조합 복원 2개를 추가했다. 로그는 `/tmp/pixie-r2b1/test-1.txt`, `/tmp/pixie-r2b1/test-2.txt`에 남겼다.
+- **미검증/후속:** 실제 bash 샌드박스 실행·macOS seatbelt·Linux bwrap·사용자 정의 비bash shell 식별·독립 설치/배포·실모델·GUI는 미검증이다. 사용자 GUI/프로필 접근·Client Inspect·본체 수정·하위 위임은 하지 않았다. R2-b2는 pixie ask/judge 헬퍼, 로컬 HTTP, 실행별 토큰·상한·사용량 통합을 맡는다. R3 화면 JSX·문구는 변경하지 않았다.
+
+#### R2-b2 — `pixie ask/judge` 헬퍼·로컬 HTTP·실행별 토큰
+
+- **통로:** 공개 `webServer.register({ kind: 'prefix', path: '/studio/pixie-gate/helper' })`. `ctx.inject(['webServer'])` 범위의 effect로 등록·해제하며, `PIXIE_URL`은 서버의 `protocol`/`host`/`port` 공개 getter로 만든다. webServer가 없는 구성에서는 스크립트에 `PIXIE_URL`/`PIXIE_TOKEN`을 주지 않고 `pixie`가 "helper is not available" 오류(exit 2)를 낸다. 별도 서버 listen·spawn·샌드박스 우회는 없다.
+- **토큰:** 스크립트 실행마다 32바이트 난수 토큰을 발급하고 Host는 SHA-256 해시만 보관한다. 스크립트 종료(성공·오류·취소·timeout) 즉시 `finally`에서 폐기하며, 폐기는 진행 중 헬퍼 호출도 abort한다. 토큰 권한은 그 실행의 `POST /ask`·`POST /judge`뿐이다. 다른 경로 404, 다른 메서드 405, 무효·폐기 토큰 401.
+- **상한:** 실행당 호출 20회(429), 요청 본문 256KB(413, 4배 초과 시 연결 종료). 헬퍼 호출 signal은 게이트 실행 signal(취소·`advanced.timeoutMs`)·토큰 폐기·클라이언트 연결 종료를 합친다.
+- **헬퍼 명령:** `<data>/pixie-gate/bin/pixie` bash 스크립트를 첫 실행 때 원자적으로 설치하고 스크립트 `PATH` 앞에 둔다. curl을 사용하며 토큰은 명령행이 아닌 `-K <(...)` 설정으로 전달하고 파일을 쓰지 않는다(read-only 샌드박스 대응). `pixie ask "<지시>" [--input]` → 답 stdout, exit 0. `pixie judge --question … [--threshold 0.5] [--input]` → noul 확률 stdout, 통과 exit 0 / 미달 exit 1. 사용법·HTTP 오류는 exit 2. `--input`이 없으면 입력은 게이트 대상 텍스트다.
+- **모델·기록:** ask는 Pixie 일반 모델, judge는 판정 모델 → 일반 모델 순(기존 판정 시스템 프롬프트·LlmJudgeEngine). 두 호출의 usage는 게이트 usage에 합산되고, 호출마다 `result.records`에 `pixie-ask-N`(note/error)·`pixie-judge-N`(pass/fail/error, data `{ noul, threshold }`) StageRecord로 남는다. 헬퍼 실패는 스크립트 안에서만 보이며 게이트 결과는 스크립트 종료 코드가 정한다. `HOOK_ENV`에 `PIXIE_URL`·`PIXIE_TOKEN`을 추가했다(화면 JSX·문구 불변).
+- **검증:** [헬퍼 테스트](../../test/pixie-gate-helper.test.mjs) 8개는 실제 node:http 서버 + 실제 bash·curl로 헬퍼 명령을 실행해 ask/judge·stdin·유니코드·임계값·토큰 폐기/위조/부재·호출/크기 상한·메서드/경로·취소 전파, runner를 통한 env 전달·usage 합산·records·실행 후 토큰 폐기·헬퍼 실패 후 스크립트 exit 10을 확인한다. [서비스 테스트](../../test/pixie-service.test.mjs)에 실제 Cordis PixieService의 webServer 라우트 등록/해제와 env 전달 1개를 추가했다. 테스트는 구현 전에 작성했으나 모듈 부재 외의 독립 red는 관찰하지 않았다. 최종 `npm --prefix studio run typecheck`, `npm --prefix studio test` **413/413 두 회 연속 통과**(fail/cancelled/skipped 0, 404 + 헬퍼 8 + 서비스 1), `git diff --check` 통과.
+- **미검증/한계:** 실제 DSH 샌드박스(macOS seatbelt·Linux bwrap) 안에서 loopback 접속 가능 여부, 실제 bash-local 실행기, curl이 없는 환경, webServer가 loopback이 아닌 주소에 바인드된 구성(토큰이 그 주소로 전송됨), TLS 자체 서명 인증서 구성, 실모델·독립 설치·GUI는 미검증이다. 사용자 GUI/프로필·Client Inspect·본체 수정·하위 위임·푸시는 하지 않았다.
+
+#### R3 — UI 연결
+
+- 게이트 구성·적용 범위 두 페이지가 같은 초안 목록을 `gateDefinitions`로 읽고 페이지 머리의 **저장**으로 `saveGateDefinitions` 전체 교체한다. 저장 전 변경은 안내 띠로 보이고, Host 검증 실패는 오류 줄에 원문 메시지로 남기며 초안을 유지한다. 읽을 수 없는 항목은 개수와 사유를 보여 주고 저장하면 빠진다고 알린다. "화면 시안" 안내를 지웠다.
+- 스크립트 선택은 `gateScripts` 목록(편집기 열 때·새로고침)을 쓰고 실제 폴더 경로를 표시·복사한다. 폴더에 없는 저장 스크립트는 `(폴더에 없음)`으로 남기고, 비지원 환경이면 안내한다. `PROTOTYPE_SCRIPTS`는 삭제했다.
+- 시험 실행은 `trialGate`를 실제로 부르며 취소할 수 있다. 결과는 출력 다섯 칸 + 실제 적용(막음·교체 전 확인·교체·덧붙임·통과) + 토큰 사용량이다. 스크립트 게이트는 실행하지 않는다는 안내를, 도구 지점은 예시 도구 이름 칸을 둔다.
+- 실행 카드: 단계가 없는 작업 실행에서는 빈 "단계" 제목을 숨기고 **Pixie 출력**(다섯 칸·사용량), **메모**, **헬퍼 호출**(`pixie-ask-N`/`pixie-judge-N`, 판정 확률·기준)을 보여 준다.
+- 검증: 게이트 UI jsdom 테스트를 저장·실패·시험 실행·취소·스크립트 목록·없음 표시로 갱신했고, 실세션 실행 기록을 fixture로 저장해 카드 렌더링을 검사한다.
+
+- **R3 후속(사용자 피드백):** 적용 범위를 프리셋별 묶음(프리셋마다 걸리는 게이트 행·켜짐 토글·같은 시점 중복 경고, 프리셋 미지정은 맨 아래)으로 바꿨다. 스크립트 폴더는 기본 `<프로필>/studio-data/pixie-gate/commands/`이고 적용 범위의 **스크립트 폴더**에서 절대 경로·`~/…`로 바꾼다(`pixie-gate/settings.json`, Remote `saveGateScriptDirectory`, 실행마다 읽음, 상대 경로 거부, 폴더 자동 생성 없음). U19의 "작업 공간별 경로는 후속"은 유지한다. 게이트 실행 목록 카드는 이름·상태·지점·시각(도구 이름)만 두고, 상세는 적용·판정·이유·턴/도구·토큰 표 + 거부(원문·이유·제안·동작) + Pixie 출력(바꿀·덧붙일·메모) + 원문(변경 없음 표시)/최종 텍스트 + 함께 전달한 내용 + 메모 + 헬퍼 호출 순으로 재구성했다. 긴 텍스트는 높이 제한 상자로 보인다.
+
+- **R3 후속 2(사용자 피드백):** 템플릿은 지점마다 대표 하나(양식 검사·에이전트 대화 규격·위험한 명령 차단·긴 도구 결과 요약·최종 답변 검증)와 빈 게이트만 두고 "곧 지원" 항목을 지웠다(U21 변경: 백그라운드형은 목록에서 제외). 적용 범위는 Studio에서 만든 프리셋(`listPresets`의 readOnly 제외)을 나열하고 프리셋마다 **게이트 추가**·**프리셋에서 빼기**·프리셋별 스위치를 둔다. 프리셋별 스위치는 `disabledPresetIds`(선택, 걸린 프리셋만 유지)에 저장하고 `enabled`는 게이트 전체 스위치(게이트 구성 카드)로 남긴다. 실행 매칭과 "같은 프리셋·같은 시점 하나" 검증은 프리셋별 상태(`enabledFor`)를 쓴다. 수정 전에는 한 프리셋에서 토글하면 `enabled`를 바꿔 모든 프리셋에 영향을 줬다(회귀 테스트 red 확인). Studio 프리셋이 아닌 곳에 걸린 게이트는 "다른 프리셋" 묶음에서 빼기만 가능하다. 새 게이트는 켜진 상태로 만들고 복제본은 프리셋 없이 만든다. 스크립트 폴더의 스크립트 개수 표시는 지우고 공개 `session.openWorkspacePath`로 **폴더 열기**를 추가했다(Host가 경로를 검증, 데스크톱에서만 동작).
+
+- **U25–U26 (사용자 결정):** 게이트의 역할은 **미들웨어 제어 지점 제공**으로 한정한다. 훅 스크립트 처리 형식(준비 스크립트 → Pixie 지시)은 유지한다. 게이트의 "판정 모델로 결론 정하기" 옵션(U15)과 관련 화면·템플릿 질문을 삭제한다. 판정(결정) 모델은 게이트와 분리한 별도 기능으로 후속 설계한다(새 이슈). 스크립트 헬퍼 `pixie judge`와 Pixie 탭의 수동 판정·판정 설정은 유지한다. 저장된 `advanced.judge`는 검증에서 무시·제거하므로 기존 파일도 읽힌다.
+- **R3 후속 3:** 적용 범위 맨 위에 스크립트 폴더를 두고, "다른 프리셋에 걸린 게이트" 카드를 없앴다(Studio 프리셋에 걸리지 않은 게이트는 "아직 추가하지 않은 게이트"로 모임). 프리셋 머리(이름·개수 / 게이트 추가)와 게이트 행(이름·시점 / 프리셋에서 빼기·스위치)을 같은 높이·오른쪽 정렬로 맞췄다. 화면 한국어 문구는 의도·용어 표를 담은 브리프로 Worker에게 검토·수정을 맡겼다.
+
+- **R3 후속 4 (사용자 결정):** 판정 기능 UI를 Studio에서 모두 뺀다. Pixie 설정의 **판정** 페이지와 세션 Pixie 탭의 **판정** 탭, 수동 판정 Remote(`studioPixie.judge`)를 삭제했다. 헬퍼 `pixie judge`는 Pixie 모델과 기본 판정 프롬프트를 쓴다. 저장된 `judgeModel`/`judgeSystemPrompt`는 설정 파일 호환을 위해 읽고 그대로 저장하지만 쓰지 않는다(별도 판정 기능에서 다시 정한다). 사용자 한국어 피드백을 그대로 반영했고(모델 설명, "Pixie에게 보낼 내용", 결과 가이드 링크, 스크립트 설명, "게이트 테스트" 등), 설명이 불필요한 문구(게이트 구성 설명, 고급 설명, 최대 토큰 설명, 폴더 생성 안내)는 지웠다. 적용 범위의 "적용 프리셋이 없는 게이트" 카드를 지웠다: 게이트는 프리셋의 **게이트 추가**로만 쓰인다.
+
+#### R4 — 문서·스킬
+
+- 사용자 가이드 [Pixie Gate 가이드](../../release/docs/appendix/pixie-gate.ko.md)([English](../../release/docs/appendix/pixie-gate.md)): 만들기 절차, 지점별 결과 적용 표(U13·U14), 고급 옵션, 스크립트 계약(stdin·stdout·exit·환경 변수), `pixie` 헬퍼, 예시 스크립트 4개(도구 필터·자막 측정·번역 반복·변경 파일), 실행 기록, 문제 해결. 사용 가이드 목차에 연결했고 화면의 가이드 링크(`GATE_GUIDE_URL`)를 이 위치로 맞췄다.
+- 스킬 [dsh-studio-pixie-gate](../../release/docs/appendix/pixie-gate/SKILL.md): 지점 선택, 할 일 작성, 스크립트 작성·설치, 정의 형식, 확인 방법. 기존 preset-check 스킬처럼 release 문서와 함께 배포된다.
+- 자막 준비 템플릿은 가이드 예시와 같게 `{{hooks.measure-subtitle.data}}`를 쓴다.
+
+#### R5 — 통합 검증
+
+- [검증 기록](../verification/pixie-gate-r5/README.md): 설치 DSH 0.2.0-rc.2 격리 프로필, Pixie·세션 모두 deepseek-flash/low, 실제 API 키. 입력 거부(헬퍼 judge fail) → 완료 조건 추가 후 덧붙임(헬퍼 ask/judge pass) → `gate-sample.txt` 결과에만 덧붙임(그 외 스크립트 exit 10) → 첫 답변 교정 → 재답변 통과를 세션 이벤트·실행 기록·Pixie 탭에서 확인했다. 같은 결과를 최종 세션 2개에서 재현했다.
+- 실세션에서 rc.2 `webServer`의 `protocol` getter 부재·지연 port로 헬퍼 URL이 `undefined`가 되는 결함을 발견해 red 테스트 후 수정했다.
+- 화면: 게이트 구성·편집기(실모델 시험 실행)·적용 범위·실행 기록을 라이트·다크 × 1440·520 캡처, 콘솔 오류 없음.
+- 미검증: 0.2.1-alpha.2, Linux·read-only 세션·Windows, `agent-message`·`tool-before` 실세션, 거부 카드 버튼 클릭, 사용자 GUI(19387)·desktop 프로필 배포.
+
 ## 확정된 결정
 
 | ID | 결정 |
@@ -306,6 +438,8 @@ interface GateResult {
 | U6 | 게이트는 **1–N개 단계의 순차 파이프라인**이다. 명령·일반·판정 단계를 `판정 → 일반 → 판정`처럼 자유롭게 섞는다. 이번 상한은 **5개**다. 판정 단계 실행은 일반 단계 완성 뒤 S8에서 연결한다. |
 | U7 | 단계 종류에 **명령(bash) 단계**를 더한다. 명령 단계·게이트 시작/종료 훅은 [훅 계약](#훅-계약)을 따르고, 게이트는 같은 지점의 일반 훅 결과를 입력으로 읽고 시작·종료를 명령 훅과 Cordis 이벤트로 알린다. |
 | U8 | 게이트 출력 `forward`(original / replace / append)가 다음 모델 입력을 정한다. 자막 번역 예시(명령 → 판정 → 일반 → append)를 기준 시나리오로 삼는다. |
+| U9 | 판정 전용 `judgeModel`·`judgeSystemPrompt` 설정을 분리한다. 모델 미설정 시 Pixie 기본 모델, 프롬프트 미설정 시 Jev JSON 출력 기본 판정 프롬프트를 사용한다. #25 수동 판정 시험도 같은 설정을 사용한다. 단계 model이 최우선이다. |
+| U10 | **(U11–U22로 대체됨)** 게이트 설정은 Pixie 설정 왼쪽 메뉴의 별도 `게이트` 그룹으로 분리한다. `게이트 구성`(게이트 카드 + 흐름 편집 모달)과 `적용 범위`(켜짐·연결 프리셋·대상 에이전트·입력 출처·도구 이름) 두 페이지를 둔다. 흐름 모달은 개입 지점 → 시작 훅 → 단계 1–5 → 종료 훅 → 결과 → 시험 실행을 노드로 보여 주고, 각 노드에 입력·출력을 표시한다. 시작 템플릿은 하나(자막 번역 준비)를 둔다. 저장 형식(`GateEntry`)과 Host는 바꾸지 않는다. |
 
 ## 구현 단계
 
@@ -350,6 +484,8 @@ interface GateResult {
 
 ### S4 — `input` 지점 연결 (R1·R2)
 
+- 재리뷰 조건 해소: 정의 읽기는 `{ entries, invalid: [{ index, raw, error }], error? }`로 항목 실패를 격리하고 깨진 파일·invalid 이전 원본을 보존한다. 저장은 전체 검증하며 런타임 4개 지점은 읽기 실패 시 fail-open·동일 경고 60초 제한, Remote/편집기는 복구 정보와 삭제·덮어쓰기 확인을 제공한다.
+
 - 선행: S3.
 - 책임: `agent/pre-step` 바인딩(바깥쪽 등록), source·에이전트 필터, `next()` 결과에서 일반 훅 컨텍스트 읽기, 대상 메시지 교체·append·거부, `pixie-gate/start`·`end` 이벤트, 프리셋 범위 적용.
 - 호출자 책임(S4–S6): end 훅 도중 외부 취소에도 GateResult 판정은 유지되므로 실제 동작 적용 직전에 `signal.aborted`를 확인한다.
@@ -385,6 +521,64 @@ interface GateResult {
 - **수정해서 보내기 미구현:** Client Inspect 조사도 아직 하지 않았다. 사용자 GUI 무접근 조건을 지키기 위해 향후 격리 GUI가 연결된 Inspect에서 공개 입력 API를 조사하고, 불가하면 복사 + 실제 전송이 아닌 보냈음 표시(resent)로 구현한다.
 - **미검증:** 격리 서버 시각 확인·스크린샷, 독립 설치, 사용자 앱 배포, 사용자 시각 확인 모두 미실시. 사용자 GUI(19387)와 desktop 프로필은 접근/변경하지 않았다. S1 표는 변경하지 않았다.
 
+#### S7 부분 진행 — 설정 게이트 편집기
+
+- Pixie 설정의 DetailLayout에 `게이트` 페이지를 연결했다. 목록(이름·지점·켜짐·프리셋 수·단계 수), 추가·복제·삭제, match/정책/forward/limits/훅/Studio 프리셋 연결과 단계 편집을 제공한다. 복제본은 활성 중복을 피하도록 꺼진 상태로 만든다.
+- 단계는 1–5개이며 추가 상한 사유, 최소 삭제 제한, 위/아래 이동, 명령/일반 편집, 판정 비활성, 모델 기본값 및 앞 단계 ID 기반 변수 안내를 제공한다. 지점 변경으로 금지된 revise는 check로, forward는 original로 정리하고 Notice로 명시한다. 보이지 않는 불법 값을 남겨 저장을 막는 대신 변경 내용을 즉시 알려 주는 선택이다.
+- `validateGateDefinition`의 첫 오류를 locale 문구와 필드 주소로 매핑한다. 목록 전체를 검증한 뒤 `saveGateDefinitions`로 교체한다. 저장 중 편집을 잠그고, 변경 없음/변경/저장 중 버튼 상태 및 Host 오류 Notice·편집 유지·재시도를 제공한다. 기존 공용 부품/스타일만 사용하여 디자인 시스템 표와 HTML 스타일 스냅샷 변경은 없다.
+- 검증: `npm --prefix studio run typecheck`, `npm --prefix studio test` **326개 통과**(신규 jsdom 7개), `git diff --check`. Node deprecation 및 기존 RoleEditor heading nesting 경고는 남아 있다. 코드 리뷰는 요청대로 S9 이후로 미룬다.
+- **이번 범위의 미완료:** 시간 예산에 따라 편집기를 우선 커밋한다. 시험 실행 패널, trialGate Remote descriptor/취소 연결, GateResultDetails 연결, 현재 세션 공개 API 확인 및 명령 실행 옵션·payload 테스트는 다음 작업이다. 현재 세션을 추측하거나 사용자 GUI Client Inspect를 호출하지 않았다.
+- **S7 남은 것:** Pixie 탭 실행 카드/followGates, 거부 카드의 수정해서 보내기, 격리 GUI 라이트·다크·좁은 폭 시각 확인. 사용자 GUI(19387)·desktop 프로필 접근 및 배포, 독립 설치는 하지 않았다. S1 표는 변경하지 않았다.
+
+#### S7 부분 진행 — (A) 설정 시험 실행 패널
+
+- 편집기 아래에 샘플 입력(필수), tool-*의 도구 이름(필수), 일반 훅 컨텍스트(선택), 기본 꺼짐 명령 실행, 실행/취소와 `GateResultDetails`를 연결했다. 저장 API를 호출하지 않고 현재 draft를 복제해 전달한다. 결과·단계 생략·소요 시간·오류 Notice를 표시하며 사용량은 표시하지 않는다. 선택 게이트 변경/언마운트 시 취소하고 취소 이후 늦은 결과는 폐기한다.
+- `trialGate` descriptor에 cancellation을 선언하고 `AbortController` 기반 `{ result, cancel }` handle을 연결했다. 공개 Remote의 optional AbortSignal 계약은 [gateway Client](../../../packages/api/gateway/src/client/index.ts#L495-L531)에서 확인했다. 셸의 기존 단일 `$mount` 조립 경로에 descriptor가 합쳐진다.
+- **세션 선택:** 공개 Session Slot에는 framework가 sessionId를 전달한다([ui-slots](../../../packages/client/ui-slots/src/index.ts#L614-L625)). 기존 Pixie 사이드바도 해당 prop을 사용한다([pixie-client](../../src/pixie-client.tsx#L149-L152)). 반면 설정 서비스는 [shell](../../src/shell.tsx#L74-L83)의 root scope이다. 따라서 전역의 임의 활성 세션을 추측하지 않고 설정에서는 명령 실행을 비활성화하며 “설정 화면에서는 세션 정책을 알 수 없어 명령 단계를 실행하지 않습니다”를 표시한다. 패널의 명시적 sessionId seam에서는 opt-in 활성/payload를 테스트하되 현재 설정 경로에서는 sessionId를 제공하지 않는다. 실제 실행 정책 검증은 기존 Host가 담당한다.
+- **Client Inspect 미사용(사용자 GUI 보호):** Provider 목록만 확인했으며 client query는 사용자 GUI(19387)에 전달되므로 호출하지 않았다. Host `Service/listService(studioPixie)`는 미등록 오류여서 런타임 계약 확인 증거로 사용하지 않았다. 공개 소스 정적 조사로 대체했고 격리 Client Inspect/실제 시각 확인은 다음 워커로 넘긴다.
+- 기존 공용 부품·스타일만 사용했다. 새 공용 부품이나 CSS 변경이 없어 디자인 시스템 표 및 HTML 스냅샷 재생성은 필요하지 않다. ko·en·zh 문구를 제공한다.
+- 검증: `npm --prefix studio run typecheck`, `npm --prefix studio test` **332개 통과**(신규 jsdom 6개: draft·결과·skipped, 세션 없음 비활성, 명시적 세션 명령 opt-in/tool payload, 취소/늦은 결과 폐기, 오류 Notice, 언마운트 취소), `git diff --check`. 초기 테스트에서 Toggle을 checkbox로 가정한 assertion은 실제 switch의 aria-checked 검사로 수정했다. 기존 Node deprecation 및 RoleEditor heading nesting 경고는 유지된다.
+- **다음 작업 (B):** Pixie 탭 실행 카드, applied 상태/상세·pending 거부 처리, followGates sync 재조회·run 반영·재연결, 560px 목록/상세 전환, 공개 입력 채우기 API 정적 조사 및 격리 Client Inspect 확인. B 코드는 아직 변경하지 않았다. 격리 GUI 시각 검증·독립 설치·사용자 배포는 미실시이며 S1 표는 변경하지 않았다. 코드 리뷰는 S9 이후 일괄 수행한다.
+
+#### S7 부분 진행 — (B) Pixie 탭 게이트 실행 카드
+
+- `스레드 / 판정 / 게이트` 중 게이트에 기존 스레드 카드의 목록+상세·560px container 전환과 뒤로 가기 IconButton을 재사용했다. 이름·지점·시각·원문 미리보기, applied 기반 Badge, hooksInput unverified 메타를 표시한다. pending 거부는 별도 상태 Badge와 상단 정렬로 미처리 원문을 먼저 찾게 한다(각 그룹은 최신순). 고정 속성은 Badge로 만들지 않았다.
+- Badge 매핑: pass→통과, replaced→교체, appended→덧붙임, rejected→거부, steered→교정, blocked/denied→차단. applied=none일 때만 status running/error/cancelled→진행 중/오류/취소, done→없음이다. verdict로 적용을 추론하지 않는다. 상세는 `GateResultDetails`와 applied·reason, turn-end의 turn/steerCount, tool-*의 name/callId를 표시하며 사용량은 숨긴다.
+- **수정해서 보내기:** 공개 [SessionInput.setDraft](../../../packages/client/ui-conversation/src/client/contract/input.ts#L176-L179)와 [focus/SessionInputResolver.for](../../../packages/client/ui-conversation/src/client/contract/input.ts#L202-L214), [conversation.input](../../../packages/client/ui-conversation/src/client/service.ts#L41-L42)을 이용한다. [QueueDock의 sessions.scope → conversation.input.for](../../../packages/client/ui-conversation/src/client/queue/QueueDock.tsx#L399-L405), 다른 플러그인 [ui-commands의 session-routed input 사용](../../../packages/client/ui-commands/src/client/service.ts#L473-L478)을 정적 근거로 삼았다. 현재 Pixie 탭의 sessionId scope를 조회하고 제안(없으면 보존 원문)으로 초안을 교체한 뒤 focus한다. 초안 교체임을 안내한다. 전송/자동 resent 처리는 하지 않고 사용자가 별도 `보냈음 표시`로 확인한다. 해당 버튼은 실제 전송이 아니라는 안내를 표시하며 `무시`는 dismissed를 전달한다. API 부재/실패는 Notice로 표시하고 pending을 유지한다. 다음 input 원문 자동 감지는 과도한 연결을 피하려 생략했다.
+- `gateRuns/followGates/resolveGateRejection` descriptor는 기존 단일 Remote contribution에 합쳤다. #25 follow 연결/재시도 로직을 공용 함수로 추출해 기존 스레드와 게이트가 함께 사용한다. sync마다 기록을 재조회하고 run은 id로 갱신한다. snapshot 도중 run 이벤트가 오면 이벤트 값이 우선하며 오래된 snapshot/언마운트 결과는 폐기한다. 재연결의 Host sync로 재조회하고 언마운트에 스트림·재시도 타이머를 해제한다.
+- ko·en·zh 제공. 기존 공용 부품/CSS만 재사용하여 새 공용 UI 부품·스타일 변경이 없으며 디자인 시스템 표/HTML 스타일 스냅샷 재생성은 불필요하다.
+- 검증: `npm --prefix studio run typecheck`, `npm --prefix studio test` **340개 통과**(신규 8개), `git diff --check`. 목록/상세·전체 Badge 매핑·거부 채우기/명시적 resent/dismissed·오류 유지·sync/run 경합·재연결/해제·560px CSS와 data-open 전환·빈 목록·공개 composer scope/Remote 인자를 검증했다. lean-shell의 단일 `$mount` 검증도 전체 테스트에 포함된다. jsdom은 실제 CSS 배치를 계산하지 않으므로 좁은 폭 시각 검증을 대신하지 않는다. 기존 Node deprecation/RoleEditor heading nesting 경고는 남아 있다.
+- **Client Inspect 미사용:** 목록 조회 후 Host `Service/listService(studioPixie)`는 미등록 오류였으며 런타임 확인 증거로 삼지 않았다. Client query는 사용자 GUI로 전달되므로 호출하지 않았고 공개 소스로 대체했다. 사용자 GUI(19387)·desktop 프로필 접근/배포, 독립 설치, 코드 리뷰는 수행하지 않았다. S1 표 불변, 리뷰는 S9 이후 일괄이다.
+- **다음 워커: 격리 시각 확인·스크린샷.** 라이트/다크 × 넓은 폭/560px 이하에서 (1) 빈 게이트 탭, (2) 전체 적용 상태 카드와 pending 상단 정렬·unverified, (3) 거부 원문/이유/제안·초안 채우기·보냈음/무시, (4) turn-end 상한 reason/횟수, (5) tool-before/after 이름/callId·공유 단계/훅 결과, (6) running→완료 및 연결 끊김→sync 복구, (7) 기존 스레드/판정 탭 회귀를 확인한다. 데이터 모양은 [신규 테스트](../../test/pixie-gate-runs.test.mjs)의 run/pending/result fixture를 사용한다. 격리 scaffold는 GateRunsPanel/GateRunActions에 fixture·sync/run을 공급하면 모델 없이 화면을 준비할 수 있다. 실제 composer/재연결 확인은 별도 격리 런타임에 Studio를 설치하고 세션을 만든 뒤 게이트 정의를 연결하여 실행한다. 사용자의 프로필/GUI를 데이터 준비에 사용하지 않는다. S7은 이 시각 검증이 남아 미완료이며 S8–S9는 대기한다.
+
+#### S7 UI/UX 검토 반영
+
+- 지점 ko·en·zh 공용 표시, 단계별 건너뜀 Badge·이유, 자연스러운 목록 메타, 유효하지 않은 시각 `—`, 편집기 섹션 분리·모델 select 통일, 명령 실행 인라인 스위치, pending 단일 Badge·거부 상세 제목을 반영했다. 시험 실행은 꺼진 게이트도 정의 사본의 `enabled=true`로 평가하고 결과 위에 실제 실행 미적용 안내를 표시하며, 저장 상태와 런타임 input의 비활성 필터는 유지한다. 검증: Studio typecheck 및 테스트 **347개 통과**, `git diff --check`; 격리 19391에서 라이트·다크 × 1440·520 캡처(`/tmp/pixie-gate-s7-shots-v2/INDEX.md`). 기존 실행 기록을 사용하고 누락된 정의 2개만 승인 후 복구, pending 시각은 0으로 조정했다. 사용자 GUI·desktop 프로필 미접근, S1 표 불변, 코드 리뷰는 S9 이후.
+
+#### S7 UI/UX 2차 다듬기
+
+- 소요 시간은 1ms 미만 `<1 ms`, 그 외 정수 ms, 1000ms 이상 소수 한 자리 초로 ko·en·zh 표시한다. 건너뛴 단계는 중복 없이 집계하여 전체 판정 옆에 보조 표시하며 판정 값은 유지한다.
+- 비활성 게이트 시험 안내는 공용 Notice의 `tone="info"`(status)로 표시한다. 기존 기본 error/alert 호출부는 그대로 유지한다. 프리셋 다중 선택은 입력 출처와 공유하는 Node-testable `CheckOption` 체크박스 목록으로 바꾸며 누락된 프리셋 ID도 제거 가능하게 유지한다.
+- 검증: `npm --prefix studio run typecheck`, `npm --prefix studio test`(빌드 포함) **350개 통과**, `git diff --check`. 시간 경계·locale·건너뜀 집계·정보 Notice·다중 선택 jsdom 회귀를 확인했다. 기존 Node deprecation/React nesting 경고는 남아 있다.
+- `roles-ui.expected.html`과 생성기는 현재 저장소에 없으므로 재생성하지 못했다(#24에도 같은 제약 기록). 기존 디자인 규칙·스타일 격리 테스트는 통과했다. 이번 변경의 GUI 시각 확인·독립 설치·실제 모델은 미검증이며 사용자 GUI/프로필에는 접근하지 않았다. S1 표 불변, 코드 리뷰는 S9 이후.
+
+#### S7 UI 재설계 — 게이트 구성과 적용 범위
+
+- **위치:** Pixie 설정 왼쪽 메뉴에서 `판정` 아래 `게이트` 그룹을 새로 두고 `게이트 구성`, `적용 범위` 두 페이지를 둔다. 기존 단일 `게이트` 편집 페이지는 제거했다(`pixie-gate-pages.tsx`(R2-a/b에서 삭제됨)).
+- **게이트 구성:** 게이트를 카드(`studio-card-pair`)로 보여 준다. 카드에는 이름·개입 지점·켜짐 배지, 단계 흐름 요약(시작 훅 → 단계 종류·역할 → 종료 훅), 연결 프리셋 수와 편집·복제·삭제(확인 모달)가 있다. 상단에 `예시로 시작`과 `새 게이트`.
+- **흐름 편집 모달:** `pixie-gate-composer.tsx`(R2-a/b에서 삭제됨). 왼쪽은 개입 지점 → 시작 훅 → 단계 1–5(사이 `+`로 삽입, 5개면 사라짐) → 종료 훅 → 결과 → 시험 실행 노드 목록이고, 각 노드에 `입력 → 출력` 요약을 붙인다. 단계의 입력 요약은 앞의 `수정` 단계가 있으면 그 단계 수정본, 없으면 원문으로 표시한다. 오른쪽은 선택한 노드 하나의 설정과 입력/출력 상자(무엇이 들어오고 무엇이 나가는지)다.
+  - 개입 지점은 설명이 붙은 선택지로 고르며, 지점에서 불가능한 역할·전달 방식은 선택지에서 숨긴다(지점 변경 시 정리하고 안내).
+  - 단계는 종류(명령/일반 모델/판정 모델)·역할을 분할 선택으로 고르고, 쓸 수 있는 변수(시작 훅 포함)를 칩으로 보여 준다.
+  - 결과 노드는 전달 방식, 교체 전 확인(입력만), 지점별 실패 동작 설명, 오류 정책, 제한 시간, 턴당 교정 상한(턴 종료만)을 담는다.
+  - 저장 시 검증 실패는 해당 노드를 열고 노드에 `확인 필요` 배지와 필드 옆 오류를 보인다. 저장 실패 알림은 닫을 수 있고 편집은 남는다. 저장하지 않고 닫으면 버릴지 묻는다. 시험 실행 패널은 노드를 바꿔도 유지된다.
+  - 모달 저장은 그 게이트 하나(정의 + 기존 연결 프리셋)를 저장된 목록에 반영한다. 적용 범위 페이지의 저장 전 편집은 덮어쓰지 않는다. 같은 프리셋·지점의 켜진 게이트 중복은 저장 전에 막는다.
+- **적용 범위:** 게이트별 설정 카드에 켜짐, 연결 프리셋(체크 목록), 대상 에이전트, 입력 출처(입력 지점만), 도구 이름(도구 지점만)과 `흐름 편집` 이동을 둔다. 페이지 저장 버튼으로 전체를 저장하며 켜진 게이트 중복이 있으면 저장을 막는다.
+- **시작 템플릿:** `예시: 자막 번역 준비` — 명령(`measure`, 메모: 바이트 수 측정) → 판정(`size`, `{{stages.measure.text}}`로 한 번에 처리할 크기인지) → 일반 모델(`plan`, 메모: 번역 방침) → 원문 + `plan` 덧붙임. 꺼진 상태로 만들어진다.
+- **불러오지 못한 정의·깨진 파일** 알림과 덮어쓰기 확인은 두 페이지에 같이 보인다.
+- **검증:** `npm --prefix studio run typecheck`, `npm --prefix studio test` **429개 통과**, `git diff --check`. 편집기 jsdom 테스트를 새 구조(메뉴 그룹, 카드, 모달 노드·입출력, 단계 추가/이동, 지점 제한, 시작 훅 변수, 검증 위치, 저장 실패·닫기 확인, 적용 범위 편집·중복 차단·모달 저장과의 독립, 불러오지 못한 정의, 깨진 파일, ko·zh)로 다시 썼다. 판정·시험 실행 테스트도 모달 기준으로 바꿨다.
+- **시각 확인:** 격리 프로필(`node studio/dev.mjs --skip-test --port 19391`, 설치 DSH 0.2.0-rc.2)과 임시 headless Chrome으로 게이트 구성, 모달(개입 지점·명령·판정·일반 모델·시작 훅·결과·시험 실행), 적용 범위를 라이트·다크 × 1440·520으로 확인했다(콘솔 오류 없음). 모달이 좁아지면 노드 목록이 위쪽 가로 스크롤 줄로 바뀐다. 사용자 GUI(19387) 배포·사용자 시각 확인은 하지 않았다.
+- **미검증·제한:** 실제 모델 호출, 이번 변경의 독립 리뷰. 판정 단계 질문 편집 부분은 기존 판정 편집기를 모달 안에 그대로 넣었다.
+
 ### S8 — 판정 단계 연결
 
 - 선행: S2, S7.
@@ -392,10 +586,80 @@ interface GateResult {
 - 수용: `판정 → 일반 → 판정` 게이트가 시험 실행과 `input` 지점에서 동작한다. 잘못된 판정 출력은 오류다.
 - 검증: 단위 테스트 + 실제 모델 1회.
 
+#### S8 부분 구현 — Host 계약·판정 실행·설정
+
+- `JudgePassRule = { mode: 'all' | 'any', conditions: JudgePassCondition[] }`; 조건은 `{question,type:'noul',threshold}` / `{question,type:'score',min}` / `{question,type:'choice',allowed:string[]}`. 비어 있지 않은 평면 조건 목록으로 제한한다. noul 0..1, score 0..levels-1(소수 허용), choice는 존재하는 옵션의 비어 있지 않은 목록이며 질문 참조·형식·타입을 검증한다. 질문 ID는 영문 시작 영숫자/`_`/`-`, prototype 예약어 제외다.
+- judge는 계약에 role이 없는 **check 고정** 단계다. 명시 role 필드도 거부하며 revise/note는 일반 단계로 분리한다. 질문 내용·옵션 설명·score levels·noul 기준은 기존 변수 검증/렌더링을 사용한다. state는 `{ subject, original, stages, hooks }`이며 이전 판정의 `data.answers`와 일반 단계 결과, 일반 훅 컨텍스트를 포함한다.
+- 기존 `LlmJudgeEngine`을 재사용하고 JSON 검증 실패는 error로 보존한다. 조건 실패 이유에 질문과 실패 조건을 기록하며 답은 `data.answers`에 저장한다. 기존 파이프라인의 `stageTimeoutMs`와 취소 경계를 사용하고 판정 스트림도 `untilAborted`로 늦은 응답을 폐기한다.
+- 선택 설정 `judgeModel`, `judgeSystemPrompt`를 저장/복원한다. 생략은 저장 형식 그대로 허용하고 실행 시 기본값을 적용하여 기존 파일과 하위 호환한다. 모델 우선순위는 단계 → 판정 설정 → Pixie 기본 모델이다. 기본 시스템 프롬프트는 기존 Jev JSON 지시문이며 수동 판정 Remote에도 같은 설정을 연결했다.
+- 검증: typecheck 및 Studio 전체 테스트 **363개 통과, 3회 연속**, `git diff --check` 통과. 신규 Host 회귀는 all/any·경계값·잘못된 JSON·타임아웃/취소·설정 fallback과 저장 roundtrip·수동 판정 설정을 포함한다. 가짜 llm의 `판정 → 일반 → 판정`, `명령 → 판정 → 일반 → append`를 실제 input waterfall 서비스 조합에서도 확인했다.
+- 전체 검증 중 정의 삭제 경합을 발견했다(수정 전 전체 실행 6회 중 4회 실패, 단독 테스트는 통과). 이벤트 emit은 동기이므로 대기 문제 가설을 기각했다. 원인은 일반 세션 prune의 `gates.json` 오인이었고 S4 경로 보강 커밋으로 분리했다. 테스트 대기나 구현 순서를 바꾸어 숨기지 않았다.
+- **S8 미완료 / UI 인계:** 단계 종류 판정 활성화, 질문·유형별 옵션/levels/기준 편집, 통과 규칙/모델 편집, `GateResultDetails` answers 요약, 설정 페이지 판정 모델/시스템 프롬프트와 기존 저장 버튼 상태, 관련 jsdom 테스트가 남아 있다. 현재 편집기는 judge 선택을 계속 비활성화한다. 후속 UI는 위 계약을 그대로 사용한다.
+- 실제 모델 호출은 미실시이며 키 존재 여부도 확인하지 않았고 키 값은 열람하지 않았다. 사용자 GUI·프로필 접근/배포 및 Client Inspect 없음. 독립 설치·시각 확인 미검증. S1 표 불변, 리뷰는 S9 이후.
+
+#### S8 UI/UX 다듬기
+
+- 기존 reason은 유지하고 구조화 실패 조건 `data.failedConditions`를 추가하여 ko·en·zh 결과 문구·질문/옵션/점수 라벨과 구기록 fallback을 지원했다. 조건 질문 식별 문구, choice·score 압축 편집 행, 오른쪽 정렬 보조 초기화 버튼을 반영했다. Studio typecheck·전체 테스트 369개 2회 연속·diff 검사 통과, 격리 19391에서 라이트·다크 × 1440·520 16장 확인([INDEX](</tmp/pixie-gate-s8-shots-v2/INDEX.md>)). 사용자 GUI·프로필 및 Client Inspect 미접근, S1 표 불변, 실제 모델·S9·일괄 리뷰는 후속이다.
+
+#### S8 UI 구현·로컬 검증
+
+- 판정 단계 선택을 활성화했다. 선택 모델(판정 기본 모델 fallback), check 고정 안내, choice 옵션 ID/문구·score 2–10단계·noul 질문/참/거짓 기준, 질문 추가/삭제와 ID 편집, all/any 및 유형별 통과 조건을 편집한다. 기존 변수 안내와 CheckOption을 재사용한다. 질문 유형 변경·ID 변경·옵션/질문 삭제로 깨진 조건은 자동 삭제하지 않고 유지하며 공유 `validateGateDefinition` 오류를 질문/조건 옆에 표시한다.
+- `GateResultDetails`는 answers의 선택 라벨·확률/신뢰도, 점수 단계 문구·신뢰도, noul 값과 실패 조건 reason을 표시한다. 선택적 definition을 시험 실행 draft 및 실행 카드의 저장 정의 조회에서 전달하며, 질문/옵션/단계를 찾지 못하면 ID/숫자로 표시한다. Host 기록 계약은 바꾸지 않았다.
+- Pixie 설정은 기존 성격별 DetailLayout 페이지 구조와 일치하도록 독립 **판정** 페이지를 선택했다. 판정 모델의 Pixie 기본 모델 fallback, 빈 시스템 프롬프트의 기본 Jev 지시문, 기본값으로 되돌리기, 수동 판정 탭도 설정을 사용한다는 안내와 기존 저장 버튼 상태/오류 보존 규칙을 적용했다. 선택 필드가 없는 기존 설정을 그대로 지원한다.
+- ko·en·zh 문구 제공. 새 공용 부품 및 CSS 변경이 없어 디자인 시스템 부품 표/스타일 스냅샷 변경은 없다.
+- 검증: `npm --prefix studio run typecheck`, `npm --prefix studio test` **368개 2회 연속 통과**, `git diff --check`. 신규 jsdom 5개는 단계 생성/noul·trial payload, choice 편집/깨진 옵션, score/깨진 질문, answers·ID fallback, 설정 저장/복원/하위 호환을 다룬다. 기존 테스트의 judge 선택 가능·판정 설정 탐색 기대값 및 실행 카드 Remote mock을 새 계약에 맞췄다. 첫 전체 실행의 기존 테스트 2개 실패는 탐색 기대값/Remote mock 누락이었으며 수정 후 연속 2회 통과했다. 기존 Node deprecation/RoleEditor nesting 경고는 남는다.
+- 격리 서버 19391 및 임시 Chrome 프로필로 라이트·다크 × 1440·520에서 질문 3유형·통과 조건·판정 설정·판정 결과를 24장 촬영했다. [스크린샷 INDEX](</tmp/pixie-gate-s8-shots/INDEX.md>). 결과는 격리 프로필에만 추가한 합성 실행 기록 1개이며 기존 기록은 보존했다. 사용자 GUI 19387·desktop 프로필 접근/배포 및 Client Inspect 없음.
+- **리뷰 후 갱신:** 판정 라벨 스냅샷 제한은 `db8499c716`·`dbdd703856`으로 해결했다. 렌더된 질문·기준·옵션·점수 문구를 실행 기록에 보관하고, 결과와 실패 조건은 기록만 사용한다. 스냅샷 없는 구기록은 현재 정의가 아니라 id·숫자로 표시한다. 실제 모델 호출은 여전히 미검증이며, S9 부분 검증과 일괄 리뷰 결과는 아래 기록을 참조한다. S1 표 불변.
+
+### 일괄 리뷰 수정 기록
+
+- 정의 하나의 잘못된 choice 옵션이 모든 게이트와 에이전트 턴을 실패시키던 재리뷰 조건을 해소했다. [defs-red.txt](</tmp/pixie-gate-review-fix/defs-red.txt>)에 로더·4개 런타임·편집기 red를 보존했으며 S1 표는 변경하지 않았다.
+
+- 리뷰 자료: [/tmp/pixie-gate-review-all/](</tmp/pixie-gate-review-all/>). 재현 red 근거는 [before.txt](</tmp/pixie-gate-review-fix/before.txt>), [additional-red.txt](</tmp/pixie-gate-review-fix/additional-red.txt>), [client-red.txt](</tmp/pixie-gate-review-fix/client-red.txt>)다. `additional-before.txt`에는 fixture 오류가 섞였으므로 결함 근거로 사용하지 않는다.
+- **Host A — `db8499c716`:** 실제 교체되는 forward 텍스트 기준으로 수정 확인·제안을 결정하며 동일 텍스트는 불필요하게 거부하지 않는다. 명령 JSON의 명시적 null/잘못된 verdict는 오류로 처리한다. 판정 사용량을 성공·잘못된 모델 출력 모두 기록하고, `StageResult.data.questions`에 렌더된 질문(noul 질문·기준, choice 옵션 라벨, score 단계 문구)을 저장한다.
+- **Client B — `dbdd703856`:** C1 결과·실패 조건 라벨은 저장된 질문만 사용하고 구기록은 id·숫자로 표시한다. 실행 카드의 현재 정의 조회를 제거했다. C2 시험 실행은 제출한 정의 사본을 결과와 보관하여 draft 변경 후에도 꺼진 게이트 안내와 결과가 바뀌지 않는다. C3 공유 `JudgeValidationError.code`를 ko·en·zh 문구에 매핑하고 빈 옵션 문구·깨진 조건·범위 밖 기준값·중복 질문 ID를 검증한다. 기존 throw 메시지는 유지한다. C4 저장 실패 Notice에 닫기 동작을 추가하고 draft는 유지한다.
+- **회귀 증거:** C1 기록 라벨 누락, C2 draft 변경 후 꺼짐 안내 소실, C3 빈 옵션 검증 안내 누락, C4 닫기 버튼 부재를 각각 red로 확인한 뒤 수정했다. ko·zh 영문 validator 원문 비노출과 중복 ID 문구도 검증했다. B 커밋 전 typecheck, Studio 전체 테스트 **411개 × 2회 연속**, `git diff --check` 통과. [1회 로그](</tmp/pixie-gate-review-fix/client-test-1.txt>), [2회 로그](</tmp/pixie-gate-review-fix/client-test-2.txt>).
+- **문서 정렬:** Studio 작업 지침의 삭제된 역할 UI 스냅샷 재생성 문구를 디자인 시스템의 공용 부품 테스트·새 기능 UI 스냅샷 규칙으로 맞췄다. #24 명세 및 S1 표는 변경하지 않았다.
+- **S9 본체 표시 제한:** 실제 `turn/end.reason.kind=blocked`인데 Chat이 Completed 계열로 표시하는 것은 DSH [TurnProcessNodeView.tsx:20–32](../../../packages/client/ui-chat/src/client/chat/TurnProcessNodeView.tsx#L20-L32)가 aborted/error 이외의 blocked도 완료 계열로 표시하기 때문이다. Studio reject는 정상이며 **Pixie 게이트 카드로 확인**한다. 본체 수정 범위가 아니므로 변경하지 않는다.
+- **남은 검증:** 모델이 필요한 R2/R3/tool 전후/판정 실제 호출, alpha.2 replace/append/sandbox/재시작/무시 및 모델 필요 흐름. 이번 수정의 사용자 GUI(19387)·프로필 접근·배포·Client Inspect는 수행하지 않았고 로컬 테스트를 독립 배포 검증으로 간주하지 않는다.
+
 ### S9 — 독립 설치 검증
 
 - 선행: S1–S8.
 - 책임: 수정하지 않은 지정 DSH 버전 격리 프로필에서 R1–R3 흐름 확인. 버전·경로·명령·결과 기록.
+
+#### S9 실행 기록 — 2026-10-16
+
+**현재 진행: 부분 검증, 전체 완료 아님.** rc.2 독립 설치의 명령 기반 R1·샌드박스·저장 수명을 확인했다. alpha.2도 별도 npm 설치 및 실제 Loader/R1 거부까지 확인했다. R2/R3/tool 전후/판정의 모델 응답 종단간은 미검증이다. S1 표 및 S4–S8의 과거 기록은 변경하지 않는다. 코드 결함 수정·본체 수정·사용자 GUI(19387)/desktop 프로필 접근·배포·Client Inspect·키 값 열람·하위 위임은 하지 않았다.
+
+| 항목 | 버전·경로·명령·결과 |
+|---|---|
+| 기준 | `studio/feat/workflow`, 시작 HEAD `53c882b69e1eb1ebafcee96e515d90f9bd05aace`, 시작 `git status --short` 빈 출력 |
+| rc.2 | `dsh --version` 및 앱 Info.plist `CFBundleShortVersionString` 모두 `0.2.0-rc.2`. `/usr/local/bin/dsh` → `/Applications/DeepSeek Harness.app/Contents/Resources/runtime/cli/bin/dsh`. 앱/코어 수정·재빌드 없음 |
+| alpha.2 | `npm view @deepseek-ai/dsh@0.2.1-alpha.2 version` 확인 후 `npm install --prefix /tmp/pixie-gate-s9-alpha2 @deepseek-ai/dsh@0.2.1-alpha.2`; `/tmp/pixie-gate-s9-alpha2/node_modules/.bin/dsh --version` → `0.2.1-alpha.2` |
+| Studio 패키지 | `npm --prefix studio run build`(타입 검사 포함) 통과; `STUDIO_PACK_DIST=/tmp/pixie-gate-s9-rc2/pack node studio/pack.mjs`. [tarball](</tmp/pixie-gate-s9-rc2/pack/matamt-dbg-dsh-studio-0.2.9.tgz>) `0.2.9`, SHA256 `a25e3612fe84f4790efa3270108a2ff4b5126d489cf176cead1cab024059c80d`. pack의 삭제 대상 staging은 새 격리 경로 `/tmp/pixie-gate-s9-rc2/pack/package`로 한정 |
+| 설치 명령 | 각 버전의 실행 파일로 `DSH_HOME=<격리 root>/home <dsh> --profile lean-agent-web --from-default-profile web --dump-config`, 이어 `DSH_HOME=<격리 root>/home <dsh> plugin --profile lean-agent-web add /tmp/pixie-gate-s9-rc2/pack/matamt-dbg-dsh-studio-0.2.9.tgz`. 둘 다 exit 0. peer 경고는 있었으나 Loader 및 Studio UI가 실제 동작 |
+| 실행 명령 | `DSH_HOME=/tmp/pixie-gate-s9-rc2/home dsh --profile lean-agent-web --host 127.0.0.1 --port 19391 --no-open`; alpha는 home 및 실행 파일을 위 alpha 경로로, 포트 19392. 둘 다 관리형 job. workspace 코어/개발 scaffold를 실행하지 않음 |
+| dev.mjs와 차이 | #25의 default dev 경로는 build/test → start-web → tarball install → 설치 dsh 실행이다. 실제 구현은 tarball을 설치하지만 주석에는 preview가 tarball install test가 아니라고도 적혀 있다. start-web은 DSH_HOME을 `studio/.dsh-home`으로 강제한다. 이번에는 기존 격리 데이터 재사용 없이 같은 pack/plugin add 절차를 명시 실행하여 `/tmp`의 새 DSH_HOME을 사용했다. OS HOME까지 바꾸지는 않았으며 default workspace는 `/Users/home/Documents/deepseek-harness/default-workspace`였다(명령은 그곳에 쓰지 않음) |
+| 브라우저/증거 | 임시 Chrome `--headless=new --remote-debugging-port=19402 --user-data-dir=/tmp/pixie-gate-s9-rc2/chrome`, 기존 S7 방식의 절대 playwright-core 경로 사용. 라이트 1440×1000 [스크린샷 INDEX](</tmp/pixie-gate-s9-shots/INDEX.md>) 및 [자동화](</tmp/pixie-gate-s9-shots/action.cjs>). 비동기 초기 빈 목록은 최종 결과와 구분 |
+
+| 흐름 | 결과 | 관찰·근거 |
+|---|---|---|
+| rc.2 Loader·UI 저장/연결/활성 | **통과** | Studio v0.2.9 → Pixie → 게이트 추가, command/check, Optimized 체크, 켜짐, 저장. 이후 모든 정의 변경도 UI에서 실행. 정의 직접 주입 없음 |
+| R1 입력 거부 | **통과** | `printf '양식 누락\\n' >&2; exit 2`, 원문 `S9 원문 양식 없는 요청`. 세션 `056bc08e-2e8e-462f-867b-2102b860195c`의 실제 로그 `turn/end.reason.kind=blocked`, `user/message` 및 모델 실행 이벤트 없음. 실제 run `rejected/fail`, 원문·이유·pending 보존. UI 카드 `거부 처리 대기` 확인 |
+| 수정해서 보내기 / 무시 | **통과** | 클릭 뒤 composer 초안이 원문과 일치(자동 전송 아님). 무시 뒤 dismissed 저장·pending 해소. 스크린샷 06–08. `보냈음 표시` 별도 클릭은 미검증 |
+| R1 replace | **통과(게이트) / 실패(모델)** | command/revise `printf 'S9 REPLACED'`, forward replace/subject. 세션 `0fd98497-af11-470c-b29a-acc8ca71019e`의 source user `user/message`가 `S9 REPLACED`; run은 원문과 replaced 보존. 모델은 `MISSING_CREDENTIAL` 실패이며 모델 응답 성공으로 보지 않음 |
+| R1 append | **통과(게이트) / 실패(모델)** | command/revise `printf 'S9 APPENDED'`, forward append/stage1. 세션 `0e33ecea-74cc-4572-a1b0-a27d0c34bee0`의 source user는 `S9 append original`, 별도 source `studio-pixie-gate`의 `user/message`는 `S9 APPENDED`. 모델은 같은 키 없음 오류 |
+| 명령 샌드박스 | **통과(쓰기 거부)** | UI에서 세션 Read Only 선택, command/check `printf test > /tmp/pixie-gate-s9-rc2/readonly-probe.txt`. 세션 `7930f6c0-9973-4183-a0e8-144bf837817a`의 stage error `exit 1 … Operation not permitted`, 파일 미생성. onError pass로 원문 전달, 카드에 판정 오류와 적용 통과를 구분. 정책 객체 전 필드 계측 및 허용 대조 실행은 미검증 |
+| 모델 경로 | **실패 / 테스트 모델 없음 확인 범위 제한** | rc.2 실제 호출 `llm-deepseek: no API key … MISSING_CREDENTIAL`. 키 값/환경/자격 증명 파일 미열람. Host Inspect `Service/listService(sessionController)`로 modelCatalog 공개 계약만 확인(현재 Host 계약이지 격리 catalog 결과 아님). 격리 GUI model catalog에는 DeepSeek-V41-Flash/V4-Pro만 보임; testLLM 없음. 숨은 설치 모듈 전체 탐색이나 가짜 provider 추가는 하지 않음 |
+| R2 agent-message, R3 turn-end, tool-before/after | **미검증** | 이용 가능한 테스트 모델 경로를 발견하지 못했고 실 모델은 키 없음. relay/steer 상한/도구 call ID의 실제 모델 종단간, 브리지 활성 순서와 장기 pre-step UI도 이번 증거에 포함하지 않음 |
+| 판정 단계 | **미검증** | 같은 모델 제약. S8 단위/합성 결과로 실제 판정 응답을 대신하지 않음 |
+| rc.2 재시작·prune | **통과(정의·완료 기록)** | 서버 종료/재시작 뒤 새 경로 `<profile>/studio-data/pixie-gate/definitions.json` 및 실제 run 4건 유지. 별도 빈 고아 envelope `pixie/session-s9-orphan.json`만 추가하고 다시 시작: startup prune이 고아를 삭제, 정의와 실제 4건은 유지. 합성 고아는 prune 실행 확인용이며 게이트 흐름 증거가 아님. running→cancelled 재시작은 미검증 |
+| alpha.2 독립 설치 | **통과(제한된 흐름)** | 별도 npm 런타임 + 같은 tarball, UI 정의 `S9 alpha reject` → Optimized → 입력. 세션 `3e514d35-b25b-4d4c-a288-779f21a31009` blocked, user/message 없음; pending·원문·이유 및 수정해서 보내기 초안 복구 확인(17–19). replace/append/sandbox/재시작/무시/모델 필요 흐름은 alpha에서 미검증 |
+
+**관찰된 표시 불일치(수정하지 않음):** 두 설치 버전에서 위 R1 거부를 재현하면 raw 로그는 `blocked`인데 메인 대화 상태는 `Completed`/`Completed in 1s`로 표시되고 원문 대화 행은 남지 않는다. Studio Pixie 카드에서는 거부·원문·이유를 정상 확인할 수 있다. 재현: command/check exit 2 게이트를 Optimized에 활성 연결 → Optimized 새 세션에서 메시지 전송 → Chat 상태와 Pixie pending 카드를 대조(스크린샷 03/06, alpha 18). DSH 상태 라벨의 의미/의도는 확정하지 않았으며 Studio 입력 거부 동작 실패로 바꾸어 기록하지 않는다. 코드 변경 없음. 설치 peer 경고 및 Node deprecation도 남아 있다.
+
+**증거·정리:** rc.2 데이터는 `/tmp/pixie-gate-s9-rc2/home`, alpha는 `/tmp/pixie-gate-s9-alpha2/home`; profile은 각각 `profiles/lean-agent-web`. 실제 run은 `<profile>/studio-data/pixie/gates/session-<위 ID>.json`. `zstd -dc`로 추출한 rc.2 [거부 로그](</tmp/pixie-gate-s9-rc2/session-056bc08e-2e8e-462f-867b-2102b860195c.jsonl>), [교체 로그](</tmp/pixie-gate-s9-rc2/session-0fd98497-af11-470c-b29a-acc8ca71019e.jsonl>), [덧붙임 로그](</tmp/pixie-gate-s9-rc2/session-0e33ecea-74cc-4572-a1b0-a27d0c34bee0.jsonl>), [sandbox 로그](</tmp/pixie-gate-s9-rc2/session-7930f6c0-9973-4183-a0e8-144bf837817a.jsonl>)를 보존했다. 모든 시작 job(서버 743/776/793/797, Chrome 744)은 종료 결과를 수집했다. `lsof -nP -iTCP:19391 -iTCP:19392 -iTCP:19402 -sTCP:LISTEN`에 listener 없음. 패키지·격리 데이터·스크린샷은 재현용으로 보존한다. 이번에는 Studio 빌드/타입 검사와 독립 실행만 수행했고 전체 단위 테스트를 재실행하지 않았다.
 
 ## 범위 밖 (후속)
 
