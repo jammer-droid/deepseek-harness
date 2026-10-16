@@ -54,23 +54,23 @@ test('plugin list uses the searchable picker: every Master entry except delegati
   } finally { await view.close(); }
 });
 
-test('add plugin dialog adds a DSH preset plugin or a typed package and removes Studio-added ones', async () => {
+test('add plugin dialog adds by package name, removes Studio-added ones, and rows show their origin', async () => {
   const { FeatureInclusion } = await import('../src/feature-inclusion.tsx');
   const calls = [];
   const actions = { add: async name => { calls.push(['add', name]); }, remove: async id => { calls.push(['remove', id]); } };
-  const view = await mount(React.createElement(FeatureInclusion, { locale: 'en', entries, overrides: {}, excluded: [], onChange() {},
-    candidates: [{ name: '@deepseek-ai/dsh-tool-schedule', presets: ['standard', 'cordis'] }], added: [{ id: 'studio-added/x', name: 'x-plugin' }], actions }));
+  const view = await mount(React.createElement(FeatureInclusion, { locale: 'en', entries: [...entries, { id: 'studio-added/x', name: 'x-plugin' }], overrides: {}, excluded: [], onChange() {},
+    origins: { 'tool-fs': 'standard', 'time-context': 'standard', 'studio-added/x': 'added' }, added: [{ id: 'studio-added/x', name: 'x-plugin' }], actions }));
   try {
+    const rows = [...document.querySelectorAll('.studio-picker-row')].map(row => row.textContent);
+    assert.match(rows[0], /tool-fs.*standard/); assert.match(rows.at(-1), /x-plugin.*Added/);
     const click = async text => act(async () => [...document.querySelectorAll('button')].find(b => b.textContent.startsWith(text)).click());
     await click('Add plugin');
     const dialog = document.querySelector('dialog[open]');
-    assert.match(dialog.textContent, /@deepseek-ai\/dsh-tool-schedule.*Declared in: standard, cordis/);
-    await click('@deepseek-ai/dsh-tool-schedule');
     const { Simulate } = await import('react-dom/test-utils');
     await act(async () => Simulate.change(dialog.querySelector('input[aria-label="Add by package name"]'), { target: { value: 'my-plugin' } }));
     await act(async () => [...dialog.querySelectorAll('button')].find(b => b.textContent === 'Add').click());
     await act(async () => [...dialog.querySelectorAll('button')].find(b => b.textContent === 'Remove').click());
-    assert.deepEqual(calls, [['add', '@deepseek-ai/dsh-tool-schedule'], ['add', 'my-plugin'], ['remove', 'x']]);
+    assert.deepEqual(calls, [['add', 'my-plugin'], ['remove', 'x']]);
   } finally { await view.close(); }
 });
 

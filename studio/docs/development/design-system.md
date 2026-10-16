@@ -87,7 +87,7 @@ primitives는 CSS 모듈을 함께 불러오므로 Node 단위 테스트에서 �
 | `DetailDialog` | 한 항목의 설정을 여는 모달. `wide`는 프롬프트 미리보기처럼 본문과 오른쪽 목록을 함께 보여줄 때 쓴다. 머리(제목·보조 문구·닫기), 스크롤되는 본문, 선택적 하단 동작으로 구성한다. 닫으면 연 버튼으로 포커스를 돌려준다. 페이지 안에서 카드를 펼쳐 편집하지 않고 이 모달을 쓴다 |
 | `SplitButton` | 주 동작과 관련 보조 동작을 한 컨트롤로 묶는다. 예: `DSH에 다시 반영` + 메뉴의 `반영 해제` |
 | `Disclosure` | 고급 설정처럼 평소 접어 두는 블록. 컴포넌트 카드와 같은 테두리·제목 행을 쓴다 |
-| `FeatureInclusion` ([feature-inclusion.tsx](../../src/feature-inclusion.tsx)) | 프리셋에 포함할 플러그인. Config 편집과 같은 `ItemPicker`(검색·스크롤, 필터는 전체/포함)로 보여 주고, 행마다 기본값/덮어쓰기/제외 `Badge`를 단다. 의존 플러그인은 "함께 제외"로 잠근다. `플러그인 추가` 대화상자에서 DSH 프리셋에 선언된 플러그인이나 패키지 이름을 Studio 기준 구성에 추가·제거한다 |
+| `FeatureInclusion` ([feature-inclusion.tsx](../../src/feature-inclusion.tsx)) | 프리셋에 포함할 플러그인. Config 편집과 같은 `ItemPicker`(검색·스크롤, 필터는 전체/포함)로 보여 주고, 행마다 출처(`standard`/`Studio`/`추가함`)와 기본값/덮어쓰기/제외 `Badge`를 단다. 의존 플러그인은 "함께 제외"로 잠근다. `플러그인 추가` 대화상자에서 패키지 이름으로 Studio 기준 구성에 추가·제거한다 |
 | `CatalogChangeNotice` ([master-change-notice.tsx](../../src/master-change-notice.tsx)) | 재시작 후 도구·Config 변경 안내. `Notice`와 `DetailDialog`에 `+`/`-`/`~`와 정리될 프리셋 설정을 보여 주고, 확인해야 정리한다 |
 
 ### ui-host.tsx 부품

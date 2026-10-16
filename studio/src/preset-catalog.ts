@@ -2,9 +2,7 @@ import { toolPromptSections } from './tool-prompt-sections.ts';
 export interface CatalogTool { name: string; description: string; parameters?: Record<string, unknown>; promptSections?: CatalogSection[] }
 export interface CatalogSection { name: string; text: string }
 export interface CatalogPreset { promptProviders?: import('./prompt-composition.ts').PromptProvider[]; id: string; name?: string | undefined; sections: CatalogSection[]; tools: CatalogTool[]; declaration?: string; error?: string }
-/** A plugin declared by a DSH preset but absent from the Studio Master; config stays on the Host. */
-export interface PluginCandidate { name: string; presets: string[]; /** Group siblings added together with it. */ with?: string[] }
-export interface PresetCatalog { candidates?: PluginCandidate[]; added?: Array<{ id: string; name: string }>; plugins?: import('./plugin-catalog.ts').PluginCatalogEntry[]; presets: CatalogPreset[]; tools: CatalogTool[]; execution?: import('./execution-capabilities.ts').ExecutionCapabilities }
+export interface PresetCatalog { origins?: Record<string, 'standard' | 'studio' | 'added'>; base?: { preset: string; source: 'dsh' | 'fallback' }; added?: Array<{ id: string; name: string }>; plugins?: import('./plugin-catalog.ts').PluginCatalogEntry[]; presets: CatalogPreset[]; tools: CatalogTool[]; execution?: import('./execution-capabilities.ts').ExecutionCapabilities }
 export interface CatalogServices {
   agentPresets: {
     list(): Promise<{ id: string; name?: string }[]>;

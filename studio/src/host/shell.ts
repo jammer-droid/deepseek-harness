@@ -3,7 +3,8 @@ import type { Context } from '@deepseek-ai/cordis';
 import { createConfigProjector, isNativeConfigSchema, LOADER_EXPRESSION_SCHEMA } from '@deepseek-ai/dsh-app-boot';
 import type { PluginCatalogEntry } from '../plugin-catalog.ts';
 import { configEntries } from '../config-overrides.ts';
-import { masterComposition } from './master-composition.ts';
+import { disabledHere, MASTER_BASE_PRESET, masterComposition, pluginOrigins, standardFallback } from './master-composition.ts';
+export { disabledHere };
 import { MasterExtensions, validateExtensions } from './master-extensions.ts';
 import { dirname, join } from 'node:path';
 import { randomUUID } from 'node:crypto';
@@ -24,44 +25,14 @@ import { catalogSnapshot, compareCatalog, type CatalogChange, type CatalogSnapsh
 
 const flatRows = (rows: CompositionRow[]): CompositionRow[] => rows.flatMap(row => row.disabled === true ? [] : row.group && Array.isArray(row.config) ? flatRows(row.config as CompositionRow[]) : [row]);
 const flatNames = (rows: CompositionRow[]) => flatRows(rows).map(row => row.name);
-/**
- * Whether a declared row is off on this Host. Literal flags are read as-is; of `!!js` gates only the
- * `process.platform === / !== '<os>'` form DSH presets use is evaluated. Anything else counts as
- * off, so Studio never offers a row whose enablement it cannot decide.
- */
-export function disabledHere(row: CompositionRow, platform: string = process.platform): boolean {
-  const value = row.disabled;
-  if (value === undefined || value === false) return false;
-  const expression = value && typeof value === 'object' ? (value as { __jsExpr?: unknown }).__jsExpr : undefined;
-  const match = typeof expression === 'string' ? /^process\.platform\s*(===|!==)\s*'([a-z0-9]+)'$/.exec(expression.trim()) : null;
-  if (!match) return true;
-  return match[1] === '===' ? platform === match[2] : platform !== match[2];
-}
 
-/**
- * The Loader rows that adding `name` puts into the Studio Master: its enclosing DSH preset group
- * (isolation and siblings) when it has one, otherwise the row alone. Gated or already present rows
- * are skipped, ids stay unique among `existing`, and non-JSON config is dropped.
- */
-export function masterAddition(name: string, source: { row: CompositionRow; group?: CompositionRow } | undefined, existing: readonly CompositionRow[], present: ReadonlySet<string>): CompositionRow | undefined {
+/** The row that adding package `name` puts into the Studio Master, with an id unique among `existing`. */
+export function masterAddition(name: string, existing: readonly CompositionRow[]): CompositionRow {
+  if (!/^(?:@[a-z0-9][a-z0-9._-]*\/)?[a-z0-9][a-z0-9._-]*(?:\/[a-z0-9][a-z0-9._-]*)*$/.test(name)) throw new Error(`Invalid package name: ${name}`);
   const taken = new Set(existing.map(row => row.id));
-  const unique = (raw: string) => {
-    const base = raw.toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/^[^a-z]+/, '').slice(0, 56) || 'plugin';
-    let id = base; for (let n = 2; taken.has(id); n++) id = `${base}-${n}`;
-    taken.add(id); return id;
-  };
-  const literal = (row: CompositionRow): CompositionRow | undefined => {
-    if (disabledHere(row)) return undefined;
-    if (row.group) {
-      const children = (Array.isArray(row.config) ? row.config as CompositionRow[] : []).map(literal).filter(child => child !== undefined && !present.has(child.name)) as CompositionRow[];
-      if (!children.some(child => child.name === name || flatNames([child]).includes(name))) return undefined;
-      return { id: unique(String(row.id ?? 'group')), name: 'cordis:group', group: true, ...(row.isolate ? { isolate: row.isolate } : {}), config: children };
-    }
-    const next: CompositionRow = { id: unique(String(row.id ?? row.name.split('/').pop())), name: row.name };
-    if (row.config !== undefined) { try { next.config = validateExtensions([{ id: 'probe', name: row.name, config: row.config }])[0]!.config; } catch { /* expressions: start without config */ } }
-    return next;
-  };
-  return source?.group ? literal(source.group) : literal(source?.row ?? { id: name.split('/').pop() ?? 'plugin', name });
+  const base = (name.split('/').pop() ?? 'plugin').toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/^[^a-z]+/, '').slice(0, 56) || 'plugin';
+  let id = base; for (let n = 2; taken.has(id); n++) id = `${base}-${n}`;
+  return { id, name };
 }
 
 /** Catalog reads and temporary composition previews; no Agents or model calls. */
@@ -74,6 +45,9 @@ export default class StudioCatalog extends TypertRemoteService {
   private extensions: MasterExtensions;
   private changes: Promise<unknown> = Promise.resolve();
   private updater = new StudioUpdater(this.ctx);
+  /** DSH standard as last read; the bundled copy until the first successful read. */
+  private standard: CompositionRow[] = standardFallback();
+  private standardSource: 'dsh' | 'fallback' = 'fallback';
   private baseline: CatalogBaseline;
   /** The newest complete collection and what it changes against the confirmed baseline. */
   private pending: { snapshot: CatalogSnapshot; change?: CatalogChange; error?: string } | undefined;
@@ -123,21 +97,15 @@ export default class StudioCatalog extends TypertRemoteService {
   @Remote
   async saveExtensions(payload: string) { return this.replaceExtensions(validateExtensions(JSON.parse(payload))); }
   /**
-   * Add one installed plugin to the Studio Master. A plugin a DSH preset declares inside a group
-   * comes with that whole group (its isolation and sibling providers): a row lifted out alone would
-   * wait forever for services only its group supplies (e.g. terminal-bash without the pty group).
-   * Rows disabled for this platform stay out. Config is copied only when it is plain JSON.
+   * Add one installed package to the Studio Master by name, without config (edit it as an override).
+   * Activation is checked before the Master is replaced; a failure keeps the previous Master.
    */
   @Remote
   async addMasterPlugin(payload: string) {
-    const name = payload;
+    const name = payload.trim();
     const rows = await this.extensions.read();
-    const present = new Set([...this.masterNames(), ...flatNames(rows)]);
-    if (present.has(name)) throw new Error(`Already in the Studio Master: ${name}`);
-    const source = (await this.candidateRows()).get(name);
-    const added = masterAddition(name, source, rows, present);
-    if (!added) throw new Error(`Nothing to add for ${name} on this platform`);
-    return this.replaceExtensions(validateExtensions([...rows, added]));
+    if (new Set([...this.masterNames(), ...flatNames(rows)]).has(name)) throw new Error(`Already in the Studio Master: ${name}`);
+    return this.replaceExtensions(validateExtensions([...rows, masterAddition(name, rows)]));
   }
   @Remote
   async removeMasterPlugin(id: string) {
@@ -145,32 +113,18 @@ export default class StudioCatalog extends TypertRemoteService {
     if (!rows.some(row => row.id === id)) throw new Error(`Not added by Studio: ${id}`);
     return this.replaceExtensions(rows.filter(row => row.id !== id));
   }
-  private masterNames() { return new Set(flatNames(masterComposition())); }
   /**
-   * Plugins declared by the DSH presets Studio reads, keyed by package name, with the top-level
-   * group that encloses each (if any). Rows disabled by a literal flag or a `!!js` gate are left
-   * out: Studio does not evaluate expressions, so a platform-gated row is not offered.
+   * Follow the running DSH standard. Its rows become the Master base as declared; a missing or
+   * unreadable standard keeps the bundled copy and is reported as such, never a partial read.
    */
-  private async candidateRows() {
-    const found = new Map<string, { row: CompositionRow; group?: CompositionRow; presets: string[] }>();
-    const registry = this.ctx.agentPresets;
-    for (const preset of await registry.list()) {
-      if (!BUILTIN_TOOL_PRESETS.includes(preset.id as typeof BUILTIN_TOOL_PRESETS[number])) continue;
-      let rows: CompositionRow[];
-      try { rows = parseComposition((await registry.readDocument(preset.id)).content); } catch { continue; }
-      const visit = (items: CompositionRow[], group?: CompositionRow) => {
-        for (const row of items) {
-          if (disabledHere(row)) continue;
-          if (row.group && Array.isArray(row.config)) { visit(row.config as CompositionRow[], group ?? row); continue; }
-          const known = found.get(row.name);
-          if (!known) found.set(row.name, { row, ...(group ? { group } : {}), presets: [preset.id] });
-          else if (!known.presets.includes(preset.id)) known.presets.push(preset.id);
-        }
-      };
-      visit(rows);
-    }
-    return found;
+  private async readStandard() {
+    try {
+      const rows = parseComposition((await this.ctx.agentPresets.readDocument(MASTER_BASE_PRESET)).content);
+      if (!rows.length || rows.some(row => typeof row.id !== 'string' || !row.id)) throw new Error('Standard rows need ids');
+      this.standard = rows; this.standardSource = 'dsh';
+    } catch { this.standard = standardFallback(); this.standardSource = 'fallback'; }
   }
+  private masterNames() { return new Set(flatNames(masterComposition(this.standard))); }
   private async replaceExtensions(rows: CompositionRow[]) {
     const operation = this.changes.catch(() => {}).then(async () => {
       await this.snapshot;
@@ -202,11 +156,12 @@ export default class StudioCatalog extends TypertRemoteService {
     return operation;
   }
   private composition(rows: CompositionRow[]) {
-    return [...masterComposition(), ...(rows.length ? [{ id: 'studio-added', name: 'cordis:group', group: true, config: rows }] : [])];
+    return masterComposition(this.standard, rows);
   }
   private async capture(extra?: CompositionRow[]) {
     const project = await createConfigProjector();
     await this.ctx.loader.await();
+    await this.readStandard();
     const composition = this.composition(extra ?? await this.extensions.read());
     const plugins: PluginCatalogEntry[] = [];
     for (const { id, row } of configEntries(composition)) {
@@ -241,9 +196,8 @@ export default class StudioCatalog extends TypertRemoteService {
     await this.store.ensureOptimized(baseline.tools.map(t => t.name), composition);
     catalog.plugins = plugins;
     catalog.execution = executionCapabilities(catalog.tools);
-    const present = new Set(flatNames(composition));
-    catalog.candidates = [...(await this.candidateRows()).entries()].filter(([name]) => !present.has(name))
-      .map(([name, value]) => ({ name, presets: value.presets, ...(value.group ? { with: flatNames([value.group]).filter(other => other !== name && !present.has(other)) } : {}) }));
+    catalog.origins = Object.fromEntries(pluginOrigins(this.standard, composition));
+    catalog.base = { preset: MASTER_BASE_PRESET, source: this.standardSource };
     catalog.added = (extra ?? await this.extensions.read()).map(row => ({ id: `studio-added/${row.id}`, name: row.name }));
     await this.observe(catalog.tools, plugins, composition);
     return catalog;

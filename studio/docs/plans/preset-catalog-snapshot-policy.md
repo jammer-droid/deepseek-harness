@@ -501,3 +501,24 @@ S2에 남은 것: `selectPromptProviders` 정리 여부, 실제 Loader 통합 �
 - `terminal-bash`를 단독으로 추가하면 같은 그룹의 `dsh-terminal`(격리된 `terminals` 서비스)이 없어 `waiting for terminals`로 활성화되지 않았다. 이제 DSH 프리셋에서 그룹 안에 선언된 플러그인은 **그 그룹 전체(격리 설정과 형제 플러그인)** 를 함께 추가한다. 후보 설명에 함께 추가될 플러그인을 표시한다.
 - `!!js` 비활성 조건은 DSH 프리셋이 쓰는 `process.platform ===/!== '<os>'` 형태만 평가하고, 그 밖의 식은 꺼진 것으로 보고 후보와 추가 대상에서 뺀다. 이 플랫폼에서 꺼진 변형(macOS의 pwsh 계열 등)은 더 이상 후보에 나오지 않는다.
 - 남은 제한: 함께 추가된 그룹이 Master에 이미 있는 도구와 같은 이름을 등록하면(예: `tool-bash-persistent`의 `bash`와 Master의 `tool-bash`) 추가 전 활성화 검사가 실패하고 이전 상태로 되돌린다. 이 충돌은 활성화해 보기 전에는 공개 API로 알 수 없다.
+
+## 19. Master를 DSH standard 기준으로 재구성
+
+### 19.1 결정 (사용자 확인)
+
+손으로 고정한 Master가 standard와 비슷하지만 같지 않아 생기는 혼란(예: `terminal-bash` 추가 시 `waiting for terminals`, 대체 구현의 도구 이름 충돌, 버전별 차이)을 없애기 위해 출처가 보이는 4층으로 바꿨다.
+
+| 층 | 내용 | 표시 |
+| --- | --- | --- |
+| DSH standard | 실행 중인 DSH의 `standard` 선언을 캡처할 때마다 읽는다. 읽지 못하면 Studio에 들어 있는 사본을 쓰고 안내한다. 플랫폼 조건은 이 Host 기준으로 풀어 비활성 행은 뺀다. | 배지 `standard` |
+| Studio 추가 | `spill-policy`, `read_batch`(`studio-batch`), `tool-cordis`, `plugin-manager/tools`. standard가 이미 제공하는 패키지는 중복으로 넣지 않는다. | 배지 `Studio` |
+| Studio 대체 | standard의 `subagent`·`subagent_fork` → `subagent_role`. 역할 플러그인은 standard의 delegation 그룹에 들어가 같은 워크플로 엔진을 쓴다. | 포함 목록에 나오지 않고 서브에이전트 탭이 안내 |
+| 사용자 추가 | `플러그인 추가`에서 패키지 이름으로만 추가(`studio-added/…`). 다른 DSH 프리셋에서 가져오는 후보 목록은 대체 구현과 충돌하므로 없앴다. | 배지 `추가함` |
+
+### 19.2 변경과 영향
+
+- [master-composition.ts](<../../src/host/master-composition.ts>): `masterComposition(standard, added)`, `pluginOrigins`, `disabledHere`/`enabledRows`, 사본 `standardFallback`. standard 행의 id와 그룹을 그대로 쓰므로 기존 Config 덮어쓰기 id(`tool-fs`, `compaction/compaction-basic` 등)와 Studio 추가 항목 id(`spill-policy`, `studio-batch`)가 유지된다.
+- Master에만 있던 설정 차이(짧은 plan-mode 문구, 서브에이전트 `toolFilter`)는 standard 값으로 바뀐다. Optimized의 덮어쓰기에는 넣지 않았다. standard를 따르기로 한 결정의 결과다.
+- standard가 바뀌면 Master가 따라 바뀌고, 변화는 17절의 변경 안내(`+`/`-`/`~`)로 확인 후 반영된다. 설치된 0.2.0-rc.2와 0.2.1-alpha.2의 standard는 `time-context`, `tool-schedule`, plan-mode 문구, 서브에이전트 설정이 다르다.
+- 검증: `npm --prefix studio test` 437개 통과. standard 실제 선언으로 Master를 만들어 id 유지·플랫폼 조건 해소·역할 플러그인 위치·출처 판정을 검사한다([master-addition.test.mjs](<../../test/master-addition.test.mjs>)). 포함 목록의 출처 배지를 정적 렌더링으로 확인했다.
+- **미검증:** 설치 앱에서 standard를 실제로 읽어 Master가 구성되는지, 첫 재시작 때 변경 안내에 나오는 차이(이전 Master 대비), Optimized 재구성 결과.
