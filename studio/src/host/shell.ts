@@ -88,7 +88,8 @@ export default class StudioCatalog extends TypertRemoteService {
    * when it is plain JSON; a typed package name starts without config (edit it as an override).
    */
   @Remote
-  async addMasterPlugin(name: string) {
+  async addMasterPlugin(payload: string) {
+    const name = payload;
     const rows = await this.extensions.read();
     if (rows.some(row => row.name === name) || this.masterNames().has(name)) throw new Error(`Already in the Studio Master: ${name}`);
     const source = (await this.candidateRows()).get(name);
@@ -115,7 +116,8 @@ export default class StudioCatalog extends TypertRemoteService {
       try { rows = parseComposition((await registry.readDocument(preset.id)).content); } catch { continue; }
       for (const row of flatRows(rows)) {
         const known = found.get(row.name);
-        if (known) known.presets.push(preset.id); else found.set(row.name, { ...row, presets: [preset.id] });
+        if (!known) found.set(row.name, { ...row, presets: [preset.id] });
+        else if (!known.presets.includes(preset.id)) known.presets.push(preset.id);
       }
     }
     return found;
