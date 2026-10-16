@@ -12,6 +12,7 @@ Pixie Gate lets the **Pixie model read, judge, and rework content** at a set mom
 - [Decision engine](#decision-engine)
 - [Example scripts](#example-scripts)
 - [Agent skill](#agent-skill)
+- [Chat notes and per-session switches](#chat-notes-and-per-session-switches)
 - [Run records](#run-records)
 - [Limits and troubleshooting](#limits-and-troubleshooting)
 
@@ -173,21 +174,30 @@ printf '{"cues":%d,"bytes":%d}\n' "$lines" "${#text}"
 
 Task: `Measured: {{hooks.measure-subtitle.data}}` …
 
-**Translation check** (`translate-check.sh`, when the agent finishes its answer): ends after one judgment when the answer is already Korean; otherwise translates and judges faithfulness against the source. It leaves the note itself with exit 11, without a Pixie task. Requires `jq`.
+**Translation check** (`translate-check.sh`, when the agent finishes its answer): if the answer is already Korean, one judgment ends it (exit 10); otherwise Pixie translates it and the decision engine judges faithfulness against the source. No Pixie task is written; exit 11 leaves the note directly, and the note appears [under the answer in the chat](#chat-notes-and-per-session-switches). If neither attempt passes, the last translation is kept with a `not verified` label (`충실도 미확인`). Helper errors (exit 2) become exit 1 so the error policy applies. Requires `jq` (included with macOS).
 
 ```bash
 #!/bin/bash
 source=$(cat)
-printf '%s' "$source" | pixie judge --question "Is the prose of this text written in Korean?" --threshold 0.8 --input >/dev/null && exit 10
-for _ in 1 2 3; do
-  draft=$(printf '%s' "$source" | pixie ask "Translate into natural Korean. Keep code, paths and numbers unchanged. Output only the translation." --input) || exit 1
+printf '%s' "$source" | pixie judge --question "Is the prose of this text written in Korean? Ignore code blocks, file paths, identifiers and command output." --threshold 0.8 --input >/dev/null
+status=$?
+[ "$status" -eq 0 ] && exit 10
+[ "$status" -eq 2 ] && exit 1
+for _ in 1 2; do
+  draft=$(printf '%s' "$source" | pixie ask "Translate this agent answer into natural Korean. Keep code blocks, file paths, identifiers, commands and numbers unchanged. Keep the Markdown structure. Output only the translation." --input) || exit 1
   if jq -n --arg s "$source" --arg t "$draft" '{source:$s, translation:$t}' \
-     | pixie judge --question "Does \`translation\` keep every condition, number and negation of \`source\`?" --threshold 0.7 --input >/dev/null; then
-    jq -n --arg t "$draft" '{note: ("[Translation]\n" + $t)}'; exit 11
+     | pixie judge --question "Does \`translation\` keep every condition, number, negation and code element of \`source\`?" --threshold 0.7 --input >/dev/null; then
+    jq -n --arg t "$draft" '{note: ("[한국어 번역]\n" + $t)}'; exit 11
+  else
+    status=$?
+    [ "$status" -eq 2 ] && exit 1
   fi
 done
-exit 10
+jq -n --arg t "$draft" '{note: ("[한국어 번역 — 충실도 미확인]\n" + $t)}'
+exit 11
 ```
+
+An answer that mixes Korean and English gets a middle Korean probability, so it is translated and may score low on faithfulness. Lower the first threshold (0.8) to skip mixed answers.
 
 **Completion claim audit** (`claim-check.sh`, when the agent finishes its answer): judges with select whether the answer's test-pass claim matches the last recorded run. A contradiction asks for a redo, missing evidence leaves a note, and low confidence hands over to Pixie with exit 0. Adapt the run record file (`.last-test-run`) to your project.
 
@@ -224,18 +234,34 @@ On start, Studio installs a skill with this guide and the hook rules into `<DSH 
 - It holds `SKILL.md` (the rules) and `guide.md` (this guide).
 - Updating Studio updates the skill. Files you edited are never overwritten; to get the Studio version back, delete that file and restart DSH.
 
+## Chat notes and per-session switches
+
+**Chat notes:** when a hook script at the turn-end point concludes with a note (exit 11), for example a translation, the note appears as a block right under that turn's answer.
+
+- If the note's first line starts with a bracketed label such as `[한국어 번역]`, the label becomes the block title. A label containing `not verified` (or `미확인`) gets a **not verified** badge.
+- The body renders as Markdown. The block offers **Hide**, **Open in Pixie tab**, and **Turn off in this session**.
+- It appears after the script finishes; there is no progress indicator. Skipped turns (exit 10), turns Pixie concluded, and turns without a note get no block. If the gate ran more than once in a turn, only the last note shows.
+- The original answer stays as it is; it cannot be collapsed or replaced.
+
+**Per-session switches:** at the top of **Pixie** tab → **Gates**, **Gates in this session** lists every gate that applies to this session's preset with a switch that turns it off for this session only. **Turn off in this session** on a chat block is the same switch.
+
+- A gate switched off does not run at any point in this session: no script, Pixie, or decision engine call, and no record. It applies from the next message; no restart is needed.
+- Gate definitions, preset attachments, and other sessions do not change. A new session starts with the preset's settings.
+- The list shows gates that are switched on, attached to this preset, and not switched off for it.
+
 ## Run records
 
-The gate records in the session's right-side **Pixie** tab list each run. The detail shows the action actually applied (replaced, appended, rejected, blocked, steered, none), who concluded (Pixie, hook script, skipped by hook), the five output fields, token usage, original and final text, notes, and helper calls. For a rejected input, **Edit and send** puts the suggestion (or the original) into the composer.
+The gate records in the session's right-side **Pixie** tab list each run. The detail shows the action actually applied (replaced, appended, rejected, blocked, steered, none), who concluded (Pixie, hook script, skipped by hook), the five output fields, token usage, original and final text, notes, and helper calls. Helper calls also show each `pixie judge` type, chosen value, engine, and confidence. When a script concluded the run, the output section is titled **Script output**. For a rejected input, **Edit and send** puts the suggestion (or the original) into the composer.
 
 ## Limits and troubleshooting
 
-- **A gate does not run.** Check that it is on, has a preset, and is saved; that the session runs that preset; and that the target agents (root or child) match. Without a Pixie model the error policy applies.
+- **A gate does not run.** Check that it is on, has a preset, and is saved; that the session runs that preset; that the target agents (root or child) match; and that it is not off in **Gates in this session**. Without a Pixie model the error policy applies.
 - **`hook-script-unsupported`** means no bash executor is available.
 - **`Session sandbox policy and cwd are required`** means the session policy is unknown.
 - **`pixie: helper is not available`** means there is no web server, or the command ran outside a script run.
 - **`pixie: HTTP 401`** means the run already ended or the token belongs to another run. **429** is the call limit; **413** is the request size limit.
 - **`Jev API key is not configured`** means the decision engine is Jev and `TYPESAFE_API_KEY` is missing. **`Jev request failed: HTTP 401`** means a wrong key; **422** means a malformed question.
+- **Saving the key reports an empty `refs:` line.** Change the bare `refs:` line in the DSH credentials file (`.credentials.yaml` in the DSH home) to `refs: {}` and save again. DSH cannot add a key under a `refs:` line with no value.
 - **`Hook script exit 11 needs a gate output JSON`** means the stdout of an exit 11 is not gate output JSON.
 - Sandboxes that block local network access can make helper calls fail.
 - Background tasks (pre-compaction, file pre-indexing) are not supported yet.

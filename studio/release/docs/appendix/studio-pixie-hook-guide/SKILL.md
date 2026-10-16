@@ -32,6 +32,7 @@ Help the user build a Pixie Gate: a task the Pixie model runs at one point of an
 - Write the whole judgment in `--question`: question IDs never reach the model. For several inputs (source and translation, answer and evidence), pipe a JSON object built with `jq` and name its fields in backticks in the question.
 - The script runs in the session working directory under the session sandbox. Do not write files unless the session can write; never try to escape the sandbox.
 - In the task, reference only `{{hooks.<name>.text}}` and `{{hooks.<name>.data}}` of the chosen script.
+- At `turn-end`, a note concluded with exit 11 shows under that turn's answer in the chat. Start it with a bracketed label line (e.g. `[한국어 번역]`) to title the block; a label containing `not verified`/`미확인` gets a warning badge.
 
 Test a script by hand before relying on it: `printf 'sample' | PIXIE_POINT=tool-after PIXIE_TOOL_NAME=grep ./script.sh; echo $?`. The helper only works inside a real gate run.
 
@@ -46,5 +47,7 @@ Do not edit `definitions.json` unless the user asks you to; prefer guiding them 
 ```
 
 `enabled` switches the gate everywhere; `disabledPresetIds` (optional) switches it off for listed attached presets only. Only one gate per preset and `when` may be on for that preset. Studio validates the file on save and on read; invalid entries are ignored at runtime.
+
+If a gate never runs in one session, check **Pixie tab → Gates → Gates in this session**: users can switch gates off per session.
 
 Tell the user how to verify: run **Try it** in the editor (it skips scripts), then send a real message in a session using the chosen preset and open the gate record in the Pixie tab. Report what the record shows, not what should happen.
