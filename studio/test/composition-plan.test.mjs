@@ -181,7 +181,8 @@ test('S1: exclusions reject unknown ids, override conflicts, selected providers 
   const master = { ...base, preset: MASTER_PRESET_ID, providers: [] };
   await assert.rejects(compositionPlan(ctx, { ...master, configExclusions: ['missing'] }), /Unknown master Config entry: missing/);
   await assert.rejects(compositionPlan(ctx, { ...master, configExclusions: ['time-context'], configOverrides: { 'time-context': { timeZone: 'UTC' } } }), /both overridden and excluded: time-context/);
-  await assert.rejects(compositionPlan(ctx, { ...master, configExclusions: ['persona'] }), /cannot be excluded; choose its tools instead: persona/);
+  // Any Master entry may be excluded; persona is only rejected while it is selected for editing.
+  assert.ok(!findRow((await compositionPlan(ctx, { ...master, configExclusions: ['persona'] })).plugins, '@deepseek-ai/dsh-persona'));
   await assert.rejects(compositionPlan(ctx, { ...master, providers: ['@deepseek-ai/dsh-time-context'], configExclusions: ['time-context'] }), /selected prompt providers: @deepseek-ai\/dsh-time-context/);
   await assert.rejects(compositionPlan(ctx, { ...base, configExclusions: ['persona'] }), /require Studio Master/);
   assert.deepEqual(parsePreviewRequest({ ...master, configExclusions: ['a', 'a'] }).configExclusions, ['a']);

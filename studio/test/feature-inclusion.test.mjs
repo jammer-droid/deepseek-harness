@@ -18,28 +18,30 @@ async function mount(element) {
 }
 const entries = [
   { id: 'tool-fs', name: '@deepseek-ai/dsh-tool-fs' },
+  { id: 'delegation/studio-master-roles', name: '@matamt-dbg/dsh-studio/roles' },
   { id: 'time-context', name: '@deepseek-ai/dsh-time-context' },
   { id: 'compaction/compaction-basic', name: '@deepseek-ai/dsh-compaction-basic', config: {} },
   { id: 'compaction/command-compact', name: '@deepseek-ai/dsh-command-compact' },
 ];
 
-test('feature switches show defaults/override/excluded and follow dependencies; tool providers are not listed', async () => {
+test('plugin switches cover every Master entry except delegation, with defaults/override/excluded and dependencies', async () => {
   const { FeatureInclusion } = await import('../src/feature-inclusion.tsx');
   let state = { overrides: { 'compaction/compaction-basic': { auto: false } }, excluded: [] };
   const render = () => React.createElement(FeatureInclusion, { locale: 'en', entries, overrides: state.overrides, excluded: state.excluded, onChange: next => { state = next; } });
   const view = await mount(render());
   try {
     const rows = () => [...document.querySelectorAll('.studio-settings-row')].map(row => row.textContent);
-    assert.equal(rows().length, 3, 'tool-fs is chosen through tools, not here');
-    assert.match(rows()[0], /Current time notice.*Defaults/);
-    assert.match(rows()[1], /Automatic compaction.*Override.*Automatic compaction off \(auto: false\)/);
+    assert.equal(rows().length, 4, 'tool providers are listed too; delegation plugins are not');
+    assert.match(rows()[0], /@deepseek-ai\/dsh-tool-fs.*Defaults/);
+    assert.match(rows()[1], /Current time notice.*Defaults/);
+    assert.match(rows()[2], /Automatic compaction.*Override.*Automatic compaction off \(auto: false\)/);
     // auto:false is not exclusion: /compact stays included.
-    assert.match(rows()[2], /Manual compaction.*Defaults/);
+    assert.match(rows()[3], /Manual compaction.*Defaults/);
     const toggle = label => document.querySelector(`button[role=switch][aria-label="${label}"]`);
     await act(async () => toggle('Automatic compaction').click());
     assert.deepEqual(state, { overrides: {}, excluded: ['compaction/compaction-basic'] }, 'exclusion drops the override');
     await view.rerender(render());
-    assert.match(rows()[2], /Excluded with dependency · Requires: Automatic compaction/);
+    assert.match(rows()[3], /Excluded with dependency · Requires: Automatic compaction/);
     assert.equal(toggle('Manual compaction (/compact)').disabled, true);
     await act(async () => toggle('Automatic compaction').click());
     assert.deepEqual(state, { overrides: {}, excluded: [] }, 'turning it back on returns to defaults');

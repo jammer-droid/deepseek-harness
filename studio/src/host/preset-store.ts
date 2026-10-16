@@ -14,7 +14,7 @@ import { executableRoles, parseRoles, roleToolFilter } from '../role-settings.ts
 import { delegationTools, migratePolicyConfig, renameLegacyRoleKey, ROLE_PLUGIN, ROLE_TOOL, withoutDelegationPlugins } from '../delegation.ts';
 import type { CompositionRow } from '../prompt-composition.ts';
 import { cleanRequest, cleanRoles, type CleanablePreset } from '../master-snapshot.ts';
-import { applyConfigExclusions, EXCLUDABLE_PACKAGES } from '../config-overrides.ts';
+import { applyConfigExclusions, LEGACY_DROPPED_PACKAGES } from '../config-overrides.ts';
 import { masterComposition } from './master-composition.ts';
 import { MASTER_PRESET_ID } from '../master-preset.ts';
 
@@ -58,7 +58,7 @@ export function missingFeatures(row: Pick<StoredPreset, 'request' | 'applied'>):
   if (!row.applied || row.request.preset !== MASTER_PRESET_ID) return [];
   try {
     const expected = packageNames(applyConfigExclusions(masterComposition(), row.request.configExclusions ?? [], row.request.configOverrides ?? {}))
-      .filter(name => EXCLUDABLE_PACKAGES.includes(name));
+      .filter(name => LEGACY_DROPPED_PACKAGES.includes(name));
     const present = new Set(packageNames(parseComposition(row.applied.plugins)));
     return expected.filter(name => !present.has(name));
   } catch { return []; }
@@ -97,7 +97,12 @@ export class PresetStore {
       }
     })();
   }
-  private async mount(id: string, definition: NonNullable<StoredPreset['applied']>) {
+  /**
+   * @param strict - fail when a selected tool is missing. Apply is strict: the Master supplied every
+   *   selected tool, so a gap means this preset's own exclusions removed its provider. Restore at
+   *   startup is lenient and reports the gap instead.
+   */
+  private async mount(id: string, definition: NonNullable<StoredPreset['applied']>, strict = false) {
     const plugins = parseComposition(definition.plugins);
     const dispose = await this.ctx.agentPresets.register({ id, name: definition.name, description: definition.description, plugins: plugins as never });
     try {
@@ -116,7 +121,13 @@ export class PresetStore {
           const key = {};
           const child = createScope(this.ctx, key, { parent: lease.key });
           const releases: Array<() => void> = [];
-          try { for (const config of configs) releases.push(installPolicy(child.ctx, key, config, message => warnings.push(message))); }
+          try {
+            if (strict) {
+              const missing = [...new Set(configs.flatMap(config => config.tools.filter(name => child.ctx.tools.get(name, key) === undefined)))];
+              if (missing.length) throw new Error(`Selected tools are not provided by this composition: ${missing.join(', ')}. Include the plugin that provides them again, or deselect these tools.`);
+            }
+            for (const config of configs) releases.push(installPolicy(child.ctx, key, config, message => warnings.push(message)));
+          }
           finally {
             try { for (const release of releases.reverse()) release(); }
             finally { await child.dispose(); }
@@ -257,7 +268,7 @@ export class PresetStore {
     const applied = { name: old.name, description: old.description, plugins: dump([...withoutDelegationPlugins(plugins), ...rolePlugins, { id: 'studio-policy', name: POLICY_PLUGIN, config: { tools: [...new Set(tools)], toolOverrides: keep(request.toolOverrides ?? {}), sections: request.sections ?? {}, prompt: request.prompt, ...(execution ? { execution } : {}), ...(childToolFilter ? { childToolFilter } : {}) } }], { schema: entryListSchema, noRefs: true }) };
     await this.disposers.get(id)?.(); this.disposers.delete(id);
     try {
-      const warnings = await this.mount(id, applied);
+      const warnings = await this.mount(id, applied, true);
       const row: StoredPreset = { ...old, applied, appliedAt: new Date().toISOString(), status: 'applied' };
       // Missing selected tools no longer block: the preset applies without them and says so.
       if (warnings.length) row.applyWarning = warnings.join('\n'); else delete row.applyWarning;

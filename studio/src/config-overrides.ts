@@ -41,10 +41,10 @@ export function applyConfigOverrides(rows: CompositionRow[], overrides: ConfigOv
 }
 
 /**
- * Non-tool execution features a preset may leave out entirely. Tool providers are chosen through
- * the tool selection instead: excluding one would silently remove tools the preset selected.
+ * Non-tool execution features older builds dropped when only persona was selected. Used to detect
+ * those gaps in applied snapshots; every Master entry may be excluded, not only these.
  */
-export const EXCLUDABLE_PACKAGES: readonly string[] = Object.freeze([
+export const LEGACY_DROPPED_PACKAGES: readonly string[] = Object.freeze([
   '@deepseek-ai/dsh-agent-instructions', '@deepseek-ai/dsh-time-context', '@deepseek-ai/dsh-skill-filesystem',
   '@deepseek-ai/dsh-compaction-basic', '@deepseek-ai/dsh-command-compact', '@deepseek-ai/dsh-compaction-tool-result-pruner',
 ]);
@@ -75,10 +75,9 @@ export function effectiveExclusions(rows: CompositionRow[], excluded: readonly s
  */
 export function applyConfigExclusions(rows: CompositionRow[], excluded: readonly string[], overrides: ConfigOverrides = {}): CompositionRow[] {
   if (!excluded.length) return rows;
-  const known = new Map(configEntries(rows).map(entry => [entry.id, entry.row.name]));
+  const known = new Set(configEntries(rows).map(entry => entry.id));
   for (const id of excluded) {
     if (!known.has(id)) throw new Error(`Unknown master Config entry: ${id}`);
-    if (!EXCLUDABLE_PACKAGES.includes(known.get(id)!)) throw new Error(`Config entry cannot be excluded; choose its tools instead: ${id}`);
     if (Object.hasOwn(overrides, id)) throw new Error(`Config entry is both overridden and excluded: ${id}`);
   }
   const drop = new Set(effectiveExclusions(rows, excluded));

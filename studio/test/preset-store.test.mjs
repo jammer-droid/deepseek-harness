@@ -193,3 +193,16 @@ test('confirmed catalog cleanup rewrites only affected drafts, marks applied one
   assert.equal(await readFile(file, 'utf8'), saved);
   await store.dispose();
 });
+test('apply refuses a composition that no longer provides a selected tool, keeping the previous snapshot', async () => {
+  const file = join(await mkdtemp(join(tmpdir(), 'studio-strict-')), 'presets.json');
+  const a = await runtime(); const store = new PresetStore(a.ctx, file);
+  const draft = await store.save(JSON.stringify({ name: 'Strict', description: '', request: { ...request, tools: ['read'] } }));
+  await store.apply(draft.id);
+  const before = a.registrations.get(draft.id);
+  a.removeTool('read');
+  // The source check fires first here; with Master exclusions the strict mount check reports the same gap.
+  await assert.rejects(store.apply(draft.id), /does not supply tools: read|not provided by this composition: read/);
+  assert.deepEqual(a.registrations.get(draft.id).plugins, before.plugins, 'the previous applied snapshot is mounted again');
+  assert.equal((await store.list())[0].status, 'applied');
+  await store.dispose();
+});
