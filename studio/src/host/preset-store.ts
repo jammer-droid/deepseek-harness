@@ -132,10 +132,13 @@ export class PresetStore {
   ensureOptimized(tools: string[], plugins: CompositionRow[]) { return this.serial(async () => {
     const template = optimizedTemplate(tools);
     const existing = this.rows.find(row => row.id === OPTIMIZED_PRESET_ID);
-    if (existing && JSON.stringify(existing.request) === JSON.stringify(template.request)) return this.public(existing);
-    const now = new Date().toISOString();
-    // Compose the applied snapshot lazily: an unapplied draft never needs the base composition.
     const buildApplied = () => ({ name: template.name, description: template.description, plugins: this.optimizedApplied(template.request, plugins) });
+    // Also re-align an applied snapshot composed by an older build (e.g. one that dropped compaction).
+    // A base that cannot compose keeps the last applied snapshot, as before.
+    const current = () => { try { return buildApplied().plugins; } catch { return existing?.applied?.plugins; } };
+    if (existing && JSON.stringify(existing.request) === JSON.stringify(template.request)
+      && (!existing.applied || existing.applied.plugins === current())) return this.public(existing);
+    const now = new Date().toISOString();
     if (!existing) {
       const applied = buildApplied();
       const row: StoredPreset = { id: template.id, name: template.name, description: template.description, request: template.request, conveniences: {}, agents: [], updatedAt: now, appliedAt: now, status: 'applied', applied, ...(template.applyWarning ? { applyWarning: template.applyWarning } : {}) };

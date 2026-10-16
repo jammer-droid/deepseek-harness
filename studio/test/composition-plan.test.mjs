@@ -23,7 +23,8 @@ test('tool source composition stays intact and leases close, missing source fail
   const {ctx,disposed}=fixture();
   const plan=await compositionPlan(ctx,{...base,preset:'standard',tools:['standard_tool']});
   assert.ok(plan.plugins.some(row=>row.name==='example-tool-provider'));
-  assert.ok(!plan.plugins.some(row=>row.name==='@deepseek-ai/dsh-agent-instructions'));
+  // An unselected provider is not an exclusion: the source keeps it with its declared config.
+  assert.deepEqual(plan.plugins.find(row=>row.name==='@deepseek-ai/dsh-agent-instructions').config,{maxBytes:65536});
   assert.deepEqual(disposed,['standard']);
   await assert.rejects(compositionPlan(ctx,{...base,tools:['standard_tool']}),/Requested preset minimal does not supply tools: standard_tool/);
   await assert.rejects(compositionPlan(ctx,{...base,tools:['missing']}),/Requested preset minimal does not supply tools: missing/);
@@ -41,7 +42,7 @@ test('requested custom preset wins duplicate scoped and global tool names', asyn
   docs.minimal += '- name: "minimal-tool-provider"\n';
   ctx.tools.schemas = () => [{ name: 'duplicate' }, { name: 'global_tool' }];
   const plan = await compositionPlan(ctx, { ...base, preset: 'custom', tools: ['duplicate', 'global_tool'] });
-  assert.equal(plan.plugins[0].config.prefix, 'Custom');
+  assert.equal(findRow(plan.plugins, '@deepseek-ai/dsh-persona').config.prefix, 'Custom');
   assert.ok(plan.plugins.some(row => row.name === 'custom-tool-provider'));
   assert.ok(!plan.plugins.some(row => row.name === 'minimal-tool-provider'));
   assert.ok(!plan.plugins.some(row => row.name === 'example-tool-provider'));
@@ -74,8 +75,11 @@ function compactionFixture(retention = { retainRatio: 0.16 }) {
   return fixtureResult;
 }
 const masterRequest = { ...base, preset: MASTER_PRESET_ID, providers: [compactionName] };
+function findRow(rows, name) {
+  for (const row of rows) { const hit = row.name === name ? row : row.group && Array.isArray(row.config) ? findRow(row.config, name) : undefined; if (hit) return hit; }
+}
 function compactionConfig(plan) {
-  return plan.plugins.find(row => row.id === 'studio-compaction').config.find(row => row.name === compactionName).config;
+  return findRow(plan.plugins, compactionName).config;
 }
 test('master stays its own source and configOverrides switches retention forms without mutation', async () => {
   for (const [original, patch] of [[{ retainRatio: 0.16 }, { retainTokens: 0 }], [{ retainTokens: 100 }, { retainRatio: 0.2 }]]) {
@@ -102,4 +106,31 @@ test('providerConfigs retains later precedence and rejects explicit ambiguous re
   const both = { retainTokens: 100, retainRatio: 0.2 };
   await assert.rejects(compositionPlan(ctx, { ...masterRequest, configOverrides: { 'group/compact': both } }), /mutually exclusive/);
   await assert.rejects(compositionPlan(ctx, { ...masterRequest, providerConfigs: { [compactionName]: both } }), /mutually exclusive/);
+});
+
+test('persona-only selection keeps compaction, manual compact and context providers in their groups', async () => {
+  const { ctx, docs } = fixture();
+  docs[MASTER_PRESET_ID] = JSON.stringify([
+    { id: 'persona', name: '@deepseek-ai/dsh-persona', config: { prefix: 'Base', complete: true } },
+    { id: 'agent-instructions', name: '@deepseek-ai/dsh-agent-instructions', config: { maxBytes: 65536 } },
+    { id: 'time-context', name: '@deepseek-ai/dsh-time-context' },
+    { id: 'compaction', name: 'cordis:group', group: true, isolate: { compaction: true, toolResultPruner: true }, config: [
+      { id: 'compaction-basic', name: compactionName },
+      { id: 'command-compact', name: '@deepseek-ai/dsh-command-compact' },
+      { id: 'tool-result-pruner', name: '@deepseek-ai/dsh-compaction-tool-result-pruner', config: { thresholdChars: 8192 } },
+    ] },
+  ]);
+  const plan = await compositionPlan(ctx, { ...base, preset: MASTER_PRESET_ID, persona: 'Edited',
+    configOverrides: { 'compaction/compaction-basic': { thresholdRatio: 0.7 } } });
+  const group = plan.plugins.find(row => row.id === 'compaction');
+  assert.deepEqual(group.isolate, { compaction: true, toolResultPruner: true });
+  assert.deepEqual(group.config.map(row => row.name), [compactionName, '@deepseek-ai/dsh-command-compact', '@deepseek-ai/dsh-compaction-tool-result-pruner']);
+  assert.deepEqual(group.config[0].config, { thresholdRatio: 0.7 });
+  assert.ok(!plan.plugins.some(row => row.id === 'studio-compaction'));
+  assert.ok(findRow(plan.plugins, '@deepseek-ai/dsh-agent-instructions'));
+  assert.ok(findRow(plan.plugins, '@deepseek-ai/dsh-time-context'));
+  // Persona is edited in place, never duplicated.
+  const personas = plan.plugins.filter(row => row.name === '@deepseek-ai/dsh-persona');
+  assert.equal(personas.length, 1);
+  assert.deepEqual(personas[0].config, { prefix: 'Edited', complete: false });
 });

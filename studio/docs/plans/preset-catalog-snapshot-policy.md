@@ -1,7 +1,7 @@
 # DSH 기본 동작을 보존하는 프리셋 덮어쓰기 — #26 이후 구현 계획
 
 - 계획 준비 상태: **draft**. 제품 방향은 확정이며, #26 이후 코드·지원 API 재확인과 아래 미결정 사항 정리가 끝나면 ready로 전환한다.
-- 구현 상태: 미착수. 다음 단계는 **S0**이며 이 문서는 구현·배포 승인이 아니다.
+- 구현 상태: **압축 누락 긴급 수정(P1·P2)만 완료**([15절](#15-선행-처리-압축-누락-긴급-수정)). 나머지는 미착수이며 다음 단계는 **S0**이다. 이 문서는 구현·배포 승인이 아니다.
 
 ## 상태와 재개 위치
 
@@ -266,7 +266,7 @@ DSH Host에서 제공되는 공용 기능 (복제하지 않음)
 
 ## 11. 의존 순서별 구현 단계
 
-현재 진행: **S0 대기 / S1–S6 미착수**. 단계 ID는 코드가 바뀌어도 유지하며 파일·함수명은 착수 시 다시 매핑한다. 선행 단계의 검증을 통과한 후 다음 단계로 진행한다.
+현재 진행: **S0 대기 / S1–S6 미착수**. 단, S2의 "프롬프트 provider 선택에 따른 비도구 기능 일괄 제거 제거"와 S5의 Optimized 템플릿 재정렬 일부는 [15절](#15-선행-처리-압축-누락-긴급-수정)에서 먼저 처리했다. 해당 단계 착수 시 15절 결과를 기준으로 남은 범위만 진행한다. 단계 ID는 코드가 바뀌어도 유지하며 파일·함수명은 착수 시 다시 매핑한다. 선행 단계의 검증을 통과한 후 다음 단계로 진행한다.
 
 ### S0 — #26 이후 기준 재확인과 지원 경계 확정
 
@@ -354,3 +354,36 @@ DSH Host에서 제공되는 공용 기능 (복제하지 않음)
 ## 14. 이번 문서화에서 하지 않은 것
 
 코드 수정, 사용자 설정·플러그인 ON/OFF, 앱 재시작·리로드, 빌드·배포, 새 회귀 테스트 실행, 커밋·병합은 하지 않았다. 이번 변경은 #26 이후 구현을 위한 계획이며, 착수 시 S0부터 최신 상태를 검증한다.
+
+## 15. 선행 처리: 압축 누락 긴급 수정
+
+사용 중인 세션에서 압축을 쓸 수 없어 S0보다 먼저 처리했다. 3절 "실행 설정: 기본 전체 반영" 규칙 중 **조합 경계**만 구현했으며, 제외 설정·상태 UI·스냅샷은 포함하지 않는다.
+
+### 15.1 변경
+
+| 단위 | 내용 | 파일 |
+| --- | --- | --- |
+| P1 | 선택하지 않은 prompt provider를 기본 구성에서 제거하던 처리를 없앴다. 미선택은 제외가 아니라 기본값 사용이다. 선택한 provider는 원래 그룹·위치에서 Config만 바꾼다(persona 중복·hoist 없음). 그 결과 `compaction` 그룹의 `isolate`, `command-compact`, `tool-result-pruner`와 `agent-instructions`·`time-context`·`skill-filesystem`이 유지된다. 기준 선언에 없는 provider(다른 기본 프리셋에서 가져온 것)만 기존처럼 hoist하고 `studio-compaction` 격리 그룹으로 감싼다. | [composition-plan.ts](<../../src/host/composition-plan.ts>) |
+| P2 | Optimized는 request가 같아도 반영된 구성이 현재 코드의 구성과 다르면 시작 시 다시 구성·반영한다. 기준 구성을 만들 수 없으면 마지막 반영본을 유지한다. 사용자 복사 프리셋은 자동 재반영하지 않는다(사용자가 "DSH에 다시 반영"). | [preset-store.ts](<../../src/host/preset-store.ts>) |
+| 테스트 | persona만 편집해도 압축 그룹 3종·`isolate`·압축 Config 덮어쓰기·context provider가 유지되는 회귀 테스트, 압축 그룹이 빈 예전 Optimized 반영본의 재구성 테스트. 기존 "미선택 provider 제외" 기대를 새 규칙으로 갱신. | [composition-plan.test.mjs](<../../test/composition-plan.test.mjs>), [optimized-preset.test.mjs](<../../test/optimized-preset.test.mjs>) |
+
+`selectPromptProviders`([prompt-composition.ts](<../../src/prompt-composition.ts>))는 조합 경로에서 더 이상 쓰지 않지만 테스트가 참조하므로 남겼다. S2에서 정리 여부를 정한다.
+
+### 15.2 검증
+
+- 로컬: `npm --prefix studio test` 415개 통과, `git diff --check` 통과.
+- 설치: 앱 종료 후 `DSH_HOME="$HOME/.dsh" npm --prefix studio run dev:desktop`으로 desktop 프로필(DSH `0.2.0-rc.2`, Studio `0.2.9` 로컬 빌드)에 설치했다. 재시작 후 Optimized는 자동 재구성되었고, Optimized Copy·Optimized Creator는 사용자가 다시 반영했다. 세 프리셋의 `applied` 구성에 `compaction-basic`·`command-compact`·`tool-result-pruner`·`agent-instructions`·`time-context`·`skill-filesystem`이 모두 포함됨을 `presets.json`에서 확인했다.
+- 사용자가 새 세션에서 `/compact` 명령 노출을 확인했다.
+- 미검증: 자동 압축의 `compaction/start → summary → end` 실제 발생(임계값 도달 필요), `/compact` 실행 결과, 8절의 다른 수용 조건.
+
+### 15.3 알려진 사항과 주의
+
+- 설치 시 `~/.zshrc`의 `export DSH_HOME="$PWD/studio/.dsh-home"` 때문에 `dev:desktop`이 격리 경로를 찾아 실패했다. desktop 설치는 `DSH_HOME="$HOME/.dsh"`를 명시한다. 셸 설정은 사용자 소관이라 수정하지 않았다.
+- 압축 Config 덮어쓰기 체크는 기능 ON 스위치가 아니다. 체크하지 않아도 DSH 기본값으로 포함된다. Optimized Creator의 빈 `compaction/*` 덮어쓰기는 기본값과 동일하게 동작한다.
+- 이미 열린 세션에는 적용되지 않는다(6절).
+
+### 15.4 다음 세션 재개 지점
+
+1. **S0**부터 시작한다. 15절 변경을 #26 이후 기준에 포함된 것으로 기록한다.
+2. S2 착수 시: own-scope 도구 차단([preset-policy.ts](<../../src/host/preset-policy.ts>)의 `installPolicy` 탐침과 전역 `guard`)과 [Optimized JSDoc](<../../src/optimized-preset.ts#L5-L12>) 수정이 남은 핵심이다. 조합 경계(P1)는 완료되었다.
+3. S4·S5: 압축 포함·자동 ON/OFF·`/compact` 표시, 명시적 제외 설정과 저장 형식, 기존 사용자 프리셋의 누락 탐지·복구 안내가 남아 있다.
