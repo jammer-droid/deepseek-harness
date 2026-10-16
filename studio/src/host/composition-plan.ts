@@ -109,5 +109,7 @@ export async function compositionPlan(ctx: Context, input: PreviewRequest) {
   const compaction = plugins.filter(row => ['@deepseek-ai/dsh-compaction-basic', '@deepseek-ai/dsh-compaction-tool-result-pruner'].includes(row.name));
   const isolated: CompositionRow[] = plugins.filter(row => !compaction.includes(row));
   if (compaction.length) isolated.push({ id: 'studio-compaction', name: 'cordis:group', group: true, isolate: { compaction: true, toolResultPruner: true }, config: compaction });
-  return { request, plugins: isolated };
+  // Effective Master entries after overrides and exclusions, for per-turn previews.
+  const entries = base === MASTER_PRESET_ID ? configEntries(source).map(({ id, row }) => ({ id, name: row.name, config: row.config })) : [];
+  return { request, plugins: isolated, entries };
 }

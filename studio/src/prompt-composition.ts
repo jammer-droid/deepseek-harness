@@ -42,7 +42,13 @@ export function parsePreviewRequest(value: unknown): PreviewRequest {
     ...(Array.isArray(row.configExclusions) && row.configExclusions.length ? { configExclusions: [...new Set(row.configExclusions as string[])] } : {}),
   };
 }
-export interface PreviewResult { prompt: string; sections: { name: string; text: string }[]; context: string; tools: { name: string; description: string; parameters: Record<string, unknown> }[] }
+/**
+ * One per-turn message a composed plugin adds in a real session (not part of the system prompt).
+ * `text` is an example rendered now in the Studio Host's working directory; `entry` is the Master
+ * Config id whose fields produce it, so the preview can edit the same override.
+ */
+export interface TurnInjection { entry: string; name: string; text?: string; note?: string }
+export interface PreviewResult { prompt: string; sections: { name: string; text: string }[]; context: string; tools: { name: string; description: string; parameters: Record<string, unknown> }[]; injections?: TurnInjection[] }
 export type PreviewAction = (request: PreviewRequest) => Promise<PreviewResult>;
 export interface CompositionRow { id?: string; name: string; group?: boolean; config?: unknown; disabled?: unknown; [key: string]: unknown }
 /** Curated semantic classification; do not guess prompt providers from package substrings. */

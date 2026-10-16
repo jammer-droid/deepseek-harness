@@ -342,6 +342,7 @@ ${adapter}.studio-ui *, .studio-ui *::before, .studio-ui *::after { box-sizing: 
 .studio-ui .studio-card-note { margin-top: auto; padding-top: 10px; }
 .studio-ui .studio-card-footer .studio-card-footer-end { margin-inline-start: auto; }
 .studio-ui .studio-tool-cards.studio-card-pair { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.studio-ui pre.studio-turn-text { margin: 8px 0; padding: 10px 12px; max-height: 240px; overflow: auto; white-space: pre-wrap; border-radius: var(--studio-control-radius); background: var(--studio-hover); border: .5px solid var(--studio-line); color: var(--studio-ink); font-size: 12px; }
 .studio-ui ul.studio-change-list { display: grid; gap: 4px; margin: 8px 0; padding: 0; list-style: none; overflow-wrap: anywhere; }
 .studio-ui .studio-preset-warnings { display: flex; flex-direction: column; gap: 6px; margin: 0 0 12px; padding: 0; list-style: none; }
 .studio-ui .studio-preset-warnings > li { display: flex; align-items: baseline; gap: 8px; padding: 6px 12px; border-radius: var(--studio-control-radius); background: var(--studio-hover); color: var(--studio-muted); font-size: 12px; }

@@ -6,9 +6,13 @@ import { Button, DetailDialog, Note, SectionHead } from './ui.tsx';
 import { type PresetCatalog } from './preset-catalog.ts';
 import { delegationTools, GENERIC_DELEGATION_TOOLS, LEGACY_ROLE_TOOL, renameLegacyRoleKey, ROLE_TOOL, WITHDRAWN_TOOLS } from './delegation.ts';
 import type { PreviewAction, PreviewResult } from './prompt-composition.ts';
+import { TurnInjectionPanel } from './turn-injection-panel.tsx';
 
 export const defaultProvidedTools: string[] = [];
-export function PromptToolsPrototype({ locale, prompt, onPromptChange, provided, onProvidedChange, catalog, catalogError, onPreview, onRequestChange, initialRequest }: {
+export function PromptToolsPrototype({ locale, prompt, onPromptChange, provided, onProvidedChange, catalog, catalogError, onPreview, onRequestChange, initialRequest, configOverrides, onConfigOverridesChange, previewKey = '' }: {
+  configOverrides?: Record<string, Record<string, unknown>> | undefined; onConfigOverridesChange?: ((next: Record<string, Record<string, unknown>>) => void) | undefined;
+  /** Inputs outside this tab (Config overrides, exclusions) that change the preview. */
+  previewKey?: string;
   initialRequest?: import('./prompt-composition.ts').PreviewRequest | undefined;
   onRequestChange?: ((request: import('./prompt-composition.ts').PreviewRequest) => void) | undefined;
   catalog?: PresetCatalog | undefined; catalogError?: string | undefined; onPreview?: PreviewAction | undefined;
@@ -39,7 +43,7 @@ export function PromptToolsPrototype({ locale, prompt, onPromptChange, provided,
     providerConfigs: Object.fromEntries(Object.entries(providerConfigs).filter(([name]) => providers.includes(name))),
   };
   const personaFields = current?.promptProviders?.find(provider => provider.name === providers[0])?.fields ?? [];
-  const requestKey = JSON.stringify(request);
+  const requestKey = JSON.stringify(request) + previewKey;
   React.useEffect(() => { onRequestChange?.(request); }, [requestKey, onRequestChange]);
   const labels = { filter: t('보기', 'Show', '显示'), search: t('도구 검색', 'Search tools', '搜索工具'), searchHint: t('이름, 설명, 인자로 검색', 'Search names, descriptions or parameters', '按名称、描述或参数搜索'), all: t('전체', 'All', '全部'), selected: t('선택됨', 'Selected', '已选'), modified: t('변경됨', 'Modified', '已修改'), settings: t('설정', 'Details', '详情'), done: t('완료', 'Close', '关闭'), empty: t('항목이 없습니다.', 'No items', '无项目'), noResults: t('검색 결과가 없습니다.', 'No matching results.', '没有匹配结果。'), modifiedTag: t('변경됨', 'Modified', '已修改'), clear: t('전체 보기', 'Show all', '显示全部') };
   // A tool set counts as included whenever all its tools are selected, so copied or edited presets toggle the same as fresh drafts.
@@ -115,6 +119,7 @@ export function PromptToolsPrototype({ locale, prompt, onPromptChange, provided,
         </div>
         <aside className="studio-prompt-tools"><h3>{t('모델에 전달되는 도구', 'Model-facing tool schemas', '提供给模型的工具定义')}<span className="studio-count">{result.tools.length}</span></h3>{result.tools.length ? result.tools.map(tool => <details className="studio-schema-tool" key={tool.name}><summary>{tool.name}</summary><p className="studio-tool-description">{tool.description}</p><SchemaValue value={tool.parameters} requiredLabel={t('필수', 'required', '必填')} /></details>) : <p className="studio-muted">{labels.empty}</p>}</aside>
       </section>}
+      {result?.injections && <TurnInjectionPanel locale={locale} injections={result.injections} overrides={configOverrides ?? {}} onChange={next => onConfigOverridesChange?.(next)} />}
     </DetailDialog>
   </React.Fragment>;
 }
