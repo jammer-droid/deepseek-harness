@@ -83,6 +83,7 @@ primitives는 CSS 모듈을 함께 불러오므로 Node 단위 테스트에서 �
 | `SettingsRow`, `Segmented`, `Toggle` | 설정 카드(`studio-settings-card`) 안의 행: 왼쪽 제목·설명, 오른쪽 작은 컨트롤. 몇 개 안 되는 모드는 `Segmented`, 켜고 끄기는 `Toggle`. 예: Pixie 설정 페이지 |
 | `PickOption` | 대화상자 안의 선택지. `checked`를 주면 라디오로 동작 |
 | `IconButton` | 아이콘만 있는 작은 버튼. 문구는 `label`(툴팁·접근 이름)로만 준다. 톤은 `info`·`success`·`error`. `pressed`를 주면 켜짐/꺼짐 토글(`aria-pressed`)이 된다. 예: 메뉴 하단 버전 옆 업데이트, Pixie 스레드 제목 옆 `/pixie` 대상 핀 |
+| `ModelText`, `MarkdownProvider` | 모델(또는 Pixie 대신 결론을 낸 훅 스크립트)이 쓴 글. `MarkdownProvider`로 렌더러가 주어지면 Markdown으로, 없으면(Node 테스트) 일반 텍스트로 보인다. 사용자·도구 원문과 Studio 문구에는 쓰지 않는다. 예: Pixie 답변, 게이트 결과의 Pixie 출력·메모 |
 | `Badge` | 카드 제목 옆 상태 캡슐. DSH `Tag`와 같은 모양이며 Node 테스트 대상 모듈에서도 쓸 수 있다. 톤은 `success`(반영됨), `warning`(재반영 필요), `info`(기본 제공), `outline`(읽기 전용·실행 방식), `neutral`(미반영) |
 | `DetailDialog` | 한 항목의 설정을 여는 모달. `wide`는 프롬프트 미리보기처럼 본문과 오른쪽 목록을 함께 보여줄 때 쓴다. 머리(제목·보조 문구·닫기), 스크롤되는 본문, 선택적 하단 동작으로 구성한다. 닫으면 연 버튼으로 포커스를 돌려준다. 페이지 안에서 카드를 펼쳐 편집하지 않고 이 모달을 쓴다 |
 | `SplitButton` | 주 동작과 관련 보조 동작을 한 컨트롤로 묶는다. 예: `DSH에 다시 반영` + 메뉴의 `반영 해제` |
@@ -98,6 +99,7 @@ primitives는 CSS 모듈을 함께 불러오므로 Node 단위 테스트에서 �
 | `Checkbox`, `Menu`, `MenuItemButton`, `Modal`, `SegmentedControl`, `StateDot`, `Tag`, `Toast` | DSH primitives 재수출 |
 | `ComponentCard` | 구성 요소 하나의 접이식 카드. 펼친 순서는 사유 → 편집 폼 → 모델에 전달되는 변화 → 카드 동작으로 고정 |
 | `SupportTag`, `SUPPORT_DOT` | 지원 상태 태그와 상태 점 매핑 |
+| `DshMarkdown` | DSH `MarkdownText`(compact)를 로캘 라벨과 함께 쓰는 `ModelText` 렌더러. 셸이 `mountPixie`에 넘긴다. 라벨 객체는 로캘마다 하나로 고정해 스트리밍 캐시를 유지한다 |
 | `DialogBody`, `DialogFooter` | Modal 내용과 버튼 줄. Modal은 문서 body로 포털되므로 Studio 스타일 범위를 다시 연다 |
 
 ## 레이아웃

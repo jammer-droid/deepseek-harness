@@ -1,5 +1,6 @@
 /** Pixie copy in ko, en, and zh. */
 const en = {
+  mdCopy: 'Copy', mdCopied: 'Copied', mdFootnotes: 'Footnotes',
   pageJudge: 'Decision engine', pageJudgeDescription: 'The engine behind `pixie judge` in gate hook scripts. Judgments run only when a script asks for one.',
   judgeEngine: 'Engine', judgeEngineLlm: 'LLM', judgeEngineJev: 'Jev', judgeEngineLlmHint: 'A conversation model answers in the Jev format.', judgeEngineJevHint: 'TypeSafe Jev answers through its API. Gate input is sent to TypeSafe.',
   judgeModel: 'Judge model', judgeModelHint: 'Uses the Pixie model when not set.', judgeModelPixie: 'Pixie model',
@@ -29,6 +30,7 @@ const en = {
 } as const;
 export type PixieTextKey = keyof typeof en;
 const ko: Record<PixieTextKey, string> = {
+  mdCopy: '복사', mdCopied: '복사됨', mdFootnotes: '각주',
   pageJudge: '결정 엔진', pageJudgeDescription: '게이트 훅 스크립트의 `pixie judge`가 쓰는 엔진입니다. 스크립트가 요청할 때만 판정합니다.',
   judgeEngine: '엔진', judgeEngineLlm: 'LLM', judgeEngineJev: 'Jev', judgeEngineLlmHint: '대화 모델이 Jev 형식으로 답합니다.', judgeEngineJevHint: 'TypeSafe Jev API가 답합니다. 게이트 입력이 TypeSafe로 전송됩니다.',
   judgeModel: '판정 모델', judgeModelHint: '정하지 않으면 Pixie 모델을 씁니다.', judgeModelPixie: 'Pixie 모델',
@@ -57,6 +59,7 @@ const ko: Record<PixieTextKey, string> = {
   truncated: '토큰 한도에 걸려 잘림', errNoModel: 'Pixie 모델이 설정되지 않았습니다. DSH Studio → Pixie에서 선택하세요.', errBusy: '이 세션에서 Pixie가 아직 답변 중입니다.', errEmpty: '/pixie 뒤에 질문을 입력하세요.',
 };
 const zh: Record<PixieTextKey, string> = {
+  mdCopy: '复制', mdCopied: '已复制', mdFootnotes: '脚注',
   pageJudge: '决策引擎', pageJudgeDescription: '门控钩子脚本中 `pixie judge` 使用的引擎，仅在脚本请求时判定。',
   judgeEngine: '引擎', judgeEngineLlm: 'LLM', judgeEngineJev: 'Jev', judgeEngineLlmHint: '由对话模型按 Jev 格式回答。', judgeEngineJevHint: '由 TypeSafe Jev API 回答，门控输入会发送给 TypeSafe。',
   judgeModel: '判定模型', judgeModelHint: '未设置时使用 Pixie 模型。', judgeModelPixie: 'Pixie 模型',

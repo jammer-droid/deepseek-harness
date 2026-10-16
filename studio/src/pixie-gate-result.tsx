@@ -3,7 +3,7 @@ import { judgeText } from './pixie-gate-judge-locale.ts';
 import { judgeCriterionText, judgeQuestionText, type JudgeAnswer } from './pixie-contracts.ts';
 import type { GateResult, StageResult, JudgeFailedCondition } from './pixie-gate-contracts.ts';
 import { gateText } from './pixie-gate-locale.ts';
-import { Badge, Notice, SectionHead } from './ui.tsx';
+import { Badge, ModelText, Notice, SectionHead } from './ui.tsx';
 
 function wasSkipped(result: StageResult): boolean {
   return !!result.data && typeof result.data === 'object' && 'skipped' in result.data && result.data.skipped === true;
@@ -32,7 +32,7 @@ export function GateResultDetails({ result, locale, durations = {}, skipped = []
     }).join('; ') : value.reason;
     return <section key={id} className="studio-pixie-turn" data-gate-stage={id}>
       <SectionHead title={label} actions={<Badge tone={!omitted && (value.verdict === 'error' || value.verdict === 'fail') ? 'warning' : 'neutral'}>{t(omitted ? 'skipped' : value.verdict)}</Badge>} />
-      {value.text !== undefined && <p className="studio-pixie-answer">{value.text}</p>}
+      {value.text !== undefined && <ModelText text={value.text} locale={locale} />}
       {(reason || omitted) && <p className="studio-pixie-answer">{t('reason')}: {omitted && (!value.reason || value.reason === 'skipped: 시험 실행에서 명령 미실행') ? t('skippedCommand') : reason}</p>}
       {!!value.data && typeof value.data === 'object' && 'answers' in value.data && !!value.data.answers && typeof value.data.answers === 'object' && <section aria-label={judgeText(locale, 'answers')}>
         <SectionHead title={judgeText(locale, 'answers')} />
@@ -61,7 +61,7 @@ export function GateResultDetails({ result, locale, durations = {}, skipped = []
       </section>}
       {changed && <section className="studio-gate-block" aria-label={t('subject')}><SectionHead title={t('subject')} /><p className="studio-pixie-answer studio-gate-text">{result.subject}</p></section>}
       {forwarded.length > 0 && <section className="studio-gate-block" aria-label={t('forward')}><SectionHead title={t('sentAlong')} />{forwarded.map((text, index) => <p key={index} className="studio-pixie-answer studio-gate-text">{text}</p>)}</section>}
-      {result.notes.length > 0 && <section className="studio-gate-block" aria-label={t('notes')}><SectionHead title={t('notes')} />{result.notes.map((note, index) => <p key={index} className="studio-pixie-answer">{note}</p>)}</section>}
+      {result.notes.length > 0 && <section className="studio-gate-block" aria-label={t('notes')}><SectionHead title={t('notes')} />{result.notes.map((note, index) => <ModelText key={index} text={note} locale={locale} />)}</section>}
       {result.records.length > 0 && <section className="studio-gate-block" aria-label={t('helperCalls')}><SectionHead title={t('helperCalls')} />{result.records.map(record => stage(record.id, record.result))}</section>}
       {result.forwardError?.verdict === 'error' && <Notice>{t('error')}: {result.forwardError.reason}</Notice>}
     </div>;
@@ -74,7 +74,7 @@ export function GateResultDetails({ result, locale, durations = {}, skipped = []
     {(Object.keys(result.stages).length > 0 || skipped.some(id => !id.startsWith('hooks.'))) && <SectionHead title={t('stages')} />}
     {Object.entries(result.stages).map(([id, value]) => stage(id, value))}
     {skipped.filter(id => !id.startsWith('hooks.') && !result.stages[id]).map(id => stage(id, { verdict: 'pass' }))}
-    {result.notes.length > 0 && <section aria-label={t('notes')}><SectionHead title={t('notes')} />{result.notes.map((note, index) => <p key={index} className="studio-pixie-answer">{note}</p>)}</section>}
+    {result.notes.length > 0 && <section aria-label={t('notes')}><SectionHead title={t('notes')} />{result.notes.map((note, index) => <ModelText key={index} text={note} locale={locale} />)}</section>}
     {result.records.length > 0 && <section aria-label={t('helperCalls')}><SectionHead title={t('helperCalls')} />{result.records.map(record => stage(record.id, record.result))}</section>}
     <SectionHead title={t('forward')} actions={<Badge>{t(result.forward.kind)}</Badge>} />
     {result.forward.kind !== 'none' && <p className="studio-pixie-answer">{result.forward.text}</p>}

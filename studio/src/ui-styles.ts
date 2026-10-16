@@ -578,6 +578,7 @@ ${adapter}.studio-ui *, .studio-ui *::before, .studio-ui *::after { box-sizing: 
 .studio-ui .studio-pixie-turn { display: grid; gap: 4px; margin: 0; padding-bottom: 10px; border-bottom: .5px solid var(--studio-line); }
 .studio-ui .studio-pixie-question { justify-self: end; max-width: 85%; margin: 0; padding: 4px 10px; border-radius: var(--studio-control-radius); background: var(--studio-hover); white-space: pre-wrap; }
 .studio-ui .studio-pixie-answer { margin: 0; white-space: pre-wrap; }
+.studio-ui .studio-markdown { white-space: normal; min-width: 0; overflow-wrap: anywhere; }
 .studio-ui .studio-pixie-turn-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
 .studio-ui .studio-pixie-turn-meta:empty { display: none; }
 .studio-ui .studio-pixie-detail > p { margin: 0; }

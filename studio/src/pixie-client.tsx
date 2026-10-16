@@ -7,7 +7,7 @@ type GateTrialResponse = { output: import('./pixie-gate-task-contracts.ts').Gate
 import type { GateTask } from './pixie-gate-task.ts';
 import type { StudioContext } from './contracts.js';
 import { PACKAGE_NAME } from './package-name.ts';
-import { StudioSurface } from './ui.tsx';
+import { MarkdownProvider, StudioSurface, type MarkdownRenderer } from './ui.tsx';
 import { PixieCommandRow, PixieTab, type PixieCommandRowActions, type PixieTabActions } from './pixie-tab.tsx';
 import { PixieSettingsPage, type PixieSettingsActions } from './pixie-settings.tsx';
 import { pixieText } from './pixie-locale.ts';
@@ -110,7 +110,9 @@ export function followPixieStream<T>(connect: () => AsyncIterable<T> & { dispose
 }
 
 /** Register Pixie's settings service (with the shared Studio menu footer), right-sidebar tab, and /pixie row. Call after the shell mounted {@link pixieDescriptors}. */
-export function mountPixie(ctx: StudioContext, options: { navFooter?: (locale: string) => React.ReactNode } = {}): void {
+/** `markdown` renders Pixie output; the shell passes the DSH renderer so this module stays loadable in Node tests. */
+export function mountPixie(ctx: StudioContext, options: { navFooter?: (locale: string) => React.ReactNode; markdown?: MarkdownRenderer } = {}): void {
+  const withMarkdown = (node: React.ReactNode) => <MarkdownProvider value={options.markdown}>{node}</MarkdownProvider>;
   const remote = () => {
     const service = ctx.get(`remote.${NAMESPACE}` as never) as unknown as PixieRemote | undefined;
     if (!service) throw new Error('Pixie API unavailable');
@@ -153,7 +155,7 @@ export function mountPixie(ctx: StudioContext, options: { navFooter?: (locale: s
   function SettingsPage() {
     const active = useLocale();
     // Rendered inside the shell surface, like the preset service, so both services share one frame.
-    return <PixieSettingsPage actions={settingsActions} gateActions={gateActions} locale={active} navFooter={options.navFooter?.(active)} />;
+    return withMarkdown(<PixieSettingsPage actions={settingsActions} gateActions={gateActions} locale={active} navFooter={options.navFooter?.(active)} />);
   }
   ctx.slots.inject('local.dsh-studio.services', () => ctx.slots.register({
     name: 'local.dsh-studio.services', id: 'pixie', order: 10, label: () => pixieText(locale(), 'settingsTitle'),
@@ -193,7 +195,7 @@ export function mountPixie(ctx: StudioContext, options: { navFooter?: (locale: s
     function Body({ sessionId }: { sessionId: string }) {
       const active = useLocale();
       const actions = React.useMemo(() => tabActions(sessionId), [sessionId]);
-      return <PixieTab actions={actions} locale={active} />;
+      return withMarkdown(<PixieTab actions={actions} locale={active} />);
     }
     scope.slots.inject('sidebar.right.pane.tab' as never, () => scope.slots.register({ name: 'sidebar.right.pane.tab', key: TAB_ID } as never, Body as never));
     // The /pixie row shows the question, the status line, and a button that opens this tab.
@@ -204,9 +206,9 @@ export function mountPixie(ctx: StudioContext, options: { navFooter?: (locale: s
         const tab = tabActions(sessionId);
         return { commandId: node.commandId, follow: tab.follow, commandTurn: () => unwrap(remote().commandTurn(sessionId, node.commandId)) };
       }, [sessionId, node.commandId]);
-      return <StudioSurface className="studio-pixie-command">
+      return withMarkdown(<StudioSurface className="studio-pixie-command">
         <PixieCommandRow question={node.args?.trim() ?? ''} outcome={node.outcome} locale={active} onOpen={openTab} actions={rowActions} />
-      </StudioSurface>;
+      </StudioSurface>);
     }
     scope.slots.inject('conversation.chat.commandview' as never, () => scope.slots.register({ name: 'conversation.chat.commandview', key: 'pixie' } as never, CommandRow as never));
   });
