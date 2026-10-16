@@ -58,10 +58,10 @@ When the verdict is stop, the replacement and addition never reach the main mode
 | Pixie hook script | None | A script run before the task. See [below](#pixie-hook-scripts) |
 | Show the result in the chat | On | Shows the result right under what the gate checked. See [Chat notes](#chat-notes-and-per-session-switches) |
 | Confirm before replacing | Off | Stops a real replacement and shows it as a suggestion (message points) |
-| On error | Pass | Pass or stop on model or script errors and timeouts |
-| Target agents | Root (child for agent messages) | Root, child, or any |
-| Time limit | 60 s | Script, helper, and model calls together |
-| Redo limit | 1 | Corrections per turn at the answer-end point |
+| If Pixie fails | Continue as usual | Continue as usual or stop it on model or script errors and timeouts |
+| Target agents | Main agent (Subagents for agent messages) | Main agent, Subagents, or All |
+| Time limit (seconds) | 60 | Script, helper, and model calls together |
+| Redo limit per turn | 1 | Corrections per turn at the answer-end point |
 
 ## Pixie hook scripts
 
@@ -261,7 +261,7 @@ Turn the setting off in the gate editor under **Advanced → Show the result in 
 - If the note's first line starts with a bracketed label such as `[한국어 번역]`, the label becomes the block title. A label containing `not verified` (or `미확인`) gets a **not verified** badge.
 - The body renders as Markdown. The block offers **Hide**, **Open in Pixie tab**, and **Turn off in this session**.
 - It appears after the gate finishes; there is no progress indicator. Skipped turns (exit 10), cancelled runs, and runs whose gate had the setting off get no block. Each run keeps the setting it started with. If a gate ran more than once at the same place, only the last result shows.
-- The checked message, tool call, or answer stays as it is; it cannot be collapsed or replaced.
+- The result block does not change the checked message, tool call, or answer. **Hide** collapses only the gate result.
 
 **Per-session switches:** at the top of **Pixie** tab → **Gates**, **Gates in this session** lists every gate that applies to this session's preset with a switch that turns it off for this session only. **Turn off in this session** on a chat block is the same switch.
 
