@@ -9,6 +9,7 @@ const en = {
   skippedForward: 'The forwarded result cannot be calculated because command stages were skipped in this trial.',
   skippedCommand: 'Command was not executed in this trial.',
   skippedCount: 'Includes {count} skipped stages', milliseconds: '{value} ms', seconds: '{value} s',
+  output: 'Pixie output', notes: 'Notes', helperCalls: 'Helper calls', helperNoul: 'Yes probability {noul} · threshold {threshold}', usage: 'Tokens in {input} · out {output}', stop: 'Stopped',
 } as const;
 export type GateTextKey = keyof typeof en;
 const ko: Record<GateTextKey, string> = {
@@ -20,6 +21,7 @@ const ko: Record<GateTextKey, string> = {
   skippedForward: '시험 실행에서 명령 단계를 건너뛰어 전달 결과를 계산할 수 없음',
   skippedCommand: '시험 실행에서 명령을 실행하지 않았습니다.',
   skippedCount: '건너뛴 단계 {count}개 포함', milliseconds: '{value} ms', seconds: '{value}초',
+  output: 'Pixie 출력', notes: '메모', helperCalls: '헬퍼 호출', helperNoul: '예 확률 {noul} · 기준 {threshold}', usage: '토큰 입력 {input} · 출력 {output}', stop: '막음',
 };
 const zh: Record<GateTextKey, string> = {
   gates: '门控', emptyRuns: '暂无门控运行记录', applied: '应用', replaced: '已替换', appended: '已追加', rejected: '已拒绝', steered: '已纠正', blocked: '已阻止', denied: '已阻止', running: '运行中', pending: '拒绝待处理', unverified: '钩子输入未验证', suggestion: '建议', editSend: '修改后发送', resent: '标记已发送', dismissed: '忽略', draftNote: '用建议（或原文）替换输入框草稿。请自行检查并发送。标记已发送仅记录确认，不会实际发送。', composerUnavailable: '会话输入框不可用', turn: '轮次', steerCount: '纠正次数', tool: '工具', callId: '调用 ID', allRuns: '所有门控运行',
@@ -30,6 +32,7 @@ const zh: Record<GateTextKey, string> = {
   skippedForward: '本次试运行跳过了命令阶段，无法计算传递结果。',
   skippedCommand: '本次试运行未执行命令。',
   skippedCount: '包含 {count} 个已跳过阶段', milliseconds: '{value} ms', seconds: '{value} 秒',
+  output: 'Pixie 输出', notes: '备注', helperCalls: '辅助调用', helperNoul: '“是”的概率 {noul} · 阈值 {threshold}', usage: '令牌 输入 {input} · 输出 {output}', stop: '已拦下',
 };
 export function gateText(locale: string, key: GateTextKey): string {
   return (locale.startsWith('ko') ? ko : locale.startsWith('zh') ? zh : en)[key];

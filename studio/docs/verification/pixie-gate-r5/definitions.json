@@ -1,0 +1,55 @@
+[
+  {
+    "id": "r5-input",
+    "name": "R5 지시 점검",
+    "enabled": true,
+    "when": "user-message",
+    "presetIds": [
+      "studio-master"
+    ],
+    "instruction": "Hook data: {{hooks.tag-instruction.data}}\nIf the hook data says done_condition is \"no\", set verdict to \"stop\" and give the reason \"완료 조건이 없습니다. 끝났다고 판단할 기준을 덧붙여 다시 보내 주세요.\" Otherwise do not stop; put \"Pixie 요약: \" followed by the hook summary in append, and put \"R5 input gate ran\" in note.",
+    "advanced": {
+      "confirmReplace": false,
+      "onError": "pass",
+      "agents": "root",
+      "timeoutMs": 120000,
+      "maxSteers": 1,
+      "script": "tag-instruction.sh"
+    }
+  },
+  {
+    "id": "r5-tool",
+    "name": "R5 파일 결과",
+    "enabled": true,
+    "when": "tool-after",
+    "presetIds": [
+      "studio-master"
+    ],
+    "instruction": "Line count from the hook: {{hooks.only-gate-file.text}}\nDo not stop and do not replace. Put exactly \"[PIXIE CHECKED <line count> lines] gate-sample.txt was reviewed by Pixie Gate.\" in append, using the hook line count.",
+    "advanced": {
+      "confirmReplace": false,
+      "onError": "pass",
+      "agents": "root",
+      "timeoutMs": 120000,
+      "maxSteers": 1,
+      "script": "only-gate-file.sh"
+    }
+  },
+  {
+    "id": "r5-turn",
+    "name": "R5 답변 점검",
+    "enabled": true,
+    "when": "turn-end",
+    "presetIds": [
+      "studio-master"
+    ],
+    "instruction": "Look only at the last non-empty line of the final answer. If that line is not exactly GATE-OK, set verdict \"stop\" with reason \"답변 마지막 줄에 GATE-OK를 쓰고 다시 마무리하세요.\" (mentions of GATE-OK elsewhere do not count). If the last line is exactly GATE-OK, pass and put \"GATE-OK confirmed\" in note.",
+    "advanced": {
+      "confirmReplace": false,
+      "onError": "pass",
+      "agents": "root",
+      "timeoutMs": 120000,
+      "maxSteers": 1
+    }
+  }
+]

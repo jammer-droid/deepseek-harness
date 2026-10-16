@@ -91,6 +91,11 @@ export function GateRunsPanel({ actions, locale }: { actions: GateRunActions; lo
             <Button small disabled={busy} onClick={() => { void resolve(shown, 'dismissed'); }}>{t('dismissed')}</Button>
           </div></>}
         </section>}
+        {shown.output && <section aria-label={t('output')}>
+          <SectionHead title={t('output')} actions={<Badge tone={shown.output.verdict === 'stop' ? 'warning' : 'neutral'}>{t(shown.output.verdict === 'stop' ? 'stop' : 'pass')}</Badge>} />
+          {(['reason', 'replace', 'append', 'note'] as const).map(key => shown.output![key] !== undefined && <p key={key} className="studio-pixie-answer">{t(key === 'note' ? 'notes' : key)}: {shown.output![key]}</p>)}
+          <p className="studio-card-meta">{t('usage').replace('{input}', String(shown.usage.inputTokens)).replace('{output}', String(shown.usage.outputTokens))}</p>
+        </section>}
         {shown.result ? <GateResultDetails result={shown.result} locale={locale} /> : <p className="studio-pixie-answer">{shown.original}</p>}
       </div>}
     </div>

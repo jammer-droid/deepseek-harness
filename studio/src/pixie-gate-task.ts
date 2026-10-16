@@ -1,4 +1,4 @@
-/** Task-centred gate draft (U11–U22): "when → what Pixie does → result". Shared task model for Host and UI drafts. Node-testable. */
+/** Task-centred gate (U11–U24): "when → what Pixie does → result". Shared task model for Host and UI drafts. Node-testable. */
 
 /** When a gate runs, in the user's words. Maps to a runtime point (and input source) inside Pixie. */
 export type GateWhen = 'user-message' | 'agent-message' | 'tool-before' | 'tool-after' | 'turn-end';
@@ -45,11 +45,8 @@ export const GATE_TEMPLATES: readonly GateTemplate[] = [
   { id: 'file-index', when: 'tool-before', available: false },
 ];
 
-/** Example scripts shown in the prototype until the Host lists the real directory. */
-export const PROTOTYPE_SCRIPTS: readonly string[] = ['only-search-tools.sh', 'measure-subtitle.sh', 'translate-until-ok.sh', 'list-changed-files.sh'];
-
-/** Pixie Gate guide: script contract, environment, helpers, and examples (U23). Written in R4. */
-export const GATE_GUIDE_URL = 'https://github.com/matamt-dbg/dsh-studio/blob/main/docs/guides/pixie-gate.md';
+/** Pixie Gate guide: result rules, script contract, environment, helpers, and examples (U22, U23). */
+export const GATE_GUIDE_URL = 'https://github.com/matamt-dbg/dsh-studio/blob/main/docs/appendix/pixie-gate.md';
 
 /** Pixie hook script contract (U23), documented in the guide. */
 export const HOOK_EXIT = { continue: 0, skip: 10 } as const;

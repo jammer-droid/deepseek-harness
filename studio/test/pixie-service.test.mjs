@@ -103,6 +103,23 @@ test('hook service registers the helper route on webServer and passes PIXIE_URL/
   assert.equal(routes.size, 0);
 });
 
+test('helper URL works on rc.2 web servers without a protocol getter and reads the listened port lazily', async () => {
+  const h = await harness(); const routes = new Map();
+  h.ctx.provide('webServer');
+  const server = { host: '0.0.0.0', port: undefined, register(route) { routes.set(route.path, route); return () => routes.delete(route.path); } };
+  h.ctx.set('webServer', server);
+  const fiber = await start(h);
+  try {
+    await until(() => routes.size === 1);
+    server.port = 5555;
+    const service = h.ctx.get('studioPixie');
+    assert.equal(service.helperUrl, 'http://127.0.0.1:5555/studio/pixie-gate/helper');
+    server.host = '::'; assert.equal(service.helperUrl, 'http://[::1]:5555/studio/pixie-gate/helper');
+    server.host = '192.168.0.4'; server.protocol = 'https:'; assert.equal(service.helperUrl, 'https://192.168.0.4:5555/studio/pixie-gate/helper');
+    server.port = undefined; assert.equal(service.helperUrl, undefined);
+  } finally { await fiber.dispose(); }
+});
+
 const start = async (h) => { const fiber = h.ctx.plugin(PixieService, h.dataDir); await fiber; return fiber; };
 const until = async (check) => { for (let i = 0; i < 100; i++) { if (await check()) return; await new Promise(r => setTimeout(r, 10)); } throw new Error('timed out'); };
 

@@ -154,3 +154,15 @@ test('rejection detail omits original section when both originals are missing', 
   await act(async () => button(f.host, 'Edit and send').click());
   assert.deepEqual(f.calls, [['draft', '']]);
 });
+
+test('a recorded live run shows Pixie output, usage, notes and helper calls', async () => {
+  const { readFileSync } = await import('node:fs');
+  const live = JSON.parse(readFileSync(new URL('./fixtures/pixie-gate-run-helper.json', import.meta.url), 'utf8'));
+  const f = await setup([live], {}, GateRunsPanel, 'ko');
+  const detail = f.host.querySelector('.studio-pixie-detail');
+  assert.match(detail.querySelector('section[aria-label="Pixie 출력"]').textContent, /통과.*덧붙임: Pixie 요약:.*메모: R5 input gate ran.*토큰 입력 \d+ · 출력 \d+/s);
+  const calls = detail.querySelector('section[aria-label="헬퍼 호출"]');
+  assert.deepEqual([...calls.querySelectorAll('[data-gate-stage]')].map(el => el.dataset.gateStage), ['pixie-ask-1', 'pixie-judge-2']);
+  assert.match(calls.textContent, /Summarize the request in one short English sentence|Read and follow/);
+  await f.close();
+});

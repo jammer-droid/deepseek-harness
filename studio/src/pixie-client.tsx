@@ -74,6 +74,7 @@ export function pixieDescriptors() {
     descriptor('follow', ['sessionId'], { mode: 'stream', cancellation: { parameter: 'signal' } }),
     descriptor('trialGate', ['payload'], { cancellation: { parameter: 'signal' } }),
     descriptor('gateDefinitions', []),
+    descriptor('gateScripts', []),
     descriptor('saveGateDefinitions', ['payload']),
     descriptor('readSettings', []),
     descriptor('saveSettings', ['payload']),
@@ -124,7 +125,7 @@ export function mountPixie(ctx: StudioContext, options: { navFooter?: (locale: s
     },
     read: () => unwrap(remote().gateDefinitions()),
     save: (entries: GateTask[]) => unwrap(remote().saveGateDefinitions(JSON.stringify(entries))),
-    models: settingsActions.models,
+    scripts: () => unwrap(remote().gateScripts()),
     presets: () => {
       const catalog = ctx.get('remote.studioCatalog' as never) as unknown as { listPresets(): RemoteValue<{ id: string; name: string }[]> };
       return unwrap(catalog.listPresets());

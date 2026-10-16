@@ -110,3 +110,17 @@ test('skipped-only response renders a localized reason and one badge per missing
     });
   }
 });
+
+test('task runs show notes and pixie helper calls instead of an empty stage list', async () => {
+  const result = { ...base(), notes: ['skipped by hook'], records: [
+    { id: 'pixie-ask-1', result: { verdict: 'note', text: 'SUM', reason: 'summarize' }, subjectBytes: 5, textBytes: 3 },
+    { id: 'pixie-judge-2', result: { verdict: 'fail', reason: 'ok?', data: { noul: 0.2, threshold: 0.5 } }, subjectBytes: 5, textBytes: 0 },
+  ] };
+  await render({ result }, host => {
+    assert.equal(host.querySelector('[data-gate-stage]') && [...host.querySelectorAll('h3, h4, strong, span')].some(el => el.textContent === 'Stages'), false);
+    assert.match(host.querySelector('section[aria-label="Notes"]').textContent, /skipped by hook/);
+    const calls = host.querySelector('section[aria-label="Helper calls"]');
+    assert.deepEqual([...calls.querySelectorAll('[data-gate-stage]')].map(el => el.dataset.gateStage), ['pixie-ask-1', 'pixie-judge-2']);
+    assert.match(calls.textContent, /SUM.*Reason: summarize.*Rejected.*Reason: ok\?.*Yes probability 0.2 · threshold 0.5/s);
+  });
+});

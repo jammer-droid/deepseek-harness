@@ -43,6 +43,7 @@ export function GateResultDetails({ result, locale, durations = {}, skipped = []
           </> : <>{q?.type === 'score' ? q.levels[answer.score] || answer.score : answer.score} · {judgeText(locale, 'confidence')}: {percent(answer.confidence)}</>}</p>;
         })}
       </section>}
+      {!!value.data && typeof value.data === 'object' && 'noul' in value.data && 'threshold' in value.data && <p className="studio-card-meta">{t('helperNoul').replace('{noul}', String(value.data.noul)).replace('{threshold}', String(value.data.threshold))}</p>}
       {value.error && <Notice>{t('error')}: {value.error}</Notice>}
       {durations[id] !== undefined && <p className="studio-muted">{t('elapsed')}: {duration(durations[id]!)}</p>}
     </section>;
@@ -52,9 +53,11 @@ export function GateResultDetails({ result, locale, durations = {}, skipped = []
     <section><SectionHead title={t('original')} /><p className="studio-pixie-answer">{result.original}</p></section>
     <section><SectionHead title={t('subject')} /><p className="studio-pixie-answer">{result.subject}</p></section>
     {result.hooks.start && stage('start', result.hooks.start, t('start'))}
-    <SectionHead title={t('stages')} />
+    {(Object.keys(result.stages).length > 0 || skipped.some(id => !id.startsWith('hooks.'))) && <SectionHead title={t('stages')} />}
     {Object.entries(result.stages).map(([id, value]) => stage(id, value))}
     {skipped.filter(id => !id.startsWith('hooks.') && !result.stages[id]).map(id => stage(id, { verdict: 'pass' }))}
+    {result.notes.length > 0 && <section aria-label={t('notes')}><SectionHead title={t('notes')} />{result.notes.map((note, index) => <p key={index} className="studio-pixie-answer">{note}</p>)}</section>}
+    {result.records.length > 0 && <section aria-label={t('helperCalls')}><SectionHead title={t('helperCalls')} />{result.records.map(record => stage(record.id, record.result))}</section>}
     <SectionHead title={t('forward')} actions={<Badge>{t(result.forward.kind)}</Badge>} />
     {result.forward.kind !== 'none' && <p className="studio-pixie-answer">{result.forward.text}</p>}
     {result.forward.kind === 'append' && result.forward.contexts.map((text, index) => <p key={index} className="studio-pixie-answer">{text}</p>)}

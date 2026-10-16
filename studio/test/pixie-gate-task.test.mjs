@@ -13,21 +13,60 @@ const pick = (h, title) => [...h.querySelectorAll('button.studio-pick')].find(b 
 const input = (h, label) => h.querySelector(`[aria-label="${label}"]`);
 const click = async el => { assert.ok(el); await act(async () => el.click()); };
 const change = async (el, value) => { assert.ok(el); await act(async () => { el.value = value; Simulate.change(el); }); };
-async function settings(t, locale = 'en') {
+const SCRIPTS = ['only-search-tools.sh', 'measure-subtitle.sh', 'list-changed-files.sh'];
+async function settings(t, locale = 'en', options = {}) {
   const host = document.createElement('div'); document.body.append(host); const root = createRoot(host);
-  const gateActions = { read: async () => [], presets: async () => [{ id: 'p', name: 'Preset' }], models: async () => ({ groups: [] }), save: async () => {}, trial: () => ({ result: new Promise(() => {}), cancel() {} }) };
-  await act(async () => root.render(React.createElement(PixieSettingsPage, { locale, gateActions, actions: { read: async () => ({ contextMode: 'fresh', systemPrompt: '', allowThreadModel: false }), models: gateActions.models, save: async s => s } })));
+  const saved = [], trials = [];
+  const gateActions = {
+    read: async () => options.read ?? { entries: [], invalid: [] },
+    presets: async () => [{ id: 'p', name: 'Preset' }],
+    save: async tasks => { if (options.saveError) throw new Error(options.saveError); saved.push(structuredClone(tasks)); return tasks; },
+    scripts: async () => ({ directory: '/profile/studio-data/pixie-gate/commands', supported: options.supported ?? true, scripts: SCRIPTS }),
+    trial: request => { trials.push(request); return { result: options.trial ? Promise.resolve(options.trial) : new Promise(() => {}), cancel() { trials.cancelled = true; } }; },
+  };
+  await act(async () => root.render(React.createElement(PixieSettingsPage, { locale, gateActions, actions: { read: async () => ({ contextMode: 'fresh', systemPrompt: '', allowThreadModel: false }), models: async () => ({ groups: [] }), save: async s => s } })));
   t.after(async () => { await act(async () => root.unmount()); host.remove(); });
+  host.saved = saved; host.trials = trials;
   return host;
 }
 const page = (h, label) => h.querySelector(`section[aria-label="${label}"]`);
 
-test('gate group holds composition and scope pages after Judge, each marked as a preview', async t => {
-  const host = await settings(t, 'ko');
+test('gate group holds composition and scope pages after Judge, loaded from the Host', async t => {
+  const task = { ...makeTask('Stored'), instruction: 'Check it', enabled: true, presetIds: ['p'] };
+  const host = await settings(t, 'ko', { read: { entries: [task], invalid: [{ index: 1, raw: {}, error: { code: 'invalid-entry', message: 'Invalid gate task' } }] } });
   const nav = [...host.querySelectorAll('nav.studio-nav > *')].map(el => el.textContent);
   assert.deepEqual(nav.slice(-3), ['게이트', '게이트 구성', '적용 범위']);
   assert.ok(nav.indexOf('판정') < nav.indexOf('게이트'));
-  assert.match(page(host, '게이트 구성').textContent, /화면 시안입니다/);
+  const comp = page(host, '게이트 구성');
+  assert.doesNotMatch(comp.textContent, /화면 시안/);
+  assert.match(comp.querySelector('[data-gate-task]').textContent, /Stored/);
+  assert.match(comp.textContent, /읽을 수 없는 게이트 1개.*#2 Invalid gate task/);
+  assert.equal(button(comp, '저장됨').disabled, true);
+});
+
+test('Save sends the whole edited list and reports failures', async t => {
+  const host = await settings(t);
+  const comp = page(host, 'Gate composition');
+  await click(button(comp, 'New gate'));
+  await click(pick(comp.querySelector('dialog'), 'Instruction format check'));
+  const editor = [...comp.querySelectorAll('dialog')].find(d => input(d, 'What Pixie does'));
+  await click(button(editor, 'Apply'));
+  assert.match(comp.textContent, /Unsaved changes/);
+  await click(input(page(host, 'Scope'), 'Enabled Instruction format check'));
+  await click(button(comp, 'Save'));
+  assert.equal(host.saved.length, 1); assert.equal(host.saved[0][0].name, 'Instruction format check'); assert.equal(host.saved[0][0].enabled, true);
+  assert.equal(button(comp, 'Saved').disabled, true); assert.doesNotMatch(comp.textContent, /Unsaved changes/);
+});
+test('a failed save keeps the draft and shows the Host error', async t => {
+  const host = await settings(t, 'en', { saveError: 'Only one enabled gate per preset and when is supported' });
+  const comp = page(host, 'Gate composition');
+  await click(button(comp, 'New gate'));
+  await click(pick(comp.querySelector('dialog'), 'Blank gate'));
+  const editor = [...comp.querySelectorAll('dialog')].find(d => input(d, 'What Pixie does'));
+  await change(input(editor, 'What Pixie does'), 'x'); await click(button(editor, 'Apply'));
+  await click(button(comp, 'Save'));
+  assert.match(comp.querySelector('[role=alert]').textContent, /Could not save \(Only one enabled gate/);
+  assert.equal(button(comp, 'Save').disabled, false);
 });
 
 test('new gate starts from templates; background tasks are listed but not selectable', async t => {
@@ -58,7 +97,8 @@ test('editor shows two fields up front; script, judge and limits live under Adva
   assert.ok(advanced.contains(input(editor, 'Pixie hook script')));
   assert.equal(input(editor, 'Pixie hook script').value, 'measure-subtitle.sh');
   assert.match(editor.querySelector('.studio-gate-vars').textContent, /\{\{hooks\.measure-subtitle\.text\}\}/);
-  assert.match(advanced.textContent, /<profile>\/studio-data\/pixie-gate\/commands\//);
+  assert.match(advanced.textContent, /\/profile\/studio-data\/pixie-gate\/commands/);
+  assert.deepEqual([...input(editor, 'Pixie hook script').options].map(o => o.value), ['', ...SCRIPTS]);
   assert.ok(advanced.contains(input(editor, 'Decide the verdict with the judge model')));
   assert.ok(input(editor, 'Confirm before replacing'));
   await change(input(editor, 'What Pixie does'), '');
@@ -67,16 +107,34 @@ test('editor shows two fields up front; script, judge and limits live under Adva
   assert.equal(comp.querySelector('[data-gate-task]'), null);
 });
 
-test('trial shows the fixed five-field result shape without calling a model', async t => {
-  const host = await settings(t);
+test('trial calls the Host and shows the five output fields, the applied plan and usage', async t => {
+  const trial = { output: { verdict: 'stop', reason: 'No done criteria', replace: 'Fix login. Done when tests pass.' }, plan: { stop: true, reason: 'No done criteria', suggestion: 'Fix login. Done when tests pass.', notes: [] }, usage: { inputTokens: 12, outputTokens: 5 } };
+  const host = await settings(t, 'en', { trial });
   const comp = page(host, 'Gate composition');
   await click(button(comp, 'New gate'));
   await click(pick(comp.querySelector('dialog'), 'Instruction format check'));
   const editor = [...comp.querySelectorAll('dialog')].find(d => input(d, 'What Pixie does'));
+  assert.match(editor.textContent, /Calls the configured Pixie model/);
   await change(input(editor, 'Sample your instruction'), 'fix login');
   await click(button(editor, 'Run'));
+  assert.equal(host.trials[0].text, 'fix login'); assert.equal(host.trials[0].task.when, 'user-message');
   const result = editor.querySelector('dl.studio-gate-result');
-  assert.deepEqual([...result.querySelectorAll('dt')].map(d => d.textContent), ['Verdict', 'Reason', 'Replacement', 'Addition', 'Note']);
+  assert.deepEqual([...result.querySelectorAll('dt')].map(d => d.textContent).slice(0, 6), ['Verdict', 'Reason', 'Replacement', 'Addition', 'Note', 'What happens']);
+  assert.match(result.textContent, /Stopped.*No done criteria.*Fix login\. Done when tests pass\..*\(empty\).*Tokens in 12 · out 5/s);
+});
+test('a running trial can be cancelled', async t => {
+  const host = await settings(t);
+  const comp = page(host, 'Gate composition');
+  await click(button(comp, 'New gate'));
+  await click(pick(comp.querySelector('dialog'), 'Digest search results'));
+  const editor = [...comp.querySelectorAll('dialog')].find(d => input(d, 'What Pixie does'));
+  assert.match(editor.textContent, /Trials do not run the hook script/);
+  await change(input(editor, 'Sample tool name (optional)'), 'grep');
+  await change(input(editor, 'Sample the tool result'), 'lines');
+  await click(button(editor, 'Run'));
+  assert.equal(host.trials[0].toolName, 'grep'); assert.match(editor.textContent, /Running…/);
+  await click(button(editor, 'Cancel'));
+  assert.equal(host.trials.cancelled, true); assert.ok(button(editor, 'Run'));
 });
 
 test('scope toggles gates and presets; cards duplicate disabled and delete', async t => {
@@ -111,9 +169,19 @@ test('hook script points to the guide instead of inlining its contract', async t
   assert.equal(input(editor, 'Tools'), null);
   assert.equal(input(editor, 'Pixie hook script').value, 'only-search-tools.sh');
   const link = [...editor.querySelectorAll('a')].find(a => a.textContent === 'Script guide');
-  assert.match(link.getAttribute('href'), /docs\/guides\/pixie-gate\.md$/);
+  assert.match(link.getAttribute('href'), /docs\/appendix\/pixie-gate\.md$/);
   assert.doesNotMatch(editor.textContent, /PIXIE_TOOL_NAME|exit code/i);
   assert.match(editor.textContent, /Available only when DSH runs with a bash profile\./);
+});
+test('a stored script missing from the folder stays selectable and unsupported environments are shown', async t => {
+  const task = { ...makeTask('Old'), instruction: 'x', advanced: { ...makeTask('x').advanced, script: 'gone.sh' } };
+  const host = await settings(t, 'en', { read: { entries: [task], invalid: [] }, supported: false });
+  const comp = page(host, 'Gate composition');
+  await click(button(comp.querySelector('[data-gate-task]'), 'Edit'));
+  const editor = [...comp.querySelectorAll('dialog')].find(d => input(d, 'What Pixie does'));
+  assert.equal(input(editor, 'Pixie hook script').value, 'gone.sh');
+  assert.match(editor.textContent, /gone\.sh \(not in folder\)/);
+  assert.match(editor.textContent, /Hook scripts are not supported in this environment/);
 });
 
 test('task model: templates, variables and problems', () => {

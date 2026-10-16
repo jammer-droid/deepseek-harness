@@ -5,7 +5,7 @@ import React from 'react';
 import { DEFAULT_JUDGE_SYSTEM_PROMPT } from './pixie-contracts.ts';
 import { judgeText } from './pixie-gate-judge-locale.ts';
 import { gateEditorText } from './pixie-gate-editor-locale.ts';
-import { GateTaskCompositionPage, GateTaskScopePage, useGateTasks } from './pixie-gate-task-pages.tsx';
+import { GateTaskCompositionPage, GateTaskScopePage, useGateTasks, type GateTaskActions } from './pixie-gate-task-pages.tsx';
 import { gateComposeText } from './pixie-gate-compose-locale.ts';
 import { Button, Notice, PageHead, Segmented, SettingsRow, Toggle } from './ui.tsx';
 import { DetailLayout } from './detail-layout.tsx';
@@ -25,13 +25,17 @@ export interface PixieSettingsActions {
 }
 
 const SEP = '\u0000';
+const NO_GATES: GateTaskActions = {
+  read: async () => ({ entries: [], invalid: [] }), save: async () => undefined, scripts: async () => ({ directory: '', supported: false, scripts: [] }),
+  trial: () => ({ result: Promise.reject(new Error('Gate API unavailable')), cancel() {} }), presets: async () => [],
+};
 type PageId = 'model' | 'threads' | 'prompt' | 'judge' | 'gate-composition' | 'gate-scope';
 
-export function PixieSettingsPage({ actions, gateActions, locale, navFooter }: { actions: PixieSettingsActions; gateActions?: { presets(): Promise<{ id: string; name: string }[]> }; locale: string; navFooter?: React.ReactNode }) {
+export function PixieSettingsPage({ actions, gateActions, locale, navFooter }: { actions: PixieSettingsActions; gateActions?: GateTaskActions; locale: string; navFooter?: React.ReactNode }) {
   const t = (key: PixieTextKey) => pixieText(locale, key);
   const [page, setPage] = React.useState<PageId>('model');
-  // R1 UI preview: both gate pages share local, unsaved state until R3 connects persistence.
-  const gates = useGateTasks();
+  // Both gate pages share one draft list; Save replaces the stored definitions.
+  const gates = useGateTasks(gateActions ?? NO_GATES);
   const [gatePresets, setGatePresets] = React.useState<{ id: string; name: string }[]>([]);
   React.useEffect(() => { if (gateActions) void gateActions.presets().then(setGatePresets, () => setGatePresets([])); }, [gateActions]);
   const gt = (key: Parameters<typeof gateComposeText>[1]) => gateComposeText(locale, key);

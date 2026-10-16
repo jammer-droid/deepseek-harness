@@ -41,7 +41,7 @@ interface SessionControllerSlice {
 /** How often records of deleted sessions are pruned while the Host runs. */
 const PRUNE_INTERVAL_MS = 10 * 60 * 1000;
 interface WebServerSlice {
-  readonly host: string; readonly port: number; readonly protocol: 'http:' | 'https:';
+  readonly host: string; readonly port: number | undefined; readonly protocol?: 'http:' | 'https:';
   register(route: { kind: 'prefix'; path: string; handler: PixieGateHelper['handle'] }): () => void;
 }
 interface LlmSlice extends PixieLlm { resolveModelInfo(provider: string, model: string, signal?: AbortSignal): Promise<{ context?: { contextWindow: number } }> }
@@ -65,7 +65,15 @@ export class PixieService extends TypertRemoteService {
   private definitions: PixieGateDefinitions;
   private gateRunner: GateInputDeps['runner'];
   private helper: PixieGateHelper;
-  private helperUrl: string | undefined;
+  private helperServer: WebServerSlice | undefined;
+  /** Read at each issue: the port is known only after listen, and rc.2 has no `protocol` getter (plain HTTP). */
+  get helperUrl(): string | undefined {
+    const server = this.helperServer;
+    if (!server || typeof server.port !== 'number' || !server.port) return undefined;
+    // Scripts reach a wildcard bind through loopback; a concrete address is used as-is.
+    const host = server.host === '0.0.0.0' ? '127.0.0.1' : server.host === '::' ? '::1' : server.host;
+    return `${server.protocol ?? 'http:'}//${host.includes(':') ? `[${host}]` : host}:${server.port}${HELPER_ROUTE}`;
+  }
   /** Internal producer API, intentionally not Remote. */
   get gateRecorder(): PixieGateRecorder { return this.gates; }
   constructor(ctx: Context, dataDir: string) {
@@ -81,9 +89,8 @@ export class PixieService extends TypertRemoteService {
       const server = scope.get('webServer') as unknown as WebServerSlice;
       scope.effect(() => {
         const dispose = server.register({ kind: 'prefix', path: HELPER_ROUTE, handler: this.helper.handle });
-        const host = server.host.includes(':') ? `[${server.host}]` : server.host;
-        this.helperUrl = `${server.protocol}//${host}:${server.port}${HELPER_ROUTE}`;
-        return () => { this.helperUrl = undefined; dispose(); };
+        this.helperServer = server;
+        return () => { this.helperServer = undefined; dispose(); };
       });
     });
     const gateDeps: GateInputDeps = {
