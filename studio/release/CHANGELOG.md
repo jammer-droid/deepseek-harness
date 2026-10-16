@@ -2,7 +2,7 @@
 
 Release notes for `@matamt-dbg/dsh-studio`. Each version lists English notes first, then Korean.
 
-## 0.4.0 — Unreleased
+## 0.4.0 — 2026-10-16
 
 Requires DSH `0.2.0-rc.2` or `0.2.1-alpha.2`.
 
