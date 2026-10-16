@@ -3,8 +3,8 @@
  */
 import React from 'react';
 import type { GateRunFrame, GateRunRecord } from './pixie-gate-contracts.ts';
-import type { GateTrialResponse } from './pixie-gate-trial-panel.tsx';
-import type { GateEditorActions } from './pixie-gate-editor.tsx';
+type GateTrialResponse = { output: import('./pixie-gate-task-contracts.ts').GateOutput; plan: ReturnType<typeof import('./pixie-gate-task-contracts.ts').gateOutputPlan>; usage: import('./pixie-contracts.ts').PixieUsage; skipped?: 'script' };
+import type { GateTask } from './pixie-gate-task.ts';
 import type { StudioContext } from './contracts.js';
 import { PACKAGE_NAME } from './package-name.ts';
 import { StudioSurface } from './ui.tsx';
@@ -38,7 +38,7 @@ interface PixieRemote {
   cancel(sessionId: string): RemoteValue<boolean>;
   follow(sessionId: string): AsyncIterable<PixieAskFrame> & { dispose(): void };
   trialGate(payload: string, signal: AbortSignal): RemoteValue<GateTrialResponse>;
-  gateDefinitions(): RemoteValue<import('./pixie-gate-definitions.ts').GateDefinitionsRead>;
+  gateDefinitions(): RemoteValue<import('./pixie-gate-definitions.ts').GateTasksRead>;
   saveGateDefinitions(payload: string): RemoteValue<unknown>;
   readSettings(): RemoteValue<PixieSettings>;
   saveSettings(payload: string): RemoteValue<PixieSettings>;
@@ -116,13 +116,13 @@ export function mountPixie(ctx: StudioContext, options: { navFooter?: (locale: s
     save: settings => unwrap(remote().saveSettings(JSON.stringify(settings))),
     models: () => unwrap(remote().models()) as ReturnType<PixieSettingsActions['models']>,
   };
-  const gateActions: GateEditorActions = {
-    trial: request => {
+  const gateActions = {
+    trial: (request: { task: GateTask; text: string; toolName?: string }) => {
       const controller = new AbortController();
       return { result: unwrap(remote().trialGate(JSON.stringify(request), controller.signal)), cancel: () => controller.abort() };
     },
     read: () => unwrap(remote().gateDefinitions()),
-    save: entries => unwrap(remote().saveGateDefinitions(JSON.stringify(entries))),
+    save: (entries: GateTask[]) => unwrap(remote().saveGateDefinitions(JSON.stringify(entries))),
     models: settingsActions.models,
     presets: () => {
       const catalog = ctx.get('remote.studioCatalog' as never) as unknown as { listPresets(): RemoteValue<{ id: string; name: string }[]> };
@@ -142,7 +142,6 @@ export function mountPixie(ctx: StudioContext, options: { navFooter?: (locale: s
     view: () => unwrap(remote().view(sessionId)),
     follow: listener => followPixieStream(() => remote().follow(sessionId), listener),
     gateRuns: () => unwrap(remote().gateRuns(sessionId)),
-    gateDefinitions: () => unwrap(remote().gateDefinitions()),
     followGates: listener => followPixieStream(() => remote().followGates(sessionId), listener),
     resolveGateRejection: (runId, status) => unwrap(remote().resolveGateRejection(sessionId, runId, status)),
     fillDraft: text => {

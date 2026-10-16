@@ -355,6 +355,16 @@ interface GateResult {
 - **a1 리뷰 수정:** U13 선택 verdict, 실제 변경만 확인, U15 판정 결론·이유 귀속을 수정했다. stop의 suggestion/notes 내용·reason, 동일/상이 교체, pass+replace+append, 판정 후 적용 계획 회귀를 보강했다. red 증거: `/tmp/pixie-r2a1-fix/red.txt`(verdict·출력 안내·confirm·판정 이유). 검증: 집중 테스트 36/36, Studio typecheck, 전체 테스트 2회 연속 각각 465/465(실패 0), `git diff --check` 통과. 런타임 연결·화면 마크업/문구 변경 없음. S1 표 불변.
 - **a2 인수조건:** when→runtime 지점·source 매핑(user-message→input/source user, agent-message→input/source agent-message, 나머지 tool-before/tool-after/turn-end 동명 지점)을 검증한다. 저장 항목별 invalid 격리와 원본 보존, 실제 middleware의 onError/agents/maxSteers 적용, trial의 새 출력 계약·스크립트 건너뜀을 연결·검증한다. 이 항목들은 a1에서 구현하지 않는다.
 
+#### R2-a / a2 런타임 전환
+
+- 정의 저장·fail-open reader·input/tools/turn·trial·service를 GateTask와 단일 GateTaskRunner 실행으로 전환했다. input은 메시지마다 user/agent-message source에 대응하는 when을 선택하며, enabled·composedPreset·advanced.agents를 필터링한다. 결과 적용은 gateOutputPlan을 사용한다. next 결정 우선, 입력 트랜잭션, signal 확인 후 단일 확정, pending 거부 제안, 턴별 누적 steering 상한을 유지한다.
+- 저장은 validateGateTasks를 사용한다. 항목별 index/raw/error를 격리하고 GateEntry 래퍼는 `legacy-gate-definition`으로 표시한다. 읽기는 원본 파일을 변경하지 않는다. `<data>/pixie/gates.json` fallback 이전은 구 GateEntry 전용이므로 제거했다. 자동 변환·이전 없이 기존 파일을 보존한다.
+- 실행 기록에 when/output/usage를 저장한다. R3 전까지 카드 호환을 위해 point와 result.verdict/subject/notes/빈 stages·records·hooks/forward를 최소 투영한다. 런타임은 이 투영의 stages를 실행하지 않는다. 구 GateDefinitionsRead/GateEntry 타입은 미사용 구 편집기 컴파일용으로 유지하고 실제 Remote는 GateTasksRead를 사용한다. 카드가 gateDefinitions를 호출하지 않음을 grep으로 확인하여 소비 필드를 제거했다.
+- trial 입력은 `{ task, text, toolName? }`, 응답은 `{ output, plan, usage }`다. script 지정은 실행기·모델 호출 없이 `skipped: script` 메모와 skipped 필드를 반환한다. 일반 런타임의 script는 `스크립트 미지원` 오류와 onError 정책을 따른다. service의 DefaultStageRunner·shell·sandboxPolicy 의존을 제거했다. 설정 시안의 로컬 상태·presets 호출과 화면 JSX·문구는 유지했다.
+- 삭제: 구 런타임 계약에 종속된 input-service/judge-service/tools/turn 테스트 파일과 review-host의 구 입력 confirmation 사례. 대체 실제 미들웨어 테스트는 input 테스트에 모았다. 유지: 구 파이프라인/runner/command/hook 모듈, 구 UI 및 그 테스트, 카드/결과 표시. 참조 확인 후 삭제하는 b는 후속이다.
+- 검증: 실제 미들웨어 when 5종/source 공존/agents/enabled/preset/onError/confirmReplace/maxSteers/취소/확정 경계/기록, 저장 invalid·legacy·원본 보존, trial, 판정 설정 중 일반 출력 오류·판정 API 오류 reason 우선순위·판정 중 timeout/cancel 회귀를 포함한다. 최종 검증: `npm --prefix studio run typecheck` 통과, `npm --prefix studio test` 2회 연속 각각 420/420 통과(실패 0), `git diff --check` 통과.
+- 미검증: 사용자 GUI·프로필·실모델·독립 설치·배포·에이전트 송신 측 피드백 경로. Client Inspect 접근 없음. R2-b 스크립트/헬퍼 및 R3 화면 연결은 구현하지 않았다.
+
 - **R3 — UI 연결:** 시안을 Host에 연결, 시험 실행 결과를 출력 계약 모양으로, 실행 카드 용어 정리, 기존 다단계 편집기 삭제.
 - **R4 — 문서·스킬:** `pixie-gate` 스킬, 템플릿, 가이드 문서의 Pixie Gate 항목(결과 적용 규칙 포함).
 - **R5 — 검증:** 테스트, 격리 프로필 화면 확인, 일괄 리뷰.

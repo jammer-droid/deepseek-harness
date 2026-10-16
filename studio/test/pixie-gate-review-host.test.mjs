@@ -31,19 +31,6 @@ test('1 null verdict: current pass vs expected error', t => {
   t.diagnostic(`current=${JSON.stringify(current)}; expected verdict=error`);
   assert.equal(current.verdict, 'error');
 });
-test('2a confirm note replacement: current enter vs expected reject + forward suggestion', async t => {
-  const { decision, recorded } = await inputCase([note]);
-  const current = { kind: decision.kind, text: decision.messages?.[0].content[0].text, suggestion: recorded.rejection?.suggestion, applied: recorded.applied };
-  t.diagnostic(`current=${JSON.stringify(current)}; expected reject, suggestion=바뀐 텍스트`);
-  assert.deepEqual({ kind: decision.kind, suggestion: recorded.rejection?.suggestion }, { kind: 'reject', suggestion: '바뀐 텍스트' });
-});
-test('2b revise + forward other note: current subject suggestion vs expected actual forward text', async t => {
-  const { decision, recorded } = await inputCase([revise, note]);
-  assert.equal(decision.kind, 'reject');
-  assert.equal(recorded.result.forward.text, '바뀐 텍스트');
-  t.diagnostic(`current suggestion=${recorded.rejection.suggestion}; actual forward=${recorded.result.forward.text}`);
-  assert.equal(recorded.rejection.suggestion, recorded.result.forward.text);
-});
 test('3 judge usage: current missing vs expected input 10/output 20', async t => {
   const usage = { inputTokens: 10, outputTokens: 20 };
   const llm = { async *stream() {
@@ -62,15 +49,6 @@ test('3 judge usage: current missing vs expected input 10/output 20', async t =>
   assert.deepEqual(result.usage, usage);
 });
 
-for (const forward of [{ kind: 'original' }, { kind: 'append', from: ['r'] }]) test(`confirmation ignores revise with ${forward.kind}`, async () => {
-  const { decision, recorded } = await inputCase([revise, note], forward);
-  assert.equal(decision.kind, 'enter');
-  assert.equal(recorded.rejection, undefined);
-});
-test('identical replacement is pass without confirmation', async () => {
-  const { decision, recorded } = await inputCase([note], undefined, '원문');
-  assert.equal(decision.kind, 'enter'); assert.equal(recorded.applied, 'pass');
-});
 const input = { sessionId: 's', cwd: '/work', turn: 1, original: '원문', sandboxPolicy: { mode: 'read-only', workspaceRoot: '/work', sessionId: 's' } };
 const signal = () => new AbortController().signal;
 function commandRunner(verdict) {

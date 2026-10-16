@@ -111,6 +111,8 @@ export interface GateRejection {
   status: 'pending' | 'resent' | 'dismissed';
 }
 export interface GateRun {
+  when?: import('./pixie-gate-task.ts').GateWhen;
+  output?: import('./pixie-gate-task-contracts.ts').GateOutput;
   id: string; gateId: string; gateName: string; point: GatePoint; sessionId: string;
   startedAt: number; endedAt?: number;
   original: string; finalText: string;

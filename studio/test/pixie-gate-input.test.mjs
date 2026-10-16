@@ -1,102 +1,99 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, writeFile } from 'node:fs/promises';
+import { mkdtemp } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { makeTask } from '../src/pixie-gate-task.ts';
 import { gateInput } from '../src/host/pixie-gate-input.ts';
+import { gateTools } from '../src/host/pixie-gate-tools.ts';
+import { gateTurn } from '../src/host/pixie-gate-turn.ts';
 import { PixieGateStore } from '../src/host/pixie-gate-store.ts';
-import { PixieGateDefinitions } from '../src/host/pixie-gate-definitions.ts';
-
-const definition = (patch = {}) => ({ id: 'g', name: 'Gate', enabled: true, point: 'input', match: { agents: 'any', sources: ['user'] }, stages: [{ id: 's', kind: 'converse', role: 'revise', prompt: '{{subject}}' }], limits: { stageTimeoutMs: 1000, maxSteersPerTurn: 0 }, forward: { kind: 'replace', from: 'subject' }, onError: 'pass', confirmRevision: false, ...patch });
-const message = (kind, text) => ({ id: kind, role: 'user', source: { kind }, content: [{ type: 'text', text }] });
-async function harness(result, patch = {}, options = {}) {
-  const root = await mkdtemp(join(tmpdir(), 'studio-input-'));
-  const recorder = new PixieGateStore(root);
-  const abort = new AbortController(); const events = []; const inputs = [];
-  const listener = gateInput({ definitions: async () => [{ definition: definition(patch), presetIds: ['p'] }], preset: () => options.preset ?? 'p', isRoot: () => options.root ?? true, policy: () => undefined,
-    runner: async () => ({ run: async (_stage, input) => { inputs.push(input); return typeof result === 'function' ? result(abort) : result; }, runHook: async () => { abort.abort(); return { verdict: 'pass' }; } }), recorder,
-    emit: (event, run) => events.push([event, run]),
-  });
-  const original = message('user', 'original');
-  const others = ['runtime-context', 'model-selection', 'hooks-claude-code', 'hooks-codex'].map(kind => message(kind, kind));
-  const decision = { kind: 'enter', messages: [original, ...others], startsRequestSeries: true };
-  const invoke = (next = async () => decision) => listener({ agent: { id: 'session', ctx: {}, session: { header: { cwd: root } } }, turn: 1, signal: abort.signal }, next);
-  return { invoke, recorder, abort, events, inputs, decision, others };
+const task = (when, advanced = {}) => ({ ...makeTask(when, when, 'Check'), id: when, enabled: true, presetIds: ['p'], advanced: { confirmReplace: false, onError: 'pass', agents: 'any', timeoutMs: 1000, maxSteers: 2, ...advanced } });
+const message = (kind, text = kind) => ({ id: kind, role: 'user', source: { kind }, content: [{ type: 'text', text }] });
+async function fixture(tasks, output = { verdict: 'pass' }) {
+  const recorder = new PixieGateStore(await mkdtemp(join(tmpdir(), 'task-runtime-')));
+  const controller = new AbortController(), calls = [], events = [], steers = [];
+  const agent = { id: 's', ctx: {}, session: { header: {}, snapshotEvents: () => [], deriveMessages: () => [{ role: 'assistant', content: [{ type: 'text', text: 'answer' }] }] }, inbox: { nextStep: [] }, steer: m => steers.push(m) };
+  const deps = { definitions: async () => tasks, preset: () => 'p', isRoot: () => true, recorder, emit: (name, run) => events.push([name, run]), runner: async () => ({ run: async (task, text) => { calls.push([task.when, text]); return typeof output === 'function' ? output(controller) : { status: 'done', output, usage: { inputTokens: 2, outputTokens: 3 } }; } }) };
+  const payload = { agent, turn: 1, signal: controller.signal };
+  return { deps, payload, controller, calls, events, steers, runs: async () => (await recorder.read('s')).runs };
 }
-for (const [name, result, patch, applied, kind] of [
-  ['pass', { verdict: 'pass' }, {}, 'pass', 'enter'],
-  ['replace', { verdict: 'revise', text: 'new' }, {}, 'replaced', 'enter'],
-  ['append', { verdict: 'note', text: 'context' }, { forward: { kind: 'append', from: ['s'] } }, 'appended', 'enter'],
-  ['reject', { verdict: 'fail', reason: 'bad', text: 'suggestion' }, {}, 'rejected', 'reject'],
-  ['confirm', { verdict: 'revise', text: 'new' }, { confirmRevision: true }, 'rejected', 'reject'],
-  ['error pass', { verdict: 'error', error: 'oops' }, {}, 'pass', 'enter'],
-  ['error block', { verdict: 'error', error: 'oops' }, { onError: 'block' }, 'rejected', 'reject'],
-]) test(`input ${name}: decision, recording, hooks and unrelated messages`, async () => {
-  const h = await harness(result, patch); const value = await h.invoke();
-  assert.equal(value.kind, kind);
-  const run = (await h.recorder.read('session')).runs[0];
-  assert.equal(run.applied, applied); assert.equal(run.original, 'original');
-  assert.equal(run.hooksInput, 'observed');
-  assert.deepEqual(h.inputs[0].hooks.context, ['hooks-claude-code', 'hooks-codex']);
-  assert.deepEqual(h.events.map(e => e[0]), ['pixie-gate/start', 'pixie-gate/end']);
-  if (kind === 'reject') { assert.equal(run.rejection.status, 'pending'); assert.equal(run.rejection.original, 'original'); assert.ok(run.rejection.reason); }
+for (const when of ['user-message', 'agent-message', 'tool-before', 'tool-after', 'turn-end']) test(`task middleware ${when} records output and usage`, async () => {
+  const h = await fixture([task(when)]);
+  if (when.endsWith('message')) await gateInput(h.deps)(h.payload, async () => ({ kind: 'enter', messages: [message(when === 'user-message' ? 'user' : 'agent-message')] }));
+  else if (when === 'turn-end') await gateTurn(h.deps)(h.payload);
   else {
-    assert.equal(value.startsRequestSeries, true);
-    for (const other of h.others) assert.ok(value.messages.includes(other));
-    if (applied === 'pass') assert.equal(value, h.decision);
-    if (applied === 'replaced') { assert.equal(value.messages[0].content[0].text, 'new'); assert.deepEqual(value.messages[0].source, { kind: 'user' }); }
-    if (applied === 'appended') { assert.equal(value.messages[0], h.decision.messages[0]); assert.equal(value.messages.at(-1).source.kind, 'studio-pixie-gate'); }
+    const tools = gateTools(h.deps), exec = { agent: h.payload.agent, signal: h.controller.signal, name: 'test', callId: 'c', arguments: {} };
+    if (when === 'tool-before') await tools.before(exec, async () => ({ kind: 'allow' }));
+    else await tools.after(exec, { content: [{ type: 'text', text: 'result' }], isError: false }, async () => ({ kind: 'accept' }));
   }
+  assert.equal(h.calls.length, 1); const [run] = await h.runs();
+  assert.equal(run.when, when); assert.deepEqual(run.output, { verdict: 'pass' }); assert.deepEqual(run.usage, { inputTokens: 2, outputTokens: 3 });
+  assert.deepEqual(run.result.stages, {}); assert.equal(run.status, 'done');
 });
-for (const when of ['before', 'stage', 'end']) test(`cancellation ${when} applies nothing`, async () => {
-  const h = await harness(abort => { if (when === 'stage') abort.abort(); return { verdict: 'revise', text: 'new' }; }, when === 'end' ? { hooks: { end: { command: 'observe' } } } : {});
-  if (when === 'before') h.abort.abort();
-  assert.equal(await h.invoke(), h.decision);
-  const run = (await h.recorder.read('session')).runs[0]; assert.equal(run.applied, 'none'); assert.equal(run.status, 'cancelled'); assert.equal(run.rejection, undefined);
+test('message gates coexist and exclude protected sources', async () => {
+  const h = await fixture([task('user-message'), task('agent-message')], { verdict: 'pass', replace: 'new', append: 'context' });
+  const result = await gateInput(h.deps)(h.payload, async () => ({ kind: 'enter', messages: ['user', 'agent-message', 'runtime-context', 'studio-pixie-gate'].map(k => message(k)) }));
+  assert.deepEqual(h.calls.map(c => c[0]), ['user-message', 'agent-message']); assert.equal(result.messages[0].content[0].text, 'new'); assert.equal(result.messages[1].content[0].text, 'new'); assert.equal(result.messages.length, 6);
 });
-for (const [verdict, expected] of [['revise', 'replaced'], ['fail', 'rejected']]) test(`cancellation during finish preserves committed ${verdict} decision`, async () => {
-  const h = await harness({ verdict, text: 'new', reason: 'bad' });
-  const finish = h.recorder.finish.bind(h.recorder);
-  h.recorder.finish = async (...args) => { const saved = await finish(...args); h.abort.abort(); return saved; };
-  const value = await h.invoke();
-  const run = (await h.recorder.read('session')).runs[0];
-  assert.equal(run.applied, expected);
-  if (verdict === 'fail') assert.equal(value.kind, 'reject');
-  else assert.equal(value.messages[0].content[0].text, 'new');
-  assert.equal(h.events.at(-1)[1].applied, expected);
+for (const agents of ['root', 'child', 'any']) test(`agents ${agents} filter`, async () => {
+  const h = await fixture([task('user-message', { agents })]);
+  await gateInput(h.deps)(h.payload, async () => ({ kind: 'enter', messages: [message('user')] }));
+  assert.equal(h.calls.length, agents === 'child' ? 0 : 1);
 });
-test('downstream rejection is returned without consulting gate definitions', async () => {
-  const h = await harness({ verdict: 'fail' }); const reject = { kind: 'reject' };
-  assert.equal(await h.invoke(async () => reject), reject); assert.equal(h.events.length, 0);
+for (const onError of ['pass', 'block']) test(`execution errors obey ${onError}`, async () => {
+  const h = await fixture([task('user-message', { onError })], () => ({ status: 'error', error: '스크립트 미지원', usage: { inputTokens: 0, outputTokens: 0 } }));
+  const result = await gateInput(h.deps)(h.payload, async () => ({ kind: 'enter', messages: [message('user')] }));
+  assert.equal(result.kind, onError === 'block' ? 'reject' : 'enter'); assert.equal((await h.runs())[0].status, 'error');
 });
-for (const [name, patch, options] of [['disabled gate', { enabled: false }, {}], ['outside preset', {}, { preset: 'outside' }], ['root only', { match: { agents: 'root' } }, { root: false }], ['child only', { match: { agents: 'child' } }, { root: true }], ['source', { match: { agents: 'any', sources: ['agent-message'] } }, {}]]) test(`filter ${name}`, async () => {
-  const h = await harness({ verdict: 'fail' }, patch, options); assert.equal(await h.invoke(), h.decision); assert.equal(h.events.length, 0);
+test('confirmReplace yields pending rejection with suggestion', async () => {
+  const h = await fixture([task('user-message', { confirmReplace: true })], { verdict: 'pass', replace: 'proposal' });
+  assert.equal((await gateInput(h.deps)(h.payload, async () => ({ kind: 'enter', messages: [message('user')] }))).kind, 'reject');
+  assert.deepEqual((await h.runs())[0].rejection, { original: 'user', reason: 'Revision requires confirmation', suggestion: 'proposal', status: 'pending' });
 });
-test('per-message processing preserves relay source metadata, attachments and usage', async () => {
-  const h = await harness({ verdict: 'revise', text: 'new', usage: { inputTokens: 2, outputTokens: 3 } }, { match: { agents: 'child', sources: ['agent-message'] } }, { root: false });
-  const first = message('agent-message', 'first'); first.source.senderSessionId = 'sender'; first.source.form = 'relay'; first.content.push({ type: 'image', url: 'image' });
-  const second = message('agent-message', 'second');
-  const value = await h.invoke(async () => ({ kind: 'enter', messages: [first, second] }));
-  assert.equal(h.inputs.length, 2); assert.deepEqual(h.inputs.map(i => i.original), ['first', 'second']);
-  assert.deepEqual(value.messages[0].source, first.source); assert.deepEqual(value.messages[0].content[1], first.content[1]);
-  const runs = (await h.recorder.read('session')).runs; assert.equal(runs.length, 2); assert.equal(runs[0].usage.inputTokens, 2); assert.equal(runs[0].hooksInput, 'unverified');
+test('next decisions take precedence and prevent gate calls', async () => {
+  const h = await fixture([task('user-message'), task('tool-before'), task('tool-after')]);
+  const reject = { kind: 'reject' }, deny = { kind: 'deny', reason: 'other' }, block = { kind: 'block', feedback: [] };
+  assert.equal(await gateInput(h.deps)(h.payload, async () => reject), reject);
+  const tools = gateTools(h.deps), exec = { agent: h.payload.agent, signal: h.controller.signal };
+  assert.equal(await tools.before(exec, async () => deny), deny); assert.equal(await tools.after(exec, {}, async () => block), block); assert.equal(h.calls.length, 0);
 });
-test('a later rejection discards earlier staged replacement', async () => {
-  let n = 0; const h = await harness(() => ++n === 1 ? { verdict: 'revise', text: 'new' } : { verdict: 'fail', reason: 'bad' });
-  assert.equal((await h.invoke(async () => ({ kind: 'enter', messages: [message('user', 'a'), message('user', 'b')] }))).kind, 'reject');
-  assert.deepEqual((await h.recorder.read('session')).runs.map(run => run.applied), ['none', 'rejected']);
+test('turn budget accumulates and resets only on a new turn', async () => {
+  const h = await fixture([task('turn-end')], { verdict: 'stop', reason: 'correct' }); const run = gateTurn(h.deps);
+  await run(h.payload); await run(h.payload); await run(h.payload); assert.equal(h.steers.length, 2);
+  await run({ ...h.payload, turn: 2 }); assert.equal(h.steers.length, 3);
 });
-test('definition store validates atomically and persists defaults, preset bindings and errors', async () => {
-  const root = await mkdtemp(join(tmpdir(), 'studio-definitions-')); const file = join(root, 'gates.json'); const store = new PixieGateDefinitions(file);
-  assert.deepEqual(await store.read(), { entries: [], invalid: [] });
-  const gate = definition({ match: {} }); delete gate.onError;
-  await store.save([{ definition: gate, presetIds: ['p'] }]);
-  assert.equal((await store.read()).entries[0].definition.onError, 'pass');
-  assert.deepEqual((await store.read()).entries[0].definition.match.sources, ['user']);
-  const before = await readFile(file, 'utf8');
-  for (const rows of [[{ definition: definition({ stages: [] }), presetIds: ['p'] }], [{ definition: definition(), presetIds: [123] }], [{ definition: definition(), presetIds: ['p'] }, { definition: definition({ id: 'other' }), presetIds: ['p'] }]]) assert.throws(() => store.save(rows));
-  assert.equal(await readFile(file, 'utf8'), before);
-  await writeFile(file, 'broken'); assert.equal((await store.read()).error.code, 'invalid-json');
-  await writeFile(join(root, 'not-dir'), 'file');
-  await assert.rejects(new PixieGateDefinitions(join(root, 'not-dir', 'gates.json')).save([{ definition: definition(), presetIds: [] }]));
+test('cancellation before commit applies no rewrite', async () => {
+  const h = await fixture([task('user-message')], controller => { controller.abort(); return { status: 'done', output: { verdict: 'pass', replace: 'new' }, usage: { inputTokens: 0, outputTokens: 0 } }; });
+  const decision = { kind: 'enter', messages: [message('user')] };
+  assert.equal(await gateInput(h.deps)(h.payload, async () => decision), decision); const [run] = await h.runs(); assert.equal(run.status, 'cancelled'); assert.equal(run.applied, 'none');
+});
+
+for (const when of ['tool-before', 'tool-after', 'turn-end']) for (const onError of ['pass', 'block']) test(`${when} error policy ${onError}`, async () => {
+ const h = await fixture([task(when, { onError })], () => { throw new Error('execution failed'); });
+ if (when === 'turn-end') { await gateTurn(h.deps)(h.payload); assert.equal(h.steers.length, onError === 'block' ? 1 : 0); }
+ else {
+  const tools = gateTools(h.deps), exec = { agent: h.payload.agent, signal: h.controller.signal, name: 'test', callId: 'c', arguments: {} };
+  const result = when === 'tool-before' ? await tools.before(exec, async () => ({ kind: 'allow' })) : await tools.after(exec, { content: [], isError: false }, async () => ({ kind: 'accept' }));
+  assert.equal(result.kind, onError === 'block' ? when === 'tool-before' ? 'deny' : 'block' : when === 'tool-before' ? 'allow' : 'accept');
+ }
+ assert.equal((await h.runs())[0].status, 'error');
+});
+test('tool-after applies replacement and addition while preserving contexts', async () => {
+ const h = await fixture([task('tool-after')], { verdict: 'pass', replace: 'new', append: 'extra' });
+ const old = message('hooks-claude-code'); const exec = { agent: h.payload.agent, signal: h.controller.signal, name: 'test', callId: 'c', arguments: {} };
+ const result = await gateTools(h.deps).after(exec, { content: [], isError: false }, async () => ({ kind: 'accept', additionalContexts: [old] }));
+ assert.deepEqual(result.content, [{ type: 'text', text: 'new' }]); assert.equal(result.additionalContexts[0], old); assert.equal(result.additionalContexts[1].content[0].text, 'extra');
+});
+test('cancellation during finish does not reopen committed input decision', async () => {
+ const h = await fixture([task('user-message')], { verdict: 'pass', replace: 'new' }); const finish = h.deps.recorder.finish.bind(h.deps.recorder);
+ h.deps.recorder.finish = async (...args) => { h.controller.abort(); return finish(...args); };
+ const result = await gateInput(h.deps)(h.payload, async () => ({ kind: 'enter', messages: [message('user')] }));
+ assert.equal(result.messages[0].content[0].text, 'new'); assert.equal((await h.runs())[0].applied, 'replaced');
+});
+test('disabled or unbound tasks never execute', async () => {
+ for (const patch of [{ enabled: false }, { presetIds: ['other'] }]) {
+  const h = await fixture([{ ...task('user-message'), ...patch }]);
+  await gateInput(h.deps)(h.payload, async () => ({ kind: 'enter', messages: [message('user')] })); assert.equal(h.calls.length, 0);
+ }
 });

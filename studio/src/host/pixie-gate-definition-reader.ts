@@ -1,12 +1,13 @@
-import type { GateDefinitionsRead, GateEntry } from '../pixie-gate-definitions.ts';
+import type { GateTasksRead } from '../pixie-gate-definitions.ts';
+import type { GateTask } from '../pixie-gate-task.ts';
 
 interface DefinitionSource {
-  definitions(): Promise<GateEntry[] | GateDefinitionsRead>;
+  definitions(): Promise<GateTask[] | GateTasksRead>;
   warn?(message: string): void;
 }
 const warnings = new WeakMap<DefinitionSource, { key: string; time: number }>();
 /** Definition failures are configuration errors, never a reason to fail an agent turn. */
-export async function readRuntimeGateDefinitions(source: DefinitionSource): Promise<GateEntry[]> {
+export async function readRuntimeGateDefinitions(source: DefinitionSource): Promise<GateTask[]> {
   const warn = (key: string) => {
     const previous = warnings.get(source), time = Date.now();
     if (previous?.key === key && time - previous.time < 60_000) return;

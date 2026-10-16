@@ -126,3 +126,30 @@ test('timeout aborts a stalled stream', async () => {
   const result = await runner.run(value, '', signal());
   assert.equal(result.status, 'error'); assert.match(result.error, /timed out/);
 });
+
+test('ordinary output failure never invokes configured judge', async () => {
+ const value = task(); value.advanced.judge = { question: 'Good?', threshold: 0.5 }; const calls = [];
+ const result = await new GateTaskRunner({ model, llm: llm(['not-json'], calls) }).run(value, '', signal());
+ assert.equal(result.status, 'error'); assert.equal(calls.length, 1);
+});
+for (const reason of [undefined, 'ordinary reason']) test(`judge API failure reason priority ${reason}`, async () => {
+ const value = task(); value.advanced.judge = { question: 'Good?', threshold: 0.5 }; let calls = 0;
+ const runner = new GateTaskRunner({ model, llm: { async *stream() {
+   if (++calls === 2) throw new Error('judge API failed');
+   yield { type: 'text-delta', text: JSON.stringify({ verdict: 'pass', reason }) };
+   yield { type: 'finish', reason: { kind: 'stop' } };
+ } } });
+ const result = await runner.run(value, '', signal());
+ assert.equal(result.output.verdict, 'stop');
+ if (reason) assert.equal(result.output.reason, reason); else assert.match(result.output.reason, /judge API failed/);
+});
+for (const cancel of [false, true]) test(`judge pending ${cancel ? 'cancel' : 'timeout'}`, async () => {
+ const value = task(); value.advanced.judge = { question: 'Good?', threshold: 0.5 }; value.advanced.timeoutMs = 15;
+ const controller = new AbortController(); let calls = 0;
+ const runner = new GateTaskRunner({ model, llm: { async *stream() {
+  if (++calls === 2) { if (cancel) controller.abort(); await new Promise(() => {}); }
+  yield { type: 'text-delta', text: '{}' }; yield { type: 'finish', reason: { kind: 'stop' } };
+ } } });
+ const result = await runner.run(value, '', controller.signal);
+ assert.equal(calls, 2); assert.equal(result.status, cancel ? 'cancelled' : 'error'); assert.equal(result.output, undefined);
+});

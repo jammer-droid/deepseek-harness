@@ -28,7 +28,7 @@ export interface PixieSettingsActions {
 const SEP = '\u0000';
 type PageId = 'model' | 'threads' | 'prompt' | 'judge' | 'gate-composition' | 'gate-scope';
 
-export function PixieSettingsPage({ actions, gateActions, locale, navFooter }: { actions: PixieSettingsActions; gateActions?: GateEditorActions; locale: string; navFooter?: React.ReactNode }) {
+export function PixieSettingsPage({ actions, gateActions, locale, navFooter }: { actions: PixieSettingsActions; gateActions?: Pick<GateEditorActions, 'presets'>; locale: string; navFooter?: React.ReactNode }) {
   const t = (key: PixieTextKey) => pixieText(locale, key);
   const [page, setPage] = React.useState<PageId>('model');
   // R1 UI preview: both gate pages share local, unsaved state. The Host still uses the previous gate format.

@@ -6,7 +6,6 @@ import { Badge, Button, IconButton, SectionHead, Notice, Note } from './ui.tsx';
 
 export interface GateRunActions {
   gateRuns(): Promise<GateRunRecord>;
-  gateDefinitions?(): Promise<import('./pixie-gate-definitions.ts').GateDefinitionsRead>;
   followGates(listener: (frame: GateRunFrame) => void): () => void;
   resolveGateRejection(runId: string, status: 'resent' | 'dismissed'): Promise<unknown>;
   fillDraft(text: string): void;

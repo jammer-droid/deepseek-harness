@@ -6,13 +6,13 @@ import type { PixieUsage } from '../pixie-contracts.ts';
 
 export const MAX_GATE_RUNS = 200;
 const SESSION_ID = /^[\w-]{1,200}$/;
-type Settlement = { tool?: { name: string; callId: string }; reason?: string; turn?: number; steerCount?: number; status: Exclude<GateRunStatus, 'running'>; result?: GateResult; applied: GateApplied; hooksInput?: 'observed' | 'unverified'; rejection?: { reason: string; suggestion?: string } };
+type Settlement = { output?: GateRun['output']; usage?: PixieUsage; tool?: { name: string; callId: string }; reason?: string; turn?: number; steerCount?: number; status: Exclude<GateRunStatus, 'running'>; result?: GateResult; applied: GateApplied; hooksInput?: 'observed' | 'unverified'; rejection?: { reason: string; suggestion?: string } };
 
 /** Internal producer port for S4–S6. Persist start before applying destructive decisions.
  * End hooks preserve the verdict on external cancellation: check signal before applying an action.
  */
 export interface PixieGateRecorder {
-  start(sessionId: string, gate: Pick<GateDefinition, 'id' | 'name' | 'point'>, original: string): Promise<GateRun>;
+  start(sessionId: string, gate: Pick<GateDefinition, 'id' | 'name' | 'point'> & { when?: GateRun['when'] }, original: string): Promise<GateRun>;
   finish(sessionId: string, runId: string, settlement: Settlement): Promise<boolean>;
 }
 
@@ -41,11 +41,11 @@ export class PixieGateStore implements PixieGateRecorder {
     return record;
   }
 
-  start(sessionId: string, gate: Pick<GateDefinition, 'id' | 'name' | 'point'>, original: string): Promise<GateRun> {
+  start(sessionId: string, gate: Pick<GateDefinition, 'id' | 'name' | 'point'> & { when?: GateRun['when'] }, original: string): Promise<GateRun> {
     const snapshot = structuredClone(gate);
     return this.enqueue(sessionId, async () => {
       const record = await this.read(sessionId);
-      const run: GateRun = { id: randomUUID(), gateId: snapshot.id, gateName: snapshot.name, point: snapshot.point, sessionId,
+      const run: GateRun = { id: randomUUID(), gateId: snapshot.id, gateName: snapshot.name, point: snapshot.point, ...(snapshot.when ? { when: snapshot.when } : {}), sessionId,
         startedAt: Date.now(), original, finalText: original, applied: 'none', usage: { inputTokens: 0, outputTokens: 0 }, status: 'running' };
       record.runs.push(run);
       // Reserve ownership before rename exposes the running record to concurrent readers.
@@ -79,6 +79,8 @@ export class PixieGateStore implements PixieGateRecorder {
         run.result = value.result; run.finalText = value.result.subject;
         run.usage = gateUsage(value.result);
       }
+      if (value.output) run.output = value.output;
+      if (value.usage) run.usage = value.usage;
       if (value.rejection) run.rejection = { ...value.rejection, original: run.original, status: 'pending' };
       await this.save(sessionId, record);
       this.owned.delete(runId);

@@ -15,8 +15,7 @@ import { PixieGateDefinitions } from './pixie-gate-definitions.ts';
 import { gateInput, type GateInputDeps } from './pixie-gate-input.ts';
 import { gateTurn } from './pixie-gate-turn.ts';
 import { gateTools } from './pixie-gate-tools.ts';
-import { DefaultStageRunner, type GateShell } from './pixie-gate-runner.ts';
-import type { GateInput } from '../pixie-gate-contracts.ts';
+import { GateTaskRunner } from './pixie-gate-task-runner.ts';
 import { trialGate } from './pixie-gate-trial.ts';
 
 /** What the Pixie tab shows for one session. */
@@ -64,28 +63,15 @@ export class PixieService extends TypertRemoteService {
     this.store = new PixieStore(join(dataDir, 'pixie'));
     this.gates = new PixieGateStore(join(dataDir, 'pixie'));
     this.settings = new PixieSettingsStore(join(dataDir, 'pixie-settings.json'));
-    this.definitions = new PixieGateDefinitions(join(dataDir, 'pixie-gate', 'definitions.json'), join(dataDir, 'pixie', 'gates.json'));
+    this.definitions = new PixieGateDefinitions(join(dataDir, 'pixie-gate', 'definitions.json'));
     const gateDeps: GateInputDeps = {
       definitions: () => this.definitions.read(),
       warn: message => ctx.logger.warn(message),
       preset: agent => ctx.get('agentPresets')?.composedPreset(agent.ctx),
       isRoot: agent => ctx.get('agents')?.roots().some(root => root.id === agent.id) ?? false,
-      policy: agent => {
-        const service = ctx.get('sandboxPolicy') as unknown as { resolve(request: { session: unknown }): GateInput['sandboxPolicy'] } | undefined;
-        return service?.resolve({ session: agent.session });
-      },
       runner: async () => {
         const { model, judgeModel, judgeSystemPrompt } = await this.settings.read();
-        return new DefaultStageRunner({
-        shell: {
-          resolve: request => {
-            if (!request.workdir) throw new Error('Agent working directory is required');
-            const shell = ctx.get('shell') as unknown as GateShell | undefined;
-            if (!shell) throw new Error('Shell service is unavailable');
-            return shell.resolve(request);
-          },
-          execute: spec => (ctx.get('shell') as unknown as GateShell).execute(spec),
-        },
+        return new GateTaskRunner({
         llm: { stream: options => llmOf(ctx).stream(options) },
         ...(model ? { model } : {}),
         ...(judgeModel ? { judgeModel } : {}),
@@ -203,13 +189,7 @@ export class PixieService extends TypertRemoteService {
   async trialGate(payload: string, signal: AbortSignal) {
     return trialGate(json(payload), {
       runner: this.gateRunner,
-      session: id => {
-        const agent = this.ctx.get('agents')?.roots().find(agent => agent.id === id);
-        if (!agent) throw new Error('An active root session is required for commands');
-        const policy = this.ctx.get('sandboxPolicy') as unknown as { resolve(request: { session: unknown }): GateInput['sandboxPolicy'] } | undefined;
-        const sandboxPolicy = policy?.resolve({ session: agent.session });
-        return { sessionId: id, cwd: agent.session.header.cwd ?? '', ...(sandboxPolicy ? { sandboxPolicy } : {}) };
-      },
+
     }, signal);
   }
 
