@@ -1,3 +1,4 @@
+import type { HookContext } from './pixie-gate-script.ts';
 import { readRuntimeGateDefinitions } from './pixie-gate-definition-reader.ts';
 import { randomUUID } from 'node:crypto';
 import type { Context } from '@deepseek-ai/cordis';
@@ -25,6 +26,7 @@ export interface GateInputDeps {
   warn?(message: string): void;
   preset(agent: InputAgent): string | undefined;
   isRoot(agent: InputAgent): boolean;
+  hookContext?(agent: InputAgent, turn: number, tool?: HookContext['tool']): HookContext;
   runner(): Promise<GateTaskRunner>;
   recorder: PixieGateRecorder;
   emit(event: 'pixie-gate/start' | 'pixie-gate/end', run: GateRun): void;
@@ -54,9 +56,9 @@ export function gateInput(deps: GateInputDeps) {
       const original = textOf(message);
       const run = await deps.recorder.start(payload.agent.id, { ...gate, point: taskPoint(gate) }, original);
       deps.emit('pixie-gate/start', structuredClone(run));
-      const execution = await executeTask(gate, original, payload.signal, deps.runner);
+      const execution = await executeTask(gate, original, payload.signal, deps.runner, () => deps.hookContext?.(payload.agent, payload.turn) ?? { sessionId: payload.agent.id, cwd: payload.agent.session.header.cwd, turn: payload.turn, agent: root ? 'root' : 'child' });
       const { result, plan } = execution;
-      const item: typeof pending[number] = { run, execution, result, applied: 'pass' };
+      const item: typeof pending[number] = { run, execution, result, applied: execution.skipped ? 'none' : 'pass' };
       pending.push(item);
       if (payload.signal.aborted || result.verdict === 'cancelled') break;
       const suggestion = plan.suggestion;

@@ -1,12 +1,13 @@
+import type { HookContext } from './pixie-gate-script.ts';
 import type { GateTask } from '../pixie-gate-task.ts';
 import type { GateResult } from '../pixie-gate-contracts.ts';
 import { gateOutputPlan, type GateOutput } from '../pixie-gate-task-contracts.ts';
 import type { GateTaskRunner, GateTaskExecution } from './pixie-gate-task-runner.ts';
 
 /** Compatibility projection for the R3 execution cards, not a stage executor. */
-export async function executeTask(task: GateTask, original: string, signal: AbortSignal, runner: () => Promise<GateTaskRunner>) {
+export async function executeTask(task: GateTask, original: string, signal: AbortSignal, runner: () => Promise<GateTaskRunner>, context?: () => HookContext) {
   let execution: GateTaskExecution;
-  try { execution = await (await runner()).run(task, original, signal); }
+  try { execution = await (await runner()).run(task, original, signal, task.advanced.script ? context?.() : undefined); }
   catch (error) { execution = { status: signal.aborted ? 'cancelled' : 'error', error: String(error), usage: { inputTokens: 0, outputTokens: 0 } }; }
   const output: GateOutput = execution.output ?? { verdict: execution.status === 'error' && task.advanced.onError === 'block' ? 'stop' : 'pass', ...(execution.error ? { reason: execution.error } : {}) };
   const plan = gateOutputPlan(task, output, original);

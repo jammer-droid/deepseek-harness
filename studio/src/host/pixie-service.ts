@@ -1,6 +1,7 @@
+import { listGateScripts, type HookShell, type HookContext } from './pixie-gate-script.ts';
 import type { Context } from '@deepseek-ai/cordis';
 import { Remote, TypertRemoteService } from '@deepseek-ai/dsh-typert-protocol';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import type { JudgeRequest, PixieAskFrame, PixieContextMode, PixieSessionRecord, PixieSettings, PixieTurn, PixieUsageTotal } from '../pixie-contracts.ts';
 import { totalUsage } from '../pixie-contracts.ts';
 import { pixieCommand } from './pixie-command.ts';
@@ -49,6 +50,8 @@ const llmOf = (ctx: Context) => ctx.get('llm') as unknown as LlmSlice;
  */
 export class PixieService extends TypertRemoteService {
   static inject = ['llm', 'sessionController', 'commands'];
+  private scriptDirectory: string;
+  private scriptSupported = () => process.platform !== 'win32' && !!this.ctx.get('shell');
   private store: PixieStore;
   private settings: PixieSettingsStore;
   private runtime: PixieRuntime;
@@ -60,6 +63,7 @@ export class PixieService extends TypertRemoteService {
   get gateRecorder(): PixieGateRecorder { return this.gates; }
   constructor(ctx: Context, dataDir: string) {
     super(ctx, 'studioPixie');
+    this.scriptDirectory = resolve(dataDir, 'pixie-gate', 'commands');
     this.store = new PixieStore(join(dataDir, 'pixie'));
     this.gates = new PixieGateStore(join(dataDir, 'pixie'));
     this.settings = new PixieSettingsStore(join(dataDir, 'pixie-settings.json'));
@@ -69,9 +73,15 @@ export class PixieService extends TypertRemoteService {
       warn: message => ctx.logger.warn(message),
       preset: agent => ctx.get('agentPresets')?.composedPreset(agent.ctx),
       isRoot: agent => ctx.get('agents')?.roots().some(root => root.id === agent.id) ?? false,
+      hookContext: (agent, turn, tool) => {
+        const policy = ctx.get('sandboxPolicy') as unknown as { resolve(request: { session: typeof agent.session }): HookContext['sandboxPolicy'] } | undefined;
+        return { sessionId: agent.id, cwd: agent.session.header.cwd, turn, agent: gateDeps.isRoot(agent) ? 'root' : 'child',
+          sandboxPolicy: policy?.resolve({ session: agent.session }), ...(tool ? { tool } : {}) };
+      },
       runner: async () => {
         const { model, judgeModel, judgeSystemPrompt } = await this.settings.read();
         return new GateTaskRunner({
+        scriptDirectory: this.scriptDirectory, scriptSupported: this.scriptSupported(), shell: ctx.get('shell') as unknown as HookShell | undefined,
         llm: { stream: options => llmOf(ctx).stream(options) },
         ...(model ? { model } : {}),
         ...(judgeModel ? { judgeModel } : {}),
@@ -192,6 +202,9 @@ export class PixieService extends TypertRemoteService {
 
     }, signal);
   }
+
+  @Remote
+  async gateScripts() { return listGateScripts(this.scriptDirectory, this.scriptSupported()); }
 
   @Remote
   async gateDefinitions() { return this.definitions.read(); }

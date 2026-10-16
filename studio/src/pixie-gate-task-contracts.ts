@@ -12,9 +12,13 @@ export function validateGateTask(value: unknown): GateTask {
     || !['root', 'child', 'any'].includes(advanced.agents as string)
     || typeof advanced.timeoutMs !== 'number' || !Number.isFinite(advanced.timeoutMs)
     || typeof advanced.maxSteers !== 'number') throw new Error('Invalid gate advanced options');
-  if (advanced.script !== undefined && (typeof advanced.script !== 'string' || !/^[A-Za-z0-9][A-Za-z0-9_.-]*$/.test(advanced.script))) throw new Error('Invalid gate script filename');
+  if (advanced.script !== undefined && (typeof advanced.script !== 'string' || (!/^[A-Za-z0-9][A-Za-z0-9_.-]*$/.test(advanced.script) || advanced.script.includes('..')))) throw new Error('Invalid gate script filename');
   if (advanced.judge !== undefined && (!object(advanced.judge) || typeof advanced.judge.question !== 'string' || typeof advanced.judge.threshold !== 'number')) throw new Error('Invalid gate judge');
   if (!Array.isArray(value.presetIds) || !value.presetIds.every(text)) throw new Error('Invalid gate presetIds');
+  const name = typeof advanced.script === 'string' ? advanced.script.replace(/\.[^.]+$/, '') : undefined;
+  for (const match of value.instruction.matchAll(/{{\s*([^{}]+?)\s*}}/g)) {
+    if (!name || ![`hooks.${name}.text`, `hooks.${name}.data`].includes(match[1]!)) throw new Error(`Unknown prompt variable: ${match[1]}`);
+  }
   const task = structuredClone(value) as unknown as GateTask;
   const problem = taskProblem(task);
   if (problem) throw new Error(`Invalid gate ${problem}`);

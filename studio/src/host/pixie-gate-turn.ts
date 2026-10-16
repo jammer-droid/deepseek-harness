@@ -24,7 +24,7 @@ export function gateTurn(deps: GateInputDeps) {
     const hooksInput = context.length ? 'observed' : 'unverified';
     const run = await deps.recorder.start(agent.id, { ...gate, point: taskPoint(gate) }, subject);
     deps.emit('pixie-gate/start', structuredClone(run));
-    const execution = await executeTask(gate, subject, signal, deps.runner);
+    const execution = await executeTask(gate, subject, signal, deps.runner, () => deps.hookContext?.(agent, turn) ?? { sessionId: agent.id, cwd: agent.session.header.cwd, turn, agent: deps.isRoot(agent) ? 'root' : 'child' });
     const { result, plan } = execution;
     let budget = budgets.get(agent);
     if (!budget || budget.turn !== turn) { budget = { turn, gates: new Map() }; budgets.set(agent, budget); }

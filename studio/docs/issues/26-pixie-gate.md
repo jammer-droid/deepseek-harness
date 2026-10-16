@@ -377,6 +377,15 @@ interface GateResult {
 - **검증:** 469→370(구 파이프라인·명령·hook·단계 편집/시험 사례 99개 제거, skip 전환 없음). `npm --prefix studio run typecheck` 및 `npm --prefix studio test` 2회 연속 각각 **370/370 통과**, 실패·skip 0. diff 검사에서 테스트 EOF 공백 1건을 발견해 정리한 뒤 최종 재검증했다. S1 표·과거 S2–S9 본문은 보존하고 삭제된 파일 링크만 삭제됨으로 표시했다. 디자인 시스템 부품 표에는 삭제 대상 링크가 없었다.
 - **범위 밖/미검증:** R2-b 스크립트·헬퍼, R3 UI 연결, 실모델·독립 설치·시각 확인은 후속이다. 본체 변경·사용자 GUI/프로필·배포·Client query·하위 위임·푸시는 하지 않았다.
 
+#### R2-b1 — Pixie 훅 스크립트 실행
+
+- **범위:** 전용 `<data>/pixie-gate/commands/`의 실행 가능 파일만 선택한다. 이름의 구분자·절대 경로·`..`를 거부하고 파일 realpath의 부모와 commands realpath를 비교한다. 외부 심볼릭 링크·디렉터리·비실행 파일은 실행/목록에서 제외한다. 디렉터리가 없으면 생성하지 않고 빈 목록을 반환한다. realpath 확인과 프로세스 실행 사이의 파일 교체 경쟁까지 원자적으로 막는 API는 없으므로, 프로필 commands 디렉터리는 신뢰하는 사용자가 관리해야 한다.
+- **U24 판별 근거/한계:** Host Inspect `Service.listService(shell)`은 shell을 **Abstract bash execution service**로 정의하고 `resolve`/`execute`만 제공한다. `sandboxPolicy.resolve({session})` 계약도 확인했다. 서비스 카탈로그와 `configEditor`의 `entries`/`configuration`은 설정 행만 제공하고 해당 행이 현재 `ctx.shell` 인스턴스를 소유하는지 또는 bash 실행기인지 보장하는 공개 판별 계약은 없다(`loader`는 catalogued service가 아님). 따라서 요청에서 허용한 `process.platform !== 'win32'`를 1차 기준으로 하고 shell 서비스 존재를 추가 확인한다. 이는 비-Windows 사용자 정의 shell 구현이 공개 bash 계약을 지키는지까지 검증하지 못한다. 비지원이면 `hook-script-unsupported: 이 환경에서는 훅 스크립트를 지원하지 않음` 오류 후 onError를 적용한다. 사용자 프로필 설정 값은 조회하지 않았다.
+- **실행:** 공개 shell.resolve/execute/result만 사용한다. session.header.cwd와 sandboxPolicy.resolve({session}) 결과를 명시 전달하며 누락/세션 불일치는 실행하지 않는다. stdin은 대상 텍스트, 환경은 PIXIE_POINT/TOOL_NAME/TOOL_ARGS/AGENT/SESSION_ID/TURN/GATE_NAME이다. PIXIE_URL/PIXIE_TOKEN은 전달하지 않는다. advanced.timeoutMs·kill·256KB stdout 상한과 취소 signal을 전달하고 결과의 timeout/abort/truncation/실제 바이트 길이를 확인한다. 별도 spawn 또는 샌드박스 우회는 없다.
+- **출력:** exit 0은 앞뒤 개행만 정리한 text 및 JSON 객체 data를 instruction에 치환한다(이름은 기존 taskVariables처럼 마지막 확장자를 제거). 저장 시 미정의 변수를 거부한다. exit 10은 모델/판정을 호출하지 않고 원래 흐름과 applied none을 유지하며 note에 `skipped by hook`을 남긴다. 다른 exit/실행 실패는 onError로 간다. trial의 `skipped: script`는 유지한다. gateScripts Remote는 directory 절대 경로·scripts 이름 목록·supported를 반환하며 Client는 타입만 추가했다.
+- **검증:** 실행기/저장 검증 및 실제 PixieService/Cordis 세션 정책 조합 2건에서 red를 먼저 확인했다. [red 요약](</tmp/pixie-r2b1/red.txt>)에 실패 원인과 후속 경계 테스트(추가 시 이미 green)를 구분했다. 다섯 지점의 skip/원문/도구 환경·applied none, 경로 탈출, 비지원·정책 누락 onError, text/JSON, exit/timeout/출력 초과, 취소, 목록을 검증한다. 최종 `npm --prefix studio run typecheck`, `npm --prefix studio test` **404/404 두 회 연속 통과**(fail/cancelled/skipped 모두 0), `git diff --check` 통과. R2-a/b 기준 370개에서 스크립트 경계 32개와 서비스 조합 복원 2개를 추가했다. 로그는 `/tmp/pixie-r2b1/test-1.txt`, `/tmp/pixie-r2b1/test-2.txt`에 남겼다.
+- **미검증/후속:** 실제 bash 샌드박스 실행·macOS seatbelt·Linux bwrap·사용자 정의 비bash shell 식별·독립 설치/배포·실모델·GUI는 미검증이다. 사용자 GUI/프로필 접근·Client Inspect·본체 수정·하위 위임은 하지 않았다. R2-b2는 pixie ask/judge 헬퍼, 로컬 HTTP, 실행별 토큰·상한·사용량 통합을 맡는다. R3 화면 JSX·문구는 변경하지 않았다.
+
 - **R3 — UI 연결:** 시안을 Host에 연결, 시험 실행 결과를 출력 계약 모양으로, 실행 카드 용어 정리. 기존 다단계 편집기 삭제는 R2-a/b에서 완료했다.
 - **R4 — 문서·스킬:** `pixie-gate` 스킬, 템플릿, 가이드 문서의 Pixie Gate 항목(결과 적용 규칙 포함).
 - **R5 — 검증:** 테스트, 격리 프로필 화면 확인, 일괄 리뷰.

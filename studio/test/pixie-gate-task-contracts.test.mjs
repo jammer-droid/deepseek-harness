@@ -106,7 +106,7 @@ test('judge malformed answer stops with a reason rather than allowing input', as
 test('script is unsupported without a model call; cancellation wins', async () => {
   const value = task(); value.advanced.script = 'script.sh'; const calls = [];
   const runner = new GateTaskRunner({ model, llm: llm([], calls) });
-  assert.equal((await runner.run(value, '', signal())).error, '스크립트 미지원'); assert.equal(calls.length, 0);
+  assert.match((await runner.run(value, '', signal())).error, /hook-script-unsupported/); assert.equal(calls.length, 0);
   const controller = new AbortController(); controller.abort();
   assert.equal((await runner.run(value, '', controller.signal)).status, 'cancelled');
 });

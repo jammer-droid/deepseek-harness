@@ -49,6 +49,33 @@ async function harness({ sessions = ['s1'] } = {}) {
   });
   return { ctx, dataDir, commands };
 }
+for (const mode of ['read-only', 'workspace-write']) test(`hook service restores session policy and cwd composition: ${mode}`, async () => {
+  const h = await harness(); const requests = [], policies = [];
+  const session = { header: { cwd: '/session/workspace' } };
+  const agent = { id: 's1', ctx: h.ctx, session };
+  for (const key of ['shell', 'sandboxPolicy', 'agentPresets', 'agents']) h.ctx.provide(key);
+  h.ctx.set('agents', { roots: () => [agent] });
+  h.ctx.set('agentPresets', { composedPreset: () => 'p' });
+  h.ctx.set('sandboxPolicy', { resolve(request) { policies.push(request); return { mode, workspaceRoot: '/session/workspace', sessionId: 's1' }; } });
+  h.ctx.set('shell', { resolve(request) { requests.push(request); return request; }, async execute() { return { async result() { return { exitCode: 10, timedOut: false, stdout: { text: '', truncated: false }, stderr: { text: '' } }; } }; } });
+  const directory = join(h.dataDir, 'pixie-gate/commands'); await mkdir(directory, { recursive: true });
+  await writeFile(join(directory, 'skip.sh'), '#!/bin/bash\n', { mode: 0o755 });
+  const fiber = await start(h);
+  try {
+    const service = h.ctx.get('studioPixie'); const task = makeTask('gate', 'user-message', 'check');
+    task.enabled = true; task.presetIds = ['p']; task.advanced.script = 'skip.sh';
+    await service.saveGateDefinitions(JSON.stringify([task]));
+    const decision = { kind: 'enter', messages: [{ id: 'm', role: 'user', source: { kind: 'user' }, content: [{ type: 'text', text: 'original' }] }] };
+    const result = await h.ctx.waterfall('agent/pre-step', { agent, turn: 7, signal: new AbortController().signal }, async () => decision);
+    assert.equal(result, decision); assert.equal(requests.length, 1);
+    assert.equal(policies[0].session, session); assert.equal(requests[0].workdir, '/session/workspace');
+    assert.deepEqual(requests[0].sandboxPolicy, { mode, workspaceRoot: '/session/workspace', sessionId: 's1' });
+    assert.equal(requests[0].env.PIXIE_TURN, '7');
+    const run = (await service.gateRuns('s1')).runs[0]; assert.equal(run.applied, 'none'); assert.ok(run.result.notes.includes('skipped by hook'));
+    assert.deepEqual(await service.gateScripts(), { directory, supported: true, scripts: ['skip.sh'] });
+  } finally { await fiber.dispose(); }
+});
+
 const start = async (h) => { const fiber = h.ctx.plugin(PixieService, h.dataDir); await fiber; return fiber; };
 const until = async (check) => { for (let i = 0; i < 100; i++) { if (await check()) return; await new Promise(r => setTimeout(r, 10)); } throw new Error('timed out'); };
 

@@ -38,6 +38,7 @@ interface PixieRemote {
   cancel(sessionId: string): RemoteValue<boolean>;
   follow(sessionId: string): AsyncIterable<PixieAskFrame> & { dispose(): void };
   trialGate(payload: string, signal: AbortSignal): RemoteValue<GateTrialResponse>;
+  gateScripts(): RemoteValue<{ directory: string; supported: boolean; scripts: string[] }>;
   gateDefinitions(): RemoteValue<import('./pixie-gate-definitions.ts').GateTasksRead>;
   saveGateDefinitions(payload: string): RemoteValue<unknown>;
   readSettings(): RemoteValue<PixieSettings>;

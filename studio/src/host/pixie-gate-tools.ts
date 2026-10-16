@@ -22,7 +22,7 @@ export function gateTools(deps: GateInputDeps) {
     const original = outcome ? textOf('content' in decision && decision.content ? decision.content : outcome.content) : JSON.stringify(exec.arguments) ?? '';
     const run = await deps.recorder.start(agent.id, { ...gate, point: taskPoint(gate) }, original);
     deps.emit('pixie-gate/start', structuredClone(run));
-    const execution = await executeTask(gate, original, exec.signal, deps.runner);
+    const execution = await executeTask(gate, original, exec.signal, deps.runner, () => deps.hookContext?.(agent, turn, { name: exec.name, arguments: exec.arguments }) ?? { sessionId: agent.id, cwd: agent.session.header.cwd, turn, agent: deps.isRoot(agent) ? 'root' : 'child' });
     const { result, plan } = execution;
     let committed = decision; let applied: GateApplied = 'none'; let reason: string | undefined;
     const failed = plan.stop;
