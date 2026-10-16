@@ -267,3 +267,18 @@ test('without DSH credentials the Jev key is reported unavailable and cannot be 
     await assert.rejects(service.saveJevKey(JSON.stringify({ value: 'x' })), /credentials service is unavailable/);
   } finally { await fiber.dispose(); }
 });
+
+test('a bare refs: line in the DSH credentials file becomes a coded error that keeps the original text', async () => {
+  const h = await harness();
+  h.ctx.provide('credentials');
+  const shape = new Error('Expected YAML collection at refs. Remaining path: TYPESAFE_API_KEY');
+  h.ctx.set('credentials', { resolve: async () => undefined, describe: async () => ({ configured: false, writable: true }), set: async () => { throw shape; }, unset: async () => { throw shape; } });
+  const fiber = await start(h);
+  try {
+    const service = h.ctx.get('studioPixie');
+    await assert.rejects(service.saveJevKey(JSON.stringify({ value: 'k' })), /^Error: \[pixie\/credentials-refs\] Expected YAML collection at refs\. Remaining path: TYPESAFE_API_KEY$/);
+    await assert.rejects(service.deleteJevKey(), /\[pixie\/credentials-refs\]/);
+    h.ctx.get('credentials').set = async () => { throw new Error('disk full'); };
+    await assert.rejects(service.saveJevKey(JSON.stringify({ value: 'k' })), /^Error: disk full$/);
+  } finally { await fiber.dispose(); }
+});

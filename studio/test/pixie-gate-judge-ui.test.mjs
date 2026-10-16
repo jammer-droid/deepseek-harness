@@ -109,3 +109,18 @@ test('structured failures localize all types and fall back to ids without defini
   assert.match(fallback.textContent, /Question "n": yes probability 0.2 < threshold 0.5/); assert.match(fallback.textContent, /score 0 < minimum 1/); assert.match(fallback.textContent, /selection no is not allowed/);
   const chinese = await render(t, GateResultDetails, { result, locale: 'zh' }); assert.match(chinese.textContent, /阈值 0.5/);
 });
+
+test('a coded credentials-file failure shows the fix and the original DSH message', async t => {
+  const jevKey = { status: async () => ({ available: true, configured: false, writable: true }), save: async () => { throw new Error('[pixie/credentials-refs] Expected YAML collection at refs. Remaining path: TYPESAFE_API_KEY'); }, remove: async () => assert.fail() };
+  for (const [locale, fix, keyLabel, saveLabel] of [
+    ['en', /Could not update the key\. The DSH credentials file \(\.credentials\.yaml in the DSH home\) has an empty refs: line\. Change it to refs: \{\} and save again\. \(Expected YAML collection at refs\. Remaining path: TYPESAFE_API_KEY\)/, 'TypeSafe API key', 'Save key'],
+    ['ko', /키를 바꾸지 못했습니다\. DSH 자격 증명 파일\(DSH 홈의 \.credentials\.yaml\)의 refs: 줄이 비어 있습니다\. refs: \{\}로 바꾼 뒤 다시 저장하세요\. \(Expected YAML collection at refs/, 'TypeSafe API 키', '키 저장'],
+  ]) {
+    const host = await render(t, PixieSettingsPage, { locale, gateActions: NO_GATES, actions: { read: async () => ({ contextMode: 'fresh', systemPrompt: '', allowThreadModel: true, judgeEngine: 'jev' }), models: catalog, save: async v => v, jevKey } });
+    await click([...host.querySelectorAll('button')].find(b => b.textContent === (locale === 'ko' ? '결정 엔진' : 'Decision engine')));
+    await change(input(host, keyLabel), 'k');
+    await click(button(host, saveLabel));
+    assert.match(host.textContent, fix);
+    assert.doesNotMatch(host.textContent, /\[pixie\//);
+  }
+});

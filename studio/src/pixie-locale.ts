@@ -8,7 +8,7 @@ const en = {
   jevModel: 'Jev model', jevModelHint: 'A model ID or alias such as jev-latest. Pin a version once you tune thresholds.',
   jevKey: 'TypeSafe API key', jevKeyHint: 'Stored in DSH credentials as TYPESAFE_API_KEY. It is never shown again.', jevKeySet: 'Set', jevKeyFrom: 'Source: {source}', jevKeyMissing: 'Not set',
   jevKeyReadOnly: 'Set by a read-only source ({source}). Change it there.', jevKeyUnavailable: 'The DSH credentials service is not available, so the key cannot be stored here.',
-  jevKeyPlaceholder: 'Paste the key', jevKeySave: 'Save key', jevKeyDelete: 'Remove key', jevKeyFailed: 'Could not update the key.', jevKeySaving: 'Saving…', jevKeyRemoving: 'Removing…', jevKeySaved: 'Key saved.', jevKeyRemoved: 'Key removed.',
+  jevKeyPlaceholder: 'Paste the key', jevKeySave: 'Save key', jevKeyDelete: 'Remove key', jevKeyFailed: 'Could not update the key.', errCredentialsRefs: 'The DSH credentials file (.credentials.yaml in the DSH home) has an empty refs: line. Change it to refs: {} and save again.', jevKeySaving: 'Saving…', jevKeyRemoving: 'Removing…', jevKeySaved: 'Key saved.', jevKeyRemoved: 'Key removed.',
   title: 'Pixie', chat: 'Threads', judge: 'Judge', threads: 'Pixie threads', newThread: 'New thread', fresh: 'New', fork: 'Continue',
   mode: 'Context mode', model: 'Model',
   allThreads: 'All threads', turnCount: 'questions', activeBadge: '/pixie sends here', makeTarget: 'Send /pixie here', freshMeta: 'Empty start', forkMeta: 'Copied session text', noTurns: 'No questions yet',
@@ -38,7 +38,7 @@ const ko: Record<PixieTextKey, string> = {
   jevModel: 'Jev 모델', jevModelHint: 'jev-latest 같은 모델 ID나 별칭입니다. 기준값을 맞춘 뒤에는 버전을 고정하세요.',
   jevKey: 'TypeSafe API 키', jevKeyHint: 'DSH 자격 증명에 TYPESAFE_API_KEY로 저장합니다. 저장한 키는 다시 표시하지 않습니다.', jevKeySet: '설정됨', jevKeyFrom: '출처: {source}', jevKeyMissing: '설정 안 됨',
   jevKeyReadOnly: '읽기 전용 출처({source})에서 설정되어 있습니다. 그곳에서 바꾸세요.', jevKeyUnavailable: 'DSH 자격 증명 서비스가 없어 여기서 키를 저장할 수 없습니다.',
-  jevKeyPlaceholder: '키 붙여 넣기', jevKeySave: '키 저장', jevKeyDelete: '키 삭제', jevKeyFailed: '키를 바꾸지 못했습니다.', jevKeySaving: '저장 중…', jevKeyRemoving: '삭제 중…', jevKeySaved: '키를 저장했습니다.', jevKeyRemoved: '키를 삭제했습니다.',
+  jevKeyPlaceholder: '키 붙여 넣기', jevKeySave: '키 저장', jevKeyDelete: '키 삭제', jevKeyFailed: '키를 바꾸지 못했습니다.', errCredentialsRefs: 'DSH 자격 증명 파일(DSH 홈의 .credentials.yaml)의 refs: 줄이 비어 있습니다. refs: {}로 바꾼 뒤 다시 저장하세요.', jevKeySaving: '저장 중…', jevKeyRemoving: '삭제 중…', jevKeySaved: '키를 저장했습니다.', jevKeyRemoved: '키를 삭제했습니다.',
   title: 'Pixie', chat: '스레드', judge: '판정', threads: 'Pixie 스레드', newThread: '새 스레드', fresh: '새 대화', fork: '이어받기',
   mode: '컨텍스트 모드', model: '모델',
   allThreads: '전체 스레드', turnCount: '개 질문', activeBadge: '/pixie가 여기로 보냅니다', makeTarget: '/pixie를 여기로 보내기', freshMeta: '빈 상태로 시작', forkMeta: '세션 대화 복사', noTurns: '아직 질문이 없습니다',
@@ -67,7 +67,7 @@ const zh: Record<PixieTextKey, string> = {
   jevModel: 'Jev 模型', jevModelHint: '模型 ID 或别名，如 jev-latest。调好阈值后请固定版本。',
   jevKey: 'TypeSafe API 密钥', jevKeyHint: '以 TYPESAFE_API_KEY 存入 DSH 凭据，保存后不再显示。', jevKeySet: '已设置', jevKeyFrom: '来源：{source}', jevKeyMissing: '未设置',
   jevKeyReadOnly: '由只读来源（{source}）设置，请在该处修改。', jevKeyUnavailable: 'DSH 凭据服务不可用，无法在此保存密钥。',
-  jevKeyPlaceholder: '粘贴密钥', jevKeySave: '保存密钥', jevKeyDelete: '删除密钥', jevKeyFailed: '无法更新密钥。', jevKeySaving: '保存中…', jevKeyRemoving: '删除中…', jevKeySaved: '已保存密钥', jevKeyRemoved: '已删除密钥',
+  jevKeyPlaceholder: '粘贴密钥', jevKeySave: '保存密钥', jevKeyDelete: '删除密钥', jevKeyFailed: '无法更新密钥。', errCredentialsRefs: 'DSH 凭据文件（DSH 主目录中的 .credentials.yaml）的 refs: 行为空。请改为 refs: {} 后重新保存', jevKeySaving: '保存中…', jevKeyRemoving: '删除中…', jevKeySaved: '已保存密钥', jevKeyRemoved: '已删除密钥',
   title: 'Pixie', chat: '线程', judge: '判定', threads: 'Pixie 线程', newThread: '新线程', fresh: '新对话', fork: '接续',
   mode: '上下文模式', model: '模型',
   allThreads: '全部线程', turnCount: '个问题', activeBadge: '/pixie 发送到这里', makeTarget: '让 /pixie 发送到这里', freshMeta: '从空开始', forkMeta: '复制了会话文本', noTurns: '还没有问题',
@@ -98,9 +98,14 @@ export function pixieText(locale: string, key: PixieTextKey): string {
 /** Stable codes the Host puts in front of user-facing failures, so the Client can show them in the active language. */
 export const PIXIE_ERROR_CODES = { 'pixie/no-model': 'errNoModel', 'pixie/busy': 'errBusy', 'pixie/empty': 'errEmpty' } as const satisfies Record<string, PixieTextKey>;
 
+/** Codes whose localized text explains a fix; the original Host text follows it so the cause stays visible. */
+export const PIXIE_DETAILED_ERROR_CODES = { 'pixie/credentials-refs': 'errCredentialsRefs' } as const satisfies Record<string, PixieTextKey>;
+
 /** Localize a Host failure that starts with a known `[code]`; other text (provider errors) is shown as given. */
 export function pixieError(locale: string, message: string): string {
   const match = /^\[(pixie\/[\w-]+)\]\s*/.exec(message);
   const key = match ? PIXIE_ERROR_CODES[match[1] as keyof typeof PIXIE_ERROR_CODES] : undefined;
-  return key ? pixieText(locale, key) : message;
+  if (key) return pixieText(locale, key);
+  const detailed = match ? PIXIE_DETAILED_ERROR_CODES[match[1] as keyof typeof PIXIE_DETAILED_ERROR_CODES] : undefined;
+  return detailed ? `${pixieText(locale, detailed)} (${message.slice(match![0].length)})` : message;
 }

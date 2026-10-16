@@ -7,7 +7,7 @@ import { gateComposeText } from './pixie-gate-compose-locale.ts';
 import { Button, Notice, PageHead, Segmented, SettingsRow, Toggle } from './ui.tsx';
 import { DetailLayout } from './detail-layout.tsx';
 import type { JevKeyStatus, JudgeEngineKind, PixieContextMode, PixieModel, PixieSettings } from './pixie-contracts.ts';
-import { pixieText, type PixieTextKey } from './pixie-locale.ts';
+import { pixieError, pixieText, type PixieTextKey } from './pixie-locale.ts';
 
 /** Model catalog as `sessionController.modelCatalog()` returns it. */
 export interface PixieSettingsCatalog {
@@ -203,7 +203,7 @@ function JevKeyRow({ actions, locale }: { actions: PixieSettingsActions['jevKey'
   const readOnly = !!status?.available && status.configured && !status.writable;
   return <SettingsRow title={t('jevKey')} description={t('jevKeyHint')}>
     <p role="status" className="studio-muted">{readOnly ? t('jevKeyReadOnly').replace('{source}', source) : state}</p>
-    {error && <Notice action={<Button small onClick={() => setError('')}>{t('dismiss')}</Button>}>{`${t('jevKeyFailed')} (${error})`}</Notice>}
+    {error && <Notice action={<Button small onClick={() => setError('')}>{t('dismiss')}</Button>}>{/^\[pixie\//.test(error) ? `${t('jevKeyFailed')} ${pixieError(locale, error)}` : `${t('jevKeyFailed')} (${error})`}</Notice>}
     {actions && status?.available && !readOnly && <div className="studio-inline-actions">
       <input className="studio-compact" type="password" autoComplete="off" aria-label={t('jevKey')} placeholder={t('jevKeyPlaceholder')} value={value} onChange={event => { setValue(event.target.value); setDone(undefined); }} />
       <Button small primary disabled={!!busy || !value.trim()} onClick={() => { void run('save', () => actions.save(value)); }}>{t(busy === 'save' ? 'jevKeySaving' : 'jevKeySave')}</Button>

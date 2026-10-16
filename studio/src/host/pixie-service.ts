@@ -54,6 +54,17 @@ interface CredentialsSlice extends JevCredentials {
 interface LlmSlice extends PixieLlm { resolveModelInfo(provider: string, model: string, signal?: AbortSignal): Promise<{ context?: { contextWindow: number } }> }
 
 const json = <T>(payload: string): T => JSON.parse(payload) as T;
+
+/** Write through DSH credentials, coding the one known file-shape failure so the Client can show how to fix it.
+ * DSH reads a bare `refs:` line (null) as an empty store but cannot add a key under it; the original text is kept.
+ */
+async function credentialWrite(write: () => Promise<void>): Promise<void> {
+  try { await write(); } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (/Expected YAML collection at refs\b/.test(message)) throw new Error(`[pixie/credentials-refs] ${message}`);
+    throw error;
+  }
+}
 const llmOf = (ctx: Context) => ctx.get('llm') as unknown as LlmSlice;
 
 /** Remote `pixie`: a side model whose requests never enter a session's model-visible log.
@@ -296,7 +307,7 @@ export class PixieService extends TypertRemoteService {
     if (typeof value !== 'string' || !value.trim()) throw new Error('Jev API key is required');
     const credentials = this.credentials();
     if (!credentials) throw new Error('DSH credentials service is unavailable');
-    await credentials.set(JEV_KEY_REF, value.trim());
+    await credentialWrite(() => credentials.set(JEV_KEY_REF, value.trim()));
     return this.jevKeyStatus();
   }
 
@@ -304,7 +315,7 @@ export class PixieService extends TypertRemoteService {
   async deleteJevKey(): Promise<JevKeyStatus> {
     const credentials = this.credentials();
     if (!credentials) throw new Error('DSH credentials service is unavailable');
-    await credentials.unset(JEV_KEY_REF);
+    await credentialWrite(() => credentials.unset(JEV_KEY_REF));
     return this.jevKeyStatus();
   }
 
