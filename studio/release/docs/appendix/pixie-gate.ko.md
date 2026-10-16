@@ -141,6 +141,15 @@ pixie judge [--type bool|select|score] --question "<질문>" [형식별 인자] 
 - 판정 오류는 오류입니다. "아니오"나 낮은 점수로 바뀌지 않으며 exit 2가 됩니다.
 - 기존 `pixie judge --question … --threshold …`는 그대로 동작합니다(`--type bool`).
 
+### 에이전트 도구 `judge`
+
+같은 결정 엔진을 에이전트가 직접 부를 수 있는 도구 `judge`로도 제공합니다. Studio Master에 들어 있고, 프리셋 편집기의 도구 목록에서 골라 넣을 수 있습니다. 기본 제공 Optimized 프리셋에는 들어 있지 않습니다.
+
+- 입력은 Jev 요청 형식 그대로입니다: `{ state, questions: { <id>: { type, instructions, criteria } } }`. 형식은 위 표의 bool(`noul`)·select(`choice`)·score와 같습니다.
+- 출력은 질문별 `answers`(확률·확신도), 쓴 엔진(`llm`·`jev`), 사용량입니다.
+- 판정만 하고 글을 고쳐 쓰지 않습니다. 순위 매기기, 거르기, 검증에 쓰고 고치는 일은 에이전트가 합니다(예: 로케일 문구 채점 → 낮은 것만 고침 → 다시 판정).
+- 판정이 실패하면 도구 오류로 돌아옵니다. 엔진이 설정되지 않았거나 Jev 키가 없을 때도 마찬가지입니다.
+
 ## 예시 스크립트
 
 **도구 필터** (`only-search-tools.sh`, 도구 결과가 나왔을 때): 검색 도구의 긴 결과에만 게이트를 실행합니다.

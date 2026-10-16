@@ -23,7 +23,8 @@
     "./client": "./client.js",
     "./policy": "./policy.js",
     "./roles": "./roles.js",
-    "./batch": "./batch.js"
+    "./batch": "./batch.js",
+    "./judge": "./judge.js"
   },
   "files": [
     "index.js",
@@ -31,6 +32,7 @@
     "policy.js",
     "roles.js",
     "batch.js",
+    "judge.js",
     "skills",
     "cordis.patch.yml"
   ],

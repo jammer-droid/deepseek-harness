@@ -141,6 +141,15 @@ pixie judge [--type bool|select|score] --question "<question>" [type arguments] 
 - A judgment error stays an error: it never becomes "no" or a low score, and exits 2.
 - The previous `pixie judge --question … --threshold …` still works (`--type bool`).
 
+### The `judge` agent tool
+
+The same decision engine is also an agent tool, `judge`. It is in Studio Master, and you can pick it in the preset editor's tool list. The built-in Optimized preset does not include it.
+
+- Input is the Jev request shape as is: `{ state, questions: { <id>: { type, instructions, criteria } } }`, with the bool (`noul`), select (`choice`), and score types above.
+- Output is per-question `answers` (probabilities and confidence), the engine used (`llm` or `jev`), and usage.
+- It judges and never rewrites text. Use it to rank, filter, or verify, and let the agent do the editing (for example: score locale strings, rewrite only the low ones, judge again).
+- A failed judgment comes back as a tool error, including when no engine is set or the Jev key is missing.
+
 ## Example scripts
 
 **Tool filter** (`only-search-tools.sh`, when a tool result arrives): run the gate only for long search results.

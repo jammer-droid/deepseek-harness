@@ -29,7 +29,11 @@ S1–S7 구현과 검증을 마쳤다. 실제 Jev API 호출, 실세션의 Jev �
 | S6 Pixie 출력 Markdown 표시 | 완료, 사용자가 웹 빌드에서 확인 | `e67d5eb5cd` |
 | S7 가이드와 검증 | 완료 | `7de926200e` |
 | 사용자 피드백: 키 저장·삭제 확인 문구, 설명의 백틱 제거 | 완료 | `c87d6f5c46` |
-| 실행 기록: 스크립트 결론이면 `스크립트 출력`, 판정 헬퍼 호출에 형식·라벨·엔진·확신도 | 완료 | 이 커밋 |
+| 실행 기록: 스크립트 결론이면 `스크립트 출력`, 판정 헬퍼 호출에 형식·라벨·엔진·확신도 | 완료 | `ab55c74126` |
+| 결정 엔진 메뉴를 게이트 묶음으로 이동, 문구 정리 | 완료 | `91c21354b3` |
+| 자격 증명 파일의 빈 `refs:` 오류 안내 | 완료 | `b283e5d2e0` |
+| 스킬 `studio-pixie-hook-guide`를 `<DSH 홈>/skills/`에 설치(사용자 수정은 유지) | 완료, 격리 런타임에서 에이전트가 스킬을 찾음 | `2954767045` |
+| 에이전트 도구 `judge`(Jev 요청 형식, Studio Master 포함, Optimized 제외) | 완료, 아래 검증 | 이 커밋 |
 
 ### 검증 기록
 
@@ -51,7 +55,8 @@ S1–S7 구현과 검증을 마쳤다. 실제 Jev API 호출, 실세션의 Jev �
   - 세션 로그에 `studio-pixie-gate` 출처의 `[Jev] bug (confidence 0.94)` 메시지가 에이전트 입력으로 들어갔다. 화면: [Pixie 탭 실행 기록](../verification/jev-27/gate-run-jev-light-1440.png).
 - **키 저장 피드백:** 같은 서버에서 키 저장 → `키를 저장했습니다.`, 다시 입력하면 문구가 사라짐, 키 삭제 → `키를 삭제했습니다.`, 페이지에 키 문자열 없음. 설명은 `'pixie judge'`로 표시. 화면: [라이트 1440](../verification/jev-27/key-saved-light-1440.png), [다크 520](../verification/jev-27/key-dark-520.png). 확인용 키로 덮어쓰고 지우면서 저장돼 있던 키도 같이 지워졌으므로, 검사 전에 백업한 `studio/.dsh-home/.credentials.yaml`로 복원했다(`TYPESAFE_API_KEY` 외 항목은 같음을 확인).
 - **Markdown:** 사용자가 웹 빌드에서 Pixie 답변의 Markdown 표시를 확인했다.
-- **미검증:** `claim-check.sh`의 실세션 실행(답변 끝 지점), `0.2.1-alpha.2` 설치, Windows.
+- **`judge` 도구:** 실제 DSH `ToolRuntime`에 등록해 스키마·실행·오류를 테스트했다. 격리 rc.2 프로필에서 프리셋 편집기 도구 목록에 `judge`가 보였고, Studio Master 세션의 에이전트가 `judge`를 호출해 `noul=1, engine=llm`을 받았다(세션 로그에 도구 호출 기록). 격리 프로필에 TypeSafe 키가 없어 이 확인은 LLM 엔진으로 했고, 확인 뒤 엔진 설정을 원래대로(`jev`) 되돌렸다. 화면: [도구 목록](../verification/jev-27/judge-tool-row-light-1440.png).
+- **미검증:** `claim-check.sh`의 실세션 실행(답변 끝 지점), `judge` 도구의 Jev 엔진 실세션 호출, `0.2.1-alpha.2` 설치, Windows.
 
 ## 범위
 
