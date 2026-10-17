@@ -43,7 +43,21 @@
 | Pixie 탭 › 루프 | 목록·상세·검사·항목별 시도가 표시됐다. 라이트 1440 [시도 펼침](loops-attempts-light-1440.png), 다크 1440 [검사](loops-checks-dark-1440.png), 라이트 520 [목록](loops-list-light-520.png) |
 | 콘솔 | Studio 오류 없음. 페이지가 여는 DSH 본체 요청 `/api/changes.summary?…` 404 하나가 있었다(Studio 경로 아님) |
 
+## 2차·3차 실동작 확인
+
+같은 환경에서 다시 패키징한 Studio(2차·3차 포함)를 설치해 확인했다.
+
+| 항목 | 결과 |
+| --- | --- |
+| `act` (DOM 실험) | 작업 공간에 `page.html`(버튼 4개)과 Playwright `probe.mjs`(매칭 수와 텍스트 출력)를 두고 Studio Master 세션에 셀렉터 찾기를 지시했다. 에이전트가 `act: { command: "node probe.mjs page.html {{output}}", isolated: true }` 명세로 `pixie_loop`을 불렀고, 세션 `bash`로 실행한 결과 `matches: 1 / text: Save`를 Jev가 판정해 1회에 통과했다(출력 `[type="submit"]`). 기준은 질문 3개(noul 2, choice 1)로 바뀌었다 |
+| 레시피 저장 | **Studio → Pixie → Loop 레시피**에서 `ko-review`(해요체 한국어로 다시 쓰기)를 JSON으로 저장했다. 저장 때 기준이 질문 3개로 바뀌고 calibration을 통과했다([화면](recipe-saved-light-1440.png)) |
+| 게이트 판정 방식 | 게이트 편집기 고급 옵션에서 레시피 `ko-review`, **고치기**를 골라 `사용자가 지시를 보낼 때` 게이트를 만들고 `Optimized Copy` 프리셋에 붙여 DSH에 반영했다([화면](gate-editor-loop-light-1440.png)) |
+| 고치기 실행 | `Optimized Copy` 세션에 영어 지시 `Read probe.mjs and explain in two sentences what it does.`를 보냈다. 에이전트가 받은 메시지는 `probe.mjs를 읽고, 이 파일이 무엇을 하는지 두 문장으로 설명해 주세요.`였다. 게이트 기록은 적용 `교체`, 결론 `Pixie Loop 레시피`, 원문과 최종 텍스트를 보여 준다([화면](gate-repair-light-1440.png)). 같은 세션의 루프 탭에 `레시피 ko-review · 게이트` 실행이 남았다 |
+| 훅 스크립트 `pixie loop` | 가이드의 예시 스크립트를 문서에서 꺼내 실제 bash·curl·jq와 실제 헬퍼 경로로 실행했다(레시피 실행은 가짜). `write` 한국어 → exit 10, `write` 영어 → exit 11과 `{"verdict":"stop","reason":…}`, `read` → exit 10. 문서에 적은 동작과 같다 |
+
 ## 검증 중 고친 것
+
+- 루프 게이트 실행 기록이 세션이 아닌 `unknown.json`에 저장됐다. 게이트 실행기가 훅 스크립트가 있을 때만 세션 정보를 넘겼기 때문이다. 루프 게이트에도 넘기도록 고치고 회귀 테스트를 추가했으며, 다시 설치해 세션 파일에 기록되는 것을 확인했다.
 
 - 항목 카드의 시도 수가 `2번째 시도`로 표시되어 시도 제목과 겹쳤다. 카드는 `시도 2회`, 실패한 시도 배지는 `넘김` 대신 `통과 못 함`으로 바꿨다(항목 상태 `넘김`과 구분).
 
@@ -54,3 +68,5 @@
 - 0.2.1-alpha.2, 사용자 desktop 프로필, macOS 이외 OS.
 - 번역 스킬(#30)과의 비교(S8의 메인 컨텍스트 토큰·통과율 비교)는 하지 않았다. 사용자 DSH 홈의 스킬을 고치는 일은 승인이 필요하다.
 - 다크 520은 캡처하지 않았다(라이트 520과 같은 레이아웃).
+- 2차: 연속 실행(`episode`)과 선택 모드(`select`), `route`, `extract`는 실모델로 실행하지 않았다(가짜 모델·가짜 bash 단위 테스트로 확인).
+- 3차: 게이트 **판정** 모드와 `tool-after`·`agent-message` 시점, 실제 게이트 안의 `pixie loop`(실제 레시피 실행)는 실세션으로 확인하지 않았다.

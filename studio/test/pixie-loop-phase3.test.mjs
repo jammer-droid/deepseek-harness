@@ -158,3 +158,13 @@ test('recipes page lists recipes, saves JSON specs through the Remote, and repor
   assert.doesNotMatch(host.textContent, /Korean review/);
   await act(async () => root.unmount());
 });
+
+test('loop gates receive the hook context so their runs land in the gate session', async () => {
+  const { executeTask } = await import('../src/host/pixie-gate-task-executor.ts');
+  const records = [];
+  const runner = new GateTaskRunner({ llm: llm(), model, judge, loop: { recipe: async () => recipe, record: async run => { records.push(run); } } });
+  const task = makeTask('Korean', 'user-message', '');
+  task.advanced.loop = { recipe: 'ko', mode: 'check' };
+  await executeTask(task, '저장', signal(), async () => runner, () => ({ sessionId: 'session-9', cwd: '/tmp', turn: 1, agent: 'root' }));
+  assert.equal(records[0].sessionId, 'session-9');
+});

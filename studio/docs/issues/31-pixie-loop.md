@@ -19,7 +19,7 @@ status: ready
 
 ## 현재 진행 상황
 
-1차(S1–S7) 구현과 실동작 검증을 마쳤다. S8은 Studio 쪽 검증만 했고, #30 번역 스킬 비교는 사용자 승인이 필요해 남겼다. 2차·3차는 시작하지 않았다.
+1차·2차·3차(S1–S16) 구현과 검증을 마쳤다. S8의 #30 번역 스킬 비교만 사용자 DSH 홈 스킬 수정 승인이 필요해 남겼다.
 
 | 단계 | 상태 | 커밋 |
 | --- | --- | --- |
@@ -30,7 +30,22 @@ status: ready
 | S5 도구 `pixie_loop` | 완료, 실세션 확인 | `f22e14b34b` |
 | S6 실행 기록과 Pixie 탭 › 루프 | 완료, Web 확인 | `f22e14b34b` |
 | S7 가이드와 스킬 | 완료, 에이전트가 스킬을 읽고 명세 작성 | `1d7dfadc92` |
-| S8 1차 검증 | Studio 검증 완료. #30 스킬 비교 미실행 | 이 커밋 |
+| S8 1차 검증 | Studio 검증 완료. #30 스킬 비교 미실행 | `d4e5c1574d` |
+| S9 `act` | 완료, 실세션 DOM 실험 확인 | `0d46a508d8` |
+| S10 `extract` | 완료 (단위 테스트) | `0d46a508d8` |
+| S11 `route` | 완료 (단위 테스트) | `0d46a508d8` |
+| S12 `until` (재시도형·에피소드형 `mode: episode`) | 완료 (단위 테스트) | `0d46a508d8` |
+| S13 선택 모드 | 완료 (단위 테스트) | `0d46a508d8` |
+| S14 저장된 레시피 | 완료, Web 저장 확인 | `cbfa654370` |
+| S15 게이트 판정 방식 | 완료, 실세션 고치기 확인 | `cbfa654370`, 기록 위치 수정은 이 커밋 |
+| S16 훅 헬퍼 `pixie loop` | 완료, 가이드 예시를 실제 헬퍼로 실행 | `cbfa654370` |
+
+### 2차·3차에서 정한 것
+
+- `act`는 `bash` 하나만 허용하고 `safeToRepeat: true`를 필수로 받는다. 값은 셸 단어 하나로 감싼다. `isolated: false`(기본)이면 act를 항목 사이에서 한 번에 하나씩 실행한다. calibration 예시는 `observation`을 직접 주고, 확인 단계에서는 명령을 실행하지 않는다.
+- 2차 "until"은 별도 필드 대신 `mode: retry | episode`로 정했다. 재시도형은 기존 `retry`, 에피소드는 `act`가 필수이며 단계 상한은 100이다.
+- 선택 모드의 보기는 항목 입력이나 마지막 실행 결과의 JSON `options`에서만 읽는다(D6). 기준 없는 한 번 고르기만 calibration 없이 허용한다. `minConfidence` 미만은 넘긴다.
+- 레시피는 저장할 때 compile과 calibration을 한 번 하고 질문을 고정한다. 게이트와 훅 스크립트는 `act`·연속 실행·선택 레시피를 거부한다. 게이트는 훅 스크립트와 레시피를 함께 쓸 수 없다(스크립트 안에서 `pixie loop` 사용). `pixie loop` 한 번은 헬퍼 호출 1회로 센다(O5).
 
 ### S1 결과
 
@@ -49,7 +64,8 @@ status: ready
 
 - **로컬:** `npm run typecheck`, `npm test`(빌드 포함) 658/658 통과, `git diff --check` 통과. 새 테스트는 `test/pixie-loop.test.mjs`(계약·코드 검사·엔진, 가짜 모델), `test/pixie-loop-tool.test.mjs`(실제 DSH `ToolRuntime`), `test/pixie-loop-runs.test.mjs`(화면·저장소), `test/pixie-loop-guide.test.mjs`(가이드 예시 명세를 추출해 검증하고 엔진으로 실행).
 - **독립 설치·실세션:** 수정하지 않은 DSH `0.2.0-rc.2`에 pack한 `@matamt-dbg/dsh-studio@0.5.0`을 격리 프로필 `loop-e2e`로 설치했다. Studio Master 세션에서 foreground 5/5 통과(재시도 1건 포함)와 background job 정산을 확인했다. 세션 로그에 항목별 시도와 피드백이 없음을 확인했다. 기록: [#31 검증](../verification/pixie-loop-31/README.md).
-- **미검증:** background `job_kill`, 상한 도달·calibration 거부·엔진 오류의 실모델 재현, `0.2.1-alpha.2`, #30 스킬과의 비교.
+- **2차·3차:** `npm test` 676/676. 실세션에서 `act` DOM 실험, Web 레시피 저장, 사용자 지시 시점 고치기 게이트를 확인했다. 기록: [#31 검증](../verification/pixie-loop-31/README.md#2차3차-실동작-확인).
+- **미검증:** background `job_kill`, 상한 도달·calibration 거부·엔진 오류의 실모델 재현, 연속 실행·선택·route·extract의 실모델 실행, 게이트 판정 모드와 다른 시점, `0.2.1-alpha.2`, #30 스킬과의 비교.
 
 ## 범위
 
@@ -216,7 +232,5 @@ status: ready
 
 | ID | 항목 | 추천 |
 | --- | --- | --- |
-| O3 | compile 대신 질문 세트를 직접 넘기는 `questions` 필드를 1차에 허용할지 | 허용한다. 직접 넘겨도 calibration 검증은 똑같이 거친다 |
 | O4 | 기본 상한 값 | 시도 3회, 동시 4개, 토큰·시간은 필수 입력으로 두고 기본값을 두지 않는다 |
-| O5 | 훅 헬퍼에서 `loop` 1회를 실행당 20회 제한에 어떻게 셀지(3차) | 1회로 세고, 레시피의 시도·시간 상한과 게이트 `timeoutMs`를 함께 적용한다 |
 | O6 | 외부 전송 | 항목 내용이 Jev와 Pixie 모델 공급자로 나간다. 도구 설명과 설정 화면에 안내한다. 비밀 값 가리기는 후속 |
