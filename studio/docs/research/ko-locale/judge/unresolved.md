@@ -49,3 +49,6 @@
 | cotTranslation | targetLanguageHint | auto follows the UI language; language codes such as zh, en, and ja also work. | auto는 UI 언어를 따릅니다. zh, en, ja 같은 언어 코드도 사용할 수 있습니다. | 1.78/0.96/0.45 | 세미콜론으로 이어진 안내문의 문체 미달 |
 | cotTranslation | unwrap | Unwrap lines | 줄 바꿈을 해제합니다 | 1.46/0.94/0.87 | 줄 바꿈 토글 라벨의 자연스러움 미달 |
 | cotTranslation | wrap | Wrap lines | 줄 바꿈 적용 | 1.39/0.9/0.59 | 줄 바꿈 토글 라벨의 자연스러움 미달 |
+| settings | connection.restart | Reconnecting, reconnect now | 다시 연결하고 있습니다. 지금 다시 연결하십시오. | 1.38/0.93/0.96 | 두 상태 안내를 한 문장으로 합친 후보 모두 자연스러움 미달 |
+| settings | desktop.update.tasksChanged | New tasks have started. Confirm again to stop the tasks and update. | 새 작업이 시작되었습니다. 작업을 중지하고 업데이트하려면 다시 확인하십시오. | 1.45/0.92/0.6 | 확인 요청 안내문의 자연스러움 미달 |
+| settings | developerTools.description | Shows trajectory, code diffs, and all Agent presets | Trajectory, 코드 diff, 모든 에이전트 프리셋을 표시합니다 | 1.15/0.9/0.55 | 제품 용어가 섞인 설명문 후보 모두 자연스러움 미달 |

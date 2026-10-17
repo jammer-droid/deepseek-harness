@@ -20,6 +20,7 @@ import plan from './plan.ts';
 import question from './question.ts';
 import reference from './reference.ts';
 import sessionLogDownload from './session-log-download.ts';
+import settings from './settings.ts';
 import settingsAgentLoop from './settings.agentLoop.ts';
 import settingsLocale from './settings.locale.ts';
 import settingsPermission from './settings.permission.ts';
@@ -61,6 +62,7 @@ export const dshKo: DshKoDictionaries = {
   question: question,
   reference: reference,
   'session-log-download': sessionLogDownload,
+  settings: settings,
   'settings.agentLoop': settingsAgentLoop,
   'settings.locale': settingsLocale,
   'settings.permission': settingsPermission,
