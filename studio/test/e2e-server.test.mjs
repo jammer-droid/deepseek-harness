@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { findServerUrl, parseArgs, parseDuration, pluginSpecs, redactUrl, supportedVersions } from '../scripts/e2e/server-lib.mjs';
+import { credentialRefs, findServerUrl, parseArgs, parseDuration, pluginSpecs, redactUrl, supportedVersions } from '../scripts/e2e/server-lib.mjs';
 
 test('parseArgs reads commands, repeatable plugins and inline values', () => {
   const options = parseArgs(['up', '--profile=e2e-a', '--port', '19420', '--plugin', 'a', '--plugin=b', '--with-desktop-plugins', '--timeout', '2m']);
@@ -45,4 +45,31 @@ test('pluginSpecs copies other plugins and never Studio', () => {
 test('supportedVersions splits the peer range and redactUrl hides tokens', () => {
   assert.deepEqual(supportedVersions('0.2.0-rc.2 || 0.2.1-rc.2'), ['0.2.0-rc.2', '0.2.1-rc.2']);
   assert.equal(redactUrl('x http://127.0.0.1:1/?token=a-b_c y'), 'x http://127.0.0.1:1/?token=<redacted> y');
+});
+
+test('--with-secrets accepts known kinds only', () => {
+  assert.deepEqual(parseArgs(['up', '--with-secrets', 'keys, subscriptions']).secrets, ['keys', 'subscriptions']);
+  assert.throws(() => parseArgs(['up', '--with-secrets', 'keys,browser']), /Unknown secret kind/);
+});
+
+test('credentialRefs keeps API key refs and drops device and browser grants', () => {
+  const filtered = credentialRefs({
+    version: 1,
+    records: { 'client-connection/browser-session': { kind: 'grant' }, 'deepseek-account-platform/device': { kind: 'grant' } },
+    refs: { DEEPSEEK_API_KEY: 'a', TYPESAFE_API_KEY: 'b' },
+  });
+  assert.deepEqual(filtered, { version: 1, records: {}, refs: { DEEPSEEK_API_KEY: 'a', TYPESAFE_API_KEY: 'b' } });
+  assert.deepEqual(credentialRefs(undefined).refs, {});
+});
+
+test('subscriptionSummary reports counts and earliest expiry without token values', async () => {
+  const { subscriptionSummary } = await import('../scripts/e2e/server-lib.mjs');
+  const now = Date.UTC(2026, 9, 17);
+  const summary = subscriptionSummary({
+    codex: { default: 'a', accounts: { a: { accessToken: 'secret', expiresAt: now + 90 * 60_000 }, b: { expiresAt: now + 30 * 60_000 } } },
+    claude: { accounts: { c: { expiresAt: (now + 600 * 60_000) / 1000 } } },
+    grok: { accounts: {} },
+  }, now);
+  assert.deepEqual(summary, { codex: { accounts: 2, expiresInMin: 30 }, claude: { accounts: 1, expiresInMin: 600 }, grok: { accounts: 0, expiresInMin: null } });
+  assert.ok(!JSON.stringify(summary).includes('secret'));
 });

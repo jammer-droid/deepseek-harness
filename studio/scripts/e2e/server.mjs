@@ -3,7 +3,7 @@
  * Isolated E2E Web server for agent verification. One call returns only when the result is known.
  *
  *   node studio/scripts/e2e/server.mjs up [--profile e2e] [--port N] [--archive <tgz>] [--skip-build]
- *        [--plugin <spec>]... [--with-desktop-plugins] [--reuse-profile] [--timeout 90s]
+ *        [--plugin <spec>]... [--with-desktop-plugins] [--with-secrets keys,subscriptions] [--reuse-profile] [--timeout 90s]
  *   node studio/scripts/e2e/server.mjs status [--profile e2e]
  *   node studio/scripts/e2e/server.mjs down [--profile e2e] [--timeout 20s]
  *
@@ -11,16 +11,19 @@
  * install the package (and optional extra plugins) into an isolated DSH_HOME, start the unmodified
  * `dsh` detached, wait inside this script until the authenticated URL answers, then print one JSON
  * summary. The home survives between runs (logins kept); the profile is fresh unless --reuse-profile.
- * The user's ~/.dsh profiles are only read (for --with-desktop-plugins), never written.
+ * The user's ~/.dsh is only read (--with-desktop-plugins, --with-secrets), never written.
+ * --with-secrets copies, on every up, API key refs (keys) and/or the subscription OAuth store
+ * (subscriptions) into the isolated home with mode 0600; only names and counts are printed.
  */
 import { spawn, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { chmodSync, closeSync, existsSync, mkdirSync, openSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { copyFileSync, chmodSync, closeSync, existsSync, mkdirSync, openSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { createServer } from 'node:net';
 import { homedir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { DEFAULT_PROFILE, PORT_RANGE, findServerUrl, parseArgs, pluginSpecs, redactUrl, supportedVersions } from './server-lib.mjs';
+import yaml from 'js-yaml';
+import { DEFAULT_PROFILE, EXPIRY_WARN_MIN, PORT_RANGE, credentialRefs, findServerUrl, subscriptionSummary, parseArgs, pluginSpecs, redactUrl, supportedVersions } from './server-lib.mjs';
 
 const studio = fileURLToPath(new URL('../..', import.meta.url));
 const runtime = process.env.STUDIO_DSH_BIN || 'dsh';
@@ -103,6 +106,7 @@ async function up() {
     if (!existsSync(desktop)) finish({ ok: false, step: 'plugins', error: `No desktop profile manifest at ${desktop}` });
     extra.push(...pluginSpecs(JSON.parse(readFileSync(desktop, 'utf8'))));
   }
+  const secrets = options.secrets?.length ? copySecrets(options.secrets) : undefined;
   const installed = [];
   const warnings = [];
   for (const spec of [archive, ...extra]) {
@@ -142,7 +146,34 @@ async function up() {
     rmSync(statePath, { force: true });
     finish({ ok: false, step: 'start', error: alive(child.pid) ? `Not ready within ${timeoutMs}ms` : 'Server exited', log: logPath, output: redactUrl(tail(readFileSync(logPath, 'utf8'))) });
   }
-  finish({ ok: true, url, port, pid: child.pid, profile, home, version, package: path.basename(archive), sha256, installed, warnings, log: logPath, state: statePath });
+  finish({ ok: true, url, port, pid: child.pid, profile, home, version, package: path.basename(archive), sha256, installed, warnings, secrets, log: logPath, state: statePath });
+}
+
+/** Copy the requested secret kinds from the user home. Returns names and counts only. */
+function copySecrets(kinds) {
+  const copied = {};
+  if (kinds.includes('keys')) {
+    const source = path.join(userHome, '.credentials.yaml');
+    if (!existsSync(source)) finish({ ok: false, step: 'secrets', error: `No ${source}` });
+    const filtered = credentialRefs(yaml.load(readFileSync(source, 'utf8')));
+    const target = path.join(home, '.credentials.yaml');
+    writeFileSync(target, yaml.dump(filtered), { mode: 0o600 });
+    chmodSync(target, 0o600);
+    copied.keys = Object.keys(filtered.refs).sort();
+  }
+  if (kinds.includes('subscriptions')) {
+    const source = path.join(userHome, 'plugins/subscriptions/auth.json');
+    if (!existsSync(source)) finish({ ok: false, step: 'secrets', error: `No ${source}` });
+    const target = path.join(home, 'plugins/subscriptions/auth.json');
+    mkdirSync(path.dirname(target), { recursive: true });
+    copyFileSync(source, target);
+    chmodSync(target, 0o600);
+    copied.subscriptions = subscriptionSummary(JSON.parse(readFileSync(target, 'utf8')));
+    const soon = Object.entries(copied.subscriptions).filter(([, item]) => item.expiresInMin !== null && item.expiresInMin < EXPIRY_WARN_MIN).map(([provider]) => provider);
+    // A refresh inside the isolated home rotates the token away from the user's copy (untested beyond this window).
+    if (soon.length) copied.warning = `Access token expires within ${EXPIRY_WARN_MIN} min for ${soon.join(', ')}; a refresh during the run may sign the user's copy out`;
+  }
+  return copied;
 }
 
 async function down() {
