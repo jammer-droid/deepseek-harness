@@ -55,6 +55,7 @@ L0 실패 (summary.repair.items) → pixie_loop (이 명세) → apply-repairs.m
 }
 ```
 
+- 명세를 바꿀 때는 먼저 `studio-pixie-loop-guide` 스킬([SKILL.md](../../release/docs/appendix/studio-pixie-loop-guide/SKILL.md))을 불러오고, `act` 계약은 [상세 가이드의 act 절](../../release/docs/appendix/pixie-loop.md#run-and-judge-act)을 따른다.
 - 판정 질문은 둘이다. `unique`는 정확히 하나가 잡혔는지, `target`은 잡힌 요소가 목표인지다. 하나만 잡혔어도 다른 버튼이면 실패한다.
 - 항목이 많거나 오래 걸리면 `run_in_background: true`로 실행하고 완료 알림을 기다린다.
 - 입력(접근성 스냅샷의 화면 문구)과 관찰은 Pixie 제공자·결정 엔진으로 전송된다. 격리 프로필의 테스트 데이터만 넣는다.

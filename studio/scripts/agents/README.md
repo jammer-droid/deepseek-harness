@@ -31,6 +31,8 @@
 
 1. 결과를 코드로 판정할 수 있으면 L0이다. 확률 판정으로 바꾸지 않는다.
 2. 판정 항목이 한두 개면 `judge`를 직접 쓴다. 같은 기준으로 판정할 항목이 여럿이면 `pixie_loop`을 쓴다.
+   - `pixie_loop` 명세를 새로 쓰거나 고치기 전에 `studio-pixie-loop-guide` 스킬을 불러온다(`skill` 도구). 원본은 [SKILL.md](../../release/docs/appendix/studio-pixie-loop-guide/SKILL.md)와 상세 계약·예시 [pixie-loop.md](../../release/docs/appendix/pixie-loop.md)다. 적합성 판단, `codeChecks`·calibration 작성, `act`·`episode`·`select`, 실행 뒤 escalated·error 처리 규칙이 들어 있다.
+   - 이미 검증된 명세(예: [L1 셀렉터 복구](../e2e/selector-repair.md))를 그대로 쓸 때는 스킬을 다시 읽지 않아도 된다.
 3. 실패했을 때 다시 만들어 볼 것이 있으면(셀렉터·문구 후보) retry, 없으면 판정만 한다(`maxAttempts: 1` 또는 `route`).
 4. 상태를 바꾸는 행동(저장·삭제·설치)은 L0에서만 실행한다. `act`는 재시도마다 다시 실행되므로 반복해도 안전한 읽기·탐침만 넣는다.
 

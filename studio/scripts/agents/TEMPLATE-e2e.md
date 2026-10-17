@@ -37,7 +37,7 @@
 ## 2. L1
 
 - 셀렉터 복구: L0 요약에 `repair.items`가 있으면 [L1 셀렉터 복구](../e2e/selector-repair.md) 명세를 그대로 쓴다. 적용 후 L0을 다시 실행한다.
-- <판정 항목(문구 품질, 실모델 응답 등)>: 항목 파일 `<경로>`, 명세 <링크 또는 본문>. calibration은 실제 데이터로 만든다. 기준값을 낮추지 않는다.
+- <판정 항목(문구 품질, 실모델 응답 등)>: 항목 파일 `<경로>`, 명세 <링크 또는 본문>. 명세는 `studio-pixie-loop-guide` 스킬([SKILL.md](../../release/docs/appendix/studio-pixie-loop-guide/SKILL.md), [상세](../../release/docs/appendix/pixie-loop.md))을 따라 쓴다. calibration은 실제 데이터로 만든다. 기준값을 낮추지 않는다.
 - 실모델 세션·게이트·루프 완료는 `node studio/scripts/e2e/wait.mjs <session|loop|gate> ...`로 기다린다.
 
 ## 3. 정리
