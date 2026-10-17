@@ -155,6 +155,7 @@ await run({ name: 'pixie-tab', views: ['light', 'dark', 'light@480'] }, async ap
 | [dsh-rc1-compat-check.md](dsh-rc1-compat-check.md) | rc.1 역할 persona·Tool Filter·자식 정책 복원 |
 | [jev-decision-engine-check.md](jev-decision-engine-check.md) | #27 Jev 결정 엔진 실사용 |
 | [subagent-tool-filter-check.md](subagent-tool-filter-check.md) | 서브에이전트 Tool Filter |
+| [web-search-cost-e2e.md](web-search-cost-e2e.md) | 웹 검색 provider(기존 Messages 검색 / Search·Fetch API) 비용·품질 비교 |
 | [dsh-ko-sequential.md](dsh-ko-sequential.md) | #30 한국어 번역 진행(검증이 아닌 작업 지침) |
 
 이 규칙 전에 만든 문서는 이름이 다르다. 새로 고칠 때 이름을 바꾸지 않아도 된다.
