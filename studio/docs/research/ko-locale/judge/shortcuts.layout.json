@@ -1,0 +1,17 @@
+{
+  "namespace": "shortcuts.layout",
+  "date": "2026-10-17",
+  "engine": "jev",
+  "thresholds": { "natural": 1.5, "meaning": 0.6, "style": 0.5 },
+  "rows": [
+    {
+      "key": "toggle",
+      "en": "Toggle left sidebar",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "왼쪽 사이드바 표시/숨기기", "natural": 1.81, "meaning": 0.95, "style": 0.59, "pass": true }
+      ],
+      "result": "pass"
+    }
+  ]
+}
