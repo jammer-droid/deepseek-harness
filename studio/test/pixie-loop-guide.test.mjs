@@ -8,7 +8,8 @@ import { validateLoopChecks, validateLoopSpec, runCodeChecks } from '../src/pixi
 import { COMPILE_SYSTEM, INTERPRET_SYSTEM, runLoop } from '../src/host/pixie-loop-engine.ts';
 import { pixieLoopSkill } from '../src/host/pixie-hook-skill.ts';
 
-const read = name => readFileSync(new URL(`../release/docs/appendix/${name}`, import.meta.url), 'utf8');
+// Docs live in release/docs here and in docs/ in the published repository.
+const read = name => { try { return readFileSync(new URL(`../release/docs/appendix/${name}`, import.meta.url), 'utf8'); } catch { return readFileSync(new URL(`../docs/appendix/${name}`, import.meta.url), 'utf8'); } };
 const blocks = text => [...text.matchAll(/```json\n([\s\S]*?)\n```/g)].map(match => JSON.parse(match[1]));
 /** Guide specs are tool arguments; the tool takes `run_in_background` off before validating, as here. */
 const asSpec = ({ run_in_background: _background, ...spec }) => spec;

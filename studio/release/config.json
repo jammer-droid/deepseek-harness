@@ -14,7 +14,9 @@
   ],
   "exclude": [
     "test/staged-scope.test.mjs",
-    "test/release-changelog.test.mjs"
+    "test/release-changelog.test.mjs",
+    "test/dsh-ko-judge.test.mjs",
+    "test/extract-dsh-locale.test.mjs"
   ],
   "copy": {
     "release/standalone/tsconfig.base.json": "tsconfig.base.json",

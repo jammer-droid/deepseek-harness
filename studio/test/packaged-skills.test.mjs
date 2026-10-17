@@ -23,6 +23,7 @@ test('the Host installs only shipped skills', () => {
 });
 
 test('dev skills live outside the release docs', () => {
-  const appendix = readdirSync(new URL('../release/docs/appendix/', import.meta.url));
+  const dir = ['../release/docs/appendix/', '../docs/appendix/'].map(path => new URL(path, import.meta.url)).find(url => { try { readdirSync(url); return true; } catch { return false; } });
+  const appendix = readdirSync(dir);
   for (const name of ['studio-dsh-ko-translate', 'studio-ko-review']) assert.ok(!appendix.includes(name), `${name} must not be in release/docs`);
 });
