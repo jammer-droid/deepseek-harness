@@ -9,6 +9,7 @@ import documentHtml from './documentHtml.ts';
 import documentMarkdown from './documentMarkdown.ts';
 import inspectorPanel from './inspectorPanel.ts';
 import settingsLocale from './settings.locale.ts';
+import settingsPlugins from './settings.plugins.ts';
 import settingsSessionLog from './settings.sessionLog.ts';
 import shortcutsLayout from './shortcuts.layout.ts';
 import sidebarCodePreview from './sidebarCodePreview.ts';
@@ -20,6 +21,7 @@ export const dshKo: DshKoDictionaries = {
   documentMarkdown: documentMarkdown,
   inspectorPanel: inspectorPanel,
   'settings.locale': settingsLocale,
+  'settings.plugins': settingsPlugins,
   'settings.sessionLog': settingsSessionLog,
   'shortcuts.layout': shortcutsLayout,
   'sidebarCodePreview': sidebarCodePreview,
