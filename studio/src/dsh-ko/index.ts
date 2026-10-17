@@ -7,6 +7,7 @@ import approval from './approval.ts';
 import claudeCodeMods from './claude-code-mods.ts';
 import documentHtml from './documentHtml.ts';
 import documentMarkdown from './documentMarkdown.ts';
+import goal from './goal.ts';
 import inspectorPanel from './inspectorPanel.ts';
 import reference from './reference.ts';
 import sessionLogDownload from './session-log-download.ts';
@@ -25,6 +26,7 @@ export const dshKo: DshKoDictionaries = {
   'claude-code-mods': claudeCodeMods,
   documentHtml: documentHtml,
   documentMarkdown: documentMarkdown,
+  goal: goal,
   inspectorPanel: inspectorPanel,
   reference: reference,
   'session-log-download': sessionLogDownload,
