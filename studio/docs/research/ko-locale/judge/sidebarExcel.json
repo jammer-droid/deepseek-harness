@@ -1,0 +1,141 @@
+{
+  "namespace": "sidebarExcel",
+  "date": "2026-10-17",
+  "engine": "jev",
+  "thresholds": { "natural": 1.5, "meaning": 0.6, "style": 0.5 },
+  "rows": [
+    {
+      "key": "charts",
+      "en": "charts",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "차트", "natural": 1.88, "meaning": 0.96, "style": 0.78, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "conditionalFormatting",
+      "en": "conditional formatting",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "조건부 서식", "natural": 1.91, "meaning": 0.97, "style": 0.49, "pass": false },
+        { "ko": "조건부 서식 지정", "natural": 1.78, "meaning": 0.96, "style": 0.75, "pass": true }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "encoding",
+      "en": "This text encoding could not be read. Save the file as UTF-8 or UTF-16 with a BOM and retry.",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "이 텍스트 인코딩을 읽을 수 없습니다. 파일을 BOM이 포함된 UTF-8 또는 UTF-16으로 저장한 후 다시 시도하십시오.", "natural": 1.69, "meaning": 0.94, "style": 0.89, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "featureSeparator",
+      "en": ", ",
+      "kind": "verbatim",
+      "attempts": [],
+      "result": "verbatim"
+    },
+    {
+      "key": "formulaWarning",
+      "en": "This workbook contains formulas. Displayed results may be missing or inaccurate.",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "이 통합 문서에는 수식이 포함되어 있습니다. 표시된 결과가 없거나 부정확할 수 있습니다.", "natural": 1.83, "meaning": 0.94, "style": 0.53, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "images",
+      "en": "images",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "이미지", "natural": 1.93, "meaning": 0.97, "style": 0.68, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "invalid",
+      "en": "This spreadsheet could not be opened. Check its format, contents, or password protection.",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "이 스프레드시트를 열 수 없습니다. 형식, 내용 또는 암호 보호를 확인하십시오.", "natural": 1.86, "meaning": 0.97, "style": 0.84, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "language",
+      "en": "en",
+      "kind": "verbatim",
+      "attempts": [],
+      "result": "verbatim"
+    },
+    {
+      "key": "loading",
+      "en": "Rendering document...",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "문서를 렌더링하고 있습니다...", "natural": 1.86, "meaning": 0.98, "style": 0.65, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "retry",
+      "en": "Retry",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "다시 시도", "natural": 1.97, "meaning": 0.98, "style": 0.59, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "shapes",
+      "en": "shapes",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "도형", "natural": 1.95, "meaning": 0.98, "style": 0.7, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "timeout",
+      "en": "Opening this workbook timed out. Try a smaller file.",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "이 통합 문서를 여는 시간이 초과되었습니다. 더 작은 파일로 시도하십시오.", "natural": 1.8, "meaning": 0.95, "style": 0.61, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "title",
+      "en": "Spreadsheet",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "스프레드시트", "natural": 1.8, "meaning": 0.98, "style": 0.7, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "tooLarge",
+      "en": "This workbook exceeds the preview size limit.",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "이 통합 문서가 미리보기 크기 제한을 초과합니다.", "natural": 1.81, "meaning": 0.96, "style": 0.66, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "unsupportedNotice",
+      "en": "This preview does not support {features} in this workbook. Open it in a system application for the full experience.",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "이 미리보기에서는 이 통합 문서의 {features} 항목을 지원하지 않습니다. 전체 기능을 사용하려면 시스템 애플리케이션에서 여십시오.", "natural": 1.44, "meaning": 0.92, "style": 0.59, "pass": false },
+        { "ko": "이 미리보기는 이 통합 문서의 {features} 항목을 지원하지 않습니다. 전체 기능을 사용하려면 시스템 애플리케이션에서 여십시오.", "natural": 1.58, "meaning": 0.95, "style": 0.54, "pass": true }
+      ],
+      "result": "fixed"
+    }
+  ]
+}
