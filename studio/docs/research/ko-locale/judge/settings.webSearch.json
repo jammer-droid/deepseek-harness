@@ -1,0 +1,175 @@
+{
+  "namespace": "settings.webSearch",
+  "date": "2026-10-17",
+  "engine": "jev",
+  "thresholds": { "natural": 1.5, "meaning": 0.6, "style": 0.5 },
+  "rows": [
+    {
+      "key": "apiKey",
+      "en": "API key",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "API 키", "natural": 1.94, "meaning": 0.97, "style": 0.72, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "apiKeyHint",
+      "en": "Stored outside the settings file. Leave blank to keep the current key.",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "설정 파일 외부에 저장됩니다. 현재 키를 유지하려면 비워 두십시오.", "natural": 1.77, "meaning": 0.96, "style": 0.53, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "apiKeySet",
+      "en": "A key is configured.",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "키가 설정되어 있습니다.", "natural": 1.86, "meaning": 0.97, "style": 0.72, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "apiKeyUnset",
+      "en": "No key is configured; only conversations using a DeepSeek Account model can search, through the default endpoint.",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "설정된 키가 없습니다. DeepSeek 계정 모델을 사용하는 대화만 기본 엔드포인트를 통해 검색할 수 있습니다.", "natural": 1.42, "meaning": 0.93, "style": 0.6, "pass": false },
+        { "ko": "설정된 키가 없습니다. DeepSeek 계정 모델을 쓰는 대화만 기본 엔드포인트로 검색할 수 있습니다.", "natural": 1.27, "meaning": 0.9, "style": 0.34, "pass": false },
+        { "ko": "설정된 키가 없습니다. 이 경우 DeepSeek 계정 모델을 사용하는 대화만 기본 엔드포인트에서 검색할 수 있습니다.", "natural": 1.35, "meaning": 0.93, "style": 0.63, "pass": false },
+        { "ko": "설정된 키가 없습니다. 기본 엔드포인트를 통해서는 DeepSeek 계정 모델을 사용하는 대화만 검색할 수 있습니다.", "natural": 1.45, "meaning": 0.94, "style": 0.69, "pass": false }
+      ],
+      "result": "unresolved"
+    },
+    {
+      "key": "baseUrl",
+      "en": "Endpoint",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "엔드포인트", "natural": 1.91, "meaning": 0.97, "style": 0.66, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "baseUrlHint",
+      "en": "Leave blank to use the provider default.",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "프로바이더 기본값을 사용하려면 비워 두십시오.", "natural": 1.91, "meaning": 0.97, "style": 0.43, "pass": false },
+        { "ko": "비워 두면 프로바이더 기본값을 사용합니다.", "natural": 1.86, "meaning": 0.97, "style": 0.86, "pass": true }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "description",
+      "en": "Set up the DeepSeek search provider.",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "DeepSeek 검색 프로바이더를 설정합니다.", "natural": 1.73, "meaning": 0.97, "style": 0.87, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "invalidNumber",
+      "en": "Enter a number, or leave blank to use the default.",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "숫자를 입력하거나, 기본값을 사용하려면 비워 두십시오.", "natural": 1.78, "meaning": 0.95, "style": 0.37, "pass": false },
+        { "ko": "숫자를 입력하십시오. 기본값을 사용하려면 비워 두십시오.", "natural": 1.63, "meaning": 0.94, "style": 0.91, "pass": true }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "maxUses",
+      "en": "Max searches per request",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "요청당 최대 검색 수", "natural": 1.87, "meaning": 0.95, "style": 0.58, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "maxUsesHint",
+      "en": "How many times one request may search before it must answer.",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "하나의 요청이 답변하기 전에 최대 몇 번 검색할 수 있는지입니다.", "natural": 1.29, "meaning": 0.92, "style": 0.8, "pass": false },
+        { "ko": "한 요청이 답변하기 전에 검색할 수 있는 최대 횟수입니다.", "natural": 1.49, "meaning": 0.88, "style": 0.7, "pass": false },
+        { "ko": "한 요청에서 답변 전에 검색할 수 있는 최대 횟수입니다.", "natural": 1.58, "meaning": 0.9, "style": 0.62, "pass": true }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "overridden",
+      "en": "Overridden",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "재정의됨", "natural": 1.84, "meaning": 0.93, "style": 0.61, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "readOnly",
+      "en": "This deployment stores settings read-only.",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "이 배포는 설정을 읽기 전용으로 저장합니다.", "natural": 1.75, "meaning": 0.96, "style": 0.77, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "reset",
+      "en": "Reset to default",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "기본값으로 재설정", "natural": 1.92, "meaning": 0.96, "style": 0.67, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "save",
+      "en": "Save",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "저장", "natural": 1.98, "meaning": 0.97, "style": 0.69, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "saveFailed",
+      "en": "The deployment did not accept these values; they were left for you to correct.",
+      "kind": "normal",
+      "attempts": [],
+      "result": "unresolved"
+    },
+    {
+      "key": "saving",
+      "en": "Saving…",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "저장하고 있습니다…", "natural": 1.93, "meaning": 0.98, "style": 0.67, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "title",
+      "en": "Web search",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "웹 검색", "natural": 1.93, "meaning": 0.97, "style": 0.72, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "unavailable",
+      "en": "This plugin is not loaded, so it cannot be configured right now.",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "이 플러그인이 로드되어 있지 않아 지금은 설정할 수 없습니다.", "natural": 1.82, "meaning": 0.97, "style": 0.54, "pass": true }
+      ],
+      "result": "pass"
+    }
+  ]
+}
