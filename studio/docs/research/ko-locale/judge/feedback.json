@@ -1,0 +1,190 @@
+{
+  "namespace": "feedback",
+  "date": "2026-10-17",
+  "engine": "jev",
+  "thresholds": { "natural": 1.5, "meaning": 0.6, "style": 0.5 },
+  "rows": [
+    {
+      "key": "action.dislike",
+      "en": "Bad response",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "나쁜 응답", "natural": 1.58, "meaning": 0.97, "style": 0.72, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "action.dislikeActive",
+      "en": "Remove rating",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "평가 취소", "natural": 1.63, "meaning": 0.94, "style": 0.74, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "action.like",
+      "en": "Good response",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "좋은 응답", "natural": 1.7, "meaning": 0.98, "style": 0.68, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "action.likeActive",
+      "en": "Remove rating",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "평가 취소", "natural": 1.64, "meaning": 0.97, "style": 0.71, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "category.instruction-following",
+      "en": "Instruction understanding and following",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "지시 이해 및 준수", "natural": 1.7, "meaning": 0.97, "style": 0.65, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "category.other",
+      "en": "Other",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "기타", "natural": 1.82, "meaning": 0.97, "style": 0.72, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "category.product-interaction",
+      "en": "Product features and interaction",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "제품 기능 및 상호작용", "natural": 1.74, "meaning": 0.96, "style": 0.67, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "category.resource-cost",
+      "en": "Resource usage and cost",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "리소스 사용량 및 비용", "natural": 1.8, "meaning": 0.95, "style": 0.51, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "category.security-privacy-permission",
+      "en": "Security, privacy, and permissions",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "보안, 개인정보 및 권한", "natural": 1.83, "meaning": 0.95, "style": 0.59, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "category.service-stability",
+      "en": "Stability and speed",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "안정성 및 속도", "natural": 1.9, "meaning": 0.96, "style": 0.66, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "category.task-result",
+      "en": "Task result",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "작업 결과", "natural": 1.79, "meaning": 0.96, "style": 0.67, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "dialog.categories",
+      "en": "Feedback category",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "피드백 카테고리", "natural": 1.84, "meaning": 0.97, "style": 0.65, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "dialog.detail",
+      "en": "Feedback details",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "피드백 상세", "natural": 1.81, "meaning": 0.95, "style": 0.56, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "dialog.hint",
+      "en": "Add details to help us improve. Your submission will include the current conversation log.",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "개선에 도움이 되도록 자세한 내용을 남겨 주십시오. 제출 내용에는 현재 대화 로그가 포함됩니다.", "natural": 1.7, "meaning": 0.95, "style": 0.93, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "dialog.title",
+      "en": "Submit feedback",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "피드백 보내기", "natural": 1.85, "meaning": 0.97, "style": 0.54, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "error.conflict",
+      "en": "This feedback changed elsewhere; the latest state is shown",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "이 피드백이 다른 곳에서 변경되었습니다. 최신 상태를 표시합니다.", "natural": 1.48, "meaning": 0.94, "style": 0.58, "pass": false },
+        { "ko": "다른 곳에서 이 피드백이 변경되어 최신 상태를 표시합니다.", "natural": 1.4, "meaning": 0.95, "style": 0.8, "pass": false },
+        { "ko": "이 피드백이 다른 곳에서 수정되었습니다. 화면에는 최신 상태가 표시됩니다.", "natural": 1.63, "meaning": 0.95, "style": 0.86, "pass": true }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "error.generic",
+      "en": "Could not save feedback",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "피드백을 저장하지 못했습니다", "natural": 1.79, "meaning": 0.97, "style": 0.78, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "error.load",
+      "en": "Could not load feedback",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "피드백을 불러오지 못했습니다", "natural": 1.73, "meaning": 0.96, "style": 0.81, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "error.noteTooLarge",
+      "en": "The description is too long; shorten it and submit again",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "설명이 너무 깁니다. 줄여서 다시 제출하십시오.", "natural": 1.7, "meaning": 0.91, "style": 0.91, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "toast.recorded",
+      "en": "Thanks for your feedback",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "피드백을 보내 주셔서 감사합니다.", "natural": 1.73, "meaning": 0.97, "style": 0.84, "pass": true }
+      ],
+      "result": "pass"
+    }
+  ]
+}

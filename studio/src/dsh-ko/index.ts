@@ -8,6 +8,7 @@ import claudeCodeMods from './claude-code-mods.ts';
 import directoryBrowser from './directory-browser.ts';
 import documentHtml from './documentHtml.ts';
 import documentMarkdown from './documentMarkdown.ts';
+import feedback from './feedback.ts';
 import goal from './goal.ts';
 import inspectorPanel from './inspectorPanel.ts';
 import permissionAccess from './permission.access.ts';
@@ -39,6 +40,7 @@ export const dshKo: DshKoDictionaries = {
   'directory-browser': directoryBrowser,
   documentHtml: documentHtml,
   documentMarkdown: documentMarkdown,
+  feedback: feedback,
   goal: goal,
   inspectorPanel: inspectorPanel,
   'permission.access': permissionAccess,
