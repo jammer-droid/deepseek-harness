@@ -1,7 +1,7 @@
 /** Korean DSH dictionary registration and missing-key checks (#30 S3). */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { checkDshKo, checkDshKoSupport, registerDshKo } from '../src/dsh-ko-locale.ts';
 import { dshKo } from '../src/dsh-ko/index.ts';
 
@@ -89,7 +89,9 @@ test('keys and namespaces of one supported version are not stray; missing in eit
   assert.deepEqual(partial.strayKeys, ['a.typo']);
 });
 
-test('shipped dictionaries pass against both supported DSH sources', () => {
+// The extracted DSH sources are fork research data and are not exported with the public snapshot.
+const sourcesDir = new URL('../docs/research/ko-locale/', import.meta.url);
+test('shipped dictionaries pass against both supported DSH sources', { skip: !existsSync(new URL('source-rc2.json', sourcesDir)) && 'DSH locale sources are not in this checkout' }, () => {
   const sources = ['source-rc2.json', 'source-alpha2.json']
     .map(name => JSON.parse(readFileSync(new URL(`../docs/research/ko-locale/${name}`, import.meta.url), 'utf8')));
   const result = checkDshKoSupport(dshKo, sources);
