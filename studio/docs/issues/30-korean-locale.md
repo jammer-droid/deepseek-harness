@@ -52,11 +52,11 @@ DSH 화면 문구 전체를 한국어로 제공한다. Studio는 이미 `ctx.loc
 | S1 | 원문 추출 스크립트, 네임스페이스 목록과 키 수(rc.2·alpha.2) | — | 완료: [S1 결과](../research/ko-locale/README.md). 해석 실패 0, 추출 단위 테스트 2/2 |
 | S2 | 용어집과 검수 기준 확정 | S1 | 완료: [S2 판정](../research/ko-locale/README.md#s2-샘플-판정-검수-기준-재확인). 20문구 중 첫 통과 9, 재작성 통과 6, 미해결 5, 미판정 0. 기준 유지 |
 | S3 | Studio 사전 등록 코드와 빠진 키 검사 | S1 | 완료: [dsh-ko-locale.ts](../../src/dsh-ko-locale.ts), 사전 묶음 [dsh-ko/index.ts](../../src/dsh-ko/index.ts), 검사 `node --import tsx studio/scripts/check-dsh-ko-locale.mjs`. 단위 테스트 5/5 |
-| S4 | 번역 스킬 작성·설치 | S2, S3 | 작성: [SKILL.md](../../scripts/agents/studio-dsh-ko-translate/SKILL.md). 남은 일: `~/.dsh/skills/`에 설치(사용자 승인 필요), 다른 세션에서 작은 네임스페이스 하나 번역 완료 |
+| S4 | 번역 스킬 작성·설치 | S2, S3 | 완료: [SKILL.md](../../scripts/agents/studio-dsh-ko-translate/SKILL.md). 다른 세션에서 `sidebarCodePreview`(3키) 번역 완료, 첫 판정 3/3 통과, 검사 3종 통과([판정 기록](../research/ko-locale/judge/sidebarCodePreview.json)) |
 | S5 | 네임스페이스별 번역(반복, 별도 세션) | S4 | 네임스페이스마다 판정 기록, 빠진 키 검사 통과 |
 | S6 | 독립 설치 검증 | S5 | 수정하지 않은 rc.2 + 패키징 Studio, 한국어 선택 시 화면 확인 |
 
-현재 단계: S4(스킬 설치와 시범 번역 대기). S2에서 기준은 그대로 두고, 미해결 문구는 사전에서 빼 영어 fallback으로 둔다. 재작성은 키당 3회까지, 이어 붙이는 조각 문구는 문장 전체로 판정한다. 작업 브랜치 `studio/feat/ko-locale`(별도 worktree `deepseek-harness-ko-locale`).
+현재 단계: S5(네임스페이스별 번역 반복). S2에서 기준은 그대로 두고, 미해결 문구는 사전에서 빼 영어 fallback으로 둔다. 재작성은 키당 3회까지, 이어 붙이는 조각 문구는 문장 전체로 판정한다. 작업 브랜치 `studio/feat/ko-locale`(별도 worktree `deepseek-harness-ko-locale`).
 
 ## S3 구현 메모
 
@@ -79,3 +79,9 @@ DSH 화면 문구 전체를 한국어로 제공한다. Studio는 이미 `ctx.loc
 - 사용자 요청으로 `studio/scripts/agents/studio-ko-review/SKILL.md`를 추가했다. 이슈 하나가 바꾼 명세·UI 문구·공개 문서의 한국어를 `judge`로 검수하고, 빠진 ko 문구를 새로 쓴다. 사용자가 승인한 행만 반영한다.
 - 이 스킬이 Pixie 파일 2개 전용이던 `studio-ko-locale-review`를 대체한다. 기존 스킬은 저장소에 원본이 없고 `~/.dsh/skills/`에만 있다. 설치본 삭제와 새 스킬 설치는 사용자 프로필 변경이라 사용자가 하거나 승인한다.
 - 문서용 문체 질문을 Jev로 확인했다. 한다체 질문은 한다체 문장 0.86, 합쇼체 문장 0.06, 반말 0.23으로 구분했다. 합쇼체 질문은 합쇼체 문장 0.58, 한다체 문장 0.07, 반말 0.04였다. 맞는 합쇼체도 0.58로 기준 0.5에 가깝다. 의미 질문은 "기록되지 않고 전달되지 않습니다"를 "전달됩니다"로 바꾼 문장에 0.06을 주었다.
+
+## S4 시범 번역 결과
+
+- 2026-10-17, 별도 세션에서 `studio-dsh-ko-translate`로 `sidebarCodePreview`를 번역했다. 세 키 모두 독립 라벨이고 첫 판정에 통과했다(복사됨·복사·코드).
+- 이 시범은 세 키가 모두 첫 판정에 통과해 다시 쓰기, fallback, 조각 문구 판정, 한 버전에만 있는 네임스페이스 처리를 거치지 않았다. S5 초반에 이 경로를 거치는 네임스페이스(예: alpha.2에만 있는 `claude-code-mods`, 조각 문구가 있는 `workspace`)를 번역하면서 확인한다.
+- 사전 파일의 키는 따옴표 없이 써도 타입 검사와 빠진 키 검사를 통과한다.
