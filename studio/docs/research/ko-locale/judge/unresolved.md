@@ -222,3 +222,23 @@
 | settings.models | 용어 | Endpoint | 엔드포인트 | — | 번역자 제안 |
 | settings.models | 용어 | Adapter | 어댑터 | — | 번역자 제안 |
 | settings.models | 용어 | Preview | 프리뷰 | — | 번역자 제안 |
+| schedule.manager | cron.day.both | Day {days} of every month or {weekdays}{months} | 매월 지정일({days}일) 또는 {weekdays}{months} | 1.04/0.9/0.63 | 4회 미통과 |
+| schedule.manager | cron.day.bothStarred | Day {days} of every month and {weekdays}{months} | 매월 {days}일이면서 {weekdays}{months} | 0.99/0.96/0.6 | 4회 미통과 |
+| schedule.manager | cron.day.every | Every day{months} | 매일 실행{months} | 1.77/0.92/0.37 | 4회 미통과 |
+| schedule.manager | cron.day.monthDays | Day {days} of every month{months} | 매월 {days}일에 실행{months} | 1.7/0.96/0.41 | 4회 미통과 |
+| schedule.manager | cron.months |  in {months} |  ({months}에 해당) | 1.02/0.86/0.67 | 4회 미통과 |
+| schedule.manager | cron.time.hoursEveryMinutes | every {step} minutes during hours {hours} | {hours}시에는 {step}분마다 실행합니다 | 1.33/0.92/0.95 | 4회 미통과 |
+| schedule.manager | cronForm.atMinute | At minute | 분 지정 | 1.28/0.64/0.76 | 4회 미통과 |
+| schedule.manager | cronForm.minuteDecrease | Decrease minute | 분 값 줄이기 | 1.29/0.93/0.74 | 4회 미통과 |
+| schedule.manager | detail.openSession | Linked session: open original session | 연결된 원래 세션 열기 | 1.45/0.9/0.68 | 4회 미통과 |
+| schedule.manager | detail.records | Records | 기록 내역 | 1.44/0.51/0.74 | 4회 미통과 |
+| schedule.manager | rule.error.conflict | This task changed before the update was saved. The row shows the saved rule; try again. | 저장하기 전에 다른 변경 사항이 적용되었습니다. 이 행에는 저장된 규칙이 표시되어 있습니다. 다시 시도하십시오. | 1.3/0.85/0.87 | 4회 미통과 |
+| schedule.manager | rule.error.unknown | Could not confirm the rule update. The row shows the saved rule. | 규칙 업데이트를 확인하지 못했습니다. 행에는 저장된 규칙이 표시됩니다. | 1.38/0.95/0.77 | 4회 미통과 |
+| schedule.manager | timing.notFound | This task is no longer available. Your draft is retained; cancel to close the editor. | 이 작업은 더 이상 사용할 수 없습니다. 작성 중인 내용은 유지됩니다. 편집기를 닫으려면 취소하십시오. | 1.44/0.94/0.87 | 4회 미통과 |
+| schedule.manager | 용어 | Automation task | 자동화 작업 | — | 번역자 제안 |
+| schedule.manager | 용어 | Delivery record | 전달 기록 | — | 번역자 제안 |
+| schedule.manager | 용어 | Frequency | 주기 | — | 번역자 제안 |
+| schedule.manager | 용어 | Run time | 실행 시각 | — | 번역자 제안 |
+| schedule.manager | 용어 | Time zone | 시간대 | — | 번역자 제안 |
+| schedule.manager | 용어 | Retention rules | 보존 규칙 | — | 번역자 제안 |
+| schedule.manager | 용어 | Task instruction | 작업 지시문 | — | 번역자 제안 |

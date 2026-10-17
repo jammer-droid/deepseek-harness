@@ -22,6 +22,7 @@ import plan from './plan.ts';
 import pluginManager from './pluginManager.ts';
 import question from './question.ts';
 import reference from './reference.ts';
+import scheduleManager from './schedule.manager.ts';
 import sessionInspector from './session-inspector.ts';
 import sessionLogDownload from './session-log-download.ts';
 import settings from './settings.ts';
@@ -74,6 +75,7 @@ export const dshKo: DshKoDictionaries = {
   pluginManager: pluginManager,
   question: question,
   reference: reference,
+  'schedule.manager': scheduleManager,
   'session-inspector': sessionInspector,
   'session-log-download': sessionLogDownload,
   settings: settings,
