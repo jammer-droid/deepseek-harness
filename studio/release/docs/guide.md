@@ -11,6 +11,7 @@ DSH Studio is a page inside the DeepSeek Harness web GUI for building **agent pr
   - [Prompt preview](#prompt-preview)
   - [Execution settings](#execution-settings)
   - [Subagent settings](#subagent-settings)
+- [Per-session subagent roles](#per-session-subagent-roles)
 - [Adapt Optimized to your work](#adapt-optimized-to-your-work)
 - [Apply a preset to DSH](#apply-a-preset-to-dsh)
 - [Tools that depend on your profile](#tools-that-depend-on-your-profile)
@@ -148,6 +149,8 @@ The agent writes the actual task each time it calls `subagent_role`. With **no r
 
 Models are checked when you apply the preset and again before each call, so an unavailable model fails early with a clear message.
 
+Roles set here apply to every session that uses the preset. To change a role in one session only, see [Per-session subagent roles](#per-session-subagent-roles).
+
 #### Subagent Tool Filter
 
 Tools in the **Subagent Tool Filter** are removed from every subagent of this preset. Remove tools a subagent does not need from its system prompt to keep its context light.
@@ -215,6 +218,50 @@ The maximum recursion depth and the subagent parallelism limit follow **Built-in
 
 The DSH `tool-subagent` Config in **Execution settings** has its own `toolFilter`, but Studio replaces that plugin with `subagent_role`, so set the filter here instead.
 
+## Per-session subagent roles
+
+Without touching the preset, you can change a subagent role's model, reasoning effort and instructions **for one session only**, or add roles that exist only in that session. Use the **Subagents** tab next to **Chat** and **Trajectory** at the top of the session.
+
+![Subagents tab of a session](images/en/session-subagents.png)
+
+Each card shows where the role comes from:
+
+| Badge | Meaning | Card actions |
+|---|---|---|
+| **Preset** | The role as the preset defines it. | **Edit** |
+| **Changed in this session** | A preset role changed in this session. | **Edit**, **Use preset** |
+| **This session** | A role that exists only in this session. | **Edit**, **Remove** |
+
+### Change a role
+
+**Edit** lets you change the model, reasoning effort and role instructions (persona). Name, role ID, spawn mode and Tool Filter stay as the preset defines them.
+
+![Edit a role for this session](images/en/session-role-edit.png)
+
+- The first save copies the whole role into this session. Later changes to the preset, including deleting the role, do not reach this copy.
+- **Use preset** deletes the copy and returns to the preset's current values.
+- The model is checked on save. If it is not available, nothing is saved and your edits stay in the dialog.
+
+### Add a role
+
+**Add role** creates a role for this session only: set its name, role ID, model, reasoning effort and instructions. Such a role always starts a **new conversation** and uses the preset's default Tool Filter. A role ID that the preset or this session already uses is rejected. **Remove** it when you no longer need it.
+
+You can add roles even when the preset defines none; `subagent_role` then delegates to them instead of starting a child that matches the parent.
+
+### When and where changes apply
+
+- From the **next delegation** on. Subagents already running keep their settings.
+- Subagents started from this session, and subagents they start in turn, use this session's roles.
+- When you open a subagent session, its **Subagents** tab shows the main session's roles read-only. Edit them in the main session.
+
+  ![Subagents tab in a subagent session](images/en/session-subagents-child.png)
+
+- Other sessions that use the same preset, and the preset itself, are not affected.
+- Forking a session does not copy its session roles; the fork starts from the preset.
+- In a session whose preset has no Studio `subagent_role`, the tab says **This session has no subagent role tool**.
+
+Session roles are stored per session in `<profile>/studio-data/session-roles/`. Archived sessions keep them; deleting a session removes them.
+
 ## Adapt Optimized to your work
 
 Optimized is tuned for **coding-agent work**: reading and editing code, running commands, and checking results. For anything else, treat it as a starting point. Select **Create copy** on Optimized and adjust the copy with the same screens described above — everything in the copy can be changed.
@@ -231,6 +278,7 @@ Optimized is tuned for **coding-agent work**: reading and editing code, running 
 | Leave a feature out entirely | Uncheck it in **Execution settings → Included plugins**. |
 | Steer how the model uses a tool | Edit its description, usage instructions or parameter text in the tool's **Details**. |
 | Delegate to specialists | Add roles in **Subagent settings** with their own model, reasoning effort and persona. |
+| Change a role's model or instructions for one task only | Use the session's **Subagents** tab; the preset stays as it is. See [Per-session subagent roles](#per-session-subagent-roles). |
 | Keep subagents focused | Add tools such as `ask_user_question` to the **Subagent Tool Filter**, or give a role its own list. See [Subagent Tool Filter](#subagent-tool-filter). |
 
 Use **Preview prompt** after each change to confirm what the model will receive, then save and apply the copy. Optimized itself stays available as a reference, and you can keep several presets for different kinds of work.
@@ -261,7 +309,7 @@ To use such a tool, install the plugin that provides it in that profile, or add 
 
 ## Where data is stored
 
-Presets are saved per DSH profile in `<profile>/studio-data/`. Applying a preset registers a Studio-owned DSH agent preset; Studio never edits DSH's own presets or your profile's package list.
+Presets are saved per DSH profile in `<profile>/studio-data/`. Per-session subagent roles are saved per session under `session-roles/` there. Applying a preset registers a Studio-owned DSH agent preset; Studio never edits DSH's own presets or your profile's package list.
 
 ## Troubleshooting
 

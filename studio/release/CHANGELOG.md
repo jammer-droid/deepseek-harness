@@ -2,6 +2,50 @@
 
 Release notes for `@matamt-dbg/dsh-studio`. Each version lists English notes first, then Korean.
 
+## Unreleased
+
+Requires DSH `0.2.0-rc.2` or `0.2.1-alpha.2`.
+
+### Highlights
+
+- **Per-session subagent roles.** A new **Subagents** tab next to Chat and Trajectory changes a role's model, reasoning effort and instructions for one session only, and adds roles that exist only in that session. The preset and other sessions are unchanged. See [Per-session subagent roles](docs/guide.md#per-session-subagent-roles).
+- **Independent of later preset changes.** The first change copies the whole role into the session; later preset edits do not reach the copy until you choose **Use preset**.
+- **Subagents follow their main session.** Subagents started from the session, and the subagents they start, use its roles. A subagent session's tab shows them read-only.
+
+### Changes
+
+- Changes apply from the next delegation; subagents already running keep their settings.
+- Models are checked when a session role is saved and again before each call.
+- A session role added to a preset without roles is used instead of the parent-matching child.
+- Session roles are stored in `<profile>/studio-data/session-roles/`, kept for archived sessions and removed with deleted sessions.
+
+### Upgrade notes
+
+- Every session now shows the Chat / Subagents tab bar, also when developer tools (Trajectory) are off.
+- The model-visible `subagent_role` tool description no longer depends on whether the preset defines roles. It now tells the agent to use `action=list` and explains the parent-matching fallback, so existing presets see slightly different tool text.
+
+### 한국어
+
+DSH `0.2.0-rc.2` 또는 `0.2.1-alpha.2`가 필요합니다.
+
+#### 주요 변경
+
+- **세션별 서브에이전트 역할.** Chat, Trajectory 옆의 새 **Subagents** 탭에서 역할의 모델·추론 수준·지침을 한 세션에서만 바꾸고, 그 세션에서만 쓸 역할을 추가합니다. 프리셋과 다른 세션은 바뀌지 않습니다. [세션별 서브에이전트 역할](docs/guide.ko.md#세션별-서브에이전트-역할)을 참고하세요.
+- **이후 프리셋 변경과 무관.** 처음 바꿀 때 역할 전체가 세션에 복사됩니다. 이후 프리셋을 고쳐도 **프리셋 값 사용**을 누르기 전까지 복사본은 바뀌지 않습니다.
+- **서브에이전트는 메인 세션을 따름.** 세션에서 시작한 서브에이전트와, 그 서브에이전트가 다시 시작한 서브에이전트도 그 세션의 역할을 씁니다. 서브에이전트 세션의 탭은 읽기 전용입니다.
+
+#### 변경 사항
+
+- 바꾼 내용은 다음 위임부터 적용되며, 이미 실행 중인 서브에이전트는 그대로입니다.
+- 세션 역할의 모델은 저장할 때와 매 호출 전에 확인합니다.
+- 역할이 없는 프리셋에 세션 역할을 추가하면 부모와 같은 설정 대신 그 역할로 위임합니다.
+- 세션 역할은 `<프로필>/studio-data/session-roles/`에 저장되며, 보관한 세션은 유지하고 삭제한 세션은 함께 지웁니다.
+
+#### 업그레이드 참고
+
+- 개발자 도구(Trajectory)를 꺼 두어도 모든 세션에 Chat / Subagents 탭 줄이 보입니다.
+- 모델이 보는 `subagent_role` 도구 설명이 프리셋의 역할 유무와 상관없는 한 가지 문구로 바뀌었습니다. `action=list`로 역할을 확인하라는 안내와, 역할이 없을 때 부모와 같은 설정으로 위임한다는 설명이 들어 있어 기존 프리셋에서도 도구 문구가 조금 달라집니다.
+
 ## 0.5.0 — 2026-10-17
 
 Requires DSH `0.2.0-rc.2` or `0.2.1-alpha.2`.

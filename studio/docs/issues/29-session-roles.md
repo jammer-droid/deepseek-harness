@@ -80,4 +80,7 @@ status: ready
 - S5 중 발견: 읽기 전용 탭이 모델 이름 대신 경로 id를 보임 → 수정.
 - Studio 전체: 타입 검사·빌드·테스트 559개 통과.
 
-현재 단계: 구현 단계 완료. 남은 일: 사용자 문서·CHANGELOG, 검수, 통합.
+- **문서:** 사용 가이드(ko·en)에 [세션별 서브에이전트 역할](../../release/docs/guide.ko.md#세션별-서브에이전트-역할) 절과 화면, [CHANGELOG](../../release/CHANGELOG.md) `Unreleased`에 변경·업그레이드 안내를 썼다.
+- **통합:** `studio/feat/utils`에 병합(`ebecc748c9`).
+
+현재 단계: 완료. 남은 일: 릴리스 버전 지정, 푸시, GitHub #29 종료(각각 승인 필요).
