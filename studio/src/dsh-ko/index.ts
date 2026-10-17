@@ -7,6 +7,7 @@ import approval from './approval.ts';
 import claudeCodeMods from './claude-code-mods.ts';
 import documentHtml from './documentHtml.ts';
 import documentMarkdown from './documentMarkdown.ts';
+import inspectorPanel from './inspectorPanel.ts';
 import settingsLocale from './settings.locale.ts';
 import settingsSessionLog from './settings.sessionLog.ts';
 import shortcutsLayout from './shortcuts.layout.ts';
@@ -17,6 +18,7 @@ export const dshKo: DshKoDictionaries = {
   'claude-code-mods': claudeCodeMods,
   documentHtml: documentHtml,
   documentMarkdown: documentMarkdown,
+  inspectorPanel: inspectorPanel,
   'settings.locale': settingsLocale,
   'settings.sessionLog': settingsSessionLog,
   'shortcuts.layout': shortcutsLayout,

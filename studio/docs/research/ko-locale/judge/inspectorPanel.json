@@ -1,0 +1,51 @@
+{
+  "namespace": "inspectorPanel",
+  "date": "2026-10-17",
+  "engine": "jev",
+  "thresholds": { "natural": 1.5, "meaning": 0.6, "style": 0.5 },
+  "rows": [
+    {
+      "key": "close",
+      "en": "Collapse",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "접기", "natural": 1.37, "meaning": 0.54, "style": 0.73, "pass": false },
+        { "ko": "패널 접기", "natural": 1.29, "meaning": 0.49, "style": 0.72, "pass": false },
+        { "ko": "패널을 접습니다", "natural": 1.19, "meaning": 0.63, "style": 0.97, "pass": false }
+      ],
+      "result": "unresolved"
+    },
+    {
+      "key": "frameTitle",
+      "en": "NodeJS Inspector",
+      "kind": "verbatim",
+      "attempts": [],
+      "result": "verbatim"
+    },
+    {
+      "key": "resize",
+      "en": "Resize NodeJS Inspector panel",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "NodeJS Inspector 패널 크기 조정", "natural": 1.71, "meaning": 0.96, "style": 0.7, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "title",
+      "en": "NodeJS Inspector",
+      "kind": "verbatim",
+      "attempts": [],
+      "result": "verbatim"
+    },
+    {
+      "key": "toggle",
+      "en": "Toggle NodeJS Inspector",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "NodeJS Inspector 표시/숨기기", "natural": 1.7, "meaning": 0.94, "style": 0.66, "pass": true }
+      ],
+      "result": "pass"
+    }
+  ]
+}
