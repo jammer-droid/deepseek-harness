@@ -116,3 +116,30 @@ test('summary rendering is bounded', () => {
   const text = renderSummary(big);
   assert.ok(text.length < 20_200); assert.match(text, /\[truncated/);
 });
+
+test('a promoted (timed-out) act command is killed and awaited before the next act', async () => {
+  const { installLoop } = await import('../src/host/pixie-loop-tool.ts');
+  const { createLifetime } = await import('../src/host/tool-lifetime.ts');
+  let tool; const killed = []; const waits = [];
+  const tools = { register(definition) { tool = definition; return () => {}; }, async execute(call) {
+    if (call.name === 'bash') return { isError: false, content: [], value: { kind: 'promoted', jobId: 'bash-7', timeoutMs: 1000 } };
+    throw new Error(`unexpected ${call.name}`);
+  } };
+  const views = ['running', 'killed'];
+  const jobs = { start() { throw new Error('no'); }, kill(id, owner, reason) { killed.push([id, owner, reason]); }, async wait(id) { waits.push(id); return { status: views.shift() }; } };
+  const life = createLifetime();
+  const judgeReply = { stream: options => (async function* () {
+    const text = options.system.startsWith('You are a judgment component') ? JSON.stringify({ answers: { ok: { noul: /timed out/.test(options.messages[0].content[0].text) ? 0.1 : 0.9 } } }) : '#x';
+    yield { type: 'text-delta', text }; yield { type: 'finish', reason: { kind: 'stop' } };
+  })() };
+  installLoop({ get: name => name === 'tools' ? tools : undefined, logger: {} }, life, { settings: async () => ({ model: { provider: 'p', model: 'm' }, judgeEngine: 'llm', contextMode: 'fresh', systemPrompt: '', allowThreadModel: true }),
+    store: { put: async () => {} }, llm: () => judgeReply, credentials: () => undefined, jobs: () => jobs });
+  const value = await tool.execute({ items: { inline: [{ id: 'a', input: 'x' }] }, work: { instruction: 'w' }, maxAttempts: 1, limits: { tokens: 100000, timeMs: 60000 },
+    checks: { questions: { ok: { type: 'noul', instructions: 'ok?' } }, pass: { ok: { min: 0.5 } } }, act: { tool: 'bash', command: 'sleep {{output}}', safeToRepeat: true },
+    calibration: { pass: [{ input: 'x', output: '1', observation: 'fine' }], fail: [{ input: 'x', output: '1', observation: '[timed out]' }] } },
+    { agent: { id: 'session-1' }, signal: new AbortController().signal, callId: 'c', token: {} });
+  assert.deepEqual(killed, [['bash-7', 'session-1', 'pixie_loop act timed out']]);
+  assert.deepEqual(waits, ['bash-7', 'bash-7']);
+  assert.equal(value.escalated.length, 1);
+  await life.dispose();
+});

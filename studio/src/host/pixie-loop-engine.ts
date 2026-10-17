@@ -170,8 +170,8 @@ class ActLock {
   }
 }
 
-/** Run the act command for one output and shorten its observation when the spec extracts. */
-async function observe(spec: LoopSpec, deps: LoopEngineDeps, item: LoopItem, output: string, lock: ActLock, signal: AbortSignal, usage: PixieUsage): Promise<string | undefined> {
+/** Run the act command for one output. `raw` is what the command printed; `observation` is what reviewers see (shortened when the spec extracts). Options are read only from `raw` (D6). */
+async function observe(spec: LoopSpec, deps: LoopEngineDeps, item: LoopItem, output: string, lock: ActLock, signal: AbortSignal, usage: PixieUsage, budget: () => void): Promise<{ raw: string; observation: string } | undefined> {
   const act = spec.act;
   if (!act) return undefined;
   if (!deps.act) throw new Error('act needs a session bash tool');
@@ -180,11 +180,13 @@ async function observe(spec: LoopSpec, deps: LoopEngineDeps, item: LoopItem, out
   const { ok, text } = act.isolated ? await run() : await lock.run(run);
   let observation = `${ok ? '' : '[command failed]\n'}${text}`;
   if (observation.length > act.maxObservationChars) observation = `${observation.slice(0, act.maxObservationChars)}\n[observation truncated at ${act.maxObservationChars} characters]`;
+  const raw = text;
   if (spec.extract) {
     const short = await pixieCall(deps, `${EXTRACT_SYSTEM}\nInstruction: ${spec.extract.instruction}`, requestMessages([user(observation)], deps.model!), signal, usage);
+    budget();
     observation = short.length > spec.extract.maxChars ? `${short.slice(0, spec.extract.maxChars)}\n[shortened]` : short;
   }
-  return observation;
+  return { raw, observation };
 }
 
 /** Selection: the decision engine picks one listed option; the pick is the output (D6). */
@@ -206,11 +208,14 @@ const bucketOf = (spec: LoopSpec, attempt: LoopAttempt | undefined) => {
 };
 
 /** Run one item: its own thread accumulates attempts (retry) or steps (episode) with feedback; nothing from other items enters it. */
-async function runItem(item: LoopItem, checks: LoopChecks | undefined, spec: LoopSpec, deps: LoopEngineDeps, lock: ActLock, signal: AbortSignal, usage: { pixie: PixieUsage; judge: PixieUsage }, onAttempt: (result: LoopItemResult) => void): Promise<LoopItemResult> {
+async function runItem(item: LoopItem, checks: LoopChecks | undefined, spec: LoopSpec, deps: LoopEngineDeps, lock: ActLock, signal: AbortSignal, usage: { pixie: PixieUsage; judge: PixieUsage }, onAttempt: (result: LoopItemResult) => void, budget: () => void): Promise<LoopItemResult> {
+  // Each model or engine call checks the budget; an exceeded budget aborts `signal` before the next call starts.
+  const spent = () => { budget(); signal.throwIfAborted(); };
   const system = generateSystem(spec);
   const thread: { role: 'user' | 'assistant'; text: string }[] = [user(item.input)];
   const result: LoopItemResult = { id: item.id, status: 'escalated', attempts: [] };
   const episode = spec.mode === 'episode';
+  /** The latest raw act output: the only source options are read from in episodes. */
   let latest: string | undefined;
   for (let index = 0; index < spec.maxAttempts; index++) {
     signal.throwIfAborted();
@@ -219,10 +224,12 @@ async function runItem(item: LoopItem, checks: LoopChecks | undefined, spec: Loo
       const source = spec.select.optionsFrom === 'input' ? item.input : latest;
       if (source === undefined) {
         // An episode that selects needs a first observation: run the act once with an empty output.
-        latest = await observe(spec, deps, item, '', lock, signal, usage.pixie);
+        latest = (await observe(spec, deps, item, '', lock, signal, usage.pixie, spent))?.raw;
+        if (latest === undefined) throw new Error('select from observation needs act');
         index--; continue;
       }
       const pick = await choose(spec, deps, item, source, signal, usage.judge);
+      spent();
       output = pick.output; selection = pick.selection;
       if (!pick.confident) {
         result.attempts.push({ output, selection, codeFailures: [], passed: false, error: `Confidence ${pick.selection.confidence.toFixed(2)} is below ${spec.select.minConfidence}` });
@@ -231,22 +238,37 @@ async function runItem(item: LoopItem, checks: LoopChecks | undefined, spec: Loo
       }
     } else {
       output = await pixieCall(deps, system, requestMessages(thread, deps.model!), signal, usage.pixie);
+      spent();
       thread.push({ role: 'assistant', text: output });
     }
-    const observation = await observe(spec, deps, item, output, lock, signal, usage.pixie);
-    if (observation !== undefined) latest = observation;
+    const observed = await observe(spec, deps, item, output, lock, signal, usage.pixie, spent);
+    const observation = observed?.observation;
+    if (observed) latest = observed.raw;
     if (!checks) {
-      // Plain selection: the confident pick is the result.
-      result.attempts.push({ output, ...(selection ? { selection } : {}), codeFailures: [], passed: true });
-      result.status = 'passed'; result.output = output; onAttempt(result); return result;
+      // Plain selection: the confident pick is the result once the exact checks pass (D11).
+      const codeFailures = runCodeChecks(spec.codeChecks ?? [], item.input, output);
+      result.attempts.push({ output, ...(selection ? { selection } : {}), codeFailures, passed: codeFailures.length === 0 });
+      if (!codeFailures.length) { result.status = 'passed'; result.output = output; }
+      onAttempt(result); return result;
     }
-    const verdict = await review(checks, spec, deps, item.input, output, observation, signal, usage.judge);
-    const attempt: LoopAttempt = { output, ...(observation !== undefined ? { observation } : {}), ...(selection ? { selection } : {}), codeFailures: verdict.codeFailures, passed: verdict.passed, ...(verdict.answers ? { answers: verdict.answers } : {}) };
+    // Record the attempt before the engine call so a failing review or interpret keeps what was produced (D8/S6).
+    const attempt: LoopAttempt = { output, ...(observation !== undefined ? { observation } : {}), ...(selection ? { selection } : {}), codeFailures: [], passed: false };
     result.attempts.push(attempt);
+    onAttempt(result);
+    let verdict: Verdict;
+    try { verdict = await review(checks, spec, deps, item.input, output, observation, signal, usage.judge); }
+    catch (error) { attempt.error = error instanceof Error ? error.message : String(error); onAttempt(result); throw error; }
+    spent();
+    attempt.codeFailures = verdict.codeFailures; attempt.passed = verdict.passed;
+    if (verdict.answers) attempt.answers = verdict.answers;
     const bucket = bucketOf(spec, attempt);
     if (bucket) result.bucket = bucket;
     if (verdict.passed) { result.status = 'passed'; result.output = output; onAttempt(result); return result; }
-    if (!spec.select) attempt.feedback = await pixieCall(deps, INTERPRET_SYSTEM, requestMessages([user(JSON.stringify(interpretInput(item.input, output, verdict, observation), null, 2))], deps.model!), signal, usage.pixie);
+    if (!spec.select) {
+      try { attempt.feedback = await pixieCall(deps, INTERPRET_SYSTEM, requestMessages([user(JSON.stringify(interpretInput(item.input, output, verdict, observation), null, 2))], deps.model!), signal, usage.pixie); }
+      catch (error) { attempt.error = error instanceof Error ? error.message : String(error); onAttempt(result); throw error; }
+      spent();
+    }
     onAttempt(result);
     // A retry selection reads the same options again; only an episode's new observation can change the pick.
     if (spec.select && !episode) return result;
@@ -267,7 +289,7 @@ export async function runLoop(spec: LoopSpec, items: readonly LoopItem[], deps: 
   const stop = new AbortController();
   const signal = AbortSignal.any([options.signal, stop.signal]);
   const deadline = setTimeout(() => stop.abort(new LimitStop(`Time limit reached (${spec.limits.timeMs}ms)`)), spec.limits.timeMs);
-  const checkTokens = () => { if (usageTokens(run.usage) > spec.limits.tokens) stop.abort(new LimitStop(`Token limit reached (${spec.limits.tokens})`)); };
+  const checkTokens = () => { if (usageTokens(run.usage) >= spec.limits.tokens) stop.abort(new LimitStop(`Token limit reached (${spec.limits.tokens})`)); };
   const finish = (status: LoopRun['status'], reason?: string) => {
     run.status = status; run.finishedAt = now(); if (reason) run.reason = reason;
     const seen = new Set(run.items.map(item => item.id));
@@ -291,7 +313,7 @@ export async function runLoop(spec: LoopSpec, items: readonly LoopItem[], deps: 
       try {
         // A saved recipe brings checks compiled and calibrated when it was saved (S14).
         if (options.checks) { checks = options.checks; run.compiledBy = 'spec'; }
-        else { checks = await compileChecks(spec, deps, signal, run.usage.pixie); run.compiledBy = spec.checks ? 'spec' : 'pixie'; }
+        else { checks = await compileChecks(spec, deps, signal, run.usage.pixie); run.compiledBy = spec.checks ? 'spec' : 'pixie'; checkTokens(); signal.throwIfAborted(); }
         run.checks = checks;
         if (spec.route && checks.questions[spec.route.question]?.type !== 'choice') throw new Error(`route.question "${spec.route.question}" is not a choice question in the checks`);
         publish();
@@ -312,7 +334,7 @@ export async function runLoop(spec: LoopSpec, items: readonly LoopItem[], deps: 
         const item = items[next++]!;
         let result: LoopItemResult;
         try {
-          result = await runItem(item, checks, spec, deps, lock, signal, run.usage, partial => { live.set(item.id, structuredClone(partial)); checkTokens(); publish(); });
+          result = await runItem(item, checks, spec, deps, lock, signal, run.usage, partial => { live.set(item.id, structuredClone(partial)); checkTokens(); publish(); }, checkTokens);
         } catch (error) {
           const partial = live.get(item.id);
           result = signal.aborted ? { id: item.id, status: 'cancelled', attempts: partial?.attempts ?? [] }

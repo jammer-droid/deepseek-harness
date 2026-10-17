@@ -254,6 +254,7 @@ function validateAct(raw: unknown): LoopAct {
   if (raw.tool !== 'bash') throw new Error('act.tool must be bash');
   if (!text(raw.command)) throw new Error('act.command is required');
   for (const match of raw.command.matchAll(/{{\s*([^{}]*?)\s*}}/g)) if (!(ACT_VARIABLES as readonly string[]).includes(match[1]!)) throw new Error(`act.command uses an unknown variable: ${match[1]}`);
+  if (quotedPlaceholder(raw.command)) throw new Error('act.command must use {{input}}, {{output}}, {{id}} as bare words, not inside quotes; Studio quotes them for you');
   if (raw.safeToRepeat !== true) throw new Error('act.safeToRepeat must be true: retries and episodes run the command again, so use act only for commands that are safe to repeat');
   if (raw.isolated !== undefined && typeof raw.isolated !== 'boolean') throw new Error('act.isolated must be a boolean');
   return {
@@ -291,6 +292,27 @@ export function parseOptions(source: string, where: string): LoopOption[] {
   });
   if (new Set(options.map(option => option.name)).size !== options.length) throw new Error(`${where} options must have unique names`);
   return options;
+}
+
+/** Whether a placeholder sits inside single or double quotes (or is glued to other text), where quoting it again would let shell syntax through. */
+export function quotedPlaceholder(command: string): boolean {
+  let quote: "'" | '"' | undefined;
+  for (let index = 0; index < command.length; index++) {
+    const char = command[index]!;
+    if (quote === "'") { if (char === "'") quote = undefined; else if (char === '{' && command[index + 1] === '{') return true; continue; }
+    if (char === '\\') { index++; continue; }
+    if (char === '"') { quote = quote === '"' ? undefined : '"'; continue; }
+    if (char === "'" && !quote) { quote = "'"; continue; }
+    if (char === '{' && command[index + 1] === '{') {
+      const end = command.indexOf('}}', index);
+      if (end < 0) continue;
+      if (quote) return true;
+      const before = command[index - 1], after = command[end + 2];
+      if ((before !== undefined && !/\s/.test(before)) || (after !== undefined && !/[\s;|&)]/.test(after))) return true;
+      index = end + 1;
+    }
+  }
+  return false;
 }
 
 /** Quote a value as one POSIX shell word. */

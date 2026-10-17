@@ -85,7 +85,7 @@ export interface LoopToolDeps {
   store: PixieLoopStore;
   llm: () => PixieLlm | undefined;
   credentials: () => JevCredentials | undefined;
-  jobs: () => { start(spec: unknown): JobId; wait(id: JobId, timeoutMs: number, caller?: SessionId, signal?: AbortSignal): Promise<unknown> } | undefined;
+  jobs: () => { start(spec: unknown): JobId; wait(id: JobId, timeoutMs: number, caller?: SessionId, signal?: AbortSignal): Promise<unknown>; kill(id: JobId, caller?: SessionId, reason?: string): unknown } | undefined;
   recipes?: PixieLoopRecipes;
 }
 
@@ -102,6 +102,18 @@ export function installLoop(ctx: Context, life: Lifetime, deps: LoopToolDeps): (
     }
     return result.value as Record<string, unknown>;
   };
+  /** Kill a job and wait until it is no longer running, whatever the caller's signal says. */
+  async function stopJob(id: string, owner: string) {
+    const jobs = deps.jobs();
+    if (!jobs) throw new Error('act command was promoted to a job, but the DSH jobs service is unavailable to stop it');
+    const jobId = id as unknown as JobId, caller = owner as unknown as SessionId;
+    jobs.kill(jobId, caller, 'pixie_loop act timed out');
+    for (let waited = 0; waited < 60_000; waited += 5_000) {
+      const view = await jobs.wait(jobId, 5_000, caller) as { status?: string };
+      if (view.status !== 'running' && view.status !== 'stopping') return;
+    }
+    throw new Error(`act job ${id} did not stop within 60s`);
+  }
   async function loadItems(spec: LoopSpec, exec: ToolExec, signal: AbortSignal): Promise<LoopItem[]> {
     if ('inline' in spec.items) return spec.items.inline;
     const lines: string[] = [];
@@ -122,7 +134,13 @@ export function installLoop(ctx: Context, life: Lifetime, deps: LoopToolDeps): (
     const judge = judgeEngineFor(settings, { llm, credentials: deps.credentials() });
     const writer = throttledWriter(run => deps.store.put(run), 500, error => ctx.logger?.warn?.(`studio pixie_loop: record write failed: ${String(error)}`));
     const act = async (command: string, timeoutMs: number, actSignal: AbortSignal) => {
-      const value = await nested(exec, 'bash', { command, description: 'pixie_loop act', timeoutMs }, actSignal, true) as { kind?: string; exitCode?: number | null; timedOut?: boolean; stdout?: { text?: string }; stderr?: { text?: string } };
+      const value = await nested(exec, 'bash', { command, description: 'pixie_loop act', timeoutMs }, actSignal, true) as { kind?: string; jobId?: string; exitCode?: number | null; timedOut?: boolean; stdout?: { text?: string }; stderr?: { text?: string } };
+      if (value.kind === 'promoted' && typeof value.jobId === 'string') {
+        // bash kept a timed-out command running as a job. Stop it and wait until it settles, so an act never
+        // outlives its turn: serialized acts must not overlap and cancellation must own the process.
+        await stopJob(value.jobId, exec.agent!.id);
+        return { ok: false, text: `[timed out after ${timeoutMs}ms; the command was stopped]` };
+      }
       if (value.kind !== 'foreground') return { ok: false, text: 'act command did not finish in the foreground; lower its run time or raise act.timeoutMs' };
       const out = [value.stdout?.text ?? '', value.stderr?.text ? `[stderr]\n${value.stderr.text}` : ''].filter(Boolean).join('\n');
       return { ok: value.exitCode === 0 && !value.timedOut, text: `${out}${value.timedOut ? '\n[timed out]' : ''}\n[exit code: ${value.exitCode ?? 'none'}]` };

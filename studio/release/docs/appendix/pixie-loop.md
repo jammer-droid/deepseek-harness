@@ -215,7 +215,8 @@ When an output only proves itself by running it (CSS selectors, regular expressi
 }
 ```
 
-- `{{output}}`, `{{input}}`, `{{id}}` in `command` become one single-quoted word each. Quotes or `;` in an output cannot break the command or run another one.
+- `{{output}}`, `{{input}}`, `{{id}}` in `command` become one single-quoted word each. Quotes or `;` in an output cannot break the command or run another one. So write them as separate words, never inside quotes or glued to other text (`"{{output}}"` and `x{{output}}` are refused).
+- A command that runs past its time limit is stopped and judged as a `[timed out …]` observation; it never overlaps the next act.
 - `safeToRepeat: true` is required: retries and episodes run the command again. Never use it for anything that must not happen twice (deleting, sending, paying).
 - `isolated` (default `false`): set `true` when each item uses its own state (a new page, a temp folder) so acts may run at the same time. With `false` acts run one at a time.
 - The command follows the session's file policy and sandbox. Commands that need approval are refused. A non-zero exit does not stop the loop; the observation is judged with `[command failed]` in front.

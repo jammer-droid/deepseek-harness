@@ -132,3 +132,48 @@ test('route groups items by a choice answer and the summary counts the groups', 
   assert.deepEqual(Object.fromEntries(run.items.map(item => [item.id, [item.status, item.bucket]])), { a: ['passed', 'bug'], b: ['passed', 'feature'], c: ['escalated', 'unclear'] });
   assert.deepEqual(summarizeRun(run).buckets, { bug: 1, feature: 1, unclear: 1 });
 });
+
+test('review fixes: quoted placeholders are rejected, options come from raw output, plain picks run code checks', async () => {
+  const base = { items: { inline: [{ id: 'a', input: 'x' }] }, work: { instruction: 'w' }, checks, calibration, limits };
+  for (const command of [`printf '%s' "{{output}}"`, `echo '{{output}}'`, 'echo x{{output}}', 'echo {{output}}.txt']) {
+    assert.throws(() => validateLoopSpec({ ...base, act: act({ command }) }), /bare words/, command);
+  }
+  for (const command of ['node probe.mjs {{output}}', 'game {{output}};echo done', 'probe {{output}} | head -1', 'echo "fixed text" {{output}}']) validateLoopSpec({ ...base, act: act({ command }) });
+
+  // extract shortens what reviewers see, but options stay what the command printed (D6).
+  const runAct = async () => ({ ok: true, text: JSON.stringify({ hp: 4, options: ['heal', 'wait'] }) });
+  const llm = llmFrom(() => '');
+  llm.stream = options => reply(options.system.startsWith(EXTRACT_SYSTEM) ? '{"options":["invented","made-up"]}' : 'x');
+  const seen = [];
+  const episode = validateLoopSpec({ items: { inline: [{ id: 'g', input: 'goal' }] }, work: { instruction: 'Play' }, mode: 'episode', maxAttempts: 2, limits,
+    select: { instructions: 'Pick', optionsFrom: 'observation' }, act: act(), extract: { instruction: 'shorten' },
+    checks: { questions: { done: { type: 'noul', instructions: 'Done?' } }, pass: { done: { min: 0.5 } } },
+    calibration: { pass: [{ input: 'x', output: 'heal', observation: 'done' }], fail: [{ input: 'x', output: 'heal', observation: 'not' }] } });
+  await runLoop(episode, episode.items.inline, { llm, model, act: runAct, judge: { kind: 'judge', label: 'f', async judge(request) {
+    if (request.questions.pick) { seen.push(Object.keys(request.questions.pick.criteria)); return { ok: true, answers: { pick: { type: 'choice', choice: 'heal', probabilities: { heal: 1, wait: 0 }, confidence: 1 } } }; }
+    return { ok: true, answers: { done: { type: 'noul', noul: request.state.observation === 'done' ? 0.9 : 0.1 } } };
+  } } }, { sessionId: 's', signal: signal() });
+  assert.deepEqual(seen[0], ['heal', 'wait']);
+
+  const pick = validateLoopSpec({ items: { inline: [{ id: 'p', input: '{"options":["up","down"]}' }] }, work: { instruction: 'Choose' }, limits,
+    select: { instructions: 'Pick', optionsFrom: 'input' }, codeChecks: [{ type: 'regex', pattern: '^up$', expect: 'match' }] });
+  const down = await runLoop(pick, pick.items.inline, { llm: llmFrom(() => ''), model, judge: noulJudge(() => 'down') }, { sessionId: 's', signal: signal() });
+  assert.equal(down.items[0].status, 'escalated'); assert.match(down.items[0].attempts[0].codeFailures[0].message, /does not match/);
+});
+
+test('review fixes: a failing engine keeps the attempt, and the token cap stops before the next call', async () => {
+  let judged = 0;
+  const failing = { kind: 'judge', label: 'f', async judge(request) { judged++; if (request.state.input === 'boom') return { ok: false, error: 'HTTP 529' }; return { ok: true, answers: { works: { type: 'noul', noul: request.state.observation === 'clicked' ? 0.9 : 0.1 } } }; } };
+  const spec = validateLoopSpec({ items: { inline: [{ id: 'b', input: 'boom' }] }, work: { instruction: 'w' }, checks, calibration, limits, act: act() });
+  const run = await runLoop(spec, spec.items.inline, { llm: llmFrom(() => '#x'), model, judge: failing, act: async () => ({ ok: true, text: 'no element' }) }, { sessionId: 's', signal: signal() });
+  const item = run.items[0];
+  assert.equal(item.status, 'error'); assert.equal(item.attempts.length, 1);
+  assert.equal(item.attempts[0].output, '#x'); assert.equal(item.attempts[0].observation, 'no element'); assert.equal(item.attempts[0].error, 'HTTP 529');
+
+  // Each generate call costs 400; at a cap of 1000 the third call must not start, and act must not run after the cap.
+  let acts = 0;
+  const heavy = { stream: () => (async function* () { yield { type: 'text-delta', text: '#x' }; yield { type: 'usage', usage: { inputTokens: 1000, outputTokens: 0 } }; yield { type: 'finish', reason: { kind: 'stop' } }; })() };
+  const capped = validateLoopSpec({ items: { inline: [{ id: 'c', input: 'x' }] }, work: { instruction: 'w' }, checks, calibration, limits: { tokens: 1000, timeMs: 60000 }, act: act() });
+  const stopped = await runLoop(capped, capped.items.inline, { llm: heavy, model, judge: failing, act: async () => { acts++; return { ok: true, text: 'clicked' }; } }, { sessionId: 's', signal: signal() });
+  assert.equal(stopped.status, 'stopped'); assert.equal(acts, 0, 'no act after the generate call that reached the cap');
+});
