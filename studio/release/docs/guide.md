@@ -260,7 +260,7 @@ You can add roles even when the preset defines none; `subagent_role` then delega
   ![Subagents tab in a subagent session](images/en/session-subagents-child.png)
 
 - Other sessions that use the same preset, and the preset itself, are not affected.
-- Forking a session does not copy its session roles; the fork starts from the preset.
+- Forking a session does not copy its session roles; the new session starts from the preset.
 - In a session whose preset has no Studio `subagent_role`, the tab says **This session has no subagent role tool**.
 
 Session roles are stored per session in `<profile>/studio-data/session-roles/`. Archived sessions keep them; deleting a session removes them.

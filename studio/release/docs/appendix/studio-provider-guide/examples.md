@@ -75,6 +75,6 @@ Signs in with the user's ChatGPT account and sends requests to ChatGPT's Codex b
   "protocol": "openai-chat",
   "baseURL": "https://llm.example.internal/v1",
   "models": [{ "id": "team-large" }],
-  "credential": { "kind": "command", "command": ["node", "/Users/me/bin/token.mjs"], "timeoutMs": 10000 }
+  "credential": { "kind": "command", "command": ["node", "/opt/tools/token.mjs"], "timeoutMs": 10000 }
 }
 ```
