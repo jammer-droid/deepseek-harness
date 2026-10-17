@@ -42,7 +42,8 @@ test('shortcut rows show assigned keys, defaults, and toggles', async t => {
   const rowsText = [...host.querySelectorAll('section[aria-label="Shortcuts"] .studio-settings-card .studio-settings-row')].map(row => row.textContent);
   assert.equal(rowsText.length, STUDIO_COMMANDS.length);
   assert.match(rowsText[0], /Previous sidebar session.*Key: ⌘ ⇧ \[.*Default key: ⌘⇧\[/);
-  assert.match(rowsText[2], /Sidebar session 1.*Not assigned.*No default key/);
+  assert.match(rowsText[2], /Sidebar session 1.*Not assigned/);
+  assert.doesNotMatch(rowsText[2], /default key/i);
   assert.doesNotMatch(host.textContent, /Other harnesses|Codex|Default keys apply|private DSH setting|Open DSH shortcut settings/);
   const fullscreen = host.querySelector('[role="switch"][aria-label="Toggle full screen"]');
   assert.equal(fullscreen.getAttribute('aria-checked'), 'false');

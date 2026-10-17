@@ -49,7 +49,7 @@ function ShortcutsPage({ locale, shortcuts }: { locale: string; shortcuts: Setti
         const fallback = macDefault(spec);
         const details = [
           `${t('keyAssigned')}: ${row.enabled && row.keys?.length ? keysText(row.keys) : t('keyNone')}`,
-          fallback ? `${t('defaultKey')}: ${fallback}` : t('noDefault'),
+          ...fallback ? [`${t('defaultKey')}: ${fallback}`] : [],
         ].join(' · ');
         return <SettingsRow key={spec.id} title={label} description={details}
           control={<Toggle label={label} checked={row.enabled} onChange={enabled => shortcuts.setEnabled(spec.id, enabled)} />} />;
