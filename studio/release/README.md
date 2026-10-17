@@ -8,7 +8,7 @@
 
 <p align="center">
   <a href="https://www.npmjs.com/package/@matamt-dbg/dsh-studio"><img src="https://img.shields.io/npm/v/@matamt-dbg/dsh-studio" alt="npm version"></a>
-  <img src="https://img.shields.io/badge/DSH-0.2.0--rc.2%20%7C%200.2.1--alpha.2%20%7C%200.2.1--rc.1-4f6bff" alt="Supported DSH versions">
+  <img src="https://img.shields.io/badge/DSH-0.2.0--rc.2%20%7C%200.2.1--alpha.2%20%7C%200.2.1--rc.1%20%7C%200.2.1--rc.2-4f6bff" alt="Supported DSH versions">
   <img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT license">
 </p>
 
@@ -44,7 +44,7 @@ Optimized is tuned for **coding-agent work**. It is a starting point, not a fixe
 
 ## Install
 
-Requires DSH `0.2.0-rc.2`, `0.2.1-alpha.2` or `0.2.1-rc.1`.
+Requires DSH `0.2.0-rc.2`, `0.2.1-alpha.2`, `0.2.1-rc.1` or `0.2.1-rc.2`.
 
 ```sh
 dsh plugin --profile web add @matamt-dbg/dsh-studio       # dsh web
@@ -53,11 +53,17 @@ dsh plugin --profile desktop add @matamt-dbg/dsh-studio   # desktop app: quit th
 
 Restart the web GUI or the app, then open **DSH Studio** from the sidebar. Each profile keeps its own presets and its own set of tools.
 
-### Compatibility verification for 0.6.0
+### Compatibility
 
-On 2026-10-17, the same packaged Studio `0.6.0` was installed into isolated Web profiles of unmodified DSH `0.2.0-rc.2` and `0.2.1-alpha.2` on macOS. Installation, Web startup and four HTTP RPC checks per version passed (eight runs total): Master protection and preview/config overrides, Optimized copy activation, session-role editing and isolation, and role save/reapply/unapply/restore.
+Each supported DSH version was checked on macOS with a fresh install into an isolated profile of the unmodified runtime. What was checked differs by version, and none of it is a full compatibility guarantee:
 
-This was a **fresh-install Web Host RPC check**, not a full Desktop compatibility certification. Browser rendering and clicks, actual Fresh/Fork child execution and persona/Tool Filter enforcement on these older runtimes, Studio `0.5.0 → 0.6.0` data upgrades, and the Desktop app's loading/update path were not tested. Installation also emitted dependency/install-script warnings; subprocess and PTY execution were not tested. Back up your profile before upgrading. See the [0.6.0 release notes](CHANGELOG.md#060--2026-10-17).
+| DSH | Checked |
+|---|---|
+| `0.2.1-rc.2` | Install, Web startup and four HTTP checks (Master, Optimized copy, session roles, role save/reapply/restore); Studio loading in the desktop app |
+| `0.2.1-rc.1` | The same HTTP checks; Fresh and Fork role subagents keeping their instructions and Tool Filter, also after a restart, with a local test model |
+| `0.2.0-rc.2`, `0.2.1-alpha.2` | The same HTTP checks |
+
+Not checked: external model calls in these checks, upgrading data from 0.5.0, and other operating systems. On DSH `0.2.1-rc.1` and `0.2.1-rc.2`, text those releases added or reworded is not translated into Korean yet. Back up your profile before upgrading. See the [0.6.1 release notes](CHANGELOG.md#061--2026-10-17).
 
 ## Features
 

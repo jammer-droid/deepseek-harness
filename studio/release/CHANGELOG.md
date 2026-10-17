@@ -2,15 +2,67 @@
 
 Release notes for `@matamt-dbg/dsh-studio`. Each version lists English notes first, then Korean.
 
+## 0.6.1 — 2026-10-17
+
+Requires DSH `0.2.0-rc.2`, `0.2.1-alpha.2`, `0.2.1-rc.1` or `0.2.1-rc.2`.
+
+0.6.0 was tagged but not published to npm. 0.6.1 is the first npm release of the 0.6 line and includes everything in [0.6.0](#060--2026-10-17). See [What's new in 0.6.1](docs/highlights.md) for a walkthrough with screenshots, including a Pixie Loop example.
+
+### Highlights
+
+- **DSH `0.2.1-rc.1` and `0.2.1-rc.2` support.** These releases no longer apply a role's instructions and Tool Filter when a subagent starts. Studio now saves each role subagent's instructions and Tool Filter when it is created and applies them before it runs, for both Fresh and Fork subagents. They are stored under `<profile>/studio-data/child-policies/` and reused when a finished subagent is continued.
+- **Loop recipe editor.** **Insert example** fills in a working spec, invalid names are flagged while you type, and the page tells you before a save replaces an existing recipe.
+
+### Changes
+
+- Role and session-role editors explain which instructions apply: session instructions replace the preset role's instructions for new subagents, and subagents already created keep theirs.
+- SettingsX registers each shortcut separately. If another plugin already uses a default key, that command is added without a key; other commands are unaffected.
+
+### Verification
+
+- The 0.6.1 package was installed into a new isolated profile of unmodified DSH `0.2.1-rc.2`; Web startup and four HTTP checks passed (Master, Optimized copy, session roles, role save/reapply/restore).
+- DSH `0.2.1-rc.1` (an earlier 0.6 build with the same role-subagent code): installed into a new isolated profile of the unmodified runtime. Fresh and Fork role subagents kept their instructions and Tool Filter, also after a restart, using a local test model instead of an external one. A missing policy file stopped the subagent before any model call.
+- DSH `0.2.1-rc.2` desktop app (an earlier 0.6 build): Studio loaded and showed existing presets. Running role subagents was not tested on this version.
+- DSH `0.2.0-rc.2` and `0.2.1-alpha.2`: the same four HTTP checks passed on a fresh install of 0.6.0. Running role subagents and the desktop app were not tested on these versions.
+- Not tested on any version: external model calls in these checks, upgrading data from 0.5.0, and operating systems other than macOS. Back up your profile before upgrading.
+
+### Upgrade notes
+
+- Keep `<profile>/studio-data/child-policies/` when backing up or moving a profile. A role subagent whose file is missing or damaged will not run.
+- On DSH `0.2.1-rc.1` and `0.2.1-rc.2`, Korean covers the strings of `0.2.1-alpha.2`. Text added or reworded in the newer releases shows in English, for example parts of model settings, the plugin manager and web search settings, and a few reworded strings keep the earlier Korean wording.
+
+### 한국어
+
+DSH `0.2.0-rc.2`, `0.2.1-alpha.2`, `0.2.1-rc.1` 또는 `0.2.1-rc.2`가 필요합니다.
+
+0.6.0은 태그만 만들고 npm에는 공개하지 않았습니다. 0.6.1은 0.6 버전 중 npm에 처음 공개하는 릴리스이며 [0.6.0](#060--2026-10-17)의 내용을 모두 담고 있습니다. 화면과 Pixie Loop 사용 예시는 [0.6.1 새 기능](docs/highlights.ko.md)을 참고하세요.
+
+#### 주요 변경
+
+- **DSH `0.2.1-rc.1`, `0.2.1-rc.2` 지원.** 이 버전부터 DSH는 서브에이전트를 시작할 때 역할 지침과 Tool Filter를 적용하지 않습니다. 그래서 Studio가 역할 서브에이전트를 만들 때 지침과 Tool Filter를 저장하고 실행 전에 직접 적용합니다. Fresh와 Fork 모두 해당합니다. 이 값은 `<프로필>/studio-data/child-policies/`에 저장되고, 끝난 서브에이전트를 이어서 실행할 때도 다시 쓰입니다.
+- **Loop 레시피 편집기.** **예시 넣기**로 바로 쓸 수 있는 명세를 채우고, 잘못된 이름은 입력할 때 바로 알려 주며, 저장하면 기존 레시피를 바꾸게 될 때도 미리 알려 줍니다.
+
+#### 변경 사항
+
+- 역할 편집기와 세션 역할 편집기에서 어떤 지침이 적용되는지 안내합니다. 세션 지침은 새로 만드는 서브에이전트에 프리셋 역할 지침 대신 적용되며, 이미 만든 서브에이전트의 지침은 바뀌지 않습니다.
+- SettingsX가 단축키를 하나씩 따로 등록합니다. 다른 플러그인이 같은 기본 키를 이미 쓰면 그 명령만 키 없이 추가되고, 다른 명령은 영향을 받지 않습니다.
+
+#### 검증
+
+- 0.6.1 패키지를 수정하지 않은 DSH `0.2.1-rc.2`의 새 격리 프로필에 설치했고, Web 기동과 HTTP 검사 4개(Master, Optimized 복사, 세션 역할, 역할 저장·재적용·복원)가 통과했습니다.
+- DSH `0.2.1-rc.1`(역할 서브에이전트 코드가 같은 이전 0.6 빌드): 수정하지 않은 런타임의 새 격리 프로필에 설치했습니다. 외부 모델 대신 로컬 테스트 모델로 Fresh·Fork 역할 서브에이전트가 지침과 Tool Filter를 유지하는 것을 재시작 후까지 확인했습니다. 정책 파일이 없으면 모델을 호출하기 전에 실행을 멈췄습니다.
+- DSH `0.2.1-rc.2` 데스크톱 앱(이전 0.6 빌드): Studio가 로드되고 기존 프리셋이 표시되는 것을 확인했습니다. 이 버전에서 역할 서브에이전트 실행은 확인하지 않았습니다.
+- DSH `0.2.0-rc.2`, `0.2.1-alpha.2`: 0.6.0을 새로 설치해 같은 HTTP 검사 4개가 통과했습니다. 이 버전들에서 역할 서브에이전트 실행과 데스크톱 앱은 확인하지 않았습니다.
+- 모든 버전 공통으로 이 검사들의 외부 모델 호출, 0.5.0 데이터 업그레이드, macOS 이외 OS는 확인하지 않았습니다. 업데이트 전에 프로필을 백업하세요.
+
+#### 업그레이드 참고
+
+- 프로필을 백업하거나 옮길 때 `<프로필>/studio-data/child-policies/`도 함께 보존하세요. 파일이 없거나 손상된 역할 서브에이전트는 실행되지 않습니다.
+- DSH `0.2.1-rc.1`, `0.2.1-rc.2`에서 한국어는 `0.2.1-alpha.2`의 문구 기준입니다. 새 버전에서 새로 생기거나 바뀐 문구는 영어로 보입니다(모델 설정, 플러그인 관리, 웹 검색 설정 일부 등). 원문이 바뀐 일부 문구는 이전 한국어 표현이 그대로 보입니다.
+
 ## 0.6.0 — 2026-10-17
 
-Requires DSH `0.2.0-rc.2`, `0.2.1-alpha.2` or `0.2.1-rc.1`.
-
-### Older-runtime verification
-
-- On 2026-10-17, the same Studio `0.6.0` package passed fresh installation and Web startup on unmodified DSH `0.2.0-rc.2` and `0.2.1-alpha.2` in isolated macOS profiles. Four HTTP RPC scripts passed on each runtime (eight runs total): Master protection/preview/config overrides, Optimized copy activation, session-role editing/isolation, and role save/reapply/unapply/restore.
-- These checks did **not** cover browser rendering/clicks, actual Fresh/Fork child execution or persona/Tool Filter enforcement on the older runtimes, `0.5.0 → 0.6.0` data upgrades, or the Desktop app's loading/update path. They are not a full compatibility guarantee; back up your profile before upgrading.
-- Installation succeeded with deprecated-dependency, unapproved install-script and missing runtime-peer warnings. Subprocess/PTY execution was not tested; successful Web RPC checks do not establish that those paths work.
+Requires DSH `0.2.0-rc.2` or `0.2.1-alpha.2`.
 
 ### Highlights
 
@@ -25,8 +77,6 @@ Requires DSH `0.2.0-rc.2`, `0.2.1-alpha.2` or `0.2.1-rc.1`.
 
 ### Changes
 
-- Support DSH `0.2.1-rc.1` while preserving role personas and Tool Filters for Fresh and Fork children. Studio stores each child's fixed policy under `studio-data/child-policies/` and restores it before execution; keep this directory when backing up or moving a profile.
-- Update the development TypeScript loader to `tsx 4.23.13` to remove Node 26's `module.register()` deprecation warning.
 - Studio Master includes the `pixie_loop` tool; Optimized does not. Studio installs a new `studio-pixie-loop-guide` skill into `<DSH home>/skills/`.
 - Loop runs are stored in `<profile>/studio-data/pixie/loops/` per session (latest 50) and removed with deleted sessions. Recipes are stored in `<profile>/studio-data/pixie-loop/recipes.json`.
 - `act` accepts only `bash`, requires `safeToRepeat: true`, quotes `{{output}}`, `{{input}}`, `{{id}}` as single shell words, and runs one at a time unless `isolated: true`.
@@ -46,18 +96,10 @@ Requires DSH `0.2.0-rc.2`, `0.2.1-alpha.2` or `0.2.1-rc.1`.
 
 ### 한국어
 
-DSH `0.2.0-rc.2`, `0.2.1-alpha.2` 또는 `0.2.1-rc.1`이 필요합니다.
-
-#### 구버전 런타임 검증
-
-- 2026-10-17, 수정하지 않은 DSH `0.2.0-rc.2`와 `0.2.1-alpha.2`의 격리된 macOS 프로필에 동일한 Studio `0.6.0` 패키지를 신규 설치하고 Web 기동을 확인했습니다. Master 보호·프리뷰·설정 override, Optimized 복사 적용, 세션 역할 편집·격리, 역할 저장·재적용·해제·복원을 검사하는 HTTP RPC 스크립트 4개가 각 런타임에서 통과했습니다(총 8회).
-- 이 검사는 **브라우저 렌더링·클릭, 구버전 런타임의 Fresh/Fork 자식 실제 실행과 persona·Tool Filter 적용, `0.5.0 → 0.6.0` 데이터 업그레이드, Desktop 앱의 로딩·업데이트 경로를 포함하지 않습니다.** 전체 호환성을 보장하는 결과는 아니며, 업데이트 전에 프로필을 백업하세요.
-- 설치는 성공했지만 의존성 사용 중단, install script 미승인, 런타임 peer 누락 경고가 있었습니다. subprocess·PTY 실행은 미검증이며, Web RPC 성공만으로 해당 실행 경로의 정상 동작을 보장하지 않습니다.
+DSH `0.2.0-rc.2` 또는 `0.2.1-alpha.2`가 필요합니다.
 
 #### 주요 변경
 
-- **DSH rc.1 호환.** `0.2.1-rc.1`에서도 Fresh·Fork 자식의 역할 persona와 Tool Filter를 유지합니다. 생성 시점의 정책은 `studio-data/child-policies/`에 저장하고 실행 전에 복원합니다. 프로필을 백업하거나 옮길 때 이 디렉터리도 보존하세요.
-- 개발용 TypeScript 로더를 `tsx 4.23.13`으로 갱신해 Node 26의 `module.register()` 사용 중단 경고를 제거했습니다.
 - **Pixie Loop.** 새 `pixie_loop` 도구가 서로 독립인 항목 여러 개를 작업 → 정확한 검사 → 결정 엔진 판정 → Pixie 피드백 → 재시도로 처리합니다. 이 과정은 에이전트의 대화 밖에서 돕니다. 기준은 한 번만 질문으로 바뀌어 고정되고, 시작하기 전에 통과 예시와 실패 예시를 가를 수 있어야 합니다. 에이전트는 통과 수, 결과 파일, 끝내 통과하지 못한 항목만 돌려받고, 모든 시도는 **Pixie 탭 → 루프**에서 봅니다. [Pixie Loop 가이드](docs/appendix/pixie-loop.ko.md)를 참고하세요.
 - **실행, 단계별 진행, 선택.** `act`는 각 출력에 대해 세션의 `bash` 도구로 명령을 실행하고 그 결과로 판정합니다(예: 페이지의 CSS 셀렉터 테스트). `mode: "episode"`는 목표에 도달할 때까지 한 단계씩 진행하고, `select`는 각 항목이나 단계에서 결정 엔진이 보기 중 하나를 선택하도록 합니다. `route`는 choice 질문의 답에 따라 결과를 분기합니다.
 - **게이트와 훅 스크립트에서 쓰는 Loop 레시피.** **Studio → Pixie → 게이트 → Loop 레시피**에서 명세를 레시피로 저장합니다. 저장할 때 검사를 한 번 수행합니다. 게이트는 레시피로 판정할 수 있고(**판정**은 Pixie 피드백과 함께 차단하고, **고치기**는 통과하면 고친 내용으로 바꿉니다), 훅 스크립트는 `pixie loop --recipe <이름>`을 호출합니다.
