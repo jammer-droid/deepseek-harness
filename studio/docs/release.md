@@ -2,6 +2,8 @@
 
 이 fork의 `studio/`가 유일한 원본이다. 공개 레포 [matamt-dbg/dsh-studio](https://github.com/matamt-dbg/dsh-studio)와 npm 패키지 [@matamt-dbg/dsh-studio](https://www.npmjs.com/package/@matamt-dbg/dsh-studio)는 배포할 때마다 [release/sync.mjs](../release/sync.mjs)가 만드는 **스냅샷**이다.
 
+기능 브랜치를 병합·리뷰·문서·한국어 교정까지 마무리한 뒤 배포하는 전체 순서는 [Studio 마무리·배포 절차](release-workflow.md)를 따른다. 이 문서는 그중 배포 단계의 명령과 규칙을 소유한다.
+
 ## 구조
 
 ```text

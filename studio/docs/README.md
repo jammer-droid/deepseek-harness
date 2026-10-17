@@ -14,6 +14,8 @@
 | `archive/workflow/` | 이전 workflow 제품 기획·조사·통합 이력 | 현재 실행 구조의 명세로 사용하지 않음 |
 | `archive/prototypes/` | 대체된 초기 화면 목업 | 현재 개선 계획과 분리 |
 
+[마무리·배포 절차](release-workflow.md)는 병합부터 배포까지의 순서를, [배포 가이드](release.md)는 배포 명령을 정한다.
+
 [이슈 작업 절차](design-workflow.md)는 상위 작업 지침의 안정적인 진입 링크이므로 루트 경로를 유지한다.
 
 ## 현재 기능 참고
