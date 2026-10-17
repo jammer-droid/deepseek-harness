@@ -56,3 +56,32 @@
 | sidebarRight | command.stale | The page changed; focus it again | 페이지가 변경되었습니다. 다시 선택해 주십시오 | 1.41/0.87/0.91 | 4회 미통과 |
 | sidebarRight | dock.dockFloat | Send back to the sidebar | 사이드바에 다시 고정 | 1.49/0.89/0.47 | 4회 미통과 |
 | sidebarRight | tab.unavailable | Nothing here can view this kind of content yet. | 이 유형의 콘텐츠를 열 수 있는 보기가 아직 없습니다. | 1.29/0.91/0.53 | 4회 미통과 |
+| conversation | context.used | of context used | 사용한 컨텍스트 비율 | 1.43/0.31/0.72 | 4회 미통과 |
+| conversation | detail.providers.count | {count} inspect providers | Inspect 프로바이더 {count}개 | 1.49/0.97/0.54 | 4회 미통과 |
+| conversation | detail.ralph.reportedBlocker | Worker reported a blocker | 작업자가 진행을 막는 문제를 보고했습니다. | 1.36/0.92/0.66 | 4회 미통과 |
+| conversation | detail.tasks.nextPage | More tasks available; next cursor is {cursor} | 더 많은 과제를 보려면 다음 커서 {cursor}를 사용하십시오. | 1.46/0.89/0.88 | 4회 미통과 |
+| conversation | detail.trace.ancestors | Ancestor sessions | 상위 세션 계보 | 1.43/0.95/0.66 | 4회 미통과 |
+| conversation | detail.trace.replacementChain | Replacement chain | 연속된 대체 이력 | 1.38/0.91/0.68 | 4회 미통과 |
+| conversation | hero.headline | Into the Unknown | 새로운 가능성을 향한 시작 | 1.26/0.67/0.78 | 4회 미통과 |
+| conversation | image.openOriginalLabel | {label}, click to view original | {label}, 원본을 보려면 클릭하십시오. | 1.47/0.94/0.91 | 4회 미통과 |
+| conversation | input.send.steer | Steer message | 현재 턴에 메시지 끼워 넣기 | 1.25/0.76/0.61 | 4회 미통과 |
+| conversation | placeholder.steerQueue | Cmd/Ctrl+Enter steers all queued messages | Cmd/Ctrl+Enter를 누르면 대기열의 모든 메시지가 현재 실행 중인 턴으로 전송됩니다. | 1.43/0.94/0.83 | 4회 미통과 |
+| conversation | settings.enter.description | What Enter and the Send button do while the agent is running; Cmd/Ctrl+Enter uses the other behavior | 에이전트가 실행 중일 때 Enter 키와 전송 버튼으로 수행할 동작을 설정합니다. Cmd/Ctrl+Enter를 누르면 선택하지 않은 쪽의 동작을 수행합니다. | 1.48/0.89/0.81 | 4회 미통과 |
+| conversation | shortcut.complementary | Use the complementary Queue / Steer action | 기본 전송 방식 대신 다른 방식(대기열 추가 / 진행 중인 턴으로 전송)을 사용합니다. | 1.47/0.85/0.58 | 4회 미통과 |
+| conversation | terminal.sendInput | (send input) | (입력 전송) | 1.29/0.93/0.61 | 4회 미통과 |
+| conversation | tool.title.ralph | Run ralph loop | ralph 루프를 실행합니다. | 1.22/0.96/0.84 | 4회 미통과 |
+| conversation | tool.title.signalTerminal | Signal terminal | 터미널로 시그널을 보냅니다. | 1.43/0.92/0.86 | 4회 미통과 |
+| conversation | 용어 | Steer | 실행 중인 턴에 전달 | — | 번역자 제안 |
+| conversation | 용어 | Queue | 대기열에 추가 | — | 번역자 제안 |
+| conversation | 용어 | Task | 과제 | — | 번역자 제안 |
+| conversation | 용어 | Team task | 팀 과제 | — | 번역자 제안 |
+| conversation | 용어 | Reminder | 알림 | — | 번역자 제안 |
+| conversation | 용어 | Blocker | 진행 불가 사유 | — | 번역자 제안 |
+| conversation | 용어 | Ancestor sessions | 상위 계보 세션 | — | 번역자 제안 |
+| conversation | 용어 | Descendant sessions | 하위 계보 세션 | — | 번역자 제안 |
+| conversation | 용어 | Diff | 변경 내역 | — | 번역자 제안 |
+| conversation | 용어 | Signal | 시그널 | — | 번역자 제안 |
+| conversation | 용어 | Revision | 리비전 | — | 번역자 제안 |
+| conversation | 용어 | Provisioning | 프로비저닝 | — | 번역자 제안 |
+| conversation | 용어 | Worker | 작업자 | — | 번역자 제안 |
+| conversation | 용어 | Symbol | 심볼 | — | 번역자 제안 |
