@@ -22,6 +22,8 @@
 | 문서 | 대상 |
 | --- | --- |
 | [release-0.6.1-e2e.md](release-0.6.1-e2e.md) | Studio 0.6.1 (DSH 0.2.1-rc.1·rc.2 호환) 배포 검증 |
+| [release-0.6.1-e2e-continue.md](release-0.6.1-e2e-continue.md) | 0.6.1 배포 검증 E1 완료 지점부터 E2–E5 이어하기 |
+| [release-0.6.1-e3-e4-rerun.md](release-0.6.1-e3-e4-rerun.md) | 0.6.1 반영 커밋 기준 E3·E4 재실행 |
 | [dsh-rc1-compat-check.md](dsh-rc1-compat-check.md) | rc.1 역할 persona·Tool Filter·자식 정책 복원 |
 | [jev-decision-engine-check.md](jev-decision-engine-check.md) | #27 Jev 결정 엔진 실사용 |
 | [subagent-tool-filter-check.md](subagent-tool-filter-check.md) | 서브에이전트 Tool Filter |
