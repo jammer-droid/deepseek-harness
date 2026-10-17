@@ -11,6 +11,7 @@ import documentMarkdown from './documentMarkdown.ts';
 import feedback from './feedback.ts';
 import goal from './goal.ts';
 import inspectorPanel from './inspectorPanel.ts';
+import model from './model.ts';
 import permissionAccess from './permission.access.ts';
 import plan from './plan.ts';
 import reference from './reference.ts';
@@ -44,6 +45,7 @@ export const dshKo: DshKoDictionaries = {
   feedback: feedback,
   goal: goal,
   inspectorPanel: inspectorPanel,
+  model: model,
   'permission.access': permissionAccess,
   plan: plan,
   reference: reference,

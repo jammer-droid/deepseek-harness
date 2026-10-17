@@ -20,3 +20,7 @@
 | settings.webSearch | saveFailed | The deployment did not accept these values; they were left for you to correct. | 배포에서 이 값을 받아들이지 않았습니다. 값을 수정할 수 있도록 그대로 두었습니다. | 1.32/0.92/0.48 | settings.agentLoop와 같은 문구·같은 미해결 후보 |
 | sidebarDocumentPreview | error.tooLarge | This page exceeds the {limit} limit and cannot be read. | 이 페이지는 {limit} 제한을 초과하여 읽을 수 없습니다. | 1.36/0.93/0.49 | 제한 초과 안내의 자연스러움 미달 |
 | sidebarDocumentPreview | rendererUnavailable | The {name} preview is unavailable. | {name} 미리보기를 사용할 수 없습니다. | 1.75/0.96/0.41 | 자연스러움은 높지만 문체 기준 미달 |
+| model | action.reload | Reload | 새로 고침 | 1.86/0.95/0.47 | 짧은 라벨 후보 모두 문체 기준 미달 |
+| model | menu.aria | Model and reasoning effort | 모델 및 추론 강도 | 1.7/0.96/0.43 | '강도' 결합 표현의 문체·자연스러움 미달 |
+| model | menu.effort | Effort | 추론 강도 | 1.49/0.68/0.67 | 단독 'Effort' 라벨의 자연스러움 미달 |
+| model | search.clear | Clear search | 검색 지우기 | 1.88/0.97/0.46 | 검색 지우기·검색어 지우기 모두 문체 기준 미달 |
