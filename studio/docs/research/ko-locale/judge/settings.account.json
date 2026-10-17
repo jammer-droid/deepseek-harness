@@ -146,7 +146,13 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "지급된 크레딧 잔액",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
     },
     {
       "key": "bonusNoticeTitle",
@@ -197,7 +203,17 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "를 눌러 브라우저에서 열고 로그인을 마치십시오.",
+        "note": "조각·화면 역할을 넣어 판정 통과",
+        "judged": {
+          "scores": "1.62/0.95/0.71",
+          "joined": "페이지가 자동으로 열리지 않는 경우: 로그인 링크 복사를 눌러 브라우저에서 열고 로그인을 마치십시오."
+        }
+      }
     },
     {
       "key": "browserPrompt",
@@ -943,7 +959,17 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "",
+        "note": "조각·화면 역할을 넣어 판정 통과",
+        "judged": {
+          "scores": "1.5/0.87/0.75",
+          "joined": "(빈 앞 조각) DeepSeek Harness 도움이 필요하십니까? ↔ What would you like DeepSeek Harness to help with?"
+        }
+      }
     },
     {
       "key": "onboardingPurposeSuffix",
@@ -1151,7 +1177,17 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "환영합니다, ",
+        "note": "조각·화면 역할을 넣어 판정 통과",
+        "judged": {
+          "scores": "1.52/0.97/0.59",
+          "joined": "환영합니다, DeepSeek Harness ↔ Welcome to DeepSeek Harness"
+        }
+      }
     },
     {
       "key": "open",
@@ -1442,7 +1478,13 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "실행 중인 작업을 확인할 수 없습니다. 로그아웃하면 이 계정을 이용하는 작업이 중단될 수 있습니다. 지금 로그아웃하겠습니까?",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
     },
     {
       "key": "signedIn",

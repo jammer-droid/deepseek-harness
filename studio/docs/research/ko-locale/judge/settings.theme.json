@@ -2,14 +2,24 @@
   "namespace": "settings.theme",
   "date": "2026-10-17",
   "engine": "jev",
-  "thresholds": { "natural": 1.5, "meaning": 0.6, "style": 0.5 },
+  "thresholds": {
+    "natural": 1.5,
+    "meaning": 0.6,
+    "style": 0.5
+  },
   "rows": [
     {
       "key": "appearance.dark",
       "en": "Dark",
       "kind": "normal",
       "attempts": [
-        { "ko": "다크", "natural": 1.71, "meaning": 0.94, "style": 0.6, "pass": true }
+        {
+          "ko": "다크",
+          "natural": 1.71,
+          "meaning": 0.94,
+          "style": 0.6,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -18,7 +28,13 @@
       "en": "Light",
       "kind": "normal",
       "attempts": [
-        { "ko": "라이트", "natural": 1.64, "meaning": 0.95, "style": 0.54, "pass": true }
+        {
+          "ko": "라이트",
+          "natural": 1.64,
+          "meaning": 0.95,
+          "style": 0.54,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -27,7 +43,13 @@
       "en": "System",
       "kind": "normal",
       "attempts": [
-        { "ko": "시스템", "natural": 1.72, "meaning": 0.97, "style": 0.56, "pass": true }
+        {
+          "ko": "시스템",
+          "natural": 1.72,
+          "meaning": 0.97,
+          "style": 0.56,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -36,19 +58,59 @@
       "en": "Appearance",
       "kind": "normal",
       "attempts": [
-        { "ko": "화면 테마", "natural": 1.5, "meaning": 0.55, "style": 0.42, "pass": false },
-        { "ko": "모양", "natural": 0.9, "meaning": 0.82, "style": 0.63, "pass": false },
-        { "ko": "테마", "natural": 0.94, "meaning": 0.12, "style": 0.66, "pass": false },
-        { "ko": "화면 모드", "natural": 0.72, "meaning": 0.18, "style": 0.65, "pass": false }
+        {
+          "ko": "화면 테마",
+          "natural": 1.5,
+          "meaning": 0.55,
+          "style": 0.42,
+          "pass": false
+        },
+        {
+          "ko": "모양",
+          "natural": 0.9,
+          "meaning": 0.82,
+          "style": 0.63,
+          "pass": false
+        },
+        {
+          "ko": "테마",
+          "natural": 0.94,
+          "meaning": 0.12,
+          "style": 0.66,
+          "pass": false
+        },
+        {
+          "ko": "화면 모드",
+          "natural": 0.72,
+          "meaning": 0.18,
+          "style": 0.65,
+          "pass": false
+        }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "화면",
+        "note": "조각·화면 역할을 넣어 판정 통과",
+        "judged": {
+          "scores": "1.62/0.87/0.77",
+          "joined": "settings section title ↔ Appearance"
+        }
+      }
     },
     {
       "key": "fontSize.decrease",
       "en": "Decrease font size",
       "kind": "normal",
       "attempts": [
-        { "ko": "글꼴 크기를 줄입니다", "natural": 1.9, "meaning": 0.98, "style": 0.54, "pass": true }
+        {
+          "ko": "글꼴 크기를 줄입니다",
+          "natural": 1.9,
+          "meaning": 0.98,
+          "style": 0.54,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -57,7 +119,13 @@
       "en": "Only affects conversation content",
       "kind": "normal",
       "attempts": [
-        { "ko": "대화 내용에만 적용됩니다.", "natural": 1.85, "meaning": 0.97, "style": 0.94, "pass": true }
+        {
+          "ko": "대화 내용에만 적용됩니다.",
+          "natural": 1.85,
+          "meaning": 0.97,
+          "style": 0.94,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -66,17 +134,41 @@
       "en": "Increase font size",
       "kind": "normal",
       "attempts": [
-        { "ko": "글꼴 크기 키우기", "natural": 1.91, "meaning": 0.98, "style": 0.24, "pass": false },
-        { "ko": "글꼴 크기를 키웁니다", "natural": 1.63, "meaning": 0.97, "style": 0.97, "pass": true }
+        {
+          "ko": "글꼴 크기 키우기",
+          "natural": 1.91,
+          "meaning": 0.98,
+          "style": 0.24,
+          "pass": false
+        },
+        {
+          "ko": "글꼴 크기를 키웁니다",
+          "natural": 1.63,
+          "meaning": 0.97,
+          "style": 0.97,
+          "pass": true
+        }
       ],
-      "result": "fixed"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "글꼴 크기 키우기",
+        "note": "버튼·라벨을 문장으로 바꾼 재작성 대신 이전 라벨 후보로 되돌림(자연·의미 통과, 문체만 미달)"
+      }
     },
     {
       "key": "fontSize.title",
       "en": "Font size",
       "kind": "normal",
       "attempts": [
-        { "ko": "글꼴 크기", "natural": 1.96, "meaning": 0.97, "style": 0.57, "pass": true }
+        {
+          "ko": "글꼴 크기",
+          "natural": 1.96,
+          "meaning": 0.97,
+          "style": 0.57,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -92,7 +184,13 @@
       "en": "Used for code blocks, inline code, and tool output. Separate fonts with commas; leave empty for the default",
       "kind": "normal",
       "attempts": [
-        { "ko": "코드 블록, 인라인 코드, 도구 출력에 사용됩니다. 글꼴은 쉼표로 구분하며, 비워 두면 기본값이 사용됩니다", "natural": 1.7, "meaning": 0.95, "style": 0.6, "pass": true }
+        {
+          "ko": "코드 블록, 인라인 코드, 도구 출력에 사용됩니다. 글꼴은 쉼표로 구분하며, 비워 두면 기본값이 사용됩니다",
+          "natural": 1.7,
+          "meaning": 0.95,
+          "style": 0.6,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -101,7 +199,13 @@
       "en": "Code font",
       "kind": "normal",
       "attempts": [
-        { "ko": "코드 글꼴", "natural": 1.96, "meaning": 0.95, "style": 0.56, "pass": true }
+        {
+          "ko": "코드 글꼴",
+          "natural": 1.96,
+          "meaning": 0.95,
+          "style": 0.56,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -110,7 +214,13 @@
       "en": "Default",
       "kind": "normal",
       "attempts": [
-        { "ko": "기본값", "natural": 1.97, "meaning": 0.97, "style": 0.63, "pass": true }
+        {
+          "ko": "기본값",
+          "natural": 1.97,
+          "meaning": 0.97,
+          "style": 0.63,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -119,7 +229,13 @@
       "en": "Used for the sidebar terminal. Separate fonts with commas; leave empty for the default",
       "kind": "normal",
       "attempts": [
-        { "ko": "사이드바 터미널에 사용됩니다. 글꼴은 쉼표로 구분하며, 비워 두면 기본값이 사용됩니다", "natural": 1.81, "meaning": 0.97, "style": 0.77, "pass": true }
+        {
+          "ko": "사이드바 터미널에 사용됩니다. 글꼴은 쉼표로 구분하며, 비워 두면 기본값이 사용됩니다",
+          "natural": 1.81,
+          "meaning": 0.97,
+          "style": 0.77,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -128,7 +244,13 @@
       "en": "Terminal font",
       "kind": "normal",
       "attempts": [
-        { "ko": "터미널 글꼴", "natural": 1.93, "meaning": 0.96, "style": 0.6, "pass": true }
+        {
+          "ko": "터미널 글꼴",
+          "natural": 1.93,
+          "meaning": 0.96,
+          "style": 0.6,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -137,7 +259,13 @@
       "en": "Used for the interface and conversation text. Separate fonts with commas; leave empty for the default",
       "kind": "normal",
       "attempts": [
-        { "ko": "인터페이스와 대화 텍스트에 사용됩니다. 글꼴은 쉼표로 구분하며, 비워 두면 기본값이 사용됩니다", "natural": 1.82, "meaning": 0.97, "style": 0.74, "pass": true }
+        {
+          "ko": "인터페이스와 대화 텍스트에 사용됩니다. 글꼴은 쉼표로 구분하며, 비워 두면 기본값이 사용됩니다",
+          "natural": 1.82,
+          "meaning": 0.97,
+          "style": 0.74,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -146,7 +274,13 @@
       "en": "Text font",
       "kind": "normal",
       "attempts": [
-        { "ko": "텍스트 글꼴", "natural": 1.8, "meaning": 0.9, "style": 0.6, "pass": true }
+        {
+          "ko": "텍스트 글꼴",
+          "natural": 1.8,
+          "meaning": 0.9,
+          "style": 0.6,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -155,17 +289,41 @@
       "en": "Decrease code font size",
       "kind": "normal",
       "attempts": [
-        { "ko": "코드 글꼴 크기 줄이기", "natural": 1.92, "meaning": 0.98, "style": 0.31, "pass": false },
-        { "ko": "코드 글꼴 크기를 줄입니다", "natural": 1.86, "meaning": 0.98, "style": 0.94, "pass": true }
+        {
+          "ko": "코드 글꼴 크기 줄이기",
+          "natural": 1.92,
+          "meaning": 0.98,
+          "style": 0.31,
+          "pass": false
+        },
+        {
+          "ko": "코드 글꼴 크기를 줄입니다",
+          "natural": 1.86,
+          "meaning": 0.98,
+          "style": 0.94,
+          "pass": true
+        }
       ],
-      "result": "fixed"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "코드 글꼴 크기 줄이기",
+        "note": "버튼·라벨을 문장으로 바꾼 재작성 대신 이전 라벨 후보로 되돌림(자연·의미 통과, 문체만 미달)"
+      }
     },
     {
       "key": "fontSize.code.description",
       "en": "Used for code blocks, inline code, and tool output",
       "kind": "normal",
       "attempts": [
-        { "ko": "코드 블록, 인라인 코드, 도구 출력에 사용됩니다.", "natural": 1.88, "meaning": 0.97, "style": 0.89, "pass": true }
+        {
+          "ko": "코드 블록, 인라인 코드, 도구 출력에 사용됩니다.",
+          "natural": 1.88,
+          "meaning": 0.97,
+          "style": 0.89,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -174,17 +332,41 @@
       "en": "Increase code font size",
       "kind": "normal",
       "attempts": [
-        { "ko": "코드 글꼴 크기 키우기", "natural": 1.92, "meaning": 0.98, "style": 0.36, "pass": false },
-        { "ko": "코드 글꼴 크기를 키웁니다", "natural": 1.85, "meaning": 0.98, "style": 0.95, "pass": true }
+        {
+          "ko": "코드 글꼴 크기 키우기",
+          "natural": 1.92,
+          "meaning": 0.98,
+          "style": 0.36,
+          "pass": false
+        },
+        {
+          "ko": "코드 글꼴 크기를 키웁니다",
+          "natural": 1.85,
+          "meaning": 0.98,
+          "style": 0.95,
+          "pass": true
+        }
       ],
-      "result": "fixed"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "코드 글꼴 크기 키우기",
+        "note": "버튼·라벨을 문장으로 바꾼 재작성 대신 이전 라벨 후보로 되돌림(자연·의미 통과, 문체만 미달)"
+      }
     },
     {
       "key": "fontSize.code.title",
       "en": "Code font size",
       "kind": "normal",
       "attempts": [
-        { "ko": "코드 글꼴 크기", "natural": 1.91, "meaning": 0.97, "style": 0.53, "pass": true }
+        {
+          "ko": "코드 글꼴 크기",
+          "natural": 1.91,
+          "meaning": 0.97,
+          "style": 0.53,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -193,7 +375,13 @@
       "en": "More font settings",
       "kind": "normal",
       "attempts": [
-        { "ko": "글꼴 설정 더 보기", "natural": 1.67, "meaning": 0.96, "style": 0.53, "pass": true }
+        {
+          "ko": "글꼴 설정 더 보기",
+          "natural": 1.67,
+          "meaning": 0.96,
+          "style": 0.53,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -202,17 +390,41 @@
       "en": "Decrease terminal font size",
       "kind": "normal",
       "attempts": [
-        { "ko": "터미널 글꼴 크기 줄이기", "natural": 1.91, "meaning": 0.98, "style": 0.38, "pass": false },
-        { "ko": "터미널 글꼴 크기를 줄입니다", "natural": 1.82, "meaning": 0.98, "style": 0.9, "pass": true }
+        {
+          "ko": "터미널 글꼴 크기 줄이기",
+          "natural": 1.91,
+          "meaning": 0.98,
+          "style": 0.38,
+          "pass": false
+        },
+        {
+          "ko": "터미널 글꼴 크기를 줄입니다",
+          "natural": 1.82,
+          "meaning": 0.98,
+          "style": 0.9,
+          "pass": true
+        }
       ],
-      "result": "fixed"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "터미널 글꼴 크기 줄이기",
+        "note": "버튼·라벨을 문장으로 바꾼 재작성 대신 이전 라벨 후보로 되돌림(자연·의미 통과, 문체만 미달)"
+      }
     },
     {
       "key": "fontSize.terminal.description",
       "en": "Used for the sidebar terminal",
       "kind": "normal",
       "attempts": [
-        { "ko": "사이드바 터미널에 사용됩니다.", "natural": 1.82, "meaning": 0.98, "style": 0.9, "pass": true }
+        {
+          "ko": "사이드바 터미널에 사용됩니다.",
+          "natural": 1.82,
+          "meaning": 0.98,
+          "style": 0.9,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -221,7 +433,13 @@
       "en": "Increase terminal font size",
       "kind": "normal",
       "attempts": [
-        { "ko": "터미널 글꼴 크기 키우기", "natural": 1.91, "meaning": 0.98, "style": 0.56, "pass": true }
+        {
+          "ko": "터미널 글꼴 크기 키우기",
+          "natural": 1.91,
+          "meaning": 0.98,
+          "style": 0.56,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -230,7 +448,13 @@
       "en": "Terminal font size",
       "kind": "normal",
       "attempts": [
-        { "ko": "터미널 글꼴 크기", "natural": 1.9, "meaning": 0.98, "style": 0.61, "pass": true }
+        {
+          "ko": "터미널 글꼴 크기",
+          "natural": 1.9,
+          "meaning": 0.98,
+          "style": 0.61,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -239,17 +463,41 @@
       "en": "Decrease font size",
       "kind": "normal",
       "attempts": [
-        { "ko": "글꼴 크기 줄이기", "natural": 1.89, "meaning": 0.98, "style": 0.34, "pass": false },
-        { "ko": "글꼴 크기를 줄입니다", "natural": 1.83, "meaning": 0.98, "style": 0.51, "pass": true }
+        {
+          "ko": "글꼴 크기 줄이기",
+          "natural": 1.89,
+          "meaning": 0.98,
+          "style": 0.34,
+          "pass": false
+        },
+        {
+          "ko": "글꼴 크기를 줄입니다",
+          "natural": 1.83,
+          "meaning": 0.98,
+          "style": 0.51,
+          "pass": true
+        }
       ],
-      "result": "fixed"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "글꼴 크기 줄이기",
+        "note": "버튼·라벨을 문장으로 바꾼 재작성 대신 이전 라벨 후보로 되돌림(자연·의미 통과, 문체만 미달)"
+      }
     },
     {
       "key": "fontSize.text.description",
       "en": "Only affects conversation content",
       "kind": "normal",
       "attempts": [
-        { "ko": "대화 내용에만 적용됩니다.", "natural": 1.88, "meaning": 0.97, "style": 0.93, "pass": true }
+        {
+          "ko": "대화 내용에만 적용됩니다.",
+          "natural": 1.88,
+          "meaning": 0.97,
+          "style": 0.93,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -258,17 +506,41 @@
       "en": "Increase font size",
       "kind": "normal",
       "attempts": [
-        { "ko": "글꼴 크기 키우기", "natural": 1.94, "meaning": 0.98, "style": 0.36, "pass": false },
-        { "ko": "글꼴 크기를 키웁니다", "natural": 1.79, "meaning": 0.98, "style": 0.96, "pass": true }
+        {
+          "ko": "글꼴 크기 키우기",
+          "natural": 1.94,
+          "meaning": 0.98,
+          "style": 0.36,
+          "pass": false
+        },
+        {
+          "ko": "글꼴 크기를 키웁니다",
+          "natural": 1.79,
+          "meaning": 0.98,
+          "style": 0.96,
+          "pass": true
+        }
       ],
-      "result": "fixed"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "글꼴 크기 키우기",
+        "note": "버튼·라벨을 문장으로 바꾼 재작성 대신 이전 라벨 후보로 되돌림(자연·의미 통과, 문체만 미달)"
+      }
     },
     {
       "key": "fontSize.text.title",
       "en": "Font size",
       "kind": "normal",
       "attempts": [
-        { "ko": "글꼴 크기", "natural": 1.97, "meaning": 0.98, "style": 0.51, "pass": true }
+        {
+          "ko": "글꼴 크기",
+          "natural": 1.97,
+          "meaning": 0.98,
+          "style": 0.51,
+          "pass": true
+        }
       ],
       "result": "pass"
     }

@@ -9,6 +9,7 @@ export default {
     'drill.key': 'Tab',
     loading: '불러오고 있습니다…',
     skill: '스킬',
+    subagent: '서브에이전트',
   },
-  fallback: ['subagent', 'suggestions.aria'],
+  fallback: ['suggestions.aria'],
 } satisfies DshKoNamespace;

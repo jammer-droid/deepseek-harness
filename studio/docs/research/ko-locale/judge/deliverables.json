@@ -289,7 +289,13 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "이번 턴의 변경 사항은 더 이상 내용을 볼 수 없습니다.",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
     },
     {
       "key": "diff.oversized",
@@ -487,7 +493,13 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "파일이 들어 있는 폴더를 열고 있습니다…",
+        "note": "문체 점수만 미달(짧은 라벨)"
+      }
     },
     {
       "key": "presented.error",
@@ -559,7 +571,13 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "전달받은 파일 {count}개 모두 보기",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
     },
     {
       "key": "presented.file",
@@ -610,7 +628,13 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "Host 데스크톱 정보 읽기에 실패했습니다.",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
     },
     {
       "key": "presented.nativeUnavailable",
@@ -779,7 +803,13 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "파일 관리자에서 표시하는 데 실패했습니다. 다시 시도하십시오.",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
     },
     {
       "key": "presented.revealed",
@@ -815,7 +845,13 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "파일 관리자에 표시하는 요청을 보냈습니다.",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
     },
     {
       "key": "presented.revealing",

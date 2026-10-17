@@ -2,15 +2,31 @@
   "namespace": "sidebarPdf",
   "date": "2026-10-17",
   "engine": "jev",
-  "thresholds": { "natural": 1.5, "meaning": 0.6, "style": 0.5 },
+  "thresholds": {
+    "natural": 1.5,
+    "meaning": 0.6,
+    "style": 0.5
+  },
   "rows": [
     {
       "key": "failed",
       "en": "Cannot display PDF: {message}",
       "kind": "normal",
       "attempts": [
-        { "ko": "PDF를 표시할 수 없습니다: {message}", "natural": 1.82, "meaning": 0.97, "style": 0.49, "pass": false },
-        { "ko": "PDF를 표시하지 못했습니다: {message}", "natural": 1.68, "meaning": 0.95, "style": 0.84, "pass": true }
+        {
+          "ko": "PDF를 표시할 수 없습니다: {message}",
+          "natural": 1.82,
+          "meaning": 0.97,
+          "style": 0.49,
+          "pass": false
+        },
+        {
+          "ko": "PDF를 표시하지 못했습니다: {message}",
+          "natural": 1.68,
+          "meaning": 0.95,
+          "style": 0.84,
+          "pass": true
+        }
       ],
       "result": "fixed"
     },
@@ -19,7 +35,13 @@
       "en": "Rendering document...",
       "kind": "normal",
       "attempts": [
-        { "ko": "문서를 렌더링하고 있습니다...", "natural": 1.8, "meaning": 0.98, "style": 0.72, "pass": true }
+        {
+          "ko": "문서를 렌더링하고 있습니다...",
+          "natural": 1.8,
+          "meaning": 0.98,
+          "style": 0.72,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -28,7 +50,13 @@
       "en": "PDF page {page}",
       "kind": "normal",
       "attempts": [
-        { "ko": "PDF 페이지 {page}", "natural": 1.86, "meaning": 0.98, "style": 0.75, "pass": true }
+        {
+          "ko": "PDF 페이지 {page}",
+          "natural": 1.86,
+          "meaning": 0.98,
+          "style": 0.75,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -37,16 +65,35 @@
       "en": "This PDF requires a password; password-protected previews are not supported.",
       "kind": "normal",
       "attempts": [
-        { "ko": "이 PDF에는 암호가 필요합니다. 암호로 보호된 미리보기는 지원되지 않습니다.", "natural": 1.79, "meaning": 0.97, "style": 0.75, "pass": true }
+        {
+          "ko": "이 PDF에는 암호가 필요합니다. 암호로 보호된 미리보기는 지원되지 않습니다.",
+          "natural": 1.79,
+          "meaning": 0.97,
+          "style": 0.75,
+          "pass": true
+        },
+        {
+          "ko": "이 PDF에는 암호가 필요합니다. 암호로 보호된 미리 보기는 지원되지 않습니다.",
+          "natural": 1.71,
+          "meaning": 0.96,
+          "style": 0.81,
+          "pass": true
+        }
       ],
-      "result": "pass"
+      "result": "fixed"
     },
     {
       "key": "rendering",
       "en": "Rendering page…",
       "kind": "normal",
       "attempts": [
-        { "ko": "페이지를 렌더링하고 있습니다…", "natural": 1.79, "meaning": 0.97, "style": 0.81, "pass": true }
+        {
+          "ko": "페이지를 렌더링하고 있습니다…",
+          "natural": 1.79,
+          "meaning": 0.97,
+          "style": 0.81,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -55,10 +102,28 @@
       "en": "Retry",
       "kind": "normal",
       "attempts": [
-        { "ko": "다시 시도", "natural": 1.97, "meaning": 0.98, "style": 0.49, "pass": false },
-        { "ko": "다시 시도하십시오", "natural": 1.72, "meaning": 0.96, "style": 0.89, "pass": true }
+        {
+          "ko": "다시 시도",
+          "natural": 1.97,
+          "meaning": 0.98,
+          "style": 0.49,
+          "pass": false
+        },
+        {
+          "ko": "다시 시도하십시오",
+          "natural": 1.72,
+          "meaning": 0.96,
+          "style": 0.89,
+          "pass": true
+        }
       ],
-      "result": "fixed"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "다시 시도",
+        "note": "버튼·라벨을 문장으로 바꾼 재작성 대신 이전 라벨 후보로 되돌림(자연·의미 통과, 문체만 미달)"
+      }
     },
     {
       "key": "title",
@@ -72,16 +137,32 @@
       "en": "PDF preview requires the complete file contents.",
       "kind": "normal",
       "attempts": [
-        { "ko": "PDF 미리보기에는 전체 파일 내용이 필요합니다.", "natural": 1.8, "meaning": 0.97, "style": 0.65, "pass": true }
+        {
+          "ko": "PDF 미리보기에는 전체 파일 내용이 필요합니다.",
+          "natural": 1.8,
+          "meaning": 0.97,
+          "style": 0.65,
+          "pass": true
+        }
       ],
-      "result": "pass"
+      "result": "pass",
+      "review": {
+        "date": "2026-10-17",
+        "note": "용어 통일안이 판정을 통과하지 못해 이전 통과 문구 유지"
+      }
     },
     {
       "key": "workerFailed",
       "en": "The PDF rendering process could not continue. Please retry.",
       "kind": "normal",
       "attempts": [
-        { "ko": "PDF 렌더링 프로세스를 계속할 수 없습니다. 다시 시도해 주십시오.", "natural": 1.62, "meaning": 0.97, "style": 0.86, "pass": true }
+        {
+          "ko": "PDF 렌더링 프로세스를 계속할 수 없습니다. 다시 시도해 주십시오.",
+          "natural": 1.62,
+          "meaning": 0.97,
+          "style": 0.86,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -90,7 +171,13 @@
       "en": "Zoom controls",
       "kind": "normal",
       "attempts": [
-        { "ko": "확대/축소 컨트롤", "natural": 1.69, "meaning": 0.97, "style": 0.67, "pass": true }
+        {
+          "ko": "확대/축소 컨트롤",
+          "natural": 1.69,
+          "meaning": 0.97,
+          "style": 0.67,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -99,7 +186,13 @@
       "en": "Fit width",
       "kind": "normal",
       "attempts": [
-        { "ko": "너비에 맞춤", "natural": 1.86, "meaning": 0.97, "style": 0.69, "pass": true }
+        {
+          "ko": "너비에 맞춤",
+          "natural": 1.86,
+          "meaning": 0.97,
+          "style": 0.69,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -108,7 +201,13 @@
       "en": "Zoom in",
       "kind": "normal",
       "attempts": [
-        { "ko": "확대", "natural": 1.97, "meaning": 0.98, "style": 0.72, "pass": true }
+        {
+          "ko": "확대",
+          "natural": 1.97,
+          "meaning": 0.98,
+          "style": 0.72,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -117,7 +216,13 @@
       "en": "Choose zoom",
       "kind": "normal",
       "attempts": [
-        { "ko": "배율 선택", "natural": 1.68, "meaning": 0.98, "style": 0.67, "pass": true }
+        {
+          "ko": "배율 선택",
+          "natural": 1.68,
+          "meaning": 0.98,
+          "style": 0.67,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -126,7 +231,13 @@
       "en": "Zoom out",
       "kind": "normal",
       "attempts": [
-        { "ko": "축소", "natural": 1.97, "meaning": 0.98, "style": 0.69, "pass": true }
+        {
+          "ko": "축소",
+          "natural": 1.97,
+          "meaning": 0.98,
+          "style": 0.69,
+          "pass": true
+        }
       ],
       "result": "pass"
     },

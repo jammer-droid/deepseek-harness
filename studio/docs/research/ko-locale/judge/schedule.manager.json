@@ -159,7 +159,13 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "매일 실행{months}",
+        "note": "문체 점수만 미달(짧은 라벨)"
+      }
     },
     {
       "key": "cron.day.monthDays",
@@ -195,7 +201,13 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "매월 {days}일에 실행{months}",
+        "note": "문체 점수만 미달(짧은 라벨)"
+      }
     },
     {
       "key": "cron.months",
@@ -231,7 +243,17 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": " 실행 ({months})",
+        "note": "조각·화면 역할을 넣어 판정 통과",
+        "judged": {
+          "scores": "1.64/0.98/0.68",
+          "joined": "매일 실행 (3월, 4월) ↔ Every day in March, April"
+        }
+      }
     },
     {
       "key": "cron.time.at",
@@ -1061,9 +1083,16 @@
           "meaning": 0.97,
           "style": 0.67,
           "pass": true
+        },
+        {
+          "ko": "새로 고침",
+          "natural": 1.93,
+          "meaning": 0.95,
+          "style": 0.87,
+          "pass": true
         }
       ],
-      "result": "pass"
+      "result": "fixed"
     },
     {
       "key": "delivery.retention",
@@ -1351,7 +1380,13 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "연결된 원래 세션 열기",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
     },
     {
       "key": "detail.openSessionTitle",
@@ -1406,7 +1441,17 @@
           "versions": 2
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "실행 기록",
+        "note": "조각·화면 역할을 넣어 판정 통과",
+        "judged": {
+          "scores": "1.57/0.73/0.71",
+          "joined": "detail tab title ↔ Records"
+        }
+      }
     },
     {
       "key": "detail.rule",
@@ -2148,7 +2193,13 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "규칙 업데이트를 확인하지 못했습니다. 행에는 저장된 규칙이 표시됩니다.",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
     },
     {
       "key": "rule.everyHours",
@@ -2529,7 +2580,11 @@
           "pass": true
         }
       ],
-      "result": "fixed"
+      "result": "fixed",
+      "review": {
+        "date": "2026-10-17",
+        "note": "용어 통일안이 판정을 통과하지 못해 이전 통과 문구 유지"
+      }
     },
     {
       "key": "timing.date",
@@ -2856,7 +2911,13 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "이 작업은 더 이상 사용할 수 없습니다. 작성 중인 내용은 유지됩니다. 편집기를 닫으려면 취소하십시오.",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
     },
     {
       "key": "timing.notFuture",
@@ -2935,7 +2996,8 @@
       "approval": {
         "by": "user",
         "date": "2026-10-17",
-        "note": "판정 미통과 문구를 사용자가 그대로 승인(단위·제품 이름)"
+        "note": "판정 미통과 문구를 사용자가 그대로 승인(단위·제품 이름)",
+        "ko": "시간"
       }
     },
     {
@@ -3127,7 +3189,8 @@
       "approval": {
         "by": "user",
         "date": "2026-10-17",
-        "note": "판정 미통과 문구를 사용자가 그대로 승인(단위·제품 이름)"
+        "note": "판정 미통과 문구를 사용자가 그대로 승인(단위·제품 이름)",
+        "ko": "일"
       }
     },
     {
@@ -3192,7 +3255,8 @@
       "approval": {
         "by": "user",
         "date": "2026-10-17",
-        "note": "판정 미통과 문구를 사용자가 그대로 승인(단위·제품 이름)"
+        "note": "판정 미통과 문구를 사용자가 그대로 승인(단위·제품 이름)",
+        "ko": "분"
       }
     },
     {

@@ -2,14 +2,24 @@
   "namespace": "sidebarFiles",
   "date": "2026-10-17",
   "engine": "jev",
-  "thresholds": { "natural": 1.5, "meaning": 0.6, "style": 0.5 },
+  "thresholds": {
+    "natural": 1.5,
+    "meaning": 0.6,
+    "style": 0.5
+  },
   "rows": [
     {
       "key": "autoRefresh",
       "en": "Auto refresh",
       "kind": "normal",
       "attempts": [
-        { "ko": "자동 새로 고침", "natural": 1.9, "meaning": 0.97, "style": 0.66, "pass": true }
+        {
+          "ko": "자동 새로 고침",
+          "natural": 1.9,
+          "meaning": 0.97,
+          "style": 0.66,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -18,27 +28,69 @@
       "en": "Disable auto refresh",
       "kind": "normal",
       "attempts": [
-        { "ko": "자동 새로 고침 끄기", "natural": 1.76, "meaning": 0.98, "style": 0.35, "pass": false },
-        { "ko": "자동 새로 고침을 끕니다", "natural": 1.82, "meaning": 0.98, "style": 0.58, "pass": true }
+        {
+          "ko": "자동 새로 고침 끄기",
+          "natural": 1.76,
+          "meaning": 0.98,
+          "style": 0.35,
+          "pass": false
+        },
+        {
+          "ko": "자동 새로 고침을 끕니다",
+          "natural": 1.82,
+          "meaning": 0.98,
+          "style": 0.58,
+          "pass": true
+        }
       ],
-      "result": "fixed"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "자동 새로 고침 끄기",
+        "note": "버튼·라벨을 문장으로 바꾼 재작성 대신 이전 라벨 후보로 되돌림(자연·의미 통과, 문체만 미달)"
+      }
     },
     {
       "key": "autoRefresh.enable",
       "en": "Enable auto refresh",
       "kind": "normal",
       "attempts": [
-        { "ko": "자동 새로 고침 켜기", "natural": 1.91, "meaning": 0.98, "style": 0.34, "pass": false },
-        { "ko": "자동 새로 고침을 켭니다", "natural": 1.83, "meaning": 0.98, "style": 0.56, "pass": true }
+        {
+          "ko": "자동 새로 고침 켜기",
+          "natural": 1.91,
+          "meaning": 0.98,
+          "style": 0.34,
+          "pass": false
+        },
+        {
+          "ko": "자동 새로 고침을 켭니다",
+          "natural": 1.83,
+          "meaning": 0.98,
+          "style": 0.56,
+          "pass": true
+        }
       ],
-      "result": "fixed"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "자동 새로 고침 켜기",
+        "note": "버튼·라벨을 문장으로 바꾼 재작성 대신 이전 라벨 후보로 되돌림(자연·의미 통과, 문체만 미달)"
+      }
     },
     {
       "key": "empty",
       "en": "Empty directory",
       "kind": "normal",
       "attempts": [
-        { "ko": "빈 디렉터리", "natural": 1.9, "meaning": 0.97, "style": 0.72, "pass": true }
+        {
+          "ko": "빈 디렉터리",
+          "natural": 1.9,
+          "meaning": 0.97,
+          "style": 0.72,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -47,7 +99,13 @@
       "en": "Not a file or a directory, so it cannot be opened.",
       "kind": "normal",
       "attempts": [
-        { "ko": "파일도 디렉터리도 아니어서 열 수 없습니다.", "natural": 1.77, "meaning": 0.97, "style": 0.89, "pass": true }
+        {
+          "ko": "파일도 디렉터리도 아니어서 열 수 없습니다.",
+          "natural": 1.77,
+          "meaning": 0.97,
+          "style": 0.89,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -56,7 +114,13 @@
       "en": "That is not a directory.",
       "kind": "normal",
       "attempts": [
-        { "ko": "디렉터리가 아닙니다.", "natural": 1.89, "meaning": 0.96, "style": 0.59, "pass": true }
+        {
+          "ko": "디렉터리가 아닙니다.",
+          "natural": 1.89,
+          "meaning": 0.96,
+          "style": 0.59,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -65,7 +129,13 @@
       "en": "That directory is gone. It may have been moved or deleted.",
       "kind": "normal",
       "attempts": [
-        { "ko": "해당 디렉터리가 없습니다. 이동되었거나 삭제되었을 수 있습니다.", "natural": 1.9, "meaning": 0.95, "style": 0.6, "pass": true }
+        {
+          "ko": "해당 디렉터리가 없습니다. 이동되었거나 삭제되었을 수 있습니다.",
+          "natural": 1.9,
+          "meaning": 0.95,
+          "style": 0.6,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -74,7 +144,13 @@
       "en": "That directory is outside the workspace, so the sidebar will not read it.",
       "kind": "normal",
       "attempts": [
-        { "ko": "해당 디렉터리가 워크스페이스 밖에 있어 사이드바에서 읽지 않습니다.", "natural": 1.58, "meaning": 0.96, "style": 0.59, "pass": true }
+        {
+          "ko": "해당 디렉터리가 워크스페이스 밖에 있어 사이드바에서 읽지 않습니다.",
+          "natural": 1.58,
+          "meaning": 0.96,
+          "style": 0.59,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -83,8 +159,20 @@
       "en": "Read failed: {message}",
       "kind": "normal",
       "attempts": [
-        { "ko": "읽기 실패: {message}", "natural": 1.89, "meaning": 0.95, "style": 0.45, "pass": false },
-        { "ko": "읽기에 실패했습니다: {message}", "natural": 1.82, "meaning": 0.96, "style": 0.92, "pass": true }
+        {
+          "ko": "읽기 실패: {message}",
+          "natural": 1.89,
+          "meaning": 0.95,
+          "style": 0.45,
+          "pass": false
+        },
+        {
+          "ko": "읽기에 실패했습니다: {message}",
+          "natural": 1.82,
+          "meaning": 0.96,
+          "style": 0.92,
+          "pass": true
+        }
       ],
       "result": "fixed"
     },
@@ -93,7 +181,13 @@
       "en": "Browse files in this session's workspace",
       "kind": "normal",
       "attempts": [
-        { "ko": "이 세션의 워크스페이스에 있는 파일을 살펴봅니다.", "natural": 1.59, "meaning": 0.97, "style": 0.82, "pass": true }
+        {
+          "ko": "이 세션의 워크스페이스에 있는 파일을 살펴봅니다.",
+          "natural": 1.59,
+          "meaning": 0.97,
+          "style": 0.82,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -102,7 +196,13 @@
       "en": "Workspace files",
       "kind": "normal",
       "attempts": [
-        { "ko": "워크스페이스 파일", "natural": 1.92, "meaning": 0.98, "style": 0.73, "pass": true }
+        {
+          "ko": "워크스페이스 파일",
+          "natural": 1.92,
+          "meaning": 0.98,
+          "style": 0.73,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -111,7 +211,13 @@
       "en": "Reading…",
       "kind": "normal",
       "attempts": [
-        { "ko": "읽고 있습니다…", "natural": 1.95, "meaning": 0.98, "style": 0.59, "pass": true }
+        {
+          "ko": "읽고 있습니다…",
+          "natural": 1.95,
+          "meaning": 0.98,
+          "style": 0.59,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -120,7 +226,13 @@
       "en": "This session has no workspace directory.",
       "kind": "normal",
       "attempts": [
-        { "ko": "이 세션에는 워크스페이스 디렉터리가 없습니다.", "natural": 1.86, "meaning": 0.98, "style": 0.86, "pass": true }
+        {
+          "ko": "이 세션에는 워크스페이스 디렉터리가 없습니다.",
+          "natural": 1.86,
+          "meaning": 0.98,
+          "style": 0.86,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -129,7 +241,13 @@
       "en": "Reload",
       "kind": "normal",
       "attempts": [
-        { "ko": "새로 고침", "natural": 1.91, "meaning": 0.96, "style": 0.66, "pass": true }
+        {
+          "ko": "새로 고침",
+          "natural": 1.91,
+          "meaning": 0.96,
+          "style": 0.66,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -138,7 +256,13 @@
       "en": "Select a session first",
       "kind": "normal",
       "attempts": [
-        { "ko": "먼저 세션을 선택하십시오.", "natural": 1.78, "meaning": 0.96, "style": 0.92, "pass": true }
+        {
+          "ko": "먼저 세션을 선택하십시오.",
+          "natural": 1.78,
+          "meaning": 0.96,
+          "style": 0.92,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -147,7 +271,13 @@
       "en": "Too many entries, showing only some of them.",
       "kind": "normal",
       "attempts": [
-        { "ko": "항목이 너무 많아 일부만 표시합니다.", "natural": 1.82, "meaning": 0.91, "style": 0.62, "pass": true }
+        {
+          "ko": "항목이 너무 많아 일부만 표시합니다.",
+          "natural": 1.82,
+          "meaning": 0.91,
+          "style": 0.62,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -156,7 +286,13 @@
       "en": "Files",
       "kind": "normal",
       "attempts": [
-        { "ko": "파일", "natural": 1.94, "meaning": 0.97, "style": 0.73, "pass": true }
+        {
+          "ko": "파일",
+          "natural": 1.94,
+          "meaning": 0.97,
+          "style": 0.73,
+          "pass": true
+        }
       ],
       "result": "pass"
     }

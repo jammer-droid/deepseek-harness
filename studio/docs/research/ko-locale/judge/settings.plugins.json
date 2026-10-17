@@ -2,14 +2,24 @@
   "namespace": "settings.plugins",
   "date": "2026-10-17",
   "engine": "jev",
-  "thresholds": { "natural": 1.5, "meaning": 0.6, "style": 0.5 },
+  "thresholds": {
+    "natural": 1.5,
+    "meaning": 0.6,
+    "style": 0.5
+  },
   "rows": [
     {
       "key": "empty",
       "en": "This deployment exposes no plugin views.",
       "kind": "normal",
       "attempts": [
-        { "ko": "이 배포에서는 플러그인 뷰를 제공하지 않습니다.", "natural": 1.58, "meaning": 0.97, "style": 0.92, "pass": true }
+        {
+          "ko": "이 배포에서는 플러그인 뷰를 제공하지 않습니다.",
+          "natural": 1.58,
+          "meaning": 0.97,
+          "style": 0.92,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -18,7 +28,13 @@
       "en": "Inspect the plugins this deployment ships.",
       "kind": "normal",
       "attempts": [
-        { "ko": "이 배포에 포함된 플러그인을 살펴봅니다.", "natural": 1.64, "meaning": 0.96, "style": 0.64, "pass": true }
+        {
+          "ko": "이 배포에 포함된 플러그인을 살펴봅니다.",
+          "natural": 1.64,
+          "meaning": 0.96,
+          "style": 0.64,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -27,7 +43,13 @@
       "en": "Built-in plugins",
       "kind": "normal",
       "attempts": [
-        { "ko": "기본 제공 플러그인", "natural": 1.8, "meaning": 0.98, "style": 0.73, "pass": true }
+        {
+          "ko": "기본 제공 플러그인",
+          "natural": 1.8,
+          "meaning": 0.98,
+          "style": 0.73,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -36,18 +58,48 @@
       "en": "Plugin views",
       "kind": "normal",
       "attempts": [
-        { "ko": "플러그인 뷰", "natural": 1.44, "meaning": 0.97, "style": 0.68, "pass": false },
-        { "ko": "플러그인 화면", "natural": 1.47, "meaning": 0.94, "style": 0.63, "pass": false },
-        { "ko": "플러그인 뷰 탭", "natural": 1.37, "meaning": 0.86, "style": 0.64, "pass": false }
+        {
+          "ko": "플러그인 뷰",
+          "natural": 1.44,
+          "meaning": 0.97,
+          "style": 0.68,
+          "pass": false
+        },
+        {
+          "ko": "플러그인 화면",
+          "natural": 1.47,
+          "meaning": 0.94,
+          "style": 0.63,
+          "pass": false
+        },
+        {
+          "ko": "플러그인 뷰 탭",
+          "natural": 1.37,
+          "meaning": 0.86,
+          "style": 0.64,
+          "pass": false
+        }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "플러그인 뷰",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
     },
     {
       "key": "title",
       "en": "Built-in plugins",
       "kind": "normal",
       "attempts": [
-        { "ko": "기본 제공 플러그인", "natural": 1.82, "meaning": 0.98, "style": 0.67, "pass": true }
+        {
+          "ko": "기본 제공 플러그인",
+          "natural": 1.82,
+          "meaning": 0.98,
+          "style": 0.67,
+          "pass": true
+        }
       ],
       "result": "pass"
     }

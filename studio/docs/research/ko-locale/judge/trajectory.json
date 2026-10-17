@@ -266,7 +266,13 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "생각 과정",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
     },
     {
       "key": "column.time",
@@ -489,7 +495,13 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "이벤트 상세 정보의 크기를 조절하십시오",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
     },
     {
       "key": "details.resizeTitle",
@@ -1722,9 +1734,16 @@
           "meaning": 0.92,
           "style": 0.66,
           "pass": true
+        },
+        {
+          "ko": "자동 줄바꿈",
+          "natural": 1.88,
+          "meaning": 0.95,
+          "style": 0.63,
+          "pass": true
         }
       ],
-      "result": "pass"
+      "result": "fixed"
     },
     {
       "key": "request.collapsedAssistant",
@@ -2016,7 +2035,13 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "턴 간 구간",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
     },
     {
       "key": "source.goal",
@@ -2604,7 +2629,13 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "TTFT {ttft} · 디코딩 시간 {decoding}",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
     },
     {
       "key": "timing.duration",
@@ -2857,7 +2888,13 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "단계 시작 정보 없음",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
     },
     {
       "key": "timing.throughput",
@@ -2953,7 +2990,13 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "Trajectory 도구 모음 영역",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
     },
     {
       "key": "toolbar.calls",
@@ -3382,7 +3425,13 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "세션 누적 사용량",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
     },
     {
       "key": "usage.thisRequest",

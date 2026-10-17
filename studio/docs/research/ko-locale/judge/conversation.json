@@ -385,7 +385,13 @@
           "pass": true
         }
       ],
-      "result": "fixed"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "첨부 파일 왼쪽으로 스크롤",
+        "note": "버튼·라벨을 문장으로 바꾼 재작성 대신 이전 라벨 후보로 되돌림(자연·의미 통과, 문체만 미달)"
+      }
     },
     {
       "key": "attachment.scrollRight",
@@ -407,7 +413,13 @@
           "pass": true
         }
       ],
-      "result": "fixed"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "첨부 파일 오른쪽으로 스크롤",
+        "note": "버튼·라벨을 문장으로 바꾼 재작성 대신 이전 라벨 후보로 되돌림(자연·의미 통과, 문체만 미달)"
+      }
     },
     {
       "key": "bash.failed",
@@ -584,7 +596,17 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "컨텍스트 사용량",
+        "note": "조각·화면 역할을 넣어 판정 통과",
+        "judged": {
+          "scores": "1.75/0.92/0.74",
+          "joined": "aria-label of the context-usage dialog ↔ Context used"
+        }
+      }
     },
     {
       "key": "detail.agent.reply",
@@ -1372,9 +1394,16 @@
           "meaning": 0.96,
           "style": 0.54,
           "pass": true
+        },
+        {
+          "ko": "작업",
+          "natural": 1.81,
+          "meaning": 0.94,
+          "style": 0.74,
+          "pass": true
         }
       ],
-      "result": "pass"
+      "result": "fixed"
     },
     {
       "key": "detail.field.time",
@@ -1885,7 +1914,13 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "Inspect 프로바이더 {count}개",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
     },
     {
       "key": "detail.ralph.limit",
@@ -1936,7 +1971,13 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "작업자가 진행을 막는 문제를 보고했습니다.",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
     },
     {
       "key": "detail.ralph.reportedComplete",
@@ -2587,9 +2628,16 @@
           "meaning": 0.94,
           "style": 0.59,
           "pass": true
+        },
+        {
+          "ko": "팀 작업 {count}개",
+          "natural": 1.65,
+          "meaning": 0.94,
+          "style": 0.62,
+          "pass": true
         }
       ],
-      "result": "pass"
+      "result": "fixed"
     },
     {
       "key": "detail.tasks.nextPage",
@@ -2623,9 +2671,22 @@
           "meaning": 0.89,
           "style": 0.88,
           "pass": false
+        },
+        {
+          "ko": "더 많은 작업을 보려면 다음 커서 {cursor}를 사용하십시오.",
+          "natural": 1.27,
+          "meaning": 0.87,
+          "style": 0.9,
+          "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "unresolved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "더 많은 과제를 보려면 다음 커서 {cursor}를 사용하십시오.",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
     },
     {
       "key": "detail.terminals.count",
@@ -2741,9 +2802,22 @@
           "meaning": 0.88,
           "style": 0.65,
           "pass": false
+        },
+        {
+          "ko": "상위 세션",
+          "natural": 1.35,
+          "meaning": 0.92,
+          "style": 0.69,
+          "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "상위 세션 계보",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택. 치환안 \"상위 세션\"은 1.5 미달"
+      }
     },
     {
       "key": "detail.trace.derived",
@@ -2785,9 +2859,23 @@
           "meaning": 0.97,
           "style": 0.55,
           "pass": true
+        },
+        {
+          "ko": "하위 세션",
+          "natural": 1.69,
+          "meaning": 0.93,
+          "style": 0.65,
+          "pass": true
+        },
+        {
+          "ko": "하위 세션 계보",
+          "natural": 1.5,
+          "meaning": 0.81,
+          "style": 0.59,
+          "pass": true
         }
       ],
-      "result": "pass"
+      "result": "fixed"
     },
     {
       "key": "detail.trace.replacedBy",
@@ -2859,7 +2947,13 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "연속된 대체 이력",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
     },
     {
       "key": "detail.trace.replaces",
@@ -3150,7 +3244,13 @@
           "pass": true
         }
       ],
-      "result": "fixed"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "변경 내역 {count}행 더 펼치기",
+        "note": "버튼·라벨을 문장으로 바꾼 재작성 대신 이전 라벨 후보로 되돌림(자연·의미 통과, 문체만 미달)"
+      }
     },
     {
       "key": "diff.expandRest",
@@ -3638,7 +3738,13 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "{label}, 원본을 보려면 클릭하십시오.",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
     },
     {
       "key": "image.original",
@@ -4022,7 +4128,13 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "Cmd/Ctrl+Enter를 누르면 대기열의 모든 메시지가 현재 실행 중인 턴으로 전송됩니다.",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
     },
     {
       "key": "placeholder.unavailable",
@@ -4604,7 +4716,13 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "에이전트가 실행 중일 때 Enter 키와 전송 버튼으로 수행할 동작을 설정합니다. Cmd/Ctrl+Enter를 누르면 선택하지 않은 쪽의 동작을 수행합니다.",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
     },
     {
       "key": "settings.enter.queue",
@@ -4713,7 +4831,13 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "기본 전송 방식 대신 다른 방식(대기열 추가 / 진행 중인 턴으로 전송)을 사용합니다.",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
     },
     {
       "key": "shortcut.mention",
@@ -4750,7 +4874,11 @@
           "pass": true
         }
       ],
-      "result": "fixed"
+      "result": "fixed",
+      "review": {
+        "date": "2026-10-17",
+        "note": "용어 통일안이 판정을 통과하지 못해 이전 통과 문구 유지"
+      }
     },
     {
       "key": "shortcut.slash",
@@ -5395,7 +5523,8 @@
       "approval": {
         "by": "user",
         "date": "2026-10-17",
-        "note": "판정 미통과 문구를 사용자가 그대로 승인(단위·제품 이름)"
+        "note": "판정 미통과 문구를 사용자가 그대로 승인(단위·제품 이름)",
+        "ko": "{kilobytes}KB"
       }
     },
     {
@@ -5469,9 +5598,16 @@
           "meaning": 0.96,
           "style": 0.65,
           "pass": true
+        },
+        {
+          "ko": "팀 작업 생성",
+          "natural": 1.77,
+          "meaning": 0.97,
+          "style": 0.61,
+          "pass": true
         }
       ],
-      "result": "pass"
+      "result": "fixed"
     },
     {
       "key": "tool.title.deleteSchedule",
@@ -5591,7 +5727,11 @@
           "pass": true
         }
       ],
-      "result": "pass"
+      "result": "pass",
+      "review": {
+        "date": "2026-10-17",
+        "note": "용어 통일안이 판정을 통과하지 못해 이전 통과 문구 유지"
+      }
     },
     {
       "key": "tool.title.hoverSymbol",
@@ -5761,9 +5901,16 @@
           "meaning": 0.95,
           "style": 0.57,
           "pass": true
+        },
+        {
+          "ko": "팀 작업 목록",
+          "natural": 1.71,
+          "meaning": 0.94,
+          "style": 0.62,
+          "pass": true
         }
       ],
-      "result": "pass"
+      "result": "fixed"
     },
     {
       "key": "tool.title.listTerminals",
@@ -6074,7 +6221,13 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "터미널로 시그널을 보냅니다.",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
     },
     {
       "key": "tool.title.spawnTeammate",
@@ -6199,9 +6352,16 @@
           "meaning": 0.93,
           "style": 0.52,
           "pass": true
+        },
+        {
+          "ko": "팀 작업 업데이트",
+          "natural": 1.68,
+          "meaning": 0.97,
+          "style": 0.67,
+          "pass": true
         }
       ],
-      "result": "pass"
+      "result": "fixed"
     },
     {
       "key": "tool.title.waitAgent",

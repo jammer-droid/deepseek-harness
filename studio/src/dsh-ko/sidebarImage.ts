@@ -4,7 +4,7 @@ export default {
   ko: {
     failed: '이 이미지를 표시할 수 없습니다.',
     loading: '문서를 렌더링하고 있습니다...',
-    preview: '이미지 미리보기: {name}',
+    preview: '이미지 미리 보기: {name}',
     title: '이미지',
     unsupported: '이미지 미리보기에는 전체 파일 내용이 필요합니다.',
     zoomControls: '확대/축소 컨트롤',

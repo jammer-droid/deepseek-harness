@@ -15,7 +15,7 @@ export default {
     shapes: '도형',
     timeout: '이 통합 문서를 여는 시간이 초과되었습니다. 더 작은 파일로 시도하십시오.',
     title: '스프레드시트',
-    tooLarge: '이 통합 문서가 미리보기 크기 제한을 초과합니다.',
+    tooLarge: '이 통합 문서가 미리 보기 크기 제한을 초과합니다.',
     unsupportedNotice: '이 미리보기는 이 통합 문서의 {features} 항목을 지원하지 않습니다. 전체 기능을 사용하려면 시스템 애플리케이션에서 여십시오.',
   },
 } satisfies DshKoNamespace;

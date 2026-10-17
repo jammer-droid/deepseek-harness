@@ -2,14 +2,24 @@
   "namespace": "slash.menu",
   "date": "2026-10-17",
   "engine": "jev",
-  "thresholds": { "natural": 1.5, "meaning": 0.6, "style": 0.5 },
+  "thresholds": {
+    "natural": 1.5,
+    "meaning": 0.6,
+    "style": 0.5
+  },
   "rows": [
     {
       "key": "command",
       "en": "Commands",
       "kind": "normal",
       "attempts": [
-        { "ko": "명령", "natural": 1.68, "meaning": 0.94, "style": 0.68, "pass": true }
+        {
+          "ko": "명령",
+          "natural": 1.68,
+          "meaning": 0.94,
+          "style": 0.68,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -18,7 +28,13 @@
       "en": "Folder navigation",
       "kind": "normal",
       "attempts": [
-        { "ko": "폴더 탐색", "natural": 1.63, "meaning": 0.94, "style": 0.57, "pass": true }
+        {
+          "ko": "폴더 탐색",
+          "natural": 1.63,
+          "meaning": 0.94,
+          "style": 0.57,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -27,7 +43,13 @@
       "en": "Browse folder",
       "kind": "normal",
       "attempts": [
-        { "ko": "폴더 탐색", "natural": 1.5, "meaning": 0.91, "style": 0.59, "pass": true }
+        {
+          "ko": "폴더 탐색",
+          "natural": 1.5,
+          "meaning": 0.91,
+          "style": 0.59,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -36,7 +58,13 @@
       "en": "Browse folder",
       "kind": "normal",
       "attempts": [
-        { "ko": "폴더 탐색", "natural": 1.58, "meaning": 0.94, "style": 0.57, "pass": true }
+        {
+          "ko": "폴더 탐색",
+          "natural": 1.58,
+          "meaning": 0.94,
+          "style": 0.57,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -52,8 +80,20 @@
       "en": "Loading…",
       "kind": "normal",
       "attempts": [
-        { "ko": "불러오는 중…", "natural": 1.97, "meaning": 0.96, "style": 0.41, "pass": false },
-        { "ko": "불러오고 있습니다…", "natural": 1.83, "meaning": 0.95, "style": 0.8, "pass": true }
+        {
+          "ko": "불러오는 중…",
+          "natural": 1.97,
+          "meaning": 0.96,
+          "style": 0.41,
+          "pass": false
+        },
+        {
+          "ko": "불러오고 있습니다…",
+          "natural": 1.83,
+          "meaning": 0.95,
+          "style": 0.8,
+          "pass": true
+        }
       ],
       "result": "fixed"
     },
@@ -62,7 +102,13 @@
       "en": "Skills",
       "kind": "normal",
       "attempts": [
-        { "ko": "스킬", "natural": 1.51, "meaning": 0.94, "style": 0.68, "pass": true }
+        {
+          "ko": "스킬",
+          "natural": 1.51,
+          "meaning": 0.94,
+          "style": 0.68,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -71,22 +117,76 @@
       "en": "Subagents",
       "kind": "normal",
       "attempts": [
-        { "ko": "서브에이전트", "natural": 1.36, "meaning": 0.92, "style": 0.63, "pass": false },
-        { "ko": "서브에이전트 목록", "natural": 1.47, "meaning": 0.81, "style": 0.58, "pass": false },
-        { "ko": "서브에이전트 항목", "natural": 1.02, "meaning": 0.85, "style": 0.64, "pass": false },
-        { "ko": "서브에이전트 메뉴", "natural": 1.18, "meaning": 0.75, "style": 0.67, "pass": false }
+        {
+          "ko": "서브에이전트",
+          "natural": 1.36,
+          "meaning": 0.92,
+          "style": 0.63,
+          "pass": false
+        },
+        {
+          "ko": "서브에이전트 목록",
+          "natural": 1.47,
+          "meaning": 0.81,
+          "style": 0.58,
+          "pass": false
+        },
+        {
+          "ko": "서브에이전트 항목",
+          "natural": 1.02,
+          "meaning": 0.85,
+          "style": 0.64,
+          "pass": false
+        },
+        {
+          "ko": "서브에이전트 메뉴",
+          "natural": 1.18,
+          "meaning": 0.75,
+          "style": 0.67,
+          "pass": false
+        }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "서브에이전트",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
     },
     {
       "key": "suggestions.aria",
       "en": "Trigger suggestions",
       "kind": "normal",
       "attempts": [
-        { "ko": "제안 열기", "natural": 0.47, "meaning": 0.24, "style": 0.64, "pass": false },
-        { "ko": "제안 목록", "natural": 0.81, "meaning": 0.62, "style": 0.59, "pass": false },
-        { "ko": "입력 제안", "natural": 1.02, "meaning": 0.64, "style": 0.67, "pass": false },
-        { "ko": "제안", "natural": 0.66, "meaning": 0.28, "style": 0.68, "pass": false }
+        {
+          "ko": "제안 열기",
+          "natural": 0.47,
+          "meaning": 0.24,
+          "style": 0.64,
+          "pass": false
+        },
+        {
+          "ko": "제안 목록",
+          "natural": 0.81,
+          "meaning": 0.62,
+          "style": 0.59,
+          "pass": false
+        },
+        {
+          "ko": "입력 제안",
+          "natural": 1.02,
+          "meaning": 0.64,
+          "style": 0.67,
+          "pass": false
+        },
+        {
+          "ko": "제안",
+          "natural": 0.66,
+          "meaning": 0.28,
+          "style": 0.68,
+          "pass": false
+        }
       ],
       "result": "unresolved"
     }

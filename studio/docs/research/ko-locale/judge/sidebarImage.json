@@ -2,14 +2,24 @@
   "namespace": "sidebarImage",
   "date": "2026-10-17",
   "engine": "jev",
-  "thresholds": { "natural": 1.5, "meaning": 0.6, "style": 0.5 },
+  "thresholds": {
+    "natural": 1.5,
+    "meaning": 0.6,
+    "style": 0.5
+  },
   "rows": [
     {
       "key": "failed",
       "en": "This image could not be displayed.",
       "kind": "normal",
       "attempts": [
-        { "ko": "이 이미지를 표시할 수 없습니다.", "natural": 1.84, "meaning": 0.98, "style": 0.7, "pass": true }
+        {
+          "ko": "이 이미지를 표시할 수 없습니다.",
+          "natural": 1.84,
+          "meaning": 0.98,
+          "style": 0.7,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -18,7 +28,13 @@
       "en": "Rendering document...",
       "kind": "normal",
       "attempts": [
-        { "ko": "문서를 렌더링하고 있습니다...", "natural": 1.84, "meaning": 0.98, "style": 0.78, "pass": true }
+        {
+          "ko": "문서를 렌더링하고 있습니다...",
+          "natural": 1.84,
+          "meaning": 0.98,
+          "style": 0.78,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -27,16 +43,35 @@
       "en": "Image preview: {name}",
       "kind": "normal",
       "attempts": [
-        { "ko": "이미지 미리보기: {name}", "natural": 1.92, "meaning": 0.97, "style": 0.63, "pass": true }
+        {
+          "ko": "이미지 미리보기: {name}",
+          "natural": 1.92,
+          "meaning": 0.97,
+          "style": 0.63,
+          "pass": true
+        },
+        {
+          "ko": "이미지 미리 보기: {name}",
+          "natural": 1.82,
+          "meaning": 0.98,
+          "style": 0.75,
+          "pass": true
+        }
       ],
-      "result": "pass"
+      "result": "fixed"
     },
     {
       "key": "title",
       "en": "Image",
       "kind": "normal",
       "attempts": [
-        { "ko": "이미지", "natural": 1.95, "meaning": 0.98, "style": 0.73, "pass": true }
+        {
+          "ko": "이미지",
+          "natural": 1.95,
+          "meaning": 0.98,
+          "style": 0.73,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -45,16 +80,32 @@
       "en": "Image preview requires the complete file contents.",
       "kind": "normal",
       "attempts": [
-        { "ko": "이미지 미리보기에는 전체 파일 내용이 필요합니다.", "natural": 1.76, "meaning": 0.98, "style": 0.64, "pass": true }
+        {
+          "ko": "이미지 미리보기에는 전체 파일 내용이 필요합니다.",
+          "natural": 1.76,
+          "meaning": 0.98,
+          "style": 0.64,
+          "pass": true
+        }
       ],
-      "result": "pass"
+      "result": "pass",
+      "review": {
+        "date": "2026-10-17",
+        "note": "용어 통일안이 판정을 통과하지 못해 이전 통과 문구 유지"
+      }
     },
     {
       "key": "zoomControls",
       "en": "Zoom controls",
       "kind": "normal",
       "attempts": [
-        { "ko": "확대/축소 컨트롤", "natural": 1.74, "meaning": 0.97, "style": 0.66, "pass": true }
+        {
+          "ko": "확대/축소 컨트롤",
+          "natural": 1.74,
+          "meaning": 0.97,
+          "style": 0.66,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -63,7 +114,13 @@
       "en": "Fit width",
       "kind": "normal",
       "attempts": [
-        { "ko": "너비에 맞춤", "natural": 1.84, "meaning": 0.97, "style": 0.69, "pass": true }
+        {
+          "ko": "너비에 맞춤",
+          "natural": 1.84,
+          "meaning": 0.97,
+          "style": 0.69,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -72,7 +129,13 @@
       "en": "Zoom in",
       "kind": "normal",
       "attempts": [
-        { "ko": "확대", "natural": 1.98, "meaning": 0.98, "style": 0.71, "pass": true }
+        {
+          "ko": "확대",
+          "natural": 1.98,
+          "meaning": 0.98,
+          "style": 0.71,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -81,8 +144,20 @@
       "en": "Choose zoom",
       "kind": "normal",
       "attempts": [
-        { "ko": "확대/축소 선택", "natural": 1.46, "meaning": 0.97, "style": 0.69, "pass": false },
-        { "ko": "배율 선택", "natural": 1.79, "meaning": 0.94, "style": 0.61, "pass": true }
+        {
+          "ko": "확대/축소 선택",
+          "natural": 1.46,
+          "meaning": 0.97,
+          "style": 0.69,
+          "pass": false
+        },
+        {
+          "ko": "배율 선택",
+          "natural": 1.79,
+          "meaning": 0.94,
+          "style": 0.61,
+          "pass": true
+        }
       ],
       "result": "fixed"
     },
@@ -91,7 +166,13 @@
       "en": "Zoom out",
       "kind": "normal",
       "attempts": [
-        { "ko": "축소", "natural": 1.98, "meaning": 0.98, "style": 0.74, "pass": true }
+        {
+          "ko": "축소",
+          "natural": 1.98,
+          "meaning": 0.98,
+          "style": 0.74,
+          "pass": true
+        }
       ],
       "result": "pass"
     },

@@ -2,11 +2,13 @@ import type { DshKoNamespace } from '../dsh-ko-locale.ts';
 
 export default {
   ko: {
+    'cron.day.every': '매일{months}',
     'cron.day.monthDays': '매달 {days}일{months}',
     'cron.day.weekdays': '{weekdays}{months}',
     'cron.hours.list': '{hours}',
     'cron.hours.range': '{from}–{to}',
     'cron.list.join': ', ',
+    'cron.months': ' 실행 ({months})',
     'cron.part.join': ' ',
     'cron.time.at': '{times}에 실행합니다',
     'cron.time.everyHour': '매시간',
@@ -15,6 +17,7 @@ export default {
     'cron.time.everyNHours': '{count}시간마다',
     'cron.time.hourlyAt': '매시간 {minutes}분에',
     'cron.time.hoursAt': '{hours}시 {minutes}분에 실행합니다',
+    'cron.time.hoursEveryMinute': '{hours}시에는 매분 실행합니다',
     'cron.time.hoursEveryMinutes': '{hours}시에 {step}분마다',
     'cron.time.joinedEveryHour': '매시간',
     'cron.time.joinedEveryMinute': '매분',
@@ -53,6 +56,7 @@ export default {
     'mark.aria': '예약된 작업 {count}개',
     'relative.future': '{value}{unit} 후',
     'relative.now': '지금 실행 예정',
+    'relative.overdue': '{value}{unit} 지남',
     'time.locale': 'ko-KR',
     'time.utcPrefix': 'UTC',
     'trigger.label': '알림',
@@ -66,5 +70,5 @@ export default {
     'unit.second.one': '초',
     'unit.second.other': '초',
   },
-  fallback: ['cron.day.both', 'cron.day.bothStarred', 'cron.day.every', 'cron.months', 'cron.time.hoursEveryMinute', 'relative.overdue', 'unit.day.other'],
+  fallback: ['cron.day.both', 'cron.day.bothStarred', 'unit.day.other'],
 } satisfies DshKoNamespace;

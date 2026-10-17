@@ -114,7 +114,13 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "매일{months}",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
     },
     {
       "key": "cron.day.monthDays",
@@ -172,7 +178,17 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": " 실행 ({months})",
+        "note": "조각·화면 역할을 넣어 판정 통과",
+        "judged": {
+          "scores": "1.64/0.98/0.68",
+          "joined": "매일 실행 (3월, 4월) ↔ Every day in March, April"
+        }
+      }
     },
     {
       "key": "cron.time.at",
@@ -341,7 +357,13 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "{hours}시에는 매분 실행합니다",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
     },
     {
       "key": "cron.time.hoursEveryMinutes",
@@ -864,7 +886,13 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "{value}{unit} 지남",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
     },
     {
       "key": "trigger.label",

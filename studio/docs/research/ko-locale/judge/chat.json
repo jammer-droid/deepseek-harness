@@ -146,7 +146,13 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "{turn}번째 턴으로 이동합니다",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
     },
     {
       "key": "chat.turnNavigation.jumpLoad",
@@ -182,7 +188,13 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "{turn}번째 턴 불러오기 및 이동",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
     },
     {
       "key": "chat.turnNavigation.label",
@@ -335,7 +347,8 @@
       "approval": {
         "by": "user",
         "date": "2026-10-17",
-        "note": "판정 미통과 문구를 사용자가 그대로 승인(단위·제품 이름)"
+        "note": "판정 미통과 문구를 사용자가 그대로 승인(단위·제품 이름)",
+        "ko": "h "
       }
     },
     {
@@ -416,9 +429,16 @@
           "meaning": 0.98,
           "style": 0.66,
           "pass": true
+        },
+        {
+          "ko": "이미지 미리 보기 닫기",
+          "natural": 1.86,
+          "meaning": 0.97,
+          "style": 0.62,
+          "pass": true
         }
       ],
-      "result": "pass"
+      "result": "fixed"
     },
     {
       "key": "image.dialog",
@@ -431,9 +451,16 @@
           "meaning": 0.97,
           "style": 0.76,
           "pass": true
+        },
+        {
+          "ko": "이미지 미리 보기",
+          "natural": 1.94,
+          "meaning": 0.97,
+          "style": 0.76,
+          "pass": true
         }
       ],
-      "result": "pass"
+      "result": "fixed"
     },
     {
       "key": "image.failed",
@@ -446,9 +473,16 @@
           "meaning": 0.97,
           "style": 0.69,
           "pass": true
+        },
+        {
+          "ko": "이미지 미리 보기를 사용할 수 없습니다",
+          "natural": 1.81,
+          "meaning": 0.97,
+          "style": 0.7,
+          "pass": true
         }
       ],
-      "result": "pass"
+      "result": "fixed"
     },
     {
       "key": "image.loading",
@@ -671,7 +705,13 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "대체할 카탈로그",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
     },
     {
       "key": "message.context.instructions.added",
@@ -1109,7 +1149,13 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "{label} ({retry}/{maximum}) · {seconds}초",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
     },
     {
       "key": "message.stepProcess.code",
@@ -1621,7 +1667,13 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "서브에이전트 조율 준비 단계",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
     },
     {
       "key": "message.stepProcess.prepare.tools",
@@ -2126,7 +2178,13 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "이 알림이 응답을 시작하는 계기가 되었습니다.",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
     },
     {
       "key": "message.trigger.github",
@@ -2177,7 +2235,13 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "목표 계속 수행",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
     },
     {
       "key": "message.trigger.job",
@@ -2471,7 +2535,13 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "잠시 생각함",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
     },
     {
       "key": "message.turnProcess.took",
@@ -2507,7 +2577,17 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "완료, 소요 시간 ",
+        "note": "조각·화면 역할을 넣어 판정 통과",
+        "judged": {
+          "scores": "1.8/0.97/0.66",
+          "joined": "완료, 소요 시간 2분 13초 ↔ Completed in 2m 13s"
+        }
+      }
     },
     {
       "key": "message.turnProcess.toolCalls.one",
@@ -2774,7 +2854,13 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "알 수 없는 화면 이벤트: {type}",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
     },
     {
       "key": "row.failed",

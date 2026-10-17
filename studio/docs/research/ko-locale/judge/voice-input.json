@@ -406,7 +406,13 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "DSH를 실행하는 컴퓨터에서 다운로드 출처와 모델 다운로드 서비스에 접속할 수 있는지 확인하십시오. 필요하면 해당 컴퓨터에 프록시를 설정하고 다시 시도하십시오.",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
     },
     {
       "key": "downloadAdvice.storage",
@@ -733,7 +739,13 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "음성 인식은 DSH를 실행하는 컴퓨터에서 처리합니다. 모델 다운로드가 필요할 때는 이 컴퓨터에서 선택한 다운로드 출처와 파일 서비스에 접속할 수 있어야 합니다. 필요하면 이 컴퓨터에 프록시를 설정하십시오.",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
     },
     {
       "key": "permission",
@@ -1456,7 +1468,8 @@
       "approval": {
         "by": "user",
         "date": "2026-10-17",
-        "note": "판정 미통과 문구를 사용자가 그대로 승인(단위·제품 이름)"
+        "note": "판정 미통과 문구를 사용자가 그대로 승인(단위·제품 이름)",
+        "ko": "Hugging Face"
       }
     },
     {

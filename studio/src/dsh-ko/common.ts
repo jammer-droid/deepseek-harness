@@ -15,6 +15,7 @@ export default {
     'copy.compactJson': '압축 JSON 복사',
     'copy.failed': '복사 실패',
     'copy.json': 'JSON 복사',
+    'copy.optionsHint': '{action}; 우클릭하면 복사 옵션이 나타납니다.',
     'copy.path': '속성 경로 복사',
     'copy.prettyJson': '서식 있는 JSON 복사',
     'copy.value': '값 복사',
@@ -43,5 +44,4 @@ export default {
     unknown: '알 수 없음',
     'workspace.defaultName': '기본 워크스페이스',
   },
-  fallback: ['copy.optionsHint'],
 } satisfies DshKoNamespace;

@@ -3,8 +3,8 @@ import type { DshKoNamespace } from '../dsh-ko-locale.ts';
 export default {
   ko: {
     autoRefresh: '자동 새로 고침',
-    'autoRefresh.disable': '자동 새로 고침을 끕니다',
-    'autoRefresh.enable': '자동 새로 고침을 켭니다',
+    'autoRefresh.disable': '자동 새로 고침 끄기',
+    'autoRefresh.enable': '자동 새로 고침 켜기',
     empty: '빈 디렉터리',
     'entry.other': '파일도 디렉터리도 아니어서 열 수 없습니다.',
     'error.notDirectory': '디렉터리가 아닙니다.',

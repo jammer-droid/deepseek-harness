@@ -2,6 +2,7 @@ import type { DshKoNamespace } from '../dsh-ko-locale.ts';
 
 export default {
   ko: {
+    anonymousNotice: 'Bing과 Google은 번역 로그인이나 API 키가 필요하지 않습니다. 익명 엔드포인트가 요청을 거부하거나 제한할 수 있습니다.',
     bing: 'Bing',
     codeTitle: '코드 블록',
     copied: '복사됨',
@@ -24,11 +25,14 @@ export default {
     reset: '기본값으로 재설정',
     retry: '다시 시도하십시오',
     save: '저장하기',
+    saveFailed: '배포 환경이 이 값을 받아들이지 않았습니다. 고칠 수 있도록 입력값을 그대로 두었습니다.',
     saving: '저장하고 있습니다…',
     targetLanguage: '대상 언어',
+    targetLanguageHint: 'auto는 UI 언어를 따릅니다. zh, en, ja 같은 언어 코드도 사용할 수 있습니다.',
     translating: '추론을 번역하는 중',
     translation: '번역 보기',
     unavailable: '번역 설정을 사용할 수 없습니다.',
+    unwrap: '줄바꿈을 해제합니다',
   },
-  fallback: ['anonymousNotice', 'saveFailed', 'targetLanguageHint', 'unwrap', 'wrap'],
+  fallback: ['wrap'],
 } satisfies DshKoNamespace;

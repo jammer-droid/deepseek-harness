@@ -2,15 +2,31 @@
   "namespace": "agent-team",
   "date": "2026-10-17",
   "engine": "jev",
-  "thresholds": { "natural": 1.5, "meaning": 0.6, "style": 0.5 },
+  "thresholds": {
+    "natural": 1.5,
+    "meaning": 0.6,
+    "style": 0.5
+  },
   "rows": [
     {
       "key": "blocked",
       "en": "Blocked by dependencies",
       "kind": "normal",
       "attempts": [
-        { "ko": "종속성으로 차단됨", "natural": 1.48, "meaning": 0.95, "style": 0.56, "pass": false },
-        { "ko": "종속성에 의해 차단됨", "natural": 1.59, "meaning": 0.96, "style": 0.57, "pass": true }
+        {
+          "ko": "종속성으로 차단됨",
+          "natural": 1.48,
+          "meaning": 0.95,
+          "style": 0.56,
+          "pass": false
+        },
+        {
+          "ko": "종속성에 의해 차단됨",
+          "natural": 1.59,
+          "meaning": 0.96,
+          "style": 0.57,
+          "pass": true
+        }
       ],
       "result": "fixed"
     },
@@ -19,10 +35,34 @@
       "en": "Blocked by",
       "kind": "normal",
       "attempts": [
-        { "ko": "차단 원인", "natural": 1.25, "meaning": 0.64, "style": 0.65, "pass": false },
-        { "ko": "차단한 항목", "natural": 0.97, "meaning": 0.46, "style": 0.63, "pass": false },
-        { "ko": "차단한 작업", "natural": 1.03, "meaning": 0.66, "style": 0.58, "pass": false },
-        { "ko": "차단 요인", "natural": 1.33, "meaning": 0.81, "style": 0.61, "pass": false }
+        {
+          "ko": "차단 원인",
+          "natural": 1.25,
+          "meaning": 0.64,
+          "style": 0.65,
+          "pass": false
+        },
+        {
+          "ko": "차단한 항목",
+          "natural": 0.97,
+          "meaning": 0.46,
+          "style": 0.63,
+          "pass": false
+        },
+        {
+          "ko": "차단한 작업",
+          "natural": 1.03,
+          "meaning": 0.66,
+          "style": 0.58,
+          "pass": false
+        },
+        {
+          "ko": "차단 요인",
+          "natural": 1.33,
+          "meaning": 0.81,
+          "style": 0.61,
+          "pass": false
+        }
       ],
       "result": "unresolved"
     },
@@ -31,7 +71,13 @@
       "en": "Current chat",
       "kind": "normal",
       "attempts": [
-        { "ko": "현재 대화", "natural": 1.84, "meaning": 0.97, "style": 0.56, "pass": true }
+        {
+          "ko": "현재 대화",
+          "natural": 1.84,
+          "meaning": 0.97,
+          "style": 0.56,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -40,8 +86,20 @@
       "en": "No shared tasks yet. Create them through the conversation.",
       "kind": "normal",
       "attempts": [
-        { "ko": "아직 공유 작업이 없습니다. 대화를 통해 만들어 보십시오.", "natural": 1.47, "meaning": 0.94, "style": 0.8, "pass": false },
-        { "ko": "아직 공유 작업이 없습니다. 대화에서 만들어 보십시오.", "natural": 1.55, "meaning": 0.94, "style": 0.8, "pass": true }
+        {
+          "ko": "아직 공유 작업이 없습니다. 대화를 통해 만들어 보십시오.",
+          "natural": 1.47,
+          "meaning": 0.94,
+          "style": 0.8,
+          "pass": false
+        },
+        {
+          "ko": "아직 공유 작업이 없습니다. 대화에서 만들어 보십시오.",
+          "natural": 1.55,
+          "meaning": 0.94,
+          "style": 0.8,
+          "pass": true
+        }
       ],
       "result": "fixed"
     },
@@ -50,9 +108,27 @@
       "en": "Invalid persisted Team record: {message}",
       "kind": "normal",
       "attempts": [
-        { "ko": "저장된 팀 레코드가 잘못되었습니다: {message}", "natural": 1.49, "meaning": 0.95, "style": 0.39, "pass": false },
-        { "ko": "저장된 팀 레코드가 유효하지 않습니다: {message}", "natural": 1.57, "meaning": 0.96, "style": 0.39, "pass": false },
-        { "ko": "저장된 팀 레코드가 올바르지 않습니다: {message}", "natural": 1.5, "meaning": 0.92, "style": 0.59, "pass": true }
+        {
+          "ko": "저장된 팀 레코드가 잘못되었습니다: {message}",
+          "natural": 1.49,
+          "meaning": 0.95,
+          "style": 0.39,
+          "pass": false
+        },
+        {
+          "ko": "저장된 팀 레코드가 유효하지 않습니다: {message}",
+          "natural": 1.57,
+          "meaning": 0.96,
+          "style": 0.39,
+          "pass": false
+        },
+        {
+          "ko": "저장된 팀 레코드가 올바르지 않습니다: {message}",
+          "natural": 1.5,
+          "meaning": 0.92,
+          "style": 0.59,
+          "pass": true
+        }
       ],
       "result": "fixed"
     },
@@ -61,7 +137,13 @@
       "en": "Loading Team…",
       "kind": "normal",
       "attempts": [
-        { "ko": "팀을 불러오고 있습니다…", "natural": 1.82, "meaning": 0.96, "style": 0.7, "pass": true }
+        {
+          "ko": "팀을 불러오고 있습니다…",
+          "natural": 1.82,
+          "meaning": 0.96,
+          "style": 0.7,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -70,7 +152,13 @@
       "en": "Failed",
       "kind": "normal",
       "attempts": [
-        { "ko": "실패함", "natural": 1.66, "meaning": 0.96, "style": 0.55, "pass": true }
+        {
+          "ko": "실패함",
+          "natural": 1.66,
+          "meaning": 0.96,
+          "style": 0.55,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -79,7 +167,13 @@
       "en": "Inactive",
       "kind": "normal",
       "attempts": [
-        { "ko": "비활성", "natural": 1.78, "meaning": 0.97, "style": 0.58, "pass": true }
+        {
+          "ko": "비활성",
+          "natural": 1.78,
+          "meaning": 0.97,
+          "style": 0.58,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -88,7 +182,13 @@
       "en": "Provisioning",
       "kind": "normal",
       "attempts": [
-        { "ko": "프로비저닝 중", "natural": 1.73, "meaning": 0.96, "style": 0.5, "pass": true }
+        {
+          "ko": "프로비저닝 중",
+          "natural": 1.73,
+          "meaning": 0.96,
+          "style": 0.5,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -97,7 +197,13 @@
       "en": "Running",
       "kind": "normal",
       "attempts": [
-        { "ko": "실행 중", "natural": 1.97, "meaning": 0.97, "style": 0.59, "pass": true }
+        {
+          "ko": "실행 중",
+          "natural": 1.97,
+          "meaning": 0.97,
+          "style": 0.59,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -106,7 +212,13 @@
       "en": "Model",
       "kind": "normal",
       "attempts": [
-        { "ko": "모델", "natural": 1.68, "meaning": 0.92, "style": 0.68, "pass": true }
+        {
+          "ko": "모델",
+          "natural": 1.68,
+          "meaning": 0.92,
+          "style": 0.68,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -115,17 +227,41 @@
       "en": "Open member conversation",
       "kind": "normal",
       "attempts": [
-        { "ko": "멤버 대화 열기", "natural": 1.67, "meaning": 0.96, "style": 0.39, "pass": false },
-        { "ko": "멤버 대화를 엽니다", "natural": 1.7, "meaning": 0.97, "style": 0.52, "pass": true }
+        {
+          "ko": "멤버 대화 열기",
+          "natural": 1.67,
+          "meaning": 0.96,
+          "style": 0.39,
+          "pass": false
+        },
+        {
+          "ko": "멤버 대화를 엽니다",
+          "natural": 1.7,
+          "meaning": 0.97,
+          "style": 0.52,
+          "pass": true
+        }
       ],
-      "result": "fixed"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "멤버 대화 열기",
+        "note": "버튼·라벨을 문장으로 바꾼 재작성 대신 이전 라벨 후보로 되돌림(자연·의미 통과, 문체만 미달)"
+      }
     },
     {
       "key": "owner",
       "en": "Owner",
       "kind": "normal",
       "attempts": [
-        { "ko": "소유자", "natural": 1.93, "meaning": 0.97, "style": 0.59, "pass": true }
+        {
+          "ko": "소유자",
+          "natural": 1.93,
+          "meaning": 0.97,
+          "style": 0.59,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -134,7 +270,13 @@
       "en": "Ready",
       "kind": "normal",
       "attempts": [
-        { "ko": "준비됨", "natural": 1.95, "meaning": 0.97, "style": 0.61, "pass": true }
+        {
+          "ko": "준비됨",
+          "natural": 1.95,
+          "meaning": 0.97,
+          "style": 0.61,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -143,7 +285,13 @@
       "en": "Members",
       "kind": "normal",
       "attempts": [
-        { "ko": "멤버", "natural": 1.81, "meaning": 0.96, "style": 0.65, "pass": true }
+        {
+          "ko": "멤버",
+          "natural": 1.81,
+          "meaning": 0.96,
+          "style": 0.65,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -152,7 +300,13 @@
       "en": "Completed",
       "kind": "normal",
       "attempts": [
-        { "ko": "완료됨", "natural": 1.9, "meaning": 0.98, "style": 0.54, "pass": true }
+        {
+          "ko": "완료됨",
+          "natural": 1.9,
+          "meaning": 0.98,
+          "style": 0.54,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -161,7 +315,13 @@
       "en": "In progress",
       "kind": "normal",
       "attempts": [
-        { "ko": "진행 중", "natural": 1.96, "meaning": 0.98, "style": 0.61, "pass": true }
+        {
+          "ko": "진행 중",
+          "natural": 1.96,
+          "meaning": 0.98,
+          "style": 0.61,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -170,7 +330,13 @@
       "en": "Pending",
       "kind": "normal",
       "attempts": [
-        { "ko": "대기 중", "natural": 1.95, "meaning": 0.97, "style": 0.61, "pass": true }
+        {
+          "ko": "대기 중",
+          "natural": 1.95,
+          "meaning": 0.97,
+          "style": 0.61,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -179,19 +345,55 @@
       "en": "Show less",
       "kind": "normal",
       "attempts": [
-        { "ko": "간단히 보기", "natural": 1.24, "meaning": 0.81, "style": 0.61, "pass": false },
-        { "ko": "줄여서 보기", "natural": 1.43, "meaning": 0.94, "style": 0.52, "pass": false },
-        { "ko": "간단히 표시", "natural": 0.71, "meaning": 0.61, "style": 0.58, "pass": false },
-        { "ko": "요약 보기", "natural": 0.69, "meaning": 0.44, "style": 0.75, "pass": false }
+        {
+          "ko": "간단히 보기",
+          "natural": 1.24,
+          "meaning": 0.81,
+          "style": 0.61,
+          "pass": false
+        },
+        {
+          "ko": "줄여서 보기",
+          "natural": 1.43,
+          "meaning": 0.94,
+          "style": 0.52,
+          "pass": false
+        },
+        {
+          "ko": "간단히 표시",
+          "natural": 0.71,
+          "meaning": 0.61,
+          "style": 0.58,
+          "pass": false
+        },
+        {
+          "ko": "요약 보기",
+          "natural": 0.69,
+          "meaning": 0.44,
+          "style": 0.75,
+          "pass": false
+        }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "줄여서 보기",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
     },
     {
       "key": "task.expand",
       "en": "Show more",
       "kind": "normal",
       "attempts": [
-        { "ko": "자세히 보기", "natural": 1.87, "meaning": 0.96, "style": 0.59, "pass": true }
+        {
+          "ko": "자세히 보기",
+          "natural": 1.87,
+          "meaning": 0.96,
+          "style": 0.59,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -200,7 +402,13 @@
       "en": "Shared tasks",
       "kind": "normal",
       "attempts": [
-        { "ko": "공유 작업", "natural": 1.84, "meaning": 0.96, "style": 0.65, "pass": true }
+        {
+          "ko": "공유 작업",
+          "natural": 1.84,
+          "meaning": 0.96,
+          "style": 0.65,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -216,7 +424,13 @@
       "en": "Team is unavailable",
       "kind": "normal",
       "attempts": [
-        { "ko": "팀을 사용할 수 없습니다", "natural": 1.66, "meaning": 0.97, "style": 0.63, "pass": true }
+        {
+          "ko": "팀을 사용할 수 없습니다",
+          "natural": 1.66,
+          "meaning": 0.97,
+          "style": 0.63,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -225,7 +439,13 @@
       "en": "Unowned",
       "kind": "normal",
       "attempts": [
-        { "ko": "소유자 없음", "natural": 1.72, "meaning": 0.97, "style": 0.63, "pass": true }
+        {
+          "ko": "소유자 없음",
+          "natural": 1.72,
+          "meaning": 0.97,
+          "style": 0.63,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -234,10 +454,34 @@
       "en": "Write scopes",
       "kind": "normal",
       "attempts": [
-        { "ko": "쓰기 범위", "natural": 1.34, "meaning": 0.94, "style": 0.63, "pass": false },
-        { "ko": "쓰기 허용 범위", "natural": 1.4, "meaning": 0.9, "style": 0.65, "pass": false },
-        { "ko": "쓰기 가능 범위", "natural": 1.22, "meaning": 0.88, "style": 0.71, "pass": false },
-        { "ko": "쓰기 권한 범위", "natural": 1.5, "meaning": 0.88, "style": 0.64, "pass": true }
+        {
+          "ko": "쓰기 범위",
+          "natural": 1.34,
+          "meaning": 0.94,
+          "style": 0.63,
+          "pass": false
+        },
+        {
+          "ko": "쓰기 허용 범위",
+          "natural": 1.4,
+          "meaning": 0.9,
+          "style": 0.65,
+          "pass": false
+        },
+        {
+          "ko": "쓰기 가능 범위",
+          "natural": 1.22,
+          "meaning": 0.88,
+          "style": 0.71,
+          "pass": false
+        },
+        {
+          "ko": "쓰기 권한 범위",
+          "natural": 1.5,
+          "meaning": 0.88,
+          "style": 0.64,
+          "pass": true
+        }
       ],
       "result": "fixed"
     }

@@ -18,6 +18,6 @@ export default {
     'preview.open': '사이드바에서 계획 열기',
     'preview.openNamed': '계획 열기: {title}',
     'preview.title': '계획',
-    'preview.unavailable': '계획 미리보기를 사용할 수 없습니다',
+    'preview.unavailable': '계획 미리 보기를 사용할 수 없습니다',
   },
 } satisfies DshKoNamespace;

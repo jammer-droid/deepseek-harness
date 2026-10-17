@@ -62,3 +62,11 @@ test('a failing key left unchanged stays open across runs until rewritten or mov
   assert.equal(planNamespace(dictionary, record, new Map([['a', ['hours']], ['b', ['Close']]])).items.length, 0);
   assert.deepEqual(openRows(record, dictionary).map(row => row.key), ['a']);
 });
+
+test('approved text is not re-judged; changing it brings it back', () => {
+  const record = { rows: [{ key: 'a', attempts: [{ ko: '일', natural: 1.2, meaning: 0.5, style: 0.6, pass: false }], result: 'approved', approval: { ko: '일' } }] };
+  const english = new Map([['a', ['days']]]);
+  assert.equal(planNamespace({ ko: { a: '일' } }, record, english).items.length, 0);
+  assert.equal(planNamespace({ ko: { a: '날' } }, record, english).items.length, 1);
+  assert.deepEqual(openRows(record, { ko: { a: '일' } }), []);
+});

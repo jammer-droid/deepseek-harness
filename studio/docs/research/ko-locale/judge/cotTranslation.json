@@ -2,19 +2,53 @@
   "namespace": "cotTranslation",
   "date": "2026-10-17",
   "engine": "jev",
-  "thresholds": { "natural": 1.5, "meaning": 0.6, "style": 0.5 },
+  "thresholds": {
+    "natural": 1.5,
+    "meaning": 0.6,
+    "style": 0.5
+  },
   "rows": [
     {
       "key": "anonymousNotice",
       "en": "Bing and Google need no translation login or API key. Their anonymous endpoints may reject or limit requests.",
       "kind": "normal",
       "attempts": [
-        { "ko": "Bing과 Google은 번역 로그인이나 API 키가 필요하지 않습니다. 익명 엔드포인트가 요청을 거부하거나 제한할 수 있습니다.", "natural": 1.71, "meaning": 0.96, "style": 0.39, "pass": false },
-        { "ko": "Bing과 Google은 번역 로그인이나 API 키가 필요 없습니다. 익명 엔드포인트는 요청을 거부하거나 제한할 수 있습니다.", "natural": 1.62, "meaning": 0.95, "style": 0.36, "pass": false },
-        { "ko": "Bing과 Google은 번역 로그인과 API 키가 필요하지 않습니다. 익명 엔드포인트는 요청을 거부하거나 제한할 수 있습니다.", "natural": 1.62, "meaning": 0.95, "style": 0.41, "pass": false },
-        { "ko": "Bing과 Google은 번역 로그인이나 API 키 없이 익명 엔드포인트를 사용하며, 해당 엔드포인트가 요청을 거부하거나 제한할 수 있습니다.", "natural": 1.47, "meaning": 0.93, "style": 0.37, "pass": false }
+        {
+          "ko": "Bing과 Google은 번역 로그인이나 API 키가 필요하지 않습니다. 익명 엔드포인트가 요청을 거부하거나 제한할 수 있습니다.",
+          "natural": 1.71,
+          "meaning": 0.96,
+          "style": 0.39,
+          "pass": false
+        },
+        {
+          "ko": "Bing과 Google은 번역 로그인이나 API 키가 필요 없습니다. 익명 엔드포인트는 요청을 거부하거나 제한할 수 있습니다.",
+          "natural": 1.62,
+          "meaning": 0.95,
+          "style": 0.36,
+          "pass": false
+        },
+        {
+          "ko": "Bing과 Google은 번역 로그인과 API 키가 필요하지 않습니다. 익명 엔드포인트는 요청을 거부하거나 제한할 수 있습니다.",
+          "natural": 1.62,
+          "meaning": 0.95,
+          "style": 0.41,
+          "pass": false
+        },
+        {
+          "ko": "Bing과 Google은 번역 로그인이나 API 키 없이 익명 엔드포인트를 사용하며, 해당 엔드포인트가 요청을 거부하거나 제한할 수 있습니다.",
+          "natural": 1.47,
+          "meaning": 0.93,
+          "style": 0.37,
+          "pass": false
+        }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "Bing과 Google은 번역 로그인이나 API 키가 필요하지 않습니다. 익명 엔드포인트가 요청을 거부하거나 제한할 수 있습니다.",
+        "note": "문체 점수만 미달(짧은 라벨)"
+      }
     },
     {
       "key": "bing",
@@ -28,7 +62,13 @@
       "en": "Code block",
       "kind": "normal",
       "attempts": [
-        { "ko": "코드 블록", "natural": 1.92, "meaning": 0.98, "style": 0.64, "pass": true }
+        {
+          "ko": "코드 블록",
+          "natural": 1.92,
+          "meaning": 0.98,
+          "style": 0.64,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -37,7 +77,13 @@
       "en": "Copied",
       "kind": "normal",
       "attempts": [
-        { "ko": "복사됨", "natural": 1.91, "meaning": 0.97, "style": 0.56, "pass": true }
+        {
+          "ko": "복사됨",
+          "natural": 1.91,
+          "meaning": 0.97,
+          "style": 0.56,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -46,7 +92,13 @@
       "en": "Copy",
       "kind": "normal",
       "attempts": [
-        { "ko": "복사", "natural": 1.96, "meaning": 0.97, "style": 0.64, "pass": true }
+        {
+          "ko": "복사",
+          "natural": 1.96,
+          "meaning": 0.97,
+          "style": 0.64,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -55,7 +107,13 @@
       "en": "DeepSeek Flash — Account (paid)",
       "kind": "normal",
       "attempts": [
-        { "ko": "DeepSeek Flash — 계정(유료)", "natural": 1.71, "meaning": 0.94, "style": 0.57, "pass": true }
+        {
+          "ko": "DeepSeek Flash — 계정(유료)",
+          "natural": 1.71,
+          "meaning": 0.94,
+          "style": 0.57,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -64,7 +122,13 @@
       "en": "DeepSeek Flash — Official API (paid)",
       "kind": "normal",
       "attempts": [
-        { "ko": "DeepSeek Flash — 공식 API(유료)", "natural": 1.8, "meaning": 0.96, "style": 0.51, "pass": true }
+        {
+          "ko": "DeepSeek Flash — 공식 API(유료)",
+          "natural": 1.8,
+          "meaning": 0.96,
+          "style": 0.51,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -73,7 +137,13 @@
       "en": "Translation failed. Showing the original.",
       "kind": "normal",
       "attempts": [
-        { "ko": "번역에 실패했습니다. 원문을 표시합니다.", "natural": 1.88, "meaning": 0.96, "style": 0.91, "pass": true }
+        {
+          "ko": "번역에 실패했습니다. 원문을 표시합니다.",
+          "natural": 1.88,
+          "meaning": 0.96,
+          "style": 0.91,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -82,7 +152,13 @@
       "en": "Footnotes",
       "kind": "normal",
       "attempts": [
-        { "ko": "각주", "natural": 1.94, "meaning": 0.97, "style": 0.51, "pass": true }
+        {
+          "ko": "각주",
+          "natural": 1.94,
+          "meaning": 0.97,
+          "style": 0.51,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -98,7 +174,13 @@
       "en": "Enter auto or a language code, such as zh, en, or ja.",
       "kind": "normal",
       "attempts": [
-        { "ko": "auto 또는 zh, en, ja 같은 언어 코드를 입력하십시오.", "natural": 1.76, "meaning": 0.94, "style": 0.92, "pass": true }
+        {
+          "ko": "auto 또는 zh, en, ja 같은 언어 코드를 입력하십시오.",
+          "natural": 1.76,
+          "meaning": 0.94,
+          "style": 0.92,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -107,7 +189,13 @@
       "en": "Choose a translation service.",
       "kind": "normal",
       "attempts": [
-        { "ko": "번역 서비스를 선택하십시오.", "natural": 1.82, "meaning": 0.98, "style": 0.94, "pass": true }
+        {
+          "ko": "번역 서비스를 선택하십시오.",
+          "natural": 1.82,
+          "meaning": 0.98,
+          "style": 0.94,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -116,7 +204,13 @@
       "en": "View original",
       "kind": "normal",
       "attempts": [
-        { "ko": "원문 보기", "natural": 1.93, "meaning": 0.97, "style": 0.61, "pass": true }
+        {
+          "ko": "원문 보기",
+          "natural": 1.93,
+          "meaning": 0.97,
+          "style": 0.61,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -125,8 +219,20 @@
       "en": "Overridden",
       "kind": "normal",
       "attempts": [
-        { "ko": "재정의됨", "natural": 1.84, "meaning": 0.96, "style": 0.49, "pass": false },
-        { "ko": "재정의되었습니다", "natural": 1.67, "meaning": 0.94, "style": 0.58, "pass": true }
+        {
+          "ko": "재정의됨",
+          "natural": 1.84,
+          "meaning": 0.96,
+          "style": 0.49,
+          "pass": false
+        },
+        {
+          "ko": "재정의되었습니다",
+          "natural": 1.67,
+          "meaning": 0.94,
+          "style": 0.58,
+          "pass": true
+        }
       ],
       "result": "fixed"
     },
@@ -135,7 +241,13 @@
       "en": "Each uncached fragment sends a separate paid DeepSeek Flash request through the selected account or Official API credentials. Reopening reasoning reuses saved results; changing the provider, language, source text, or request settings may send a new paid request.",
       "kind": "normal",
       "attempts": [
-        { "ko": "캐시되지 않은 조각마다 선택한 계정 또는 공식 API 자격 증명을 통해 별도의 유료 DeepSeek Flash 요청이 전송됩니다. 추론을 다시 열면 저장된 결과를 재사용하지만, 프로바이더, 언어, 원본 텍스트 또는 요청 설정을 바꾸면 새 유료 요청이 전송될 수 있습니다.", "natural": 1.52, "meaning": 0.93, "style": 0.65, "pass": true }
+        {
+          "ko": "캐시되지 않은 조각마다 선택한 계정 또는 공식 API 자격 증명을 통해 별도의 유료 DeepSeek Flash 요청이 전송됩니다. 추론을 다시 열면 저장된 결과를 재사용하지만, 프로바이더, 언어, 원본 텍스트 또는 요청 설정을 바꾸면 새 유료 요청이 전송될 수 있습니다.",
+          "natural": 1.52,
+          "meaning": 0.93,
+          "style": 0.65,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -144,7 +256,13 @@
       "en": "Expanded reasoning is sent to the selected service. It may contain private code or conversation details.",
       "kind": "normal",
       "attempts": [
-        { "ko": "펼친 추론이 선택한 서비스로 전송됩니다. 여기에는 비공개 코드나 대화 세부 정보가 포함될 수 있습니다.", "natural": 1.8, "meaning": 0.96, "style": 0.52, "pass": true }
+        {
+          "ko": "펼친 추론이 선택한 서비스로 전송됩니다. 여기에는 비공개 코드나 대화 세부 정보가 포함될 수 있습니다.",
+          "natural": 1.8,
+          "meaning": 0.96,
+          "style": 0.52,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -153,7 +271,13 @@
       "en": "Translation service",
       "kind": "normal",
       "attempts": [
-        { "ko": "번역 서비스", "natural": 1.92, "meaning": 0.97, "style": 0.55, "pass": true }
+        {
+          "ko": "번역 서비스",
+          "natural": 1.92,
+          "meaning": 0.97,
+          "style": 0.55,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -162,7 +286,13 @@
       "en": "This provider is unavailable. Configure your DeepSeek account or Official API provider, or choose an available service.",
       "kind": "normal",
       "attempts": [
-        { "ko": "이 프로바이더를 사용할 수 없습니다. DeepSeek 계정 또는 공식 API 프로바이더를 설정하거나 사용 가능한 서비스를 선택하십시오.", "natural": 1.7, "meaning": 0.97, "style": 0.94, "pass": true }
+        {
+          "ko": "이 프로바이더를 사용할 수 없습니다. DeepSeek 계정 또는 공식 API 프로바이더를 설정하거나 사용 가능한 서비스를 선택하십시오.",
+          "natural": 1.7,
+          "meaning": 0.97,
+          "style": 0.94,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -171,8 +301,20 @@
       "en": "{provider} — unavailable",
       "kind": "normal",
       "attempts": [
-        { "ko": "{provider} — 사용할 수 없음", "natural": 1.82, "meaning": 0.95, "style": 0.49, "pass": false },
-        { "ko": "{provider} — 사용할 수 없습니다", "natural": 1.79, "meaning": 0.94, "style": 0.56, "pass": true }
+        {
+          "ko": "{provider} — 사용할 수 없음",
+          "natural": 1.82,
+          "meaning": 0.95,
+          "style": 0.49,
+          "pass": false
+        },
+        {
+          "ko": "{provider} — 사용할 수 없습니다",
+          "natural": 1.79,
+          "meaning": 0.94,
+          "style": 0.56,
+          "pass": true
+        }
       ],
       "result": "fixed"
     },
@@ -181,7 +323,13 @@
       "en": "This deployment stores settings read-only.",
       "kind": "normal",
       "attempts": [
-        { "ko": "이 배포는 설정을 읽기 전용으로 저장합니다.", "natural": 1.71, "meaning": 0.97, "style": 0.57, "pass": true }
+        {
+          "ko": "이 배포는 설정을 읽기 전용으로 저장합니다.",
+          "natural": 1.71,
+          "meaning": 0.97,
+          "style": 0.57,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -190,7 +338,13 @@
       "en": "Reset to default",
       "kind": "normal",
       "attempts": [
-        { "ko": "기본값으로 재설정", "natural": 1.88, "meaning": 0.97, "style": 0.51, "pass": true }
+        {
+          "ko": "기본값으로 재설정",
+          "natural": 1.88,
+          "meaning": 0.97,
+          "style": 0.51,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -199,7 +353,13 @@
       "en": "Retry",
       "kind": "normal",
       "attempts": [
-        { "ko": "다시 시도하십시오", "natural": 1.8, "meaning": 0.96, "style": 0.89, "pass": true }
+        {
+          "ko": "다시 시도하십시오",
+          "natural": 1.8,
+          "meaning": 0.96,
+          "style": 0.89,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -208,9 +368,27 @@
       "en": "Save",
       "kind": "normal",
       "attempts": [
-        { "ko": "저장", "natural": 1.98, "meaning": 0.97, "style": 0.47, "pass": false },
-        { "ko": "저장합니다", "natural": 0.98, "meaning": 0.92, "style": 0.93, "pass": false },
-        { "ko": "저장하기", "natural": 1.81, "meaning": 0.97, "style": 0.57, "pass": true }
+        {
+          "ko": "저장",
+          "natural": 1.98,
+          "meaning": 0.97,
+          "style": 0.47,
+          "pass": false
+        },
+        {
+          "ko": "저장합니다",
+          "natural": 0.98,
+          "meaning": 0.92,
+          "style": 0.93,
+          "pass": false
+        },
+        {
+          "ko": "저장하기",
+          "natural": 1.81,
+          "meaning": 0.97,
+          "style": 0.57,
+          "pass": true
+        }
       ],
       "result": "fixed"
     },
@@ -218,15 +396,61 @@
       "key": "saveFailed",
       "en": "The deployment did not accept these values; they were left for you to correct.",
       "kind": "normal",
-      "attempts": [],
-      "result": "unresolved"
+      "attempts": [
+        {
+          "ko": "배포 환경이 이 값을 받아들이지 않았습니다. 고칠 수 있도록 입력값을 그대로 두었습니다.",
+          "natural": 1.41,
+          "meaning": 0.87,
+          "style": 0.84,
+          "pass": false
+        },
+        {
+          "ko": "배포 환경에서 이 값을 거부했습니다. 입력한 값은 수정할 수 있도록 그대로 남아 있습니다.",
+          "natural": 1.38,
+          "meaning": 0.85,
+          "style": 0.72,
+          "pass": false
+        },
+        {
+          "ko": "저장하지 못했습니다. 입력한 값을 확인하고 수정하십시오.",
+          "natural": 1.61,
+          "meaning": 0.42,
+          "style": 0.93,
+          "pass": false
+        },
+        {
+          "ko": "배포 환경이 이 값을 거부해 저장하지 못했습니다. 입력한 값은 그대로 두었으니 수정하십시오.",
+          "natural": 1.32,
+          "meaning": 0.61,
+          "style": 0.87,
+          "pass": false
+        }
+      ],
+      "result": "approved",
+      "review": {
+        "date": "2026-10-17",
+        "note": "검토에서 다시 번역, 시도 횟수 초기화"
+      },
+      "history": [],
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "배포 환경이 이 값을 받아들이지 않았습니다. 고칠 수 있도록 입력값을 그대로 두었습니다.",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택 (1.41/0.87/0.84)"
+      }
     },
     {
       "key": "saving",
       "en": "Saving…",
       "kind": "normal",
       "attempts": [
-        { "ko": "저장하고 있습니다…", "natural": 1.93, "meaning": 0.97, "style": 0.6, "pass": true }
+        {
+          "ko": "저장하고 있습니다…",
+          "natural": 1.93,
+          "meaning": 0.97,
+          "style": 0.6,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -235,7 +459,13 @@
       "en": "Target language",
       "kind": "normal",
       "attempts": [
-        { "ko": "대상 언어", "natural": 1.88, "meaning": 0.97, "style": 0.65, "pass": true }
+        {
+          "ko": "대상 언어",
+          "natural": 1.88,
+          "meaning": 0.97,
+          "style": 0.65,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -244,19 +474,55 @@
       "en": "auto follows the UI language; language codes such as zh, en, and ja also work.",
       "kind": "normal",
       "attempts": [
-        { "ko": "auto는 UI 언어를 따릅니다. zh, en, ja 같은 언어 코드도 사용할 수 있습니다.", "natural": 1.78, "meaning": 0.96, "style": 0.45, "pass": false },
-        { "ko": "auto는 UI 언어를 따릅니다. zh, en, ja 같은 언어 코드를 사용해도 됩니다.", "natural": 1.71, "meaning": 0.94, "style": 0.45, "pass": false },
-        { "ko": "auto는 UI 언어를 따릅니다. zh, en, ja 같은 언어 코드도 지원합니다.", "natural": 1.59, "meaning": 0.94, "style": 0.4, "pass": false },
-        { "ko": "auto는 UI 언어를 따르며, zh, en, ja 같은 언어 코드도 사용할 수 있습니다.", "natural": 1.54, "meaning": 0.94, "style": 0.38, "pass": false }
+        {
+          "ko": "auto는 UI 언어를 따릅니다. zh, en, ja 같은 언어 코드도 사용할 수 있습니다.",
+          "natural": 1.78,
+          "meaning": 0.96,
+          "style": 0.45,
+          "pass": false
+        },
+        {
+          "ko": "auto는 UI 언어를 따릅니다. zh, en, ja 같은 언어 코드를 사용해도 됩니다.",
+          "natural": 1.71,
+          "meaning": 0.94,
+          "style": 0.45,
+          "pass": false
+        },
+        {
+          "ko": "auto는 UI 언어를 따릅니다. zh, en, ja 같은 언어 코드도 지원합니다.",
+          "natural": 1.59,
+          "meaning": 0.94,
+          "style": 0.4,
+          "pass": false
+        },
+        {
+          "ko": "auto는 UI 언어를 따르며, zh, en, ja 같은 언어 코드도 사용할 수 있습니다.",
+          "natural": 1.54,
+          "meaning": 0.94,
+          "style": 0.38,
+          "pass": false
+        }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "auto는 UI 언어를 따릅니다. zh, en, ja 같은 언어 코드도 사용할 수 있습니다.",
+        "note": "문체 점수만 미달(짧은 라벨)"
+      }
     },
     {
       "key": "translating",
       "en": "Translating reasoning",
       "kind": "normal",
       "attempts": [
-        { "ko": "추론을 번역하는 중", "natural": 1.85, "meaning": 0.97, "style": 0.5, "pass": true }
+        {
+          "ko": "추론을 번역하는 중",
+          "natural": 1.85,
+          "meaning": 0.97,
+          "style": 0.5,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -265,7 +531,13 @@
       "en": "View translation",
       "kind": "normal",
       "attempts": [
-        { "ko": "번역 보기", "natural": 1.92, "meaning": 0.97, "style": 0.57, "pass": true }
+        {
+          "ko": "번역 보기",
+          "natural": 1.92,
+          "meaning": 0.97,
+          "style": 0.57,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -274,7 +546,13 @@
       "en": "Translation preferences are unavailable.",
       "kind": "normal",
       "attempts": [
-        { "ko": "번역 설정을 사용할 수 없습니다.", "natural": 1.79, "meaning": 0.97, "style": 0.65, "pass": true }
+        {
+          "ko": "번역 설정을 사용할 수 없습니다.",
+          "natural": 1.79,
+          "meaning": 0.97,
+          "style": 0.65,
+          "pass": true
+        }
       ],
       "result": "pass"
     },
@@ -283,20 +561,69 @@
       "en": "Unwrap lines",
       "kind": "normal",
       "attempts": [
-        { "ko": "줄 바꿈 해제", "natural": 1.42, "meaning": 0.93, "style": 0.63, "pass": false },
-        { "ko": "줄 바꿈을 해제합니다", "natural": 1.46, "meaning": 0.94, "style": 0.87, "pass": false },
-        { "ko": "줄 바꿈을 끕니다", "natural": 1.07, "meaning": 0.79, "style": 0.54, "pass": false },
-        { "ko": "줄 바꿈 사용 안 함", "natural": 1.07, "meaning": 0.83, "style": 0.72, "pass": false }
+        {
+          "ko": "줄 바꿈 해제",
+          "natural": 1.42,
+          "meaning": 0.93,
+          "style": 0.63,
+          "pass": false
+        },
+        {
+          "ko": "줄 바꿈을 해제합니다",
+          "natural": 1.46,
+          "meaning": 0.94,
+          "style": 0.87,
+          "pass": false
+        },
+        {
+          "ko": "줄 바꿈을 끕니다",
+          "natural": 1.07,
+          "meaning": 0.79,
+          "style": 0.54,
+          "pass": false
+        },
+        {
+          "ko": "줄 바꿈 사용 안 함",
+          "natural": 1.07,
+          "meaning": 0.83,
+          "style": 0.72,
+          "pass": false
+        },
+        {
+          "ko": "줄바꿈을 해제합니다",
+          "natural": 1.6,
+          "meaning": 0.92,
+          "style": 0.91,
+          "pass": true
+        }
       ],
-      "result": "unresolved"
+      "result": "fixed",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "줄 바꿈을 해제합니다",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
     },
     {
       "key": "wrap",
       "en": "Wrap lines",
       "kind": "normal",
       "attempts": [
-        { "ko": "줄 바꿈 적용", "natural": 1.39, "meaning": 0.9, "style": 0.59, "pass": false },
-        { "ko": "줄 바꿈을 적용합니다", "natural": 1.15, "meaning": 0.86, "style": 0.94, "pass": false }
+        {
+          "ko": "줄 바꿈 적용",
+          "natural": 1.39,
+          "meaning": 0.9,
+          "style": 0.59,
+          "pass": false
+        },
+        {
+          "ko": "줄 바꿈을 적용합니다",
+          "natural": 1.15,
+          "meaning": 0.86,
+          "style": 0.94,
+          "pass": false
+        }
       ],
       "result": "unresolved"
     }

@@ -53,10 +53,10 @@ DSH 화면 문구 전체를 한국어로 제공한다. Studio는 이미 `ctx.loc
 | S2 | 용어집과 검수 기준 확정 | S1 | 완료: [S2 판정](../research/ko-locale/README.md#s2-샘플-판정-검수-기준-재확인). 20문구 중 첫 통과 9, 재작성 통과 6, 미해결 5, 미판정 0. 기준 유지 |
 | S3 | Studio 사전 등록 코드와 빠진 키 검사 | S1 | 완료: [dsh-ko-locale.ts](../../src/dsh-ko-locale.ts), 사전 묶음 [dsh-ko/index.ts](../../src/dsh-ko/index.ts), 검사 `node --import tsx studio/scripts/check-dsh-ko-locale.mjs`. 단위 테스트 5/5 |
 | S4 | 번역 스킬 작성·설치 | S2, S3 | 완료: [SKILL.md](../../scripts/agents/studio-dsh-ko-translate/SKILL.md). 다른 세션에서 `sidebarCodePreview`(3키) 번역 완료, 첫 판정 3/3 통과, 검사 3종 통과([판정 기록](../research/ko-locale/judge/sidebarCodePreview.json)) |
-| S5 | 네임스페이스별 번역(반복, 별도 세션) | S4 | 네임스페이스마다 판정 기록, 빠진 키 검사 통과 |
+| S5 | 네임스페이스별 번역(반복, 별도 세션) | S4 | 완료: 62개 네임스페이스 2,779키. 한국어 2,721(판정 통과 2,449, 승인 161, 판정 없이 둔 토큰·형식 111), 영어 유지 58. 빠진 키 검사 rc.2·alpha.2 통과. 목록 [unresolved.md](../research/ko-locale/judge/unresolved.md) |
 | S6 | 독립 설치 검증 | S5 | 수정하지 않은 rc.2 + 패키징 Studio, 한국어 선택 시 화면 확인 |
 
-현재 단계: S5(네임스페이스별 번역 반복). S2에서 기준은 그대로 두고, 미해결 문구는 사전에서 빼 영어 fallback으로 둔다. 재작성은 키당 3회까지, 이어 붙이는 조각 문구는 문장 전체로 판정한다. 작업 브랜치 `studio/feat/ko-locale`(별도 worktree `deepseek-harness-ko-locale`).
+현재 단계: S6(독립 설치 검증). S2에서 기준은 그대로 두고, 미해결 문구는 사전에서 빼 영어 fallback으로 둔다. 재작성은 키당 3회까지, 이어 붙이는 조각 문구는 문장 전체로 판정한다. 작업 브랜치 `studio/feat/ko-locale`(별도 worktree `deepseek-harness-ko-locale`).
 
 ## S3 구현 메모
 
@@ -93,3 +93,11 @@ DSH 화면 문구 전체를 한국어로 제공한다. Studio는 이미 `ctx.loc
 - 이전 방식(에이전트가 `judge`를 직접 호출)은 판정 요청·응답이 대화에 쌓여 한 세션 400키에서 멈췄다. 2026-10-17에 40개 네임스페이스(583키)를 이 방식으로 마쳤다.
 - 시험: `sidebarRight`(34키)를 새 방식으로 처리했다. 판정 4회차, Jev 요청 5번. 결과 통과 24, 재작성 통과 6, fallback 4. 회차마다 바뀐 키만 다시 판정했다.
 - 진행률과 다음 대상: `node --import tsx scripts/dsh-ko-next.mjs`(`studio/`에서). 미해결 문구와 용어집 제안은 `docs/research/ko-locale/judge/unresolved.md`에 모으고 S5 완료 전에 사용자가 검토한다.
+
+## S5 결과와 검토
+
+- 2026-10-17, 서브에이전트 번역과 일괄 판정으로 남은 21개 네임스페이스를 마쳤다. 그 뒤 판정 스크립트 버그를 고쳤다. 실패한 키를 번역자가 고치지 않으면 다음 실행에서 다시 판정하지도, 실패로 보고하지도 않아 11키가 미통과 상태로 사전에 남았다. 이 11키는 사용자가 승인했다(단위·제품 이름).
+- 사용자 위임으로 미해결 183키를 재검토했다. 채택 125(최선 후보 108, 조각·화면 역할로 다시 판정 12, `saveFailed` 5), 영어 유지 58. 기준과 목록은 [unresolved.md](../research/ko-locale/judge/unresolved.md)에 있다.
+- 같은 검토에서 버튼·라벨을 문장으로 바꾼 재작성 27개를 이전 라벨 후보로 되돌렸다. 짧은 라벨은 문체 점수가 낮게 나와, 번역자가 라벨을 "…합니다" 문장으로 바꿔 통과시킨 경우다. 지침에 라벨을 문장으로 바꾸지 말라는 규칙을 넣었다.
+- 용어 통일: 새로 고침, 미리 보기, 상위·하위 세션 계보, 팀 작업, 추론 강도. 바꾼 문구는 다시 판정했고, 통과하지 못한 10개는 이전 문구를 유지했다.
+- 판정 통과·승인 문구 모두 판정 기록과 사전이 일치한다(검사 스크립트 기준 불일치 0).

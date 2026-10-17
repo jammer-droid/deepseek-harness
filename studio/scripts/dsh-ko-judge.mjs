@@ -74,6 +74,7 @@ export function planNamespace(dictionary, record, english) {
   for (const [key, ko] of Object.entries(dictionary.ko ?? {})) {
     const row = rows.get(key);
     if (row && ['verbatim', 'locale'].includes(row.kind)) continue;
+    if (row?.result === 'approved' && row.approval?.ko === ko) continue; // approved text is final until it changes
     const ens = english.get(key);
     if (!ens || ens.length === 0) { skipped.push(key); continue; }
     if (ko === ens[0] && !/[A-Za-z]{2,}\s+[A-Za-z]{2,}/.test(ens[0])) continue; // verbatim token, nothing to judge

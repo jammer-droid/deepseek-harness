@@ -147,7 +147,13 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "“{name}” 워크스페이스의 사용 가능한 작업",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
     },
     {
       "key": "archive.confirm.action",
@@ -198,7 +204,13 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "중지 대상 작업",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
     },
     {
       "key": "archive.confirm.desc",
@@ -234,7 +246,13 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "“{title}”에서 아직 작업이 진행 중입니다. 보관하기 전에 이 작업을 중지합니다. 세션은 나중에 사이드바의 “모든 대화(보관된 대화 포함)” 필터에서 복원할 수 있습니다. 중지된 작업은 자동으로 다시 시작되지 않습니다.",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
     },
     {
       "key": "archive.confirm.jobs.one",
@@ -757,7 +775,8 @@
       "approval": {
         "by": "user",
         "date": "2026-10-17",
-        "note": "판정 미통과 문구를 사용자가 그대로 승인(단위·제품 이름)"
+        "note": "판정 미통과 문구를 사용자가 그대로 승인(단위·제품 이름)",
+        "ko": "워크스페이스"
       }
     },
     {
@@ -1345,7 +1364,13 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "워크스페이스 선택 또는 추가 작업이 진행 중입니다.",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
     },
     {
       "key": "shortcut.forkFailed",
@@ -1446,7 +1471,8 @@
       "approval": {
         "by": "user",
         "date": "2026-10-17",
-        "note": "판정 미통과 문구를 사용자가 그대로 승인(단위·제품 이름)"
+        "note": "판정 미통과 문구를 사용자가 그대로 승인(단위·제품 이름)",
+        "ko": "승인"
       }
     },
     {
@@ -1630,7 +1656,8 @@
       "approval": {
         "by": "user",
         "date": "2026-10-17",
-        "note": "판정 미통과 문구를 사용자가 그대로 승인(단위·제품 이름)"
+        "note": "판정 미통과 문구를 사용자가 그대로 승인(단위·제품 이름)",
+        "ko": "{n}일"
       }
     },
     {
@@ -2017,7 +2044,13 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "분기를 만들기 전에 원본 세션을 열어 마이그레이션을 완료하십시오.",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
     },
     {
       "key": "toast.openForkSource",

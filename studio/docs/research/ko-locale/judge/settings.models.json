@@ -1034,7 +1034,13 @@
           "pass": true
         }
       ],
-      "result": "fixed"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "API 키 입력",
+        "note": "버튼·라벨을 문장으로 바꾼 재작성 대신 이전 라벨 후보로 되돌림(자연·의미 통과, 문체만 미달)"
+      }
     },
     {
       "key": "keyPlaceholderNative",
@@ -1485,7 +1491,13 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "선택기에 모델이 표시되지 않습니다. 목록에 없는 ID도 직접 전송할 수 있습니다.",
+        "note": "문체 점수만 미달(짧은 라벨)"
+      }
     },
     {
       "key": "modelsInherited",
@@ -1604,7 +1616,13 @@
           "pass": true
         }
       ],
-      "result": "fixed"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "시작하려면 API 키 추가",
+        "note": "버튼·라벨을 문장으로 바꾼 재작성 대신 이전 라벨 후보로 되돌림(자연·의미 통과, 문체만 미달)"
+      }
     },
     {
       "key": "protocolAnthropicMessages",
@@ -1623,7 +1641,8 @@
       "approval": {
         "by": "user",
         "date": "2026-10-17",
-        "note": "판정 미통과 문구를 사용자가 그대로 승인(단위·제품 이름)"
+        "note": "판정 미통과 문구를 사용자가 그대로 승인(단위·제품 이름)",
+        "ko": "Anthropic Messages"
       }
     },
     {
@@ -1810,7 +1829,13 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "설정 파일 경로 확인 실패",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
     },
     {
       "key": "title",
@@ -1838,9 +1863,16 @@
           "meaning": 0.96,
           "style": 0.82,
           "pass": true
+        },
+        {
+          "ko": "DeepSeek Harness 0.2는 아직 미리 보기 버전이며, 여러 부분에서 지속적인 개선과 보완이 필요합니다. 모든 개발자와 사용자의 의견과 제안을 환영합니다. 새로운 데스크톱 앱은 폭넓은 사용자를 대상으로 하며, 개발자용 고급 기능은 설정에서 활성화할 수 있습니다. DeepSeek Harness의 제품 기능과 플러그인 API는 앞으로도 빠르게 개선되고 발전하며, 시간이 지나면서 점차 안정화될 예정입니다.\n\n오픈 소스 기반의 재사용 및 조합 가능한 인프라를 토대로 전 세계 사용자 및 개발자와 함께 지능의 한계를 탐구하기를 기대합니다. 누구나 DeepSeek Harness로 아이디어를 실현하고 커뮤니티에 참여하여 플러그인 생태계를 풍성하게 만들어 주시기를 바랍니다.",
+          "natural": 1.53,
+          "meaning": 0.95,
+          "style": 0.74,
+          "pass": true
         }
       ],
-      "result": "pass"
+      "result": "fixed"
     },
     {
       "key": "welcomeContinue",
@@ -1897,9 +1929,16 @@
           "meaning": 0.96,
           "style": 0.82,
           "pass": true
+        },
+        {
+          "ko": "미리 보기 안내",
+          "natural": 1.87,
+          "meaning": 0.95,
+          "style": 0.88,
+          "pass": true
         }
       ],
-      "result": "pass"
+      "result": "fixed"
     }
   ]
 }

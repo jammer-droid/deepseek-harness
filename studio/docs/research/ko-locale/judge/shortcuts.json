@@ -139,7 +139,13 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "확인 메시지 닫기",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
     },
     {
       "key": "conflict",
@@ -190,7 +196,13 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "단축키 및 입력 동작 조회와 편집",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
     },
     {
       "key": "desktop-reload",
@@ -381,7 +393,13 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "Command+/, Command+,, Command+Backslash, Control+Backquote, Command+Option+key 또는 Command+Shift+key를 사용하십시오. 서로 다른 보조 키를 3개 또는 4개 함께 누르는 조합도 지원합니다. 브라우저나 시스템의 단축키 입력은 페이지로 전달되지 않을 수 있습니다.",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
     },
     {
       "key": "menus",
@@ -469,7 +487,13 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "메뉴 선택 이동",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
     },
     {
       "key": "native-failed",
@@ -1009,7 +1033,13 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "현재 사이트의 localStorage 항목(dsh.keybindings.v1)",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
     },
     {
       "key": "web-help",
@@ -1045,7 +1075,13 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "브라우저에서는 Mod+/, Mod+Shift+,, Mod+Shift+. 조합을 사용합니다. 여기서 Mod는 Mac의 Command 키 또는 다른 환경의 Ctrl 키를 의미합니다.",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
     },
     {
       "key": "web-reload",
@@ -1058,9 +1094,16 @@
           "meaning": 0.96,
           "style": 0.92,
           "pass": true
+        },
+        {
+          "ko": "페이지를 새로 고침하십시오",
+          "natural": 1.67,
+          "meaning": 0.97,
+          "style": 0.87,
+          "pass": true
         }
       ],
-      "result": "pass"
+      "result": "fixed"
     },
     {
       "key": "windows-web-help",
@@ -1096,7 +1139,13 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "Ctrl+/, Ctrl+,, Ctrl+Alt+key 또는 Ctrl+Shift+key를 사용하십시오. 서로 다른 보조 키를 3개 또는 4개 함께 누르는 조합도 지원합니다. 브라우저나 시스템의 단축키 입력은 페이지로 전달되지 않을 수 있습니다.",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
     },
     {
       "key": "write-failed",

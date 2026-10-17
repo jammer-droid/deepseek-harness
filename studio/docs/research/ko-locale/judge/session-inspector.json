@@ -102,7 +102,13 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "검색 조건에 맞는 레코드의 상위 컨텍스트",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
     },
     {
       "key": "filter.failed",
@@ -219,7 +225,13 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "제안이 없습니다. 이 키워드는 그대로 적용할 수 있습니다.",
+        "note": "문체 점수만 미달(짧은 라벨)"
+      }
     },
     {
       "key": "filter.placeholder",
@@ -410,7 +422,13 @@
           "pass": false
         }
       ],
-      "result": "unresolved"
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "원시 데이터 탐색 메뉴",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
     },
     {
       "key": "object.node",
@@ -556,6 +574,13 @@
           "natural": 1.52,
           "meaning": 0.94,
           "style": 0.77,
+          "pass": true
+        },
+        {
+          "ko": "메인 Chat에서 마우스를 올려 미리 보기를 확인한 다음 클릭해 선택하십시오. 취소하려면 Esc를 누르십시오.",
+          "natural": 1.55,
+          "meaning": 0.96,
+          "style": 0.69,
           "pass": true
         }
       ],
@@ -794,7 +819,8 @@
       "approval": {
         "by": "user",
         "date": "2026-10-17",
-        "note": "판정 미통과 문구를 사용자가 그대로 승인(단위·제품 이름)"
+        "note": "판정 미통과 문구를 사용자가 그대로 승인(단위·제품 이름)",
+        "ko": "T/S"
       }
     },
     {

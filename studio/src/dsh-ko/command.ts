@@ -14,8 +14,10 @@ export default {
     'label.goal': '목표',
     'label.permission': '권한',
     'label.plan': '계획',
+    'listbox.aria': '/{command} 검색 결과',
     'notice.attachmentsUnsupported': '/{command} 명령은 첨부 파일을 받지 않습니다. 먼저 제거하십시오.',
     'overlay.aria': '/{command} 옵션 목록',
+    'search.aria': '옵션 필터링',
     'search.placeholder': '검색…',
     'section.add': '추가',
     'section.commands': '명령',
@@ -29,5 +31,4 @@ export default {
     'token.permission': '권한',
     'token.plan': '계획',
   },
-  fallback: ['listbox.aria', 'search.aria'],
 } satisfies DshKoNamespace;
