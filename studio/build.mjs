@@ -50,4 +50,8 @@ const docsRoot = ['release/docs/', 'docs/'].map(dir => new URL(dir, import.meta.
 if (!docsRoot) throw new Error('build: Pixie Gate guide not found in release/docs or docs');
 await cp(new URL('appendix/studio-pixie-hook-guide/SKILL.md', docsRoot), new URL('SKILL.md', skillOut));
 await cp(new URL('appendix/pixie-gate.md', docsRoot), new URL('guide.md', skillOut));
+const loopSkillOut = new URL('packages/shell/skills/studio-pixie-loop-guide/', import.meta.url);
+await mkdirp(loopSkillOut, { recursive: true });
+await cp(new URL('appendix/studio-pixie-loop-guide/SKILL.md', docsRoot), new URL('SKILL.md', loopSkillOut));
+await cp(new URL('appendix/pixie-loop.md', docsRoot), new URL('guide.md', loopSkillOut));
 // studio-provider-guide is not shipped: SettingsX providers are excluded from the release (#28 D10).

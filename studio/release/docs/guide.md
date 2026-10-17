@@ -21,6 +21,7 @@ DSH Studio is a page inside the DeepSeek Harness web GUI for building **agent pr
 - [Troubleshooting](#troubleshooting)
 - [Appendix: Check a preset in a live session](appendix/preset-check.md)
 - [Appendix: Pixie Gate guide](appendix/pixie-gate.md)
+- [Appendix: Pixie Loop guide](appendix/pixie-loop.md)
 
 ## Install and open Studio
 

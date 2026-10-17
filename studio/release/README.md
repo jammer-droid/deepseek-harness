@@ -66,6 +66,7 @@ Restart the web GUI or the app, then open **DSH Studio** from the sidebar. Each 
 - **DSH in Korean** — choosing 한국어 in DSH's language setting also translates DSH's own screens.
 - **Studio shortcuts** — SettingsX adds keyboard commands DSH lacks: previous/next session, go to session 1–9, copy the working folder, full screen.
 - **Pixie and Pixie Gate** — a side model in the right sidebar (`/pixie`) that never enters the conversation, and gates that check prompts, tool calls and finished answers per preset. Hook scripts can judge with a decision engine (an LLM or TypeSafe Jev), conclude without Pixie, and leave notes under the answer, such as a Korean translation. Agents get the same engine as the `judge` tool, and a `studio-pixie-hook-guide` skill to write gates. See the [Pixie Gate guide](docs/appendix/pixie-gate.md).
+- **Pixie Loop** — the `pixie_loop` tool runs many independent items through work → exact checks → decision-engine judgment → Pixie feedback → retry outside the agent's context, and returns only counts, a results file and the items that still failed. Runs show in the Pixie tab › Loops; a `studio-pixie-loop-guide` skill writes the specs. See the [Pixie Loop guide](docs/appendix/pixie-loop.md).
 
 | Prompts & tools | Prompt preview | Subagent roles |
 |---|---|---|

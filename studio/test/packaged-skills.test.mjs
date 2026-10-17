@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 
 const read = path => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
-const SHIPPED = ['studio-pixie-hook-guide'];
+const SHIPPED = ['studio-pixie-hook-guide', 'studio-pixie-loop-guide'];
 const DEV_ONLY = ['studio-dsh-ko-translate', 'studio-ko-review', 'studio-provider-guide'];
 
 test('build.mjs rebuilds the skills folder and copies only shipped skills', () => {
@@ -19,7 +19,7 @@ test('the Host installs only shipped skills', () => {
   const shell = read('src/host/shell.ts');
   const list = shell.match(/for \(const bundled of \[([^\]]*)\]\)/);
   assert.ok(list, 'skill install loop not found');
-  assert.deepEqual(list[1].split(',').map(name => name.trim()).filter(Boolean), ['pixieHookSkill']);
+  assert.deepEqual(list[1].split(',').map(name => name.trim()).filter(Boolean), ['pixieHookSkill', 'pixieLoopSkill']);
 });
 
 test('dev skills live outside the release docs', () => {

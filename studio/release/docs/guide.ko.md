@@ -21,6 +21,7 @@ DSH Studio는 DeepSeek Harness 웹 GUI 안에서 **에이전트 프리셋**을 �
 - [문제 해결](#문제-해결)
 - [부록: 실행 중인 세션에서 프리셋 확인하기](appendix/preset-check.ko.md)
 - [부록: Pixie Gate 가이드](appendix/pixie-gate.ko.md)
+- [부록: Pixie Loop 가이드](appendix/pixie-loop.ko.md)
 
 ## 설치하고 열기
 
