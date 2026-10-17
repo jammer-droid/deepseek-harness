@@ -44,3 +44,8 @@
 | question | reply.label | Reply to earlier pending questions | 대기 중인 이전 질문에 답장합니다 | 1.39/0.88/0.85 | 긴 동작 라벨의 자연스러움 미달 |
 | question | status.sent | Reply sent; the panel could not close. | 답장은 보냈지만 패널을 닫지 못했습니다. | 1.45/0.96/0.57 | 두 동작 안내의 자연스러움 미달 |
 | question | wait.continued | Work continued — you can still answer | 답변하지 않아도 작업이 계속되었습니다. 지금도 답변할 수 있습니다. | 1.39/0.77/0.76 | 상태 안내의 자연스러움 미달 |
+| cotTranslation | anonymousNotice | Bing and Google need no translation login or API key. Their anonymous endpoints may reject or limit requests. | Bing과 Google은 번역 로그인이나 API 키가 필요하지 않습니다. 익명 엔드포인트가 요청을 거부하거나 제한할 수 있습니다. | 1.71/0.96/0.39 | 두 문장 안내의 문체 판정이 계속 낮음 |
+| cotTranslation | saveFailed | The deployment did not accept these values; they were left for you to correct. | 배포에서 이 값을 받아들이지 않았습니다. 값을 수정할 수 있도록 그대로 두었습니다. | 1.32/0.92/0.48 | settings.agentLoop와 같은 문구·같은 미해결 후보 |
+| cotTranslation | targetLanguageHint | auto follows the UI language; language codes such as zh, en, and ja also work. | auto는 UI 언어를 따릅니다. zh, en, ja 같은 언어 코드도 사용할 수 있습니다. | 1.78/0.96/0.45 | 세미콜론으로 이어진 안내문의 문체 미달 |
+| cotTranslation | unwrap | Unwrap lines | 줄 바꿈을 해제합니다 | 1.46/0.94/0.87 | 줄 바꿈 토글 라벨의 자연스러움 미달 |
+| cotTranslation | wrap | Wrap lines | 줄 바꿈 적용 | 1.39/0.9/0.59 | 줄 바꿈 토글 라벨의 자연스러움 미달 |
