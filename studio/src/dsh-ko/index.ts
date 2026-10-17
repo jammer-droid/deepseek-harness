@@ -11,6 +11,7 @@ import documentMarkdown from './documentMarkdown.ts';
 import goal from './goal.ts';
 import inspectorPanel from './inspectorPanel.ts';
 import permissionAccess from './permission.access.ts';
+import plan from './plan.ts';
 import reference from './reference.ts';
 import sessionLogDownload from './session-log-download.ts';
 import settingsAgentLoop from './settings.agentLoop.ts';
@@ -38,6 +39,7 @@ export const dshKo: DshKoDictionaries = {
   goal: goal,
   inspectorPanel: inspectorPanel,
   'permission.access': permissionAccess,
+  plan: plan,
   reference: reference,
   'session-log-download': sessionLogDownload,
   'settings.agentLoop': settingsAgentLoop,

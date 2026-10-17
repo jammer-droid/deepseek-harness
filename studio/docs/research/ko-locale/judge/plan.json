@@ -1,0 +1,165 @@
+{
+  "namespace": "plan",
+  "date": "2026-10-17",
+  "engine": "jev",
+  "thresholds": { "natural": 1.5, "meaning": 0.6, "style": 0.5 },
+  "rows": [
+    {
+      "key": "chip.exitFailed",
+      "en": "Failed to exit plan mode",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "계획 모드를 종료하지 못했습니다", "natural": 1.68, "meaning": 0.98, "style": 0.88, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "chip.label",
+      "en": "Plan",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "계획", "natural": 1.88, "meaning": 0.98, "style": 0.76, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "chip.on.aria",
+      "en": "Plan mode on, press to turn off",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "계획 모드 켜짐, 눌러서 끄기", "natural": 1.78, "meaning": 0.96, "style": 0.44, "pass": false },
+        { "ko": "계획 모드가 켜져 있습니다. 끄려면 누르십시오.", "natural": 1.56, "meaning": 0.96, "style": 0.9, "pass": true }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "chip.on.title",
+      "en": "Plan mode on — click to turn off (/plan off)",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "계획 모드 켜짐 — 클릭하여 끄기 (/plan off)", "natural": 1.8, "meaning": 0.96, "style": 0.35, "pass": false },
+        { "ko": "계획 모드가 켜져 있습니다. 끄려면 클릭하십시오. (/plan off)", "natural": 1.49, "meaning": 0.93, "style": 0.91, "pass": false },
+        { "ko": "계획 모드 켜짐 — 끄려면 클릭하십시오 (/plan off)", "natural": 1.6, "meaning": 0.97, "style": 0.78, "pass": true }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "preview.action",
+      "en": "Open",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "열기", "natural": 1.92, "meaning": 0.97, "style": 0.72, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "preview.document",
+      "en": "Plan · Markdown",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "계획 · Markdown", "natural": 1.62, "meaning": 0.95, "style": 0.69, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "preview.expired",
+      "en": "This temporary plan preview has expired. Reopen it from the pending review card.",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "이 임시 계획 미리보기가 만료되었습니다. 대기 중인 검토 카드에서 다시 여십시오.", "natural": 1.68, "meaning": 0.96, "style": 0.61, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "preview.failed",
+      "en": "Could not load plan",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "계획을 불러오지 못했습니다", "natural": 1.8, "meaning": 0.97, "style": 0.86, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "preview.full",
+      "en": "View full plan",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "전체 계획 보기", "natural": 1.95, "meaning": 0.98, "style": 0.5, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "preview.historyUnavailable",
+      "en": "Session history is unavailable",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "세션 기록을 사용할 수 없습니다", "natural": 1.75, "meaning": 0.98, "style": 0.64, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "preview.invalidAddress",
+      "en": "Invalid plan address",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "잘못된 계획 주소", "natural": 1.78, "meaning": 0.97, "style": 0.54, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "preview.loading",
+      "en": "Loading plan…",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "계획을 불러오고 있습니다…", "natural": 1.88, "meaning": 0.98, "style": 0.59, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "preview.notFound",
+      "en": "This plan was not found",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "계획을 찾을 수 없습니다", "natural": 1.9, "meaning": 0.98, "style": 0.4, "pass": false },
+        { "ko": "계획을 찾지 못했습니다.", "natural": 1.85, "meaning": 0.97, "style": 0.75, "pass": true }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "preview.open",
+      "en": "Open plan in sidebar",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "사이드바에서 계획 열기", "natural": 1.85, "meaning": 0.98, "style": 0.51, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "preview.openNamed",
+      "en": "Open plan: {title}",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "계획 열기: {title}", "natural": 1.88, "meaning": 0.98, "style": 0.59, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "preview.title",
+      "en": "Plan",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "계획", "natural": 1.9, "meaning": 0.98, "style": 0.75, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "preview.unavailable",
+      "en": "Plan preview is unavailable",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "계획 미리보기를 사용할 수 없습니다", "natural": 1.85, "meaning": 0.98, "style": 0.7, "pass": true }
+      ],
+      "result": "pass"
+    }
+  ]
+}
