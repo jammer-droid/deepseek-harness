@@ -113,3 +113,15 @@
 | trajectory | 용어 | Think/Thinking | 생각 | — | 번역자 제안 |
 | trajectory | 용어 | Diff | 변경 사항 | — | 번역자 제안 |
 | trajectory | 용어 | Raw | 원본 | — | 번역자 제안 |
+| shortcuts | close-confirmation | Close confirmation | 확인 메시지 닫기 | 1.47/0.85/0.85 | 4회 미통과 |
+| shortcuts | description | View and edit available shortcuts and input actions | 단축키 및 입력 동작 조회와 편집 | 1.47/0.95/0.78 | 4회 미통과 |
+| shortcuts | invalid | Shortcut configuration in {location} is damaged. Back up and repair this configuration, then {reload}. | {location}의 단축키 설정이 손상되었습니다. 먼저 설정을 백업하고 복구하십시오. 그런 다음 {reload}. | 1.31/0.93/0.85 | 4회 미통과 |
+| shortcuts | macos-web-help | Use Command+/, Command+,, Command+Backslash, Control+Backquote, Command+Option+key, or Command+Shift+key. Combinations with three or four distinct modifiers are also supported. Browser or system shortcuts may not reach the page. | Command+/, Command+,, Command+Backslash, Control+Backquote, Command+Option+key 또는 Command+Shift+key를 사용하십시오. 서로 다른 보조 키를 3개 또는 4개 함께 누르는 조합도 지원합니다. 브라우저나 시스템의 단축키 입력은 페이지로 전달되지 않을 수 있습니다. | 1.39/0.95/0.7 | 4회 미통과 |
+| shortcuts | move | Move menu selection | 메뉴 선택 이동 | 1.49/0.97/0.81 | 4회 미통과 |
+| shortcuts | review | I have reviewed the latest configuration | 변경된 최신 설정을 검토했습니다 | 1.24/0.94/0.85 | 4회 미통과 |
+| shortcuts | web-document | this site’s localStorage entry dsh.keybindings.v1 | 현재 사이트의 localStorage 항목(dsh.keybindings.v1) | 1.45/0.94/0.83 | 4회 미통과 |
+| shortcuts | web-help | Browser combinations: Mod+/, Mod+Shift+,, Mod+Shift+.. Mod is Command on Mac and Ctrl elsewhere. | 브라우저에서는 Mod+/, Mod+Shift+,, Mod+Shift+. 조합을 사용합니다. 여기서 Mod는 Mac의 Command 키 또는 다른 환경의 Ctrl 키를 의미합니다. | 1.46/0.92/0.6 | 4회 미통과 |
+| shortcuts | windows-web-help | Use Ctrl+/, Ctrl+,, Ctrl+Alt+key, or Ctrl+Shift+key. Combinations with three or four distinct modifiers are also supported. Browser or system shortcuts may not reach the page. | Ctrl+/, Ctrl+,, Ctrl+Alt+key 또는 Ctrl+Shift+key를 사용하십시오. 서로 다른 보조 키를 3개 또는 4개 함께 누르는 조합도 지원합니다. 브라우저나 시스템의 단축키 입력은 페이지로 전달되지 않을 수 있습니다. | 1.48/0.98/0.73 | 4회 미통과 |
+| shortcuts | 용어 | Modifier | 보조 키 | — | 번역자 제안 |
+| shortcuts | 용어 | Bindings | 키 바인딩 | — | 번역자 제안 |
+| shortcuts | 용어 | Dialog | 대화상자 | — | 번역자 제안 |

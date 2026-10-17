@@ -30,6 +30,7 @@ import settingsSessionLog from './settings.sessionLog.ts';
 import settingsShell from './settings.shell.ts';
 import settingsTheme from './settings.theme.ts';
 import settingsWebSearch from './settings.webSearch.ts';
+import shortcuts from './shortcuts.ts';
 import shortcutsLayout from './shortcuts.layout.ts';
 import sidebar from './sidebar.ts';
 import sidebarBrowser from './sidebarBrowser.ts';
@@ -75,6 +76,7 @@ export const dshKo: DshKoDictionaries = {
   'settings.shell': settingsShell,
   'settings.theme': settingsTheme,
   'settings.webSearch': settingsWebSearch,
+  shortcuts: shortcuts,
   'shortcuts.layout': shortcutsLayout,
   sidebar: sidebar,
   sidebarBrowser: sidebarBrowser,
