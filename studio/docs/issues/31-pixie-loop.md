@@ -65,6 +65,10 @@ status: ready
 - **로컬:** `npm run typecheck`, `npm test`(빌드 포함) 658/658 통과, `git diff --check` 통과. 새 테스트는 `test/pixie-loop.test.mjs`(계약·코드 검사·엔진, 가짜 모델), `test/pixie-loop-tool.test.mjs`(실제 DSH `ToolRuntime`), `test/pixie-loop-runs.test.mjs`(화면·저장소), `test/pixie-loop-guide.test.mjs`(가이드 예시 명세를 추출해 검증하고 엔진으로 실행).
 - **독립 설치·실세션:** 수정하지 않은 DSH `0.2.0-rc.2`에 pack한 `@matamt-dbg/dsh-studio@0.5.0`을 격리 프로필 `loop-e2e`로 설치했다. Studio Master 세션에서 foreground 5/5 통과(재시도 1건 포함)와 background job 정산을 확인했다. 세션 로그에 항목별 시도와 피드백이 없음을 확인했다. 기록: [#31 검증](../verification/pixie-loop-31/README.md).
 - **2차·3차:** `npm test` 676/676. 실세션에서 `act` DOM 실험, Web 레시피 저장, 사용자 지시 시점 고치기 게이트를 확인했다. 기록: [#31 검증](../verification/pixie-loop-31/README.md#2차3차-실동작-확인).
+- **코드 리뷰 (마무리 절차 2단계):** `subagent_role` Reviewer가 `4dd9191aed..d7db341fe3`를 읽기 전용으로 검토했다(엔진·계약·실행 정확성 중심). 차단 2건, 수정 권장 4건을 모두 `09abaeb6e1`에서 고치고 회귀 테스트를 더했다.
+  - 차단: 제한 시간을 넘긴 `act` 명령이 bash job으로 남아 다음 실행과 겹치고 취소되지 않음 → job을 멈추고 끝날 때까지 기다린 뒤 결과로 판정. 따옴표 안 자리(`"{{output}}"`)에서 셸 치환이 실행됨 → 따옴표 안이나 다른 글자에 붙은 자리를 거부.
+  - 수정 권장: `extract`가 줄인 글에서 보기를 읽음(D6 위반) → 보기는 명령 원래 출력에서만 읽음. 기준 없는 한 번 고르기가 코드 검사를 건너뜀 → 실행. 토큰 상한을 시도 끝에만 확인 → 호출마다 확인하고 상한과 같으면 멈춤. 판정·피드백 오류 때 시도 기록이 사라짐 → 판정 전에 시도를 기록하고 오류를 붙임.
+  - UI·범위 기준은 메인 에이전트가 확인했다: `studio/` 밖 변경 없음, 새 화면에 인라인 스타일·색 값 없음, 화면 문구 ko·en·zh.
 - **미검증:** background `job_kill`, 상한 도달·calibration 거부·엔진 오류의 실모델 재현, 연속 실행·선택·route·extract의 실모델 실행, 게이트 판정 모드와 다른 시점, `0.2.1-alpha.2`, #30 스킬과의 비교.
 
 ## 범위
