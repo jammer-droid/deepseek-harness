@@ -26,6 +26,7 @@ import scheduleManager from './schedule.manager.ts';
 import sessionInspector from './session-inspector.ts';
 import sessionLogDownload from './session-log-download.ts';
 import settings from './settings.ts';
+import settingsAccount from './settings.account.ts';
 import settingsAgentLoop from './settings.agentLoop.ts';
 import settingsLocale from './settings.locale.ts';
 import settingsModels from './settings.models.ts';
@@ -81,6 +82,7 @@ export const dshKo: DshKoDictionaries = {
   'session-inspector': sessionInspector,
   'session-log-download': sessionLogDownload,
   settings: settings,
+  'settings.account': settingsAccount,
   'settings.agentLoop': settingsAgentLoop,
   'settings.locale': settingsLocale,
   'settings.models': settingsModels,

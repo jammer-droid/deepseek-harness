@@ -262,3 +262,12 @@
 | voice-input | 용어 | Download source | 다운로드 출처 | — | 번역자 제안 |
 | voice-input | 용어 | Input device | 입력 장치 | — | 번역자 제안 |
 | voice-input | 용어 | Input level | 입력 레벨 | — | 번역자 제안 |
+| settings.account | bonusBalance | Granted balance | 지급된 크레딧 잔액 | 1.42/0.74/0.73 | 4회 미통과 |
+| settings.account | browserDescription | , then open it in your browser to finish signing in. |  버튼을 누른 후 브라우저에서 링크를 열어 로그인을 완료하십시오. | 1.25/0.74/0.89 | 4회 미통과 |
+| settings.account | onboardingPurposePrefix | What would you like | 어떤 작업을 | 0.7/0.51/0.4 | 4회 미통과 |
+| settings.account | onboardingWelcome | Welcome to | 환영합니다! | 1.68/0.41/0.53 | 4회 미통과 |
+| settings.account | signOutUnknownDescription | Could not check running tasks. Signing out may interrupt tasks using this account. Sign out now? | 실행 중인 작업을 확인할 수 없습니다. 로그아웃하면 이 계정을 이용하는 작업이 중단될 수 있습니다. 지금 로그아웃하겠습니까? | 1.41/0.91/0.91 | 4회 미통과 |
+| settings.account | 용어 | Credits | 크레딧 | — | 번역자 제안 |
+| settings.account | 용어 | Top up | 충전 | — | 번역자 제안 |
+| settings.account | 용어 | API Key | API 키 | — | 번역자 제안 |
+| settings.account | 용어 | Granted balance | 지급 잔액 | — | 번역자 제안 |

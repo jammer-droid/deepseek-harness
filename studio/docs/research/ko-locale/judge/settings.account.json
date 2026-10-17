@@ -1,0 +1,1589 @@
+{
+  "namespace": "settings.account",
+  "date": "2026-10-17",
+  "engine": "jev",
+  "thresholds": {
+    "natural": 1.5,
+    "meaning": 0.6,
+    "style": 0.5
+  },
+  "rows": [
+    {
+      "key": "accountInfo",
+      "en": "More account information",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "계정 정보 더 보기",
+          "natural": 1.85,
+          "meaning": 0.97,
+          "style": 0.72,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "addApiKey",
+      "en": "Add API Key",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "API 키 추가",
+          "natural": 1.91,
+          "meaning": 0.97,
+          "style": 0.74,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "backToHarness",
+      "en": "Back to DeepSeek Harness",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "DeepSeek Harness로 돌아가기",
+          "natural": 1.64,
+          "meaning": 0.97,
+          "style": 0.56,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "balance",
+      "en": "Topped-up balance",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "충전 잔액",
+          "natural": 1.03,
+          "meaning": 0.73,
+          "style": 0.71,
+          "pass": false
+        },
+        {
+          "ko": "충전 금액 잔액",
+          "natural": 1.43,
+          "meaning": 0.9,
+          "style": 0.69,
+          "pass": false
+        },
+        {
+          "ko": "충전 후 남은 금액",
+          "natural": 1.66,
+          "meaning": 0.89,
+          "style": 0.77,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "balanceSignedOut",
+      "en": "Sign in to view",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "로그인 후 확인",
+          "natural": 1.68,
+          "meaning": 0.93,
+          "style": 0.54,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "balanceUnavailable",
+      "en": "View on Platform",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "플랫폼에서 보기",
+          "natural": 1.78,
+          "meaning": 0.97,
+          "style": 0.54,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "bonusBalance",
+      "en": "Granted balance",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "지급 잔액",
+          "natural": 1.27,
+          "meaning": 0.91,
+          "style": 0.66,
+          "pass": false
+        },
+        {
+          "ko": "지급된 금액 잔액",
+          "natural": 0.96,
+          "meaning": 0.87,
+          "style": 0.65,
+          "pass": false
+        },
+        {
+          "ko": "지급받은 잔액",
+          "natural": 1,
+          "meaning": 0.88,
+          "style": 0.73,
+          "pass": false
+        },
+        {
+          "ko": "지급된 크레딧 잔액",
+          "natural": 1.42,
+          "meaning": 0.74,
+          "style": 0.73,
+          "pass": false
+        }
+      ],
+      "result": "unresolved"
+    },
+    {
+      "key": "bonusNoticeTitle",
+      "en": "Bonus credited",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "보너스 지급 완료",
+          "natural": 1.58,
+          "meaning": 0.95,
+          "style": 0.68,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "browserDescription",
+      "en": ", then open it in your browser to finish signing in.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": " 버튼을 누른 후 브라우저에서 링크를 열어 로그인을 완료하십시오.",
+          "natural": 1.25,
+          "meaning": 0.74,
+          "style": 0.89,
+          "pass": false
+        },
+        {
+          "ko": " 후 해당 링크를 브라우저에서 열면 로그인을 완료할 수 있습니다.",
+          "natural": 1.03,
+          "meaning": 0.74,
+          "style": 0.86,
+          "pass": false
+        },
+        {
+          "ko": " 버튼으로 링크를 복사한 다음 브라우저에서 열어 로그인을 마치십시오.",
+          "natural": 1.35,
+          "meaning": 0.31,
+          "style": 0.85,
+          "pass": false
+        },
+        {
+          "ko": " 후 브라우저에서 링크를 열어 로그인을 완료하십시오.",
+          "natural": 1.16,
+          "meaning": 0.62,
+          "style": 0.91,
+          "pass": false
+        }
+      ],
+      "result": "unresolved"
+    },
+    {
+      "key": "browserPrompt",
+      "en": "Page did not open automatically? ",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "페이지가 자동으로 열리지 않았습니까? ",
+          "natural": 1.67,
+          "meaning": 0.94,
+          "style": 0.28,
+          "pass": false
+        },
+        {
+          "ko": "페이지가 자동으로 열리지 않았다면 다음 버튼을 이용하십시오. ",
+          "natural": 1.53,
+          "meaning": 0.5,
+          "style": 0.79,
+          "pass": false
+        },
+        {
+          "ko": "페이지가 자동으로 열리지 않는 경우: ",
+          "natural": 1.51,
+          "meaning": 0.84,
+          "style": 0.64,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "browserTitle",
+      "en": "Waiting for sign in",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "로그인 대기 중",
+          "natural": 1.75,
+          "meaning": 0.97,
+          "style": 0.77,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "cancel",
+      "en": "Cancel",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "취소",
+          "natural": 1.99,
+          "meaning": 0.98,
+          "style": 0.78,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "close",
+      "en": "Close",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "닫기",
+          "natural": 1.98,
+          "meaning": 0.97,
+          "style": 0.79,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "completing",
+      "en": "Completing sign in…",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "로그인 완료 중…",
+          "natural": 1.78,
+          "meaning": 0.97,
+          "style": 0.44,
+          "pass": false
+        },
+        {
+          "ko": "로그인을 마무리하고 있습니다…",
+          "natural": 1.78,
+          "meaning": 0.97,
+          "style": 0.75,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "contactUs",
+      "en": "Feedback",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "피드백",
+          "natural": 1.92,
+          "meaning": 0.98,
+          "style": 0.78,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "copiedLink",
+      "en": "Link copied",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "링크 복사 완료",
+          "natural": 1.81,
+          "meaning": 0.95,
+          "style": 0.72,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "copyFailed",
+      "en": "Copy failed",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "복사 실패",
+          "natural": 1.83,
+          "meaning": 0.96,
+          "style": 0.74,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "copyLink",
+      "en": "Copy sign-in link",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "로그인 링크 복사",
+          "natural": 1.71,
+          "meaning": 0.97,
+          "style": 0.79,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "expired",
+      "en": "Sign in expired. Try again.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "로그인이 만료되었습니다. 다시 시도하십시오.",
+          "natural": 1.83,
+          "meaning": 0.96,
+          "style": 0.69,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "failed",
+      "en": "Could not complete the operation. Try again.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "작업을 완료하지 못했습니다. 다시 시도하십시오.",
+          "natural": 1.39,
+          "meaning": 0.96,
+          "style": 0.65,
+          "pass": false
+        },
+        {
+          "ko": "요청하신 작업을 완료할 수 없습니다. 다시 시도해 주십시오.",
+          "natural": 1.77,
+          "meaning": 0.91,
+          "style": 0.87,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "failureTitle",
+      "en": "Could not sign in",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "로그인 실패",
+          "natural": 1.94,
+          "meaning": 0.92,
+          "style": 0.73,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "initializing",
+      "en": "Starting sign in…",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "로그인 시작 중…",
+          "natural": 1.78,
+          "meaning": 0.97,
+          "style": 0.37,
+          "pass": false
+        },
+        {
+          "ko": "로그인을 시작하고 있습니다…",
+          "natural": 1.78,
+          "meaning": 0.97,
+          "style": 0.81,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "loading",
+      "en": "Loading…",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "불러오는 중…",
+          "natural": 1.95,
+          "meaning": 0.97,
+          "style": 0.61,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "loginDescription",
+      "en": "Sign in to your DeepSeek account or add an API Key to get started. Your projects and files are stored locally.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "DeepSeek 계정으로 로그인하거나 API 키를 추가하여 시작하십시오. 프로젝트와 파일은 로컬에 저장됩니다.",
+          "natural": 1.68,
+          "meaning": 0.94,
+          "style": 0.86,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "loginTitle",
+      "en": "Get started",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "시작하기",
+          "natural": 1.94,
+          "meaning": 0.96,
+          "style": 0.69,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "menu",
+      "en": "Account menu",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "계정 메뉴",
+          "natural": 1.78,
+          "meaning": 0.97,
+          "style": 0.7,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "modelSignInRequired",
+      "en": "Model unavailable. Please sign in and try again.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "모델을 사용할 수 없습니다. 로그인한 후 다시 시도하십시오.",
+          "natural": 1.86,
+          "meaning": 0.96,
+          "style": 0.72,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "more",
+      "en": "More",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "더 보기",
+          "natural": 1.86,
+          "meaning": 0.9,
+          "style": 0.71,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "nav",
+      "en": "Account",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "계정",
+          "natural": 1.95,
+          "meaning": 0.98,
+          "style": 0.74,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "onboardingBack",
+      "en": "Back",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "뒤로",
+          "natural": 1.97,
+          "meaning": 0.98,
+          "style": 0.75,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "onboardingBrand",
+      "en": "DeepSeek Harness",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "DeepSeek Harness",
+          "natural": 1.53,
+          "meaning": 0.98,
+          "style": 0.68,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "onboardingCompact",
+      "en": "Results only",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "결과만",
+          "natural": 1.78,
+          "meaning": 0.95,
+          "style": 0.72,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "onboardingCompactDescription",
+      "en": "See just the results in a clean, simple interface",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "깔끔하고 간단한 인터페이스에서 결과만 확인합니다.",
+          "natural": 1.57,
+          "meaning": 0.96,
+          "style": 0.69,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "onboardingContinue",
+      "en": "Continue",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "계속",
+          "natural": 1.96,
+          "meaning": 0.96,
+          "style": 0.58,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "onboardingCredit",
+      "en": "Add credits",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "크레딧 충전",
+          "natural": 1.75,
+          "meaning": 0.93,
+          "style": 0.74,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "onboardingCreditDescription",
+      "en": "DeepSeek Harness charges credits based on the tokens used by models and tools. Add credits in advance to keep your tasks running without interruption. Your balance is only used while the agent is working on a task.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "DeepSeek Harness는 모델과 도구가 사용한 토큰에 따라 크레딧을 차감합니다. 작업이 중단되지 않도록 미리 크레딧을 충전하십시오. 잔액은 에이전트가 작업을 수행하는 동안에만 사용됩니다.",
+          "natural": 1.6,
+          "meaning": 0.94,
+          "style": 0.65,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "onboardingDetailed",
+      "en": "Full details",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "전체 세부 정보",
+          "natural": 1.83,
+          "meaning": 0.96,
+          "style": 0.69,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "onboardingDetailedDescription",
+      "en": "See the full process for easier debugging and troubleshooting",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "전체 과정을 확인하여 디버깅과 문제 해결을 더 쉽게 할 수 있습니다.",
+          "natural": 1.74,
+          "meaning": 0.97,
+          "style": 0.63,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "onboardingDevelopment",
+      "en": "Coding & development",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "코딩 및 개발",
+          "natural": 1.85,
+          "meaning": 0.97,
+          "style": 0.69,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "onboardingDevelopmentDescription",
+      "en": "Edit code, debug issues, run commands, manage project files, and more",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "코드 편집, 문제 디버깅, 명령 실행, 프로젝트 파일 관리 등을 수행합니다.",
+          "natural": 1.81,
+          "meaning": 0.93,
+          "style": 0.86,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "onboardingEnter",
+      "en": "Open app",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "앱 열기",
+          "natural": 1.85,
+          "meaning": 0.98,
+          "style": 0.6,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "onboardingFundedTopUp",
+      "en": "Add credits",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "크레딧 충전",
+          "natural": 1.72,
+          "meaning": 0.94,
+          "style": 0.69,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "onboardingGoTopUp",
+      "en": "Add credits",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "크레딧 충전",
+          "natural": 1.81,
+          "meaning": 0.92,
+          "style": 0.66,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "onboardingIntroduction",
+      "en": "DeepSeek Harness works in a local folder and uses tools to read and write files on your computer. It can help you research and organize information, create documents and spreadsheets, write code, troubleshoot issues, and more.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "DeepSeek Harness는 로컬 폴더에서 작동하며 도구를 사용하여 컴퓨터의 파일을 읽고 씁니다. 정보 조사와 정리, 문서와 스프레드시트 작성, 코드 작성, 문제 해결 등을 도울 수 있습니다.",
+          "natural": 1.54,
+          "meaning": 0.95,
+          "style": 0.8,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "onboardingKeepSetting",
+      "en": "Continue setup",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "설정 계속",
+          "natural": 1.65,
+          "meaning": 0.97,
+          "style": 0.58,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "onboardingLater",
+      "en": "Next",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "다음",
+          "natural": 1.98,
+          "meaning": 0.97,
+          "style": 0.75,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "onboardingLoading",
+      "en": "Loading settings…",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "설정 불러오는 중…",
+          "natural": 1.88,
+          "meaning": 0.97,
+          "style": 0.59,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "onboardingNoCreditDescription",
+      "en": "DeepSeek Harness can’t start new tasks without credits. You can add them later in Settings → Account.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "DeepSeek Harness는 크레딧이 없으면 새 작업을 시작할 수 없습니다. 나중에 설정 → 계정에서 충전할 수 있습니다.",
+          "natural": 1.69,
+          "meaning": 0.96,
+          "style": 0.67,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "onboardingNoCreditTitle",
+      "en": "Skip adding credits?",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "크레딧 충전을 건너뛰시겠습니까?",
+          "natural": 1.65,
+          "meaning": 0.94,
+          "style": 0.52,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "onboardingOffice",
+      "en": "Office & creative work",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "사무 및 창작 작업",
+          "natural": 1.53,
+          "meaning": 0.96,
+          "style": 0.6,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "onboardingOfficeDescription",
+      "en": "Edit documents, organize data, create presentations, and more",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "문서 편집, 데이터 정리, 프레젠테이션 제작 등을 수행합니다.",
+          "natural": 1.68,
+          "meaning": 0.96,
+          "style": 0.85,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "onboardingProcess",
+      "en": "How much detail would you like to see?",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "어느 정도로 자세히 표시하시겠습니까?",
+          "natural": 1.63,
+          "meaning": 0.98,
+          "style": 0.63,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "onboardingProcessDescription",
+      "en": "This only changes how progress is shown, not what DeepSeek Harness can do.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "진행 상황의 표시 방식만 바뀌며, DeepSeek Harness의 기능은 달라지지 않습니다.",
+          "natural": 1.77,
+          "meaning": 0.97,
+          "style": 0.63,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "onboardingPurposeDescription",
+      "en": "We’ll tailor the interface and tools to fit the way you work.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "작업 방식에 맞게 인터페이스와 도구를 조정합니다.",
+          "natural": 1.74,
+          "meaning": 0.95,
+          "style": 0.75,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "onboardingPurposePrefix",
+      "en": "What would you like",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "어떤 작업을",
+          "natural": 0.7,
+          "meaning": 0.51,
+          "style": 0.4,
+          "pass": false
+        },
+        {
+          "ko": "어떤 일에",
+          "natural": 0.34,
+          "meaning": 0.45,
+          "style": 0.5,
+          "pass": false
+        },
+        {
+          "ko": "어떤 작업에",
+          "natural": 0.58,
+          "meaning": 0.46,
+          "style": 0.5,
+          "pass": false
+        },
+        {
+          "ko": "어떤 일을 하실 때",
+          "natural": 0.51,
+          "meaning": 0.42,
+          "style": 0.47,
+          "pass": false
+        }
+      ],
+      "result": "unresolved"
+    },
+    {
+      "key": "onboardingPurposeSuffix",
+      "en": "to help with?",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "도움으로 처리하시겠습니까?",
+          "natural": 1.09,
+          "meaning": 0.81,
+          "style": 0.63,
+          "pass": false
+        },
+        {
+          "ko": "도움이 필요하십니까?",
+          "natural": 1.6,
+          "meaning": 0.78,
+          "style": 0.68,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "onboardingRetry",
+      "en": "Retry",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "재시도",
+          "natural": 1.94,
+          "meaning": 0.97,
+          "style": 0.61,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "onboardingSaveFailed",
+      "en": "Could not save settings. Try again.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "설정을 저장하지 못했습니다. 다시 시도하십시오.",
+          "natural": 1.59,
+          "meaning": 0.96,
+          "style": 0.85,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "onboardingSkip",
+      "en": "Skip",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "건너뛰기",
+          "natural": 1.93,
+          "meaning": 0.97,
+          "style": 0.7,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "onboardingSkipDescription",
+      "en": "You can change how progress, performance, and usage are displayed, or enable Coding Tools, anytime in Settings → General.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "설정 → 일반에서 언제든지 진행 상황, 성능, 사용량의 표시 방식을 변경하거나 코딩 도구를 활성화할 수 있습니다.",
+          "natural": 1.66,
+          "meaning": 0.96,
+          "style": 0.78,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "onboardingSkipTitle",
+      "en": "Skip setup?",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "설정을 건너뛰시겠습니까?",
+          "natural": 1.74,
+          "meaning": 0.95,
+          "style": 0.8,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "onboardingStandard",
+      "en": "Key details",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "주요 세부 정보",
+          "natural": 1.76,
+          "meaning": 0.96,
+          "style": 0.74,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "onboardingStandardDescription",
+      "en": "Focus on results, with only the most important steps and actions shown",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "결과에 집중하고 가장 중요한 단계와 동작만 표시합니다.",
+          "natural": 1.6,
+          "meaning": 0.94,
+          "style": 0.8,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "onboardingStart",
+      "en": "Get started",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "시작하기",
+          "natural": 1.91,
+          "meaning": 0.92,
+          "style": 0.63,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "onboardingTopUp",
+      "en": "Add credits",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "크레딧 충전",
+          "natural": 1.67,
+          "meaning": 0.94,
+          "style": 0.72,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "onboardingUnderstood",
+      "en": "Got it",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "확인",
+          "natural": 1.75,
+          "meaning": 0.88,
+          "style": 0.74,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "onboardingWelcome",
+      "en": "Welcome to",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "환영합니다!",
+          "natural": 1.68,
+          "meaning": 0.41,
+          "style": 0.53,
+          "pass": false
+        },
+        {
+          "ko": "환영합니다,",
+          "natural": 1.16,
+          "meaning": 0.33,
+          "style": 0.56,
+          "pass": false
+        },
+        {
+          "ko": "사용을 환영합니다 —",
+          "natural": 0.93,
+          "meaning": 0.55,
+          "style": 0.53,
+          "pass": false
+        },
+        {
+          "ko": "만나서 반갑습니다!",
+          "natural": 1.28,
+          "meaning": 0.21,
+          "style": 0.9,
+          "pass": false
+        }
+      ],
+      "result": "unresolved"
+    },
+    {
+      "key": "open",
+      "en": "Open browser",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "브라우저 열기",
+          "natural": 1.78,
+          "meaning": 0.98,
+          "style": 0.57,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "platformFailed",
+      "en": "Could not complete the operation. Try again.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "작업을 완료하지 못했습니다. 다시 시도하십시오.",
+          "natural": 1.53,
+          "meaning": 0.95,
+          "style": 0.93,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "platformRetry",
+      "en": "Retry",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "재시도",
+          "natural": 1.89,
+          "meaning": 0.94,
+          "style": 0.74,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "profileUnavailable",
+      "en": "Account details are not available yet.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "계정 정보를 아직 확인할 수 없습니다.",
+          "natural": 1.51,
+          "meaning": 0.96,
+          "style": 0.79,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "quotaDescription",
+      "en": "DeepSeek Harness cannot start a new task with this account when no balance is available. Would you like to top up? You can also top up later in Settings → Account.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "잔액이 없으면 DeepSeek Harness에서 이 계정으로 새 작업을 시작할 수 없습니다. 충전하시겠습니까? 나중에 설정 → 계정에서도 충전할 수 있습니다.",
+          "natural": 1.51,
+          "meaning": 0.94,
+          "style": 0.86,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "quotaTitle",
+      "en": "No balance available",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "사용 가능한 잔액 없음",
+          "natural": 1.7,
+          "meaning": 0.96,
+          "style": 0.76,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "quotaTopUp",
+      "en": "Top up",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "충전",
+          "natural": 1.77,
+          "meaning": 0.93,
+          "style": 0.67,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "retry",
+      "en": "Sign in again",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "다시 로그인",
+          "natural": 1.71,
+          "meaning": 0.93,
+          "style": 0.58,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "sessionExpired",
+      "en": "You have signed out of your account, please log in again.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "계정에서 로그아웃되었습니다. 다시 로그인하십시오.",
+          "natural": 1.57,
+          "meaning": 0.96,
+          "style": 0.93,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "settings",
+      "en": "Settings",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "설정",
+          "natural": 1.98,
+          "meaning": 0.98,
+          "style": 0.71,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "settingsSignedOutDescription",
+      "en": "Sign in to DeepSeek Harness to get your dedicated API Key",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "DeepSeek Harness에 로그인하여 전용 API 키를 받으십시오.",
+          "natural": 1.67,
+          "meaning": 0.97,
+          "style": 0.88,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "settingsSignedOutTitle",
+      "en": "You are not signed in to DeepSeek Harness",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "DeepSeek Harness에 로그인하지 않았습니다.",
+          "natural": 1.67,
+          "meaning": 0.98,
+          "style": 0.8,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "signIn",
+      "en": "Sign in",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "로그인",
+          "natural": 1.94,
+          "meaning": 0.96,
+          "style": 0.69,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "signInDescription",
+      "en": "Use your DeepSeek account to get started.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "DeepSeek 계정으로 시작하십시오.",
+          "natural": 1.51,
+          "meaning": 0.96,
+          "style": 0.91,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "signOut",
+      "en": "Sign out",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "로그아웃",
+          "natural": 1.97,
+          "meaning": 0.98,
+          "style": 0.75,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "signOutDescription",
+      "en": "Signing out will not delete any data. You can sign in to this account again.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "로그아웃해도 데이터는 삭제되지 않습니다. 이 계정으로 다시 로그인할 수 있습니다.",
+          "natural": 1.68,
+          "meaning": 0.97,
+          "style": 0.78,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "signOutRunningDescription",
+      "en": "Tasks are currently running. Signing out will interrupt them. Sign out now?",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "현재 실행 중인 작업이 있습니다. 로그아웃하면 작업이 중단됩니다. 지금 로그아웃하시겠습니까?",
+          "natural": 1.79,
+          "meaning": 0.94,
+          "style": 0.77,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "signOutUnknownDescription",
+      "en": "Could not check running tasks. Signing out may interrupt tasks using this account. Sign out now?",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "실행 중인 작업을 확인하지 못했습니다. 로그아웃하면 이 계정을 사용하는 작업이 중단될 수 있습니다. 지금 로그아웃하시겠습니까?",
+          "natural": 1.38,
+          "meaning": 0.96,
+          "style": 0.72,
+          "pass": false
+        },
+        {
+          "ko": "현재 실행 중인 작업이 있는지 확인할 수 없습니다. 로그아웃 시 이 계정으로 진행 중인 작업이 중단될 수 있습니다. 지금 로그아웃하시겠습니까?",
+          "natural": 1.29,
+          "meaning": 0.9,
+          "style": 0.8,
+          "pass": false
+        },
+        {
+          "ko": "작업 실행 여부를 확인하지 못했습니다. 이 계정으로 수행 중인 작업은 로그아웃하면 중단될 수 있습니다. 그래도 지금 로그아웃하시겠습니까?",
+          "natural": 1.38,
+          "meaning": 0.93,
+          "style": 0.74,
+          "pass": false
+        },
+        {
+          "ko": "실행 중인 작업을 확인할 수 없습니다. 로그아웃하면 이 계정을 이용하는 작업이 중단될 수 있습니다. 지금 로그아웃하겠습니까?",
+          "natural": 1.41,
+          "meaning": 0.91,
+          "style": 0.91,
+          "pass": false
+        }
+      ],
+      "result": "unresolved"
+    },
+    {
+      "key": "signedIn",
+      "en": "Signed in to DeepSeek",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "DeepSeek 로그인 상태",
+          "natural": 1.45,
+          "meaning": 0.96,
+          "style": 0.72,
+          "pass": false
+        },
+        {
+          "ko": "DeepSeek에 로그인했습니다.",
+          "natural": 1.75,
+          "meaning": 0.98,
+          "style": 0.87,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "signedOut",
+      "en": "Not signed in",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "로그인 안 됨",
+          "natural": 1.46,
+          "meaning": 0.98,
+          "style": 0.73,
+          "pass": false
+        },
+        {
+          "ko": "로그인하지 않은 상태입니다.",
+          "natural": 1.68,
+          "meaning": 0.97,
+          "style": 0.76,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "timeoutDescription",
+      "en": "Sign in again to continue.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "계속하려면 다시 로그인하십시오.",
+          "natural": 1.81,
+          "meaning": 0.98,
+          "style": 0.79,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "timeoutTitle",
+      "en": "Sign in timed out",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "로그인 시간 초과",
+          "natural": 1.69,
+          "meaning": 0.95,
+          "style": 0.72,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "topUp",
+      "en": "Top up",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "충전",
+          "natural": 1.48,
+          "meaning": 0.94,
+          "style": 0.73,
+          "pass": false
+        },
+        {
+          "ko": "잔액 충전",
+          "natural": 1.76,
+          "meaning": 0.95,
+          "style": 0.76,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "usage",
+      "en": "View usage",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "사용량 보기",
+          "natural": 1.86,
+          "meaning": 0.96,
+          "style": 0.75,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "waiting",
+      "en": "Continue in your browser",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "브라우저에서 계속 진행하십시오.",
+          "natural": 1.74,
+          "meaning": 0.97,
+          "style": 0.64,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "noResponse",
+      "en": "Something went wrong. Please check your network connection and try again.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "문제가 발생했습니다. 네트워크 연결을 확인한 후 다시 시도하십시오.",
+          "natural": 1.83,
+          "meaning": 0.95,
+          "style": 0.83,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    }
+  ]
+}
