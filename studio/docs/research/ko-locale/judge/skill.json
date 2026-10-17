@@ -1,0 +1,85 @@
+{
+  "namespace": "skill",
+  "date": "2026-10-17",
+  "engine": "jev",
+  "thresholds": { "natural": 1.5, "meaning": 0.6, "style": 0.5 },
+  "rows": [
+    {
+      "key": "menu.userOnly",
+      "en": "user-only",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "사용자 전용", "natural": 1.63, "meaning": 0.96, "style": 0.67, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "row.failed",
+      "en": "Skill load failed",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "스킬 불러오기에 실패했습니다", "natural": 1.76, "meaning": 0.96, "style": 0.92, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "row.inspect",
+      "en": "Inspect",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "살펴보기", "natural": 1.39, "meaning": 0.95, "style": 0.53, "pass": false },
+        { "ko": "자세히 보기", "natural": 1.51, "meaning": 0.8, "style": 0.42, "pass": false },
+        { "ko": "확인", "natural": 1.58, "meaning": 0.81, "style": 0.58, "pass": true }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "row.instructions",
+      "en": "Instructions",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "지침", "natural": 1.72, "meaning": 0.96, "style": 0.62, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "row.preparing",
+      "en": "Preparing to load a skill",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "스킬 불러오기 준비 중", "natural": 1.68, "meaning": 0.97, "style": 0.43, "pass": false },
+        { "ko": "스킬을 불러올 준비 중입니다", "natural": 1.61, "meaning": 0.96, "style": 0.91, "pass": true }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "row.running",
+      "en": "Loading skill",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "스킬 불러오는 중", "natural": 1.79, "meaning": 0.97, "style": 0.39, "pass": false },
+        { "ko": "스킬을 불러오고 있습니다", "natural": 1.73, "meaning": 0.97, "style": 0.76, "pass": true }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "row.stopped",
+      "en": "Skill load stopped",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "스킬 불러오기 중단됨", "natural": 1.54, "meaning": 0.97, "style": 0.4, "pass": false },
+        { "ko": "스킬 불러오기가 중단되었습니다", "natural": 1.66, "meaning": 0.96, "style": 0.68, "pass": true }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "row.title",
+      "en": "Skill",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "스킬", "natural": 1.73, "meaning": 0.97, "style": 0.72, "pass": true }
+      ],
+      "result": "pass"
+    }
+  ]
+}

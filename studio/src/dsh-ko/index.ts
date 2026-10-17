@@ -14,6 +14,7 @@ import settingsSessionLog from './settings.sessionLog.ts';
 import shortcutsLayout from './shortcuts.layout.ts';
 import sidebar from './sidebar.ts';
 import sidebarCodePreview from './sidebarCodePreview.ts';
+import skill from './skill.ts';
 
 export const dshKo: DshKoDictionaries = {
   approval: approval,
@@ -27,4 +28,5 @@ export const dshKo: DshKoDictionaries = {
   'shortcuts.layout': shortcutsLayout,
   sidebar: sidebar,
   'sidebarCodePreview': sidebarCodePreview,
+  skill: skill,
 };
