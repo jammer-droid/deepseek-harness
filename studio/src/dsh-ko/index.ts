@@ -33,6 +33,7 @@ import sessionLogDownload from './session-log-download.ts';
 import settings from './settings.ts';
 import settingsAccount from './settings.account.ts';
 import settingsAgentLoop from './settings.agentLoop.ts';
+import settingsAgentPreset from './settings.agentPreset.ts';
 import settingsLocale from './settings.locale.ts';
 import settingsModels from './settings.models.ts';
 import settingsPermission from './settings.permission.ts';
@@ -95,6 +96,7 @@ export const dshKo: DshKoDictionaries = {
   settings: settings,
   'settings.account': settingsAccount,
   'settings.agentLoop': settingsAgentLoop,
+  'settings.agentPreset': settingsAgentPreset,
   'settings.locale': settingsLocale,
   'settings.models': settingsModels,
   'settings.permission': settingsPermission,

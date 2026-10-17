@@ -1,0 +1,808 @@
+{
+  "namespace": "settings.agentPreset",
+  "date": "2026-10-17",
+  "engine": "jev",
+  "thresholds": {
+    "natural": 1.5,
+    "meaning": 0.6,
+    "style": 0.5
+  },
+  "rows": [
+    {
+      "key": "brokenBadge",
+      "en": "Failed to load",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "불러오기 실패",
+          "natural": 1.85,
+          "meaning": 0.96,
+          "style": 0.67,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "builtInGroup",
+      "en": "Built-in",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "기본 제공",
+          "natural": 1.7,
+          "meaning": 0.94,
+          "style": 0.66,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "close",
+      "en": "Close",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "닫기",
+          "natural": 1.98,
+          "meaning": 0.97,
+          "style": 0.64,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "creatorDraft",
+      "en": "Let the agent help me create a preset",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "에이전트의 도움으로 프리셋 만들기",
+          "natural": 1.54,
+          "meaning": 0.96,
+          "style": 0.39,
+          "pass": false
+        },
+        {
+          "ko": "에이전트에게 프리셋 생성 도움 요청",
+          "natural": 1.37,
+          "meaning": 0.94,
+          "style": 0.67,
+          "pass": false
+        },
+        {
+          "ko": "에이전트의 도움을 받아 프리셋을 만듭니다",
+          "natural": 1.5,
+          "meaning": 0.93,
+          "style": 0.77,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "customGroup",
+      "en": "Custom",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "사용자 정의",
+          "natural": 1.88,
+          "meaning": 0.95,
+          "style": 0.69,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "guideCopied",
+      "en": "Copied",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "복사됨",
+          "natural": 1.91,
+          "meaning": 0.95,
+          "style": 0.63,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "guideCopy",
+      "en": "Copy",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "복사",
+          "natural": 1.97,
+          "meaning": 0.97,
+          "style": 0.7,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "guideCordisExplanation",
+      "en": "### What you can create\n\nCreator mode includes the standard task tools plus runtime inspection, persistent plugin management, and guidance for authoring Cordis plugins and agent presets. It can create a plugin that adds a capability or UI, or a preset that combines tools and prompts for a particular job.\n\n### Plugins and modes\n\nA plugin adds capabilities to DSH, such as a tool, a service connection, or a UI entry. A mode is an agent preset that selects tools and defines how the agent works in a task. A plugin can be included in a custom preset.\n\n### How the result takes effect\n\nAsk the agent to install and verify the result, not just generate source code. A plugin may load immediately or require a restart, depending on what it changes. A newly created preset is selected when starting a new task.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "### 만들 수 있는 것\n\n제작자 모드는 표준 작업 도구에 더해 런타임 검사, 영구 플러그인 관리, Cordis 플러그인 및 에이전트 프리셋 작성 안내를 제공합니다. 기능이나 UI를 추가하는 플러그인 또는 특정 작업에 맞게 도구와 프롬프트를 조합한 프리셋을 만들 수 있습니다.\n\n### 플러그인과 모드\n\n플러그인은 도구, 서비스 연결, UI 항목 등의 기능을 DSH에 추가합니다. 모드는 도구를 선택하고 작업에서 에이전트가 동작하는 방식을 정의하는 에이전트 프리셋입니다. 사용자 정의 프리셋에 플러그인을 포함할 수 있습니다.\n\n### 결과 적용 방식\n\n소스 코드 생성에 그치지 않고 결과를 설치하고 검증하도록 에이전트에 요청하십시오. 플러그인은 변경 내용에 따라 즉시 불러올 수도 있고 재시작이 필요할 수도 있습니다. 새로 만든 프리셋은 새 작업을 시작할 때 선택합니다.",
+          "natural": 1.59,
+          "meaning": 0.93,
+          "style": 0.78,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "guideCordisIntro",
+      "en": "Choose Creator mode for a new task. Describe the capability you want, where it should appear, and how you will verify it.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "새 작업에서 제작자 모드를 선택하십시오. 원하는 기능, 표시할 위치, 검증 방법을 설명하십시오.",
+          "natural": 1.73,
+          "meaning": 0.95,
+          "style": 0.85,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "guideCordisUsage",
+      "en": "### Add a UI\n\n> Create a DSH plugin that adds a project notes entry to the sidebar. Let me browse the Markdown files in this workspace and preview a selected note. Install it and verify that the page opens.\n\nExpected output: an installed plugin with a working entry and preview page, plus any remaining activation steps.\n\n### Add a tool\n\n> Create a plugin with a tool that reads this project’s test report and summarizes the failed tests. Register it and verify it with a sample report.\n\nExpected output: a plugin with a callable tool and a verified sample call.\n\n### Create my own mode\n\n> Create a “Code review” mode based on Standard mode. Have it prioritize potential bugs and test gaps, cite file paths and lines, and ask before modifying files. Save it as a selectable preset.\n\nExpected output: a custom preset for new tasks. These review instructions guide the agent; permission settings determine which actions it can execute.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "### UI 추가\n\n> 사이드바에 프로젝트 메모 항목을 추가하는 DSH 플러그인을 만드십시오. 이 워크스페이스의 Markdown 파일을 탐색하고 선택한 메모를 미리 볼 수 있게 하십시오. 설치하고 페이지가 열리는지 검증하십시오.\n\n예상 결과: 항목과 미리 보기 페이지가 정상 작동하는 설치된 플러그인 및 남은 활성화 단계입니다.\n\n### 도구 추가\n\n> 이 프로젝트의 테스트 보고서를 읽고 실패한 테스트를 요약하는 도구가 있는 플러그인을 만드십시오. 등록하고 샘플 보고서로 검증하십시오.\n\n예상 결과: 호출 가능한 도구가 있는 플러그인과 검증된 샘플 호출입니다.\n\n### 나만의 모드 만들기\n\n> 표준 모드를 바탕으로 “코드 검토” 모드를 만드십시오. 잠재적 버그와 테스트 누락을 우선 살피고, 파일 경로와 줄 번호를 인용하며, 파일을 수정하기 전에 물어보도록 하십시오. 선택 가능한 프리셋으로 저장하십시오.\n\n예상 결과: 새 작업에 사용할 사용자 정의 프리셋입니다. 이 검토 지침은 에이전트의 행동을 안내하며, 실행 가능한 동작은 권한 설정으로 결정됩니다.",
+          "natural": 1.75,
+          "meaning": 0.93,
+          "style": 0.72,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "guideExampleTask",
+      "en": "Example task",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "작업 예시",
+          "natural": 1.84,
+          "meaning": 0.92,
+          "style": 0.75,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "guideFootnotes",
+      "en": "Footnotes",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "각주",
+          "natural": 1.75,
+          "meaning": 0.93,
+          "style": 0.72,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "guideMinimalExplanation",
+      "en": "### What is included\n\nOne persistent shell tool and a fixed system prompt. The built-in preset does not load Skills, planning, context compaction, or the standard runtime context.\n\n### When to choose it\n\nUse it as a baseline for experiments and comparisons. It can still read files and execute scripts through shell commands, but offers fewer built-in ways to manage a long task. Fewer tools does not necessarily make it easier for a beginner.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "### 포함된 기능\n\n상태가 유지되는 셸 도구 하나와 고정된 시스템 프롬프트가 제공됩니다. 기본 제공 프리셋은 스킬, 계획, 컨텍스트 압축, 표준 런타임 컨텍스트를 불러오지 않습니다.\n\n### 선택할 때\n\n실험과 비교의 기준으로 사용하십시오. 셸 명령으로 파일을 읽고 스크립트를 실행할 수 있지만, 긴 작업을 관리하는 기본 제공 수단은 더 적습니다. 도구가 적다고 해서 반드시 초보자에게 더 쉬운 것은 아닙니다.",
+          "natural": 1.65,
+          "meaning": 0.93,
+          "style": 0.55,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "guideMinimalIntro",
+      "en": "Choose Minimal mode for a new task. For a comparison, hold the model, permissions, input, and starting workspace state constant across runs.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "새 작업에서 최소 모드를 선택하십시오. 비교할 때는 각 실행의 모델, 권한, 입력, 워크스페이스 초기 상태를 동일하게 유지하십시오.",
+          "natural": 1.76,
+          "meaning": 0.95,
+          "style": 0.77,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "guideMinimalUsage",
+      "en": "### Compare performance on a small bug fix\n\n> Run the tests for this project, find the cause of the failure, and make the smallest fix. Run the relevant tests again and report the result.\n\nRun the same task separately in Standard and Minimal modes from the same starting state. Compare task completion, tool calls, and the resulting changes. Minimal mode performs the work through terminal commands.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "### 작은 버그 수정으로 성능 비교\n\n> 이 프로젝트의 테스트를 실행하고, 실패 원인을 찾아 최소한으로 수정하십시오. 관련 테스트를 다시 실행하고 결과를 보고하십시오.\n\n동일한 초기 상태에서 같은 작업을 표준 모드와 최소 모드로 각각 실행하십시오. 작업 완료 여부, 도구 호출, 최종 변경 사항을 비교하십시오. 최소 모드는 터미널 명령으로 작업을 수행합니다.",
+          "natural": 1.72,
+          "meaning": 0.9,
+          "style": 0.66,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "guidePtcExplanation",
+      "en": "### How tools are called\n\nPTC means Programmatic Tool Calling. In this built-in preset, the agent uses run_code to write a TypeScript program that calls tools through a generated SDK. The program can use loops, conditions, error handling, and concurrent calls where appropriate.\n\n### What reaches the model\n\nTool results first reach the program, which can filter and combine them. The model receives what the program prints or returns; image results are attached separately. Nested tool calls are still recorded and remain subject to tool permissions.\n\n### Compared with Standard mode\n\nBoth modes can handle coding and batch tasks. Standard mode exposes individual tools directly; PTC organizes tool calls in code. The current PTC preset leaves the workflow tool disabled. Speed and token use depend on the task and how the program handles its results.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "### 도구 호출 방식\n\nPTC는 Programmatic Tool Calling을 뜻합니다. 이 기본 제공 프리셋에서 에이전트는 run_code를 사용하여 생성된 SDK로 도구를 호출하는 TypeScript 프로그램을 작성합니다. 프로그램은 필요에 따라 반복문, 조건문, 오류 처리, 동시 호출을 사용할 수 있습니다.\n\n### 모델에 전달되는 내용\n\n도구 결과는 먼저 프로그램에 전달되며, 프로그램은 이를 필터링하고 결합할 수 있습니다. 모델은 프로그램이 출력하거나 반환한 내용을 받으며, 이미지 결과는 별도로 첨부됩니다. 중첩된 도구 호출도 기록되며 도구 권한이 그대로 적용됩니다.\n\n### 표준 모드와의 비교\n\n두 모드 모두 코딩과 일괄 작업을 처리할 수 있습니다. 표준 모드는 개별 도구를 직접 제공하고, PTC는 코드로 도구 호출을 구성합니다. 현재 PTC 프리셋에서는 workflow 도구가 비활성화되어 있습니다. 속도와 토큰 사용량은 작업과 프로그램의 결과 처리 방식에 따라 달라집니다.",
+          "natural": 1.62,
+          "meaning": 0.94,
+          "style": 0.51,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "guidePtcIntro",
+      "en": "Choose PTC mode when starting a new task. Specify the input files, processing rules, and output format. The agent writes the code.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "새 작업을 시작할 때 PTC 모드를 선택하십시오. 입력 파일, 처리 규칙, 출력 형식을 지정하십시오. 코드는 에이전트가 작성합니다.",
+          "natural": 1.8,
+          "meaning": 0.96,
+          "style": 0.54,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "guidePtcUsage",
+      "en": "### Check a set of configuration files\n\n> Check all JSON files in configs/. List missing required fields and invalid values against schema.json. Save a CSV with one row per issue. Include unreadable files in the report and keep checking the rest. Leave the original files unchanged.\n\nExpected output: an issue summary and a CSV report. The program can repeat the same checks, handle individual failures, and collect the results.\n\n### Summarize error logs\n\n> Analyze the log files in logs/. Group errors by service and error type. Show the ten most frequent groups and one example from each. Save the full counts to a CSV.\n\nExpected output: the top error groups and a complete count table. Intermediate data can be aggregated in the program before the summary reaches the model.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "### 설정 파일 묶음 검사\n\n> configs/의 모든 JSON 파일을 검사하십시오. schema.json을 기준으로 누락된 필수 필드와 잘못된 값을 나열하십시오. 문제 하나당 한 행으로 CSV를 저장하십시오. 읽을 수 없는 파일도 보고서에 포함하고 나머지 파일은 계속 검사하십시오. 원본 파일은 변경하지 마십시오.\n\n예상 결과: 문제 요약과 CSV 보고서입니다. 프로그램은 같은 검사를 반복하고, 개별 실패를 처리하며, 결과를 모을 수 있습니다.\n\n### 오류 로그 요약\n\n> logs/의 로그 파일을 분석하십시오. 서비스와 오류 유형별로 오류를 묶으십시오. 가장 빈번한 10개 그룹과 각 그룹의 예시 하나를 표시하십시오. 전체 집계 결과를 CSV로 저장하십시오.\n\n예상 결과: 주요 오류 그룹과 전체 집계표입니다. 요약이 모델에 전달되기 전에 프로그램에서 중간 데이터를 집계할 수 있습니다.",
+          "natural": 1.7,
+          "meaning": 0.94,
+          "style": 0.65,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "guideSections",
+      "en": "Guide sections",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "안내 항목",
+          "natural": 1.59,
+          "meaning": 0.66,
+          "style": 0.76,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "guideStandardExplanation",
+      "en": "### How it works\n\nThe agent calls tools directly to read and edit files, search, and run terminal commands. It includes Skills, planning, goals, subagents, workflows, and context compaction.\n\n### When to choose it\n\nStart here for everyday coding, file work, and research. Standard mode can also write scripts and process files in batches. PTC changes how tool calls are organized; it is not required for batch tasks.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "### 작동 방식\n\n에이전트는 도구를 직접 호출하여 파일 읽기와 수정, 검색, 터미널 명령 실행을 수행합니다. 스킬, 계획, 목표, 서브에이전트, 워크플로, 컨텍스트 압축을 포함합니다.\n\n### 선택할 때\n\n일상적인 코딩, 파일 작업, 조사에는 이 모드로 시작하십시오. 표준 모드에서도 스크립트를 작성하고 파일을 일괄 처리할 수 있습니다. PTC는 도구 호출을 구성하는 방식을 바꾸는 것이며, 일괄 작업에 필수는 아닙니다.",
+          "natural": 1.79,
+          "meaning": 0.94,
+          "style": 0.6,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "guideStandardIntro",
+      "en": "Choose Standard mode when starting a new task. Describe what you want to accomplish, point to the relevant files, and explain how to check the result.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "새 작업을 시작할 때 표준 모드를 선택하십시오. 달성할 목표와 관련 파일을 알려 주고 결과를 확인할 방법을 설명하십시오.",
+          "natural": 1.63,
+          "meaning": 0.96,
+          "style": 0.94,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "guideStandardUsage",
+      "en": "### Fix a bug\n\n> Find out why submitting the search form twice makes the results disappear. Fix it and run the relevant tests. Explain the cause and what changed.\n\nExpected output: a code change, the relevant test results, and an explanation of the cause.\n\n### Organize project notes\n\n> Read the Markdown notes in this project. Summarize the agreed decisions and open questions, with links to the source files.\n\nExpected output: a summary with references that you can check against the original notes.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "### 버그 수정\n\n> 검색 양식을 두 번 제출하면 결과가 사라지는 이유를 찾으십시오. 수정하고 관련 테스트를 실행하십시오. 원인과 변경 내용을 설명하십시오.\n\n예상 결과: 코드 변경, 관련 테스트 결과, 원인 설명입니다.\n\n### 프로젝트 메모 정리\n\n> 이 프로젝트의 Markdown 메모를 읽으십시오. 합의된 결정과 미해결 질문을 요약하고 원본 파일 링크를 포함하십시오.\n\n예상 결과: 원본 메모와 대조할 수 있는 참조가 포함된 요약입니다.",
+          "natural": 1.68,
+          "meaning": 0.92,
+          "style": 0.76,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "headerHint",
+      "en": "The agent preset chosen when this task started",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "이 작업을 시작할 때 선택한 에이전트 프리셋",
+          "natural": 1.33,
+          "meaning": 0.95,
+          "style": 0.71,
+          "pass": false
+        },
+        {
+          "ko": "작업 시작 시 선택된 에이전트 프리셋",
+          "natural": 1.4,
+          "meaning": 0.95,
+          "style": 0.77,
+          "pass": false
+        },
+        {
+          "ko": "이 작업을 시작하면서 선택한 에이전트 프리셋입니다",
+          "natural": 1.17,
+          "meaning": 0.95,
+          "style": 0.71,
+          "pass": false
+        },
+        {
+          "ko": "작업을 시작할 때 지정한 에이전트 프리셋",
+          "natural": 1.67,
+          "meaning": 0.93,
+          "style": 0.62,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "howToUse",
+      "en": "How to use",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "사용 방법",
+          "natural": 1.72,
+          "meaning": 0.94,
+          "style": 0.74,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "inUse",
+      "en": "New task default",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "새 작업 기본값",
+          "natural": 1.75,
+          "meaning": 0.96,
+          "style": 0.69,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "modeExplanation",
+      "en": "Mode details",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "모드 상세 정보",
+          "natural": 1.84,
+          "meaning": 0.94,
+          "style": 0.64,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "nav",
+      "en": "Agent presets",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "에이전트 프리셋",
+          "natural": 1.73,
+          "meaning": 0.91,
+          "style": 0.66,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "noDescription",
+      "en": "No description.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "설명이 없습니다.",
+          "natural": 1.82,
+          "meaning": 0.97,
+          "style": 0.67,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "presetCordisDescription",
+      "en": "Customize DSH through conversation. Let the agent write plugins that add features or UI, or combine tools and prompts to create your own mode.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "대화로 DSH를 맞춤 설정하십시오. 에이전트에게 기능이나 UI를 추가하는 플러그인을 작성하게 하거나, 도구와 프롬프트를 조합해 나만의 모드를 만드십시오.",
+          "natural": 1.45,
+          "meaning": 0.93,
+          "style": 0.76,
+          "pass": false
+        },
+        {
+          "ko": "대화를 통해 DSH를 원하는 대로 설정할 수 있습니다. 에이전트에게 기능이나 UI를 추가하는 플러그인 작성을 맡기거나, 도구와 프롬프트를 조합하여 나만의 모드를 만들 수 있습니다.",
+          "natural": 1.56,
+          "meaning": 0.95,
+          "style": 0.68,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "presetCordisName",
+      "en": "Creator mode",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "제작자 모드",
+          "natural": 1.8,
+          "meaning": 0.85,
+          "style": 0.69,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "presetMinimalDescription",
+      "en": "The agent works using only a terminal tool. Useful for testing and comparing its basic performance.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "에이전트가 터미널 도구만 사용하여 작업합니다. 기본 성능을 테스트하고 비교할 때 유용합니다.",
+          "natural": 1.62,
+          "meaning": 0.93,
+          "style": 0.56,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "presetMinimalName",
+      "en": "Minimal mode",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "최소 모드",
+          "natural": 1.78,
+          "meaning": 0.92,
+          "style": 0.76,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "presetPtcDescription",
+      "en": "Includes all Standard mode capabilities. Better suited to tasks that call tools in batches and then filter, organize, deduplicate, count, or summarize the results.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "표준 모드의 모든 기능을 포함합니다. 도구를 일괄 호출한 뒤 결과를 필터링, 정리, 중복 제거, 집계 또는 요약하는 작업에 더 적합합니다.",
+          "natural": 1.61,
+          "meaning": 0.93,
+          "style": 0.64,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "presetPtcName",
+      "en": "PTC mode",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "PTC 모드",
+          "natural": 1.27,
+          "meaning": 0.86,
+          "style": 0.72,
+          "pass": false
+        },
+        {
+          "ko": "PTC 실행 모드",
+          "natural": 1.52,
+          "meaning": 0.95,
+          "style": 0.78,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "presetStandardDescription",
+      "en": "Work with code, files, and information. Suitable for most tasks, with search, editing, terminal commands, and other tools available as needed.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "코드, 파일, 정보를 다룹니다. 검색, 편집, 터미널 명령 등 필요한 도구를 사용할 수 있어 대부분의 작업에 적합합니다.",
+          "natural": 1.8,
+          "meaning": 0.94,
+          "style": 0.67,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "presetStandardName",
+      "en": "Standard mode",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "표준 모드",
+          "natural": 1.94,
+          "meaning": 0.96,
+          "style": 0.67,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "seatHint",
+      "en": "Choose the agent preset for your new task",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "새 작업에 사용할 에이전트 프리셋 선택",
+          "natural": 1.55,
+          "meaning": 0.96,
+          "style": 0.57,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "sectionIntro",
+      "en": "Choose the agent’s tools and how it works. Use Standard mode for everyday tasks, or Creator mode to add capabilities to DSH.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "에이전트의 도구와 작동 방식을 선택하십시오. 일상적인 작업에는 표준 모드를, DSH에 기능을 추가할 때는 제작자 모드를 사용하십시오.",
+          "natural": 1.75,
+          "meaning": 0.96,
+          "style": 0.89,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "setDefault",
+      "en": "Set as new task default",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "새 작업 기본값으로 설정",
+          "natural": 1.77,
+          "meaning": 0.96,
+          "style": 0.58,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "switchRefused",
+      "en": "Could not switch to {name}: {reason}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{name}(으)로 전환하지 못했습니다: {reason}",
+          "natural": 1.67,
+          "meaning": 0.96,
+          "style": 0.43,
+          "pass": false
+        },
+        {
+          "ko": "{name} 전환에 실패했습니다. 사유: {reason}",
+          "natural": 1.55,
+          "meaning": 0.96,
+          "style": 0.45,
+          "pass": false
+        },
+        {
+          "ko": "{name} 전환 실패: {reason}",
+          "natural": 1.61,
+          "meaning": 0.94,
+          "style": 0.57,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "view",
+      "en": "View configuration",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "설정 보기",
+          "natural": 1.82,
+          "meaning": 0.96,
+          "style": 0.78,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "createPlugin",
+      "en": "Let the agent create a plugin",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "에이전트로 플러그인 만들기",
+          "natural": 1.21,
+          "meaning": 0.86,
+          "style": 0.28,
+          "pass": false
+        },
+        {
+          "ko": "에이전트에게 플러그인 생성 요청",
+          "natural": 1.59,
+          "meaning": 0.96,
+          "style": 0.54,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "createPluginChecking",
+      "en": "Checking whether Creator mode is available",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "제작자 모드 사용 가능 여부 확인 중",
+          "natural": 1.43,
+          "meaning": 0.96,
+          "style": 0.53,
+          "pass": false
+        },
+        {
+          "ko": "제작자 모드를 사용할 수 있는지 확인하고 있습니다",
+          "natural": 1.54,
+          "meaning": 0.96,
+          "style": 0.85,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "createPluginDescription",
+      "en": "Enter Creator mode and make your own DSH plugin",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "제작자 모드에서 나만의 DSH 플러그인 만들기",
+          "natural": 1.61,
+          "meaning": 0.94,
+          "style": 0.33,
+          "pass": false
+        },
+        {
+          "ko": "제작자 모드로 전환하여 나만의 DSH 플러그인을 만드십시오",
+          "natural": 1.63,
+          "meaning": 0.96,
+          "style": 0.85,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "createPluginMissing",
+      "en": "Creator mode is not included in this configuration",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "이 구성에는 제작자 모드가 포함되어 있지 않습니다",
+          "natural": 1.66,
+          "meaning": 0.98,
+          "style": 0.69,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "createPluginUnavailable",
+      "en": "Temporarily unavailable. Reopen this menu to retry",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "일시적으로 사용할 수 없습니다. 다시 시도하려면 이 메뉴를 다시 여십시오",
+          "natural": 1.53,
+          "meaning": 0.95,
+          "style": 0.59,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "standardUnavailable",
+      "en": "Standard mode is unavailable. Restore it or choose another available mode.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "표준 모드를 사용할 수 없습니다. 복원하거나 사용 가능한 다른 모드를 선택하십시오.",
+          "natural": 1.4,
+          "meaning": 0.96,
+          "style": 0.83,
+          "pass": false
+        },
+        {
+          "ko": "현재 표준 모드를 사용할 수 없습니다. 표준 모드를 복원하거나 사용 가능한 다른 모드를 선택해 주십시오.",
+          "natural": 1.56,
+          "meaning": 0.96,
+          "style": 0.76,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    }
+  ]
+}

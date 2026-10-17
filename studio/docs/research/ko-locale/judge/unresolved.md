@@ -315,3 +315,8 @@
 | deliverables | 용어 | Split view | 분할 보기 | — | 번역자 제안 |
 | deliverables | 용어 | Unified view | 통합 보기 | — | 번역자 제안 |
 | deliverables | 용어 | Line wrap | 자동 줄바꿈 | — | 번역자 제안 |
+| settings.agentPreset | 용어 | Creator mode | 제작자 모드 | — | 번역자 제안 |
+| settings.agentPreset | 용어 | Standard mode | 표준 모드 | — | 번역자 제안 |
+| settings.agentPreset | 용어 | Minimal mode | 최소 모드 | — | 번역자 제안 |
+| settings.agentPreset | 용어 | Built-in | 기본 제공 | — | 번역자 제안 |
+| settings.agentPreset | 용어 | Custom | 사용자 정의 | — | 번역자 제안 |
