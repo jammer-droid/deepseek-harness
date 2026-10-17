@@ -1,0 +1,146 @@
+{
+  "namespace": "sidebarOffice",
+  "date": "2026-10-17",
+  "engine": "jev",
+  "thresholds": { "natural": 1.5, "meaning": 0.6, "style": 0.5 },
+  "rows": [
+    {
+      "key": "busy",
+      "en": "Office preview is busy. Try again shortly.",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "Office 미리보기가 사용 중입니다. 잠시 후 다시 시도하십시오.", "natural": 1.86, "meaning": 0.97, "style": 0.9, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "changed",
+      "en": "The file changed while being read. Reopen the preview.",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "파일을 읽는 동안 변경되었습니다. 미리보기를 다시 여십시오.", "natural": 1.74, "meaning": 0.96, "style": 0.77, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "closeDetails",
+      "en": "Close font details",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "글꼴 세부 정보 닫기", "natural": 1.82, "meaning": 0.98, "style": 0.54, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "failed",
+      "en": "Office conversion did not produce a usable PDF. Check the file and try again.",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "Office 변환에서 사용 가능한 PDF를 만들지 못했습니다. 파일을 확인하고 다시 시도하십시오.", "natural": 1.58, "meaning": 0.96, "style": 0.94, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "invalid",
+      "en": "This Office file cannot be previewed. It may be damaged, password protected, or have the wrong extension.",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "이 Office 파일은 미리 볼 수 없습니다. 손상되었거나 암호로 보호되어 있거나 확장자가 잘못되었을 수 있습니다.", "natural": 1.84, "meaning": 0.97, "style": 0.52, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "loading",
+      "en": "Rendering document...",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "문서를 렌더링하고 있습니다...", "natural": 1.82, "meaning": 0.98, "style": 0.8, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "missingFontsCount",
+      "en": "Fonts: {count}",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "글꼴: {count}", "natural": 1.93, "meaning": 0.96, "style": 0.66, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "missingFontsDescription",
+      "en": "These fonts are unavailable for this preview. Text and layout may differ from the original document.",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "이 글꼴은 이 미리보기에서 사용할 수 없습니다. 원본 문서와 텍스트와 레이아웃이 다를 수 있습니다.", "natural": 1.61, "meaning": 0.96, "style": 0.48, "pass": false },
+        { "ko": "이 글꼴은 이 미리보기에서 사용할 수 없어 본문과 레이아웃이 원본 문서와 다를 수 있습니다.", "natural": 1.74, "meaning": 0.95, "style": 0.56, "pass": true }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "missingFontsTitle",
+      "en": "Missing fonts",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "누락된 글꼴", "natural": 1.91, "meaning": 0.95, "style": 0.7, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "retry",
+      "en": "Retry",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "다시 시도", "natural": 1.97, "meaning": 0.98, "style": 0.57, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "timeout",
+      "en": "Office conversion timed out. Try again.",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "Office 변환이 시간 초과되었습니다. 다시 시도하십시오.", "natural": 1.86, "meaning": 0.96, "style": 0.88, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "title",
+      "en": "Office document",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "Office 문서", "natural": 1.79, "meaning": 0.98, "style": 0.77, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "tooLarge",
+      "en": "The Office file or converted PDF exceeds the preview size limit. Reduce the file size or adjust the preview configuration.",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "Office 파일 또는 변환된 PDF가 미리보기 크기 제한을 초과합니다. 파일 크기를 줄이거나 미리보기 설정을 조정하십시오.", "natural": 1.66, "meaning": 0.95, "style": 0.93, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "unavailable",
+      "en": "Office previews are unavailable. Enable the document preview service on the computer running DeepSeek Harness.",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "Office 미리보기를 사용할 수 없습니다. DeepSeek Harness를 실행하는 컴퓨터에서 문서 미리보기 서비스를 활성화하십시오.", "natural": 1.41, "meaning": 0.96, "style": 0.93, "pass": false },
+        { "ko": "Office 미리보기를 사용할 수 없습니다. DeepSeek Harness가 실행 중인 컴퓨터에서 문서 미리보기 서비스를 활성화하십시오.", "natural": 1.44, "meaning": 0.95, "style": 0.86, "pass": false },
+        { "ko": "Office 미리보기를 사용할 수 없습니다. DeepSeek Harness를 실행하는 컴퓨터에서 문서 미리보기 서비스를 활성화해야 합니다.", "natural": 1.5, "meaning": 0.95, "style": 0.76, "pass": true }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "viewMissingFonts",
+      "en": "Missing fonts: {count}. Click to view.",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "누락된 글꼴: {count}. 클릭하여 확인.", "natural": 1.81, "meaning": 0.96, "style": 0.52, "pass": true }
+      ],
+      "result": "pass"
+    }
+  ]
+}
