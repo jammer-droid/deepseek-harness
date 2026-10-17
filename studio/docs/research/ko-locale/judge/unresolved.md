@@ -271,3 +271,11 @@
 | settings.account | 용어 | Top up | 충전 | — | 번역자 제안 |
 | settings.account | 용어 | API Key | API 키 | — | 번역자 제안 |
 | settings.account | 용어 | Granted balance | 지급 잔액 | — | 번역자 제안 |
+| open-in-app | 용어 | Application | 앱 | — | 번역자 제안 |
+| open-in-app | 용어 | Code block | 코드 블록 | — | 번역자 제안 |
+| open-in-app | 용어 | Wrap lines | 자동 줄바꿈 | — | 번역자 제안 |
+| open-in-app | 용어 | Compact JSON | 압축 JSON | — | 번역자 제안 |
+| open-in-app | 용어 | Pretty JSON | 서식 있는 JSON | — | 번역자 제안 |
+| open-in-app | 용어 | Property path | 속성 경로 | — | 번역자 제안 |
+| open-in-app | 용어 | Footnotes | 각주 | — | 번역자 제안 |
+| open-in-app | 용어 | Sidebar | 사이드바 | — | 번역자 제안 |

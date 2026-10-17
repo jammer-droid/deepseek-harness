@@ -17,6 +17,7 @@ import feedback from './feedback.ts';
 import goal from './goal.ts';
 import inspectorPanel from './inspectorPanel.ts';
 import model from './model.ts';
+import openInApp from './open-in-app.ts';
 import permissionAccess from './permission.access.ts';
 import plan from './plan.ts';
 import pluginManager from './pluginManager.ts';
@@ -73,6 +74,7 @@ export const dshKo: DshKoDictionaries = {
   goal: goal,
   inspectorPanel: inspectorPanel,
   model: model,
+  'open-in-app': openInApp,
   'permission.access': permissionAccess,
   plan: plan,
   pluginManager: pluginManager,
