@@ -3,6 +3,7 @@
  * The translation skill adds a file and one line here per finished namespace.
  */
 import type { DshKoDictionaries } from '../dsh-ko-locale.ts';
+import agentTeam from './agent-team.ts';
 import approval from './approval.ts';
 import claudeCodeMods from './claude-code-mods.ts';
 import directoryBrowser from './directory-browser.ts';
@@ -37,6 +38,7 @@ import slashMenu from './slash.menu.ts';
 import workflowRun from './workflowRun.ts';
 
 export const dshKo: DshKoDictionaries = {
+  'agent-team': agentTeam,
   approval: approval,
   'claude-code-mods': claudeCodeMods,
   'directory-browser': directoryBrowser,
