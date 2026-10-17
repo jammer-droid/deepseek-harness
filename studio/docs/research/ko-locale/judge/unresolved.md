@@ -29,3 +29,5 @@
 | sidebarBrowser | address.unknown | The page navigated; this carrier cannot read its new URL. | 페이지가 이동했습니다. 이 캐리어는 새 URL을 읽을 수 없습니다. | 1.29/0.95/0.55 | 캐리어·URL 표현의 자연스러움 미달 |
 | sidebarBrowser | error.invalid | That address is invalid or too long. | 주소가 올바르지 않거나 너무 깁니다. | 1.77/0.94/0.28 | 올바른 한국어 문장인데 문체 판정이 계속 낮음 |
 | sidebarBrowser | go | Go | 이동 | 1.64/0.92/0.47 | 단어 하나짜리 버튼 라벨의 문체 기준 미달 |
+| command | listbox.aria | /{command} matches | /{command} 검색 결과 | 1.46/0.73/0.57 | 슬래시 명령 일치 목록의 aria-label, 후보 모두 자연스러움 미달 |
+| command | search.aria | Filter options | 옵션 필터링 | 1.42/0.84/0.66 | 옵션 필터 입력의 aria-label, 후보 모두 자연스러움 미달 |

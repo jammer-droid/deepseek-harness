@@ -6,6 +6,7 @@ import type { DshKoDictionaries } from '../dsh-ko-locale.ts';
 import agentTeam from './agent-team.ts';
 import approval from './approval.ts';
 import claudeCodeMods from './claude-code-mods.ts';
+import command from './command.ts';
 import directoryBrowser from './directory-browser.ts';
 import documentHtml from './documentHtml.ts';
 import documentMarkdown from './documentMarkdown.ts';
@@ -42,6 +43,7 @@ export const dshKo: DshKoDictionaries = {
   'agent-team': agentTeam,
   approval: approval,
   'claude-code-mods': claudeCodeMods,
+  command: command,
   'directory-browser': directoryBrowser,
   documentHtml: documentHtml,
   documentMarkdown: documentMarkdown,
