@@ -16,6 +16,7 @@ Pixie Loop repeats **work → judge → fix and retry** outside the main agent's
 - [Run and judge (act)](#run-and-judge-act)
 - [Episodes and selection](#episodes-and-selection)
 - [Grouping results (route)](#grouping-results-route)
+- [Recipes](#recipes)
 - [Viewing runs](#viewing-runs)
 - [What it cannot do](#what-it-cannot-do)
 - [Agent skill](#agent-skill)
@@ -62,7 +63,7 @@ Only code checks and the decision engine decide pass or fail. Pixie's feedback g
 | Field | Required | Description |
 | --- | --- | --- |
 | `items` | yes | `{ "inline": [{ "id", "input" }] }` or `{ "path": "work/items.jsonl" }` with one `{"id","input"}` per line. Ids are unique. Up to 2000 items, 32,000 characters per input |
-| `work.instruction` | yes | What to do with one item. The worker has no tools |
+| `work.instruction` | yes, without recipe | What to do with one item. The worker has no tools |
 | `shared` | | Fixed material every item sees (glossary, style guide). Up to 64,000 characters |
 | `criteria` | one of | Review criteria in plain words. Only a plain pick-once `select` may omit both |
 | `checks` | one of | Questions and pass rules given directly; see [below](#giving-checks-directly) |
@@ -75,8 +76,9 @@ Only code checks and the decision engine decide pass or fail. Pixie's feedback g
 | `route` | | Group results by a choice answer; see [route](#grouping-results-route) |
 | `maxAttempts` | | Tries per item (at most 10) or steps per episode (at most 100). Default 3 |
 | `concurrency` | | Items in flight. Default 4, at most 8 |
-| `limits` | yes | `{ "tokens", "timeMs" }`. Reaching either stops the run; remaining items are reported as skipped |
+| `limits` | yes, without recipe | `{ "tokens", "timeMs" }`. Reaching either stops the run; remaining items are reported as skipped |
 | `output` | | Results JSONL path |
+| `recipe` | | A saved [recipe](#recipes) name; with it give only `items`, `output`, and `run_in_background` |
 | `run_in_background` | | `true` returns a job id at once. Collect the summary with `job_output`; stop with `job_kill` |
 
 ## Writing criteria
@@ -300,6 +302,34 @@ Give `route.question` the id of a choice question; each item's final answer to i
   "maxAttempts": 1,
   "limits": { "tokens": 200000, "timeMs": 600000 }
 }
+```
+
+## Recipes
+
+Save specs you reuse under a name in **Studio → Pixie → Gates → Loop recipes**. A recipe is a spec without `items` and `output`. Saving compiles the criteria and checks them against the calibration examples once; a failed check saves nothing. Runs reuse the saved questions without compiling or calibrating again.
+
+| Where | How |
+| --- | --- |
+| `pixie_loop` tool | `{ "recipe": "ko-review", "items": {...}, "output"?: "...", "run_in_background"?: true }`; no other fields with it |
+| Pixie Gate | In the gate's advanced options pick the recipe under **Pixie Loop recipe** and **Check** or **Repair**. See the [Pixie Gate guide](pixie-gate.md#advanced-options) |
+| Hook scripts | `pixie loop --recipe ko-review [--mode check|repair] [--input]`. See [the pixie helper](pixie-gate.md#the-pixie-helper) |
+
+- Gates and hook scripts run one item (the gate target or `--input`). **Check** judges the target as the output without changing it; **repair** lets the worker rework the target until it passes.
+- Gates and hook scripts cannot run recipes that run commands (`act`), episodes, or selections; use those only with the `pixie_loop` tool.
+- Gate and hook runs are also recorded in the session's **Pixie tab → Loops** with the recipe name.
+
+### Example: check translations whenever a file is written
+
+Save a `ko-review` recipe and attach this hook script to a `Tool after` gate.
+
+```sh
+#!/bin/bash
+# Check what the write tool wrote with the recipe.
+[ "$PIXIE_TOOL_NAME" = write ] || exit 10
+content=$(printf '%s' "$PIXIE_TOOL_ARGS" | jq -r .content)
+if result=$(printf '%s' "$content" | pixie loop --recipe ko-review --input --json); then exit 10; fi
+jq -n --arg reason "$(printf '%s' "$result" | jq -r .reason)" '{verdict:"stop", reason:$reason}'
+exit 11
 ```
 
 ## Viewing runs

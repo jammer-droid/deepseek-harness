@@ -32,6 +32,10 @@ Otherwise: one judgment → `judge`; multi-step work with files or tools → `su
 10. **Route (optional).** `route: { question: "<choice id>" }` groups results by that answer.
 11. **output** path for the results JSONL. Use `run_in_background: true` for long runs; keep working and collect with `job_output`.
 
+## Recipes
+
+If the user has a saved recipe for the job (Studio → Pixie → Gates → Loop recipes), prefer `{ "recipe": "<name>", "items": ..., "output": ... }`; its checks were calibrated when saved. Recipes are also what gates (Check/Repair) and hook scripts (`pixie loop --recipe`) run; for gate and hook work see `studio-pixie-hook-guide`. Recipes with `act`, episodes, or selection run only through the tool.
+
 ## After the run
 
 - Report the counts and the results file. Do not re-run passed items.

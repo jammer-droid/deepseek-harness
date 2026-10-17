@@ -57,3 +57,14 @@ test('the packaged loop skill carries the English guide', () => {
   assert.match(skill.files['SKILL.md'], /^---\nname: studio-pixie-loop-guide\n/);
   assert.equal(skill.files['guide.md'], read('pixie-loop.md'));
 });
+
+test('the recipe hook-script example is the same in both languages and is valid bash', async () => {
+  const { spawnSync } = await import('node:child_process');
+  const scripts = name => [...read(name).matchAll(/```sh\n(#!\/bin\/bash[\s\S]*?)\n```/g)].map(match => match[1]);
+  const en = scripts('pixie-loop.md'), ko = scripts('pixie-loop.ko.md');
+  assert.equal(en.length, 1); assert.equal(ko.length, 1);
+  const body = text => text.split('\n').filter(line => !line.startsWith('#')).join('\n');
+  assert.equal(body(ko[0]), body(en[0]));
+  assert.equal(spawnSync('bash', ['-n'], { input: en[0] }).status, 0);
+  assert.match(en[0], /pixie loop --recipe ko-review --input --json/);
+});

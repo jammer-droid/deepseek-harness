@@ -16,6 +16,7 @@ Pixie Loop는 같은 기준으로 판정할 항목이 많을 때 **작업 → �
 - [실행해서 판정하기 (act)](#실행해서-판정하기-act)
 - [연속 실행과 선택](#연속-실행과-선택)
 - [결과 분류 (route)](#결과-분류-route)
+- [레시피](#레시피)
 - [실행 기록 보기](#실행-기록-보기)
 - [할 수 없는 일](#할-수-없는-일)
 - [에이전트 스킬](#에이전트-스킬)
@@ -62,7 +63,7 @@ Pixie Loop는 같은 기준으로 판정할 항목이 많을 때 **작업 → �
 | 필드 | 필수 | 설명 |
 | --- | --- | --- |
 | `items` | 예 | `{ "inline": [{ "id", "input" }] }` 또는 `{ "path": "work/items.jsonl" }`. 파일은 한 줄에 `{"id","input"}` 하나. id는 겹치면 안 됩니다. 최대 2000개, 입력 하나 32,000자 |
-| `work.instruction` | 예 | 항목 하나로 무엇을 할지. 작업자에게는 도구가 없습니다 |
+| `work.instruction` | 레시피가 없으면 예 | 항목 하나로 무엇을 할지. 작업자에게는 도구가 없습니다 |
 | `shared` | | 모든 항목이 똑같이 보는 고정 자료(용어집, 스타일 가이드). 최대 64,000자 |
 | `criteria` | 둘 중 하나 | 판정 기준을 평문으로. 기준 없는 한 번 고르기(`select`)만 생략 가능 |
 | `checks` | 둘 중 하나 | 질문과 통과 규칙을 직접. [아래](#checks를-직접-줄-때) 참고 |
@@ -75,8 +76,9 @@ Pixie Loop는 같은 기준으로 판정할 항목이 많을 때 **작업 → �
 | `route` | | choice 질문 답으로 결과 분류. [route](#결과-분류-route) |
 | `maxAttempts` | | 항목당 시도 횟수(최대 10) 또는 연속 실행 단계 수(최대 100). 기본 3 |
 | `concurrency` | | 동시에 처리할 항목 수. 기본 4, 최대 8 |
-| `limits` | 예 | `{ "tokens", "timeMs" }`. 둘 중 하나에 닿으면 멈추고 남은 항목은 건너뜀으로 보고합니다 |
+| `limits` | 레시피가 없으면 예 | `{ "tokens", "timeMs" }`. 둘 중 하나에 닿으면 멈추고 남은 항목은 건너뜀으로 보고합니다 |
 | `output` | | 결과 JSONL 경로 |
+| `recipe` | | 저장된 [레시피](#레시피) 이름. 주면 `items`, `output`, `run_in_background`만 함께 줍니다 |
 | `run_in_background` | | `true`면 job id를 바로 돌려줍니다. `job_output`으로 요약을 받고 `job_kill`로 멈춥니다 |
 
 ## 기준 쓰는 법
@@ -300,6 +302,34 @@ await browser.close();
   "maxAttempts": 1,
   "limits": { "tokens": 200000, "timeMs": 600000 }
 }
+```
+
+## 레시피
+
+자주 쓰는 명세는 **Studio → Pixie → 게이트 → Loop 레시피**에 이름을 붙여 저장합니다. 레시피는 `items`와 `output`을 뺀 명세입니다. 저장할 때 기준을 질문으로 바꾸고 calibration 예시로 한 번 확인하며, 확인에 실패하면 저장하지 않습니다. 이후 실행은 저장된 질문을 그대로 써서 매번 다시 바꾸거나 확인하지 않습니다.
+
+| 쓰는 곳 | 방법 |
+| --- | --- |
+| `pixie_loop` 도구 | `{ "recipe": "ko-review", "items": {...}, "output"?: "...", "run_in_background"?: true }`. 다른 필드는 함께 줄 수 없습니다 |
+| Pixie Gate | 게이트 고급 옵션 **Pixie Loop 레시피**에서 레시피와 **판정**·**고치기**를 고릅니다. [Pixie Gate 가이드](pixie-gate.ko.md#고급-옵션) |
+| 훅 스크립트 | `pixie loop --recipe ko-review [--mode check|repair] [--input]`. [pixie 헬퍼](pixie-gate.ko.md#pixie-헬퍼) |
+
+- 게이트와 훅 스크립트에서는 항목 하나(게이트 대상 또는 `--input`)로 실행합니다. **판정**은 대상을 그대로 출력으로 보고 검사만 하고, **고치기**는 작업자가 대상을 고쳐 통과할 때까지 재시도합니다.
+- 게이트와 훅 스크립트는 명령을 실행하는 레시피(`act`), 연속 실행, 선택 레시피를 쓸 수 없습니다. 이런 레시피는 `pixie_loop` 도구로만 씁니다.
+- 게이트·훅 스크립트 실행도 그 세션의 **Pixie 탭 → 루프**에 레시피 이름과 함께 남습니다.
+
+### 예: 파일을 쓸 때마다 번역 검사하기
+
+`ko-review` 레시피를 저장하고, `도구 실행 후` 게이트에 다음 훅 스크립트를 지정합니다.
+
+```sh
+#!/bin/bash
+# write 도구가 쓴 내용을 레시피로 검사합니다.
+[ "$PIXIE_TOOL_NAME" = write ] || exit 10
+content=$(printf '%s' "$PIXIE_TOOL_ARGS" | jq -r .content)
+if result=$(printf '%s' "$content" | pixie loop --recipe ko-review --input --json); then exit 10; fi
+jq -n --arg reason "$(printf '%s' "$result" | jq -r .reason)" '{verdict:"stop", reason:$reason}'
+exit 11
 ```
 
 ## 실행 기록 보기

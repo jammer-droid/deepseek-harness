@@ -58,7 +58,7 @@ async function runtime(t, { work = input => `번역 ${input}`, files = {} } = {}
 test('the tool is registered with its schema and joins the Studio Master layer', async t => {
   const { ctx } = await runtime(t);
   const schema = ctx.tools.schemas().find(item => item.name === LOOP_TOOL);
-  assert.ok(schema); assert.deepEqual(schema.parameters.required, ['items', 'work', 'limits']);
+  assert.ok(schema); assert.deepEqual(schema.parameters.required, ['items']);
   assert.match(schema.description, /escalated/);
   assert.ok(studioLayer().some(row => row.name === LOOP_PLUGIN && row.id === 'studio-loop'));
 });
