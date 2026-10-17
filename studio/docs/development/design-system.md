@@ -90,6 +90,7 @@ primitives는 CSS 모듈을 함께 불러오므로 Node 단위 테스트에서 �
 | `Disclosure` | 고급 설정처럼 평소 접어 두는 블록. 컴포넌트 카드와 같은 테두리·제목 행을 쓴다 |
 | `FeatureInclusion` ([feature-inclusion.tsx](../../src/feature-inclusion.tsx)) | 프리셋에 포함할 플러그인. Config 편집과 같은 `ItemPicker`(검색·스크롤, 필터는 전체/포함)로 보여 주고, 행마다 출처(`standard`/`Studio`/`추가함`)와 기본값/덮어쓰기/제외 `Badge`를 단다. 의존 플러그인은 "함께 제외"로 잠근다. `플러그인 추가` 대화상자에서 패키지 이름으로 Studio 기준 구성에 추가·제거한다 |
 | `CatalogChangeNotice` ([master-change-notice.tsx](../../src/master-change-notice.tsx)) | 재시작 후 도구·Config 변경 안내. `Notice`와 `DetailDialog`에 `+`/`-`/`~`와 정리될 프리셋 설정을 보여 주고, 확인해야 정리한다 |
+| `SessionRolesTab` ([session-roles-tab.tsx](../../src/session-roles-tab.tsx)) | 세션 화면 `conversation.view`의 Subagents 탭. 서브에이전트 역할 카드(`studio-card-pair`)에 출처 `Badge`(프리셋 `outline`, 세션 `info`)를 달고, 편집은 `DetailDialog`에서 모델·추론·지침만 바꾼다. 세션 복사본은 `프리셋 값 사용`, 임시 역할은 `제거`. 자식 세션과 역할 도구가 없는 세션은 `Note`로 사유를 보이고 동작을 숨긴다. 탭 폭 560px 이하에서 한 열 |
 | `TurnInjectionPanel` ([turn-injection-panel.tsx](../../src/turn-injection-panel.tsx)) | 프롬프트 미리보기 안의 턴 시작 주입 예시(`pre.studio-turn-text`)와 그 내용을 만드는 Config 필드. 실행 설정과 같은 덮어쓰기 값을 쓰고 `원래대로`로 키를 지운다. 본문은 편집 불가 사유를 표시한다 |
 
 ### ui-host.tsx 부품
