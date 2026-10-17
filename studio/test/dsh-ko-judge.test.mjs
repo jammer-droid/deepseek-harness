@@ -70,3 +70,9 @@ test('approved text is not re-judged; changing it brings it back', () => {
   assert.equal(planNamespace({ ko: { a: '날' } }, record, english).items.length, 1);
   assert.deepEqual(openRows(record, { ko: { a: '일' } }), []);
 });
+
+test('approved text changed back to an earlier failing attempt is judged again', () => {
+  const record = { rows: [{ key: 'a', attempts: [{ ko: '날', natural: 1.1, meaning: 0.5, style: 0.6, pass: false }], result: 'approved', approval: { ko: '일' } }] };
+  const english = new Map([['a', ['days']]]);
+  assert.equal(planNamespace({ ko: { a: '날' } }, record, english).items.length, 1);
+});

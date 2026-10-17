@@ -37,7 +37,9 @@ for (const part of ['shell']) {
 }
 
 // Agent skills ship as files next to index.js; the Host installs them into <DSH home>/skills on start.
-import { cp, mkdir as mkdirp } from 'node:fs/promises';
+// The folder is rebuilt from scratch so skills from earlier builds or other branches never reach the package.
+import { cp, mkdir as mkdirp, rm } from 'node:fs/promises';
+await rm(new URL('packages/shell/skills/', import.meta.url), { recursive: true, force: true });
 const skillOut = new URL('packages/shell/skills/studio-pixie-hook-guide/', import.meta.url);
 await mkdirp(skillOut, { recursive: true });
 // Docs live in release/docs here and in docs/ in the published repository.
@@ -46,7 +48,4 @@ const docsRoot = ['release/docs/', 'docs/'].map(dir => new URL(dir, import.meta.
 if (!docsRoot) throw new Error('build: Pixie Gate guide not found in release/docs or docs');
 await cp(new URL('appendix/studio-pixie-hook-guide/SKILL.md', docsRoot), new URL('SKILL.md', skillOut));
 await cp(new URL('appendix/pixie-gate.md', docsRoot), new URL('guide.md', skillOut));
-const providerSkillOut = new URL('packages/shell/skills/studio-provider-guide/', import.meta.url);
-await mkdirp(providerSkillOut, { recursive: true });
-await cp(new URL('appendix/studio-provider-guide/SKILL.md', docsRoot), new URL('SKILL.md', providerSkillOut));
-await cp(new URL('appendix/studio-provider-guide/examples.md', docsRoot), new URL('examples.md', providerSkillOut));
+// studio-provider-guide is not shipped: SettingsX providers are excluded from the release (#28 D10).

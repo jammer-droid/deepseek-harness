@@ -80,7 +80,8 @@ export function planNamespace(dictionary, record, english) {
     if (ko === ens[0] && !/[A-Za-z]{2,}\s+[A-Za-z]{2,}/.test(ens[0])) continue; // verbatim token, nothing to judge
     if (/^[a-z]{2,3}(-[A-Za-z]{2,4})?$/.test(ens[0]) && /^[a-z]{2,3}(-[A-Za-z]{2,4})?$/.test(ko)) continue; // Intl locale value
     const last = row?.attempts?.at(-1);
-    if (last && last.ko === ko && last.error === undefined) continue; // this text already has a verdict
+    // This text already has a verdict, unless the row is approved for other text (then re-judge the change).
+    if (last && last.ko === ko && last.error === undefined && row.result !== 'approved') continue;
     ens.forEach((en, index) => items.push({ key, ko, en, part: index }));
   }
   return { items, skipped };
@@ -117,7 +118,8 @@ export function mergeRecord(record, ns, judged, today) {
 
 /** Rows whose key is still in `ko` and whose result awaits a rewrite or a retry. */
 export function openRows(record, dictionary) {
-  return (record?.rows ?? []).filter(row => ['pending', 'unjudged'].includes(row.result) && row.key in (dictionary.ko ?? {}));
+  return (record?.rows ?? []).filter(row => row.key in (dictionary.ko ?? {}) && (['pending', 'unjudged'].includes(row.result)
+    || (row.result === 'approved' && row.approval?.ko !== dictionary.ko[row.key] && row.attempts?.at(-1)?.ko === dictionary.ko[row.key] && !row.attempts.at(-1).pass)));
 }
 
 /** Rewrite a dictionary file: move `keys` from ko into fallback, keeping key order. */
