@@ -20,3 +20,15 @@ export function pixieHookSkill(): BundledSkill {
     'guide.md': read(`./skills/${name}/guide.md`, '../../release/docs/appendix/pixie-gate.md'),
   } };
 }
+
+/** SettingsX provider definition guide, from `<package>/skills/studio-provider-guide/` or the release docs. */
+export function providerGuideSkill(): BundledSkill {
+  const name = 'studio-provider-guide';
+  const read = (file: string) => {
+    for (const candidate of [new URL(`./skills/${name}/${file}`, import.meta.url), new URL(`../../release/docs/appendix/${name}/${file}`, import.meta.url), new URL(`../../docs/appendix/${name}/${file}`, import.meta.url)]) {
+      try { return readFileSync(fileURLToPath(candidate), 'utf8'); } catch { /* try the next location */ }
+    }
+    throw new Error(`Studio skill file missing: ${name}/${file}`);
+  };
+  return { name, files: { 'SKILL.md': read('SKILL.md'), 'examples.md': read('examples.md') } };
+}

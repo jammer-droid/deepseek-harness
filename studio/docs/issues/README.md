@@ -19,7 +19,7 @@ description: "Studio 이슈별 구현 명세의 색인."
 
 ## 편의 기능
 
-- [#28 SettingsX — 단축키 확장과 사용자 프로바이더 등록](28-settingsx.md): DSH 설정을 확장하는 Studio 영역. session-cycle 이관과 추가 단축키, Studio 자체 LLM 어댑터로 등록하는 프로바이더. `draft`; 첫 단계 S1. [GitHub #28](https://github.com/jammer-droid/deepseek-harness/issues/28).
+- [#28 SettingsX — 단축키 확장](28-settingsx.md): session-cycle 이관과 추가 단축키. 구현·자동 검사 완료, 미출시. 프로바이더 메뉴·모델 등록·구독 기능은 사용자 결정 D10에 따라 이번 배포에서 제외하고 연구 코드만 보존. [GitHub #28](https://github.com/jammer-droid/deepseek-harness/issues/28).
 - [#29 세션별 서브에이전트 역할](29-session-roles.md): 프리셋 역할의 모델·추론·지침을 세션 단위 독립 복사본으로 바꾸고 임시 역할 추가, 자식은 루트 세션 값을 따름, Subagents 탭. 구현·문서 완료(rc.2 설치·위임 확인, 가이드·CHANGELOG); 미출시. [GitHub #29](https://github.com/jammer-droid/deepseek-harness/issues/29).
 - [#30 DSH 전체 한국어 번역](30-korean-locale.md): DSH 네임스페이스별 ko 사전과 등록, 빠진 키 검사, 번역·검수 스킬과 Jev 일괄 판정. S1–S5 완료(2,779키 중 2,721키 한국어, 58키 영어 유지). S6 독립 설치 검증 미완료. [GitHub #30](https://github.com/jammer-droid/deepseek-harness/issues/30).
 

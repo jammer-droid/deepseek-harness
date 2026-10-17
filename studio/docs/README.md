@@ -24,6 +24,7 @@
 - [역할·미리보기](reference/role-preview.md): 역할 설정과 네이티브 위임 연결.
 - [Optimized 도구](reference/optimized-tools.md): 기본 정책, bundled 도구와 실행 범위.
 - [서비스 탐색](reference/service-navigation.md): Studio 서비스 등록·화면 골격.
+- [SettingsX](reference/settingsx.md): Studio 단축키 명령과 정의 파일 기반 사용자 프로바이더.
 
 ## 개발 기준과 조사
 

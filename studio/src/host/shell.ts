@@ -67,7 +67,7 @@ export default class StudioCatalog extends TypertRemoteService {
     ctx.plugin(SessionRoleService, dirname(storePath));
     // Agents read user skills from <DSH home>/skills; a user-edited copy is never overwritten. Failure only warns.
     const home = (ctx.get('profileContext') as { home?: string } | undefined)?.home;
-    if (home) void Promise.resolve().then(() => { const skill = pixieHookSkill(); return installSkill(join(home, 'skills'), skill).then(results => {
+    if (home) for (const bundled of [pixieHookSkill]) void Promise.resolve().then(() => { const skill = bundled(); return installSkill(join(home, 'skills'), skill).then(results => {
       const kept = Object.entries(results).filter(([, result]) => result === 'kept-user-edit').map(([file]) => file);
       if (kept.length) ctx.logger?.info?.(`studio: kept user-edited ${skill.name}/${kept.join(', ')}`);
     }); }).catch(error => ctx.logger?.warn?.(`studio: skill install skipped: ${String(error)}`));

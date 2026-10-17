@@ -11,6 +11,7 @@ import { PACKAGE_NAME, STUDIO_VERSION } from './package-name.ts';
 import { createUpdateStore, type UpdateActions } from './update-store.ts';
 import { SidebarIcon, VersionFooter } from './update-indicator.tsx';
 import { mountPixie, pixieDescriptors } from './pixie-client.tsx';
+import { mountSettingsX } from './settingsx-client.tsx';
 import { DshMarkdown } from './ui-host.tsx';
 import { mountSessionRoles, sessionRoleDescriptors } from './session-roles-client.tsx';
 import { registerDshKo } from './dsh-ko-locale.ts';
@@ -37,6 +38,7 @@ export async function apply(ctx: StudioContext) {
     mountSessionRoles(ctx);
     // `updates` is created below; the footer reads it only when the page renders.
     mountPixie(ctx, { navFooter: locale => <VersionFooter store={updates} locale={locale} />, markdown: DshMarkdown });
+    mountSettingsX(ctx, { navFooter: locale => <VersionFooter store={updates} locale={locale} /> });
     ctx.effect(() => ctx.locale.addLanguage({ id: 'ko', label: '한국어', fallback: 'en' }));
     // A namespace where DSH already ships `ko` keeps DSH's dictionary; the others still register.
     ctx.effect(() => registerDshKo(ctx.locale, dshKo, ({ ns, error }) => ctx.logger?.warn?.(`studio: DSH ko dictionary for ${ns} skipped: ${String(error)}`)));
