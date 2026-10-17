@@ -24,6 +24,8 @@ Changes apply from the next delegation. See [Per-session subagent roles](guide.m
 
 Choose **한국어** in DSH **Settings → General → Language**, and DSH's own screens switch to Korean along with Studio: chat, sidebars, settings, plugin manager, Trajectory and more.
 
+![DSH settings shown in Korean](images/ko/dsh-korean-settings.png)
+
 - **2,610 of 2,779** client strings in DSH `0.2.0-rc.2` and `0.2.1-alpha.2` are translated. Translated strings were checked by a decision engine for natural wording, meaning and tone. App names, units and format strings are kept as they are, and strings without a natural translation yet stay in English.
 - Text a plugin cannot reach stays in English: desktop app menus and dialogs, and text the DSH Host sends, such as tool descriptions and error messages.
 - If DSH later ships Korean for a screen, that screen uses DSH's translation.
@@ -33,6 +35,8 @@ See [Show DSH in Korean](guide.md#show-dsh-in-korean).
 ## Studio shortcuts (SettingsX)
 
 **DSH Studio → SettingsX → Shortcuts** adds keyboard commands DSH does not have:
+
+![SettingsX Shortcuts page](images/en/settingsx-shortcuts.png)
 
 | Command | Default key |
 |---|---|

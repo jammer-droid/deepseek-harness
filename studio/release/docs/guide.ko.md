@@ -267,6 +267,8 @@ Tool Filter에 등록하지 않으면 서브에이전트는 부모의 도구를 
 
 ## DSH 화면을 한국어로 보기
 
+![한국어로 표시한 DSH 설정](images/ko/dsh-korean-settings.png)
+
 Studio를 설치하면 DSH 설정의 언어 목록에 **한국어**가 추가됩니다. DSH **Settings → General → Language**(한국어 화면에서는 **설정 → 일반 → 언어**)에서 한국어를 고르면 Studio 화면뿐 아니라 DSH의 대화, 사이드바, 설정, 플러그인 관리, Trajectory 같은 화면 문구도 한국어로 바뀝니다. DSH `0.2.0-rc.2`와 `0.2.1-alpha.2`의 클라이언트 문구 2,779개 중 2,610개를 번역했습니다.
 
 - 번역하지 않은 문구는 영어로 보입니다. 자연스러운 번역을 찾지 못한 58개와, 앱 이름·단위·형식 문자열처럼 그대로 두는 문구가 여기에 해당합니다.
@@ -275,6 +277,8 @@ Studio를 설치하면 DSH 설정의 언어 목록에 **한국어**가 추가됩
 - 앞으로 DSH가 어떤 화면에 한국어를 직접 넣으면 그 화면은 DSH의 번역을 쓰고, 나머지 화면은 계속 Studio의 번역을 씁니다.
 
 ## Studio 단축키 (SettingsX)
+
+![SettingsX 단축키 페이지](images/ko/settingsx-shortcuts.png)
 
 **DSH Studio → SettingsX → 단축키**에는 Studio가 DSH 단축키 목록에 더하는 명령이 나옵니다. DSH에 이미 있는 명령은 다시 만들지 않습니다. 키 지정과 변경은 DSH **설정 → 단축키**에서 합니다(페이지의 **DSH 단축키 설정 열기**). 여기서 명령을 끄면 DSH 단축키 목록에서도 빠집니다.
 

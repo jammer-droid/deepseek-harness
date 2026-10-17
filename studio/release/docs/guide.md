@@ -266,6 +266,8 @@ Session roles are stored per session in `<profile>/studio-data/session-roles/`. 
 
 ## Show DSH in Korean
 
+![DSH settings shown in Korean](images/ko/dsh-korean-settings.png)
+
 Installing Studio adds **한국어** (Korean) to DSH's language list. Choose it in DSH **Settings → General → Language**, and DSH's own screens — chat, sidebars, settings, plugin manager, Trajectory and more — switch to Korean along with Studio. Studio translates 2,610 of the 2,779 client strings in DSH `0.2.0-rc.2` and `0.2.1-alpha.2`.
 
 - Untranslated strings stay in English: 58 strings without a natural translation yet, plus app names, units and format strings that are kept as they are.
@@ -274,6 +276,8 @@ Installing Studio adds **한국어** (Korean) to DSH's language list. Choose it 
 - If DSH later ships Korean for a screen, that screen uses DSH's translation and the rest keep Studio's.
 
 ## Studio shortcuts (SettingsX)
+
+![SettingsX Shortcuts page](images/en/settingsx-shortcuts.png)
 
 **DSH Studio → SettingsX → Shortcuts** lists keyboard commands that Studio adds to DSH's shortcut catalog. Commands DSH already has are not repeated. Assign or change keys in DSH **Settings → Shortcuts** (**Open DSH shortcut settings** on the page); turn a command off here to remove it from DSH's list too.
 
