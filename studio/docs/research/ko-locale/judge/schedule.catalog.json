@@ -1,0 +1,1070 @@
+{
+  "namespace": "schedule.catalog",
+  "date": "2026-10-17",
+  "engine": "jev",
+  "thresholds": {
+    "natural": 1.5,
+    "meaning": 0.6,
+    "style": 0.5
+  },
+  "rows": [
+    {
+      "key": "cron.day.both",
+      "en": "Day {days} of every month or {weekdays}{months}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "매월 {days}일 또는 {weekdays}{months}",
+          "natural": 1.06,
+          "meaning": 0.93,
+          "style": 0.56,
+          "pass": false
+        },
+        {
+          "ko": "매달 {days}일 또는 {weekdays}{months}",
+          "natural": 0.91,
+          "meaning": 0.9,
+          "style": 0.52,
+          "pass": false
+        },
+        {
+          "ko": "매월 {days}일 또는 매주 {weekdays}{months}",
+          "natural": 1.03,
+          "meaning": 0.87,
+          "style": 0.46,
+          "pass": false
+        },
+        {
+          "ko": "매월 {days}일 또는 {weekdays}에{months}",
+          "natural": 0.81,
+          "meaning": 0.81,
+          "style": 0.52,
+          "pass": false
+        }
+      ],
+      "result": "unresolved"
+    },
+    {
+      "key": "cron.day.bothStarred",
+      "en": "Day {days} of every month and {weekdays}{months}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "매월 {days}일이면서 {weekdays}인 날{months}",
+          "natural": 1.09,
+          "meaning": 0.94,
+          "style": 0.53,
+          "pass": false
+        },
+        {
+          "ko": "매달 {days}일 중 {weekdays}에 해당하는 날{months}",
+          "natural": 0.92,
+          "meaning": 0.66,
+          "style": 0.5,
+          "pass": false
+        },
+        {
+          "ko": "매월 {days}일과 {weekdays}가 겹치는 날{months}",
+          "natural": 1.02,
+          "meaning": 0.79,
+          "style": 0.45,
+          "pass": false
+        },
+        {
+          "ko": "매월 {days}일이 {weekdays}인 경우{months}",
+          "natural": 0.99,
+          "meaning": 0.58,
+          "style": 0.43,
+          "pass": false
+        }
+      ],
+      "result": "unresolved"
+    },
+    {
+      "key": "cron.day.every",
+      "en": "Every day{months}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "매일{months}",
+          "natural": 1.45,
+          "meaning": 0.94,
+          "style": 0.67,
+          "pass": false
+        },
+        {
+          "ko": "하루마다{months}",
+          "natural": 1.11,
+          "meaning": 0.88,
+          "style": 0.59,
+          "pass": false
+        },
+        {
+          "ko": "매일 반복{months}",
+          "natural": 1.46,
+          "meaning": 0.84,
+          "style": 0.41,
+          "pass": false
+        },
+        {
+          "ko": "매일마다{months}",
+          "natural": 0.95,
+          "meaning": 0.9,
+          "style": 0.57,
+          "pass": false
+        }
+      ],
+      "result": "unresolved"
+    },
+    {
+      "key": "cron.day.monthDays",
+      "en": "Day {days} of every month{months}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "매월 {days}일{months}",
+          "natural": 1.49,
+          "meaning": 0.94,
+          "style": 0.59,
+          "pass": false
+        },
+        {
+          "ko": "매달 {days}일{months}",
+          "natural": 1.54,
+          "meaning": 0.95,
+          "style": 0.58,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "cron.months",
+      "en": " in {months}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": " ({months}에만)",
+          "natural": 1.37,
+          "meaning": 0.75,
+          "style": 0.7,
+          "pass": false
+        },
+        {
+          "ko": " ({months} 한정)",
+          "natural": 1.16,
+          "meaning": 0.68,
+          "style": 0.64,
+          "pass": false
+        },
+        {
+          "ko": " ({months} 중)",
+          "natural": 1,
+          "meaning": 0.67,
+          "style": 0.61,
+          "pass": false
+        },
+        {
+          "ko": " ({months}에 해당)",
+          "natural": 0.98,
+          "meaning": 0.74,
+          "style": 0.59,
+          "pass": false
+        }
+      ],
+      "result": "unresolved"
+    },
+    {
+      "key": "cron.time.at",
+      "en": "at {times}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{times}에",
+          "natural": 1.47,
+          "meaning": 0.94,
+          "style": 0.51,
+          "pass": false
+        },
+        {
+          "ko": "{times}에 실행",
+          "natural": 1.5,
+          "meaning": 0.91,
+          "style": 0.49,
+          "pass": false
+        },
+        {
+          "ko": "{times}에 실행합니다",
+          "natural": 1.5,
+          "meaning": 0.89,
+          "style": 0.95,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "cron.time.everyHour",
+      "en": "Every hour",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "매시간",
+          "natural": 1.95,
+          "meaning": 0.98,
+          "style": 0.7,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "cron.time.everyMinute",
+      "en": "Every minute",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "매분",
+          "natural": 1.93,
+          "meaning": 0.97,
+          "style": 0.74,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "cron.time.everyMinutes",
+      "en": "Every {step} minutes",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{step}분마다",
+          "natural": 1.83,
+          "meaning": 0.95,
+          "style": 0.57,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "cron.time.everyNHours",
+      "en": "Every {count} hours",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{count}시간마다",
+          "natural": 1.74,
+          "meaning": 0.96,
+          "style": 0.59,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "cron.time.hourlyAt",
+      "en": "Every hour at minute {minutes}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "매시간 {minutes}분에",
+          "natural": 1.73,
+          "meaning": 0.96,
+          "style": 0.54,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "cron.time.hoursAt",
+      "en": "at minute {minutes} of hours {hours}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{hours}시의 {minutes}분에",
+          "natural": 1.2,
+          "meaning": 0.89,
+          "style": 0.54,
+          "pass": false
+        },
+        {
+          "ko": "{hours}시 {minutes}분에 실행",
+          "natural": 1.53,
+          "meaning": 0.84,
+          "style": 0.47,
+          "pass": false
+        },
+        {
+          "ko": "{hours}시 {minutes}분에 실행합니다",
+          "natural": 1.65,
+          "meaning": 0.87,
+          "style": 0.92,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "cron.time.hoursEveryMinute",
+      "en": "every minute during hours {hours}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{hours}시에 매분",
+          "natural": 1.45,
+          "meaning": 0.92,
+          "style": 0.57,
+          "pass": false
+        },
+        {
+          "ko": "{hours}시 시간대에 1분마다",
+          "natural": 1.2,
+          "meaning": 0.89,
+          "style": 0.4,
+          "pass": false
+        },
+        {
+          "ko": "{hours}시에는 매분 실행합니다",
+          "natural": 1.46,
+          "meaning": 0.93,
+          "style": 0.78,
+          "pass": false
+        },
+        {
+          "ko": "{hours}시 동안 1분 간격으로 실행합니다",
+          "natural": 1.2,
+          "meaning": 0.91,
+          "style": 0.93,
+          "pass": false
+        }
+      ],
+      "result": "unresolved"
+    },
+    {
+      "key": "cron.time.hoursEveryMinutes",
+      "en": "every {step} minutes during hours {hours}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{hours}시에 {step}분마다",
+          "natural": 1.5,
+          "meaning": 0.96,
+          "style": 0.57,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "cron.time.joinedEveryHour",
+      "en": "every hour",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "매시간",
+          "natural": 1.96,
+          "meaning": 0.97,
+          "style": 0.66,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "cron.time.joinedEveryMinute",
+      "en": "every minute",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "매분",
+          "natural": 1.91,
+          "meaning": 0.98,
+          "style": 0.69,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "cron.time.joinedEveryMinutes",
+      "en": "every {step} minutes",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{step}분마다",
+          "natural": 1.92,
+          "meaning": 0.97,
+          "style": 0.61,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "cron.time.joinedEveryNHours",
+      "en": "every {count} hours",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{count}시간마다",
+          "natural": 1.8,
+          "meaning": 0.96,
+          "style": 0.59,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "cron.time.joinedHourlyAt",
+      "en": "every hour at minute {minutes}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "매시간 {minutes}분에",
+          "natural": 1.77,
+          "meaning": 0.97,
+          "style": 0.58,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "delete.action",
+      "en": "Delete",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "삭제",
+          "natural": 1.95,
+          "meaning": 0.98,
+          "style": 0.78,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "delete.label",
+      "en": "Delete reminder: {title}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "알림 삭제: {title}",
+          "natural": 1.68,
+          "meaning": 0.97,
+          "style": 0.67,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "delete.pending",
+      "en": "Deleting…",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "삭제 중…",
+          "natural": 1.94,
+          "meaning": 0.97,
+          "style": 0.55,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "frequency.daily",
+      "en": "Daily at {time} ({timeZone})",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "매일 {time} ({timeZone})",
+          "natural": 1.76,
+          "meaning": 0.96,
+          "style": 0.57,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "frequency.dailyLocal",
+      "en": "Daily at {time}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "매일 {time}",
+          "natural": 1.83,
+          "meaning": 0.98,
+          "style": 0.66,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "frequency.every",
+      "en": "Every {value} {unit}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{value}{unit}마다",
+          "natural": 1.52,
+          "meaning": 0.96,
+          "style": 0.64,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "frequency.once",
+      "en": "Once",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "한 번",
+          "natural": 1.8,
+          "meaning": 0.98,
+          "style": 0.75,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "frequency.weekday.1",
+      "en": "Mon",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "월",
+          "natural": 1.65,
+          "meaning": 0.74,
+          "style": 0.72,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "frequency.weekday.2",
+      "en": "Tue",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "화",
+          "natural": 1.87,
+          "meaning": 0.91,
+          "style": 0.7,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "frequency.weekday.3",
+      "en": "Wed",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "수",
+          "natural": 1.87,
+          "meaning": 0.9,
+          "style": 0.69,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "frequency.weekday.4",
+      "en": "Thu",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "목",
+          "natural": 1.88,
+          "meaning": 0.92,
+          "style": 0.67,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "frequency.weekday.5",
+      "en": "Fri",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "금",
+          "natural": 1.85,
+          "meaning": 0.91,
+          "style": 0.65,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "frequency.weekday.6",
+      "en": "Sat",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "토",
+          "natural": 1.88,
+          "meaning": 0.96,
+          "style": 0.71,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "frequency.weekday.7",
+      "en": "Sun",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "일",
+          "natural": 1.87,
+          "meaning": 0.95,
+          "style": 0.72,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "frequency.weekly",
+      "en": "Weekly on {weekdays} at {time} ({timeZone})",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "매주 {weekdays} {time} ({timeZone})",
+          "natural": 1.64,
+          "meaning": 0.95,
+          "style": 0.53,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "frequency.weeklyLocal",
+      "en": "Weekly on {weekdays} at {time}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "매주 {weekdays} {time}",
+          "natural": 1.85,
+          "meaning": 0.96,
+          "style": 0.64,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "hover.more",
+      "en": "{count} more",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{count}개 더 보기",
+          "natural": 1.76,
+          "meaning": 0.93,
+          "style": 0.67,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "list.aria",
+      "en": "Active reminders",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "활성 알림",
+          "natural": 1.81,
+          "meaning": 0.97,
+          "style": 0.68,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "list.error",
+      "en": "Could not load reminders.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "알림을 불러오지 못했습니다.",
+          "natural": 1.64,
+          "meaning": 0.96,
+          "style": 0.83,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "list.loading",
+      "en": "Loading reminders…",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "알림 불러오는 중…",
+          "natural": 1.76,
+          "meaning": 0.97,
+          "style": 0.38,
+          "pass": false
+        },
+        {
+          "ko": "알림을 불러오고 있습니다…",
+          "natural": 1.77,
+          "meaning": 0.97,
+          "style": 0.64,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "list.nextRun",
+      "en": "Next run",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "다음 실행",
+          "natural": 1.73,
+          "meaning": 0.96,
+          "style": 0.71,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "list.open",
+      "en": "Open reminder details: {title}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "알림 상세 정보 열기: {title}",
+          "natural": 1.53,
+          "meaning": 0.97,
+          "style": 0.6,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "list.retry",
+      "en": "Retry",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "다시 시도",
+          "natural": 1.93,
+          "meaning": 0.97,
+          "style": 0.63,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "mark.aria",
+      "en": "{count} scheduled tasks",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "예약된 작업 {count}개",
+          "natural": 1.71,
+          "meaning": 0.94,
+          "style": 0.61,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "relative.future",
+      "en": "in {value} {unit}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{value}{unit} 후",
+          "natural": 1.5,
+          "meaning": 0.94,
+          "style": 0.6,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "relative.now",
+      "en": "Due now",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "지금 실행 예정",
+          "natural": 1.68,
+          "meaning": 0.94,
+          "style": 0.72,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "relative.overdue",
+      "en": "{value} {unit} overdue",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{value}{unit} 지남",
+          "natural": 1.47,
+          "meaning": 0.93,
+          "style": 0.59,
+          "pass": false
+        },
+        {
+          "ko": "예정 시각에서 {value}{unit} 경과",
+          "natural": 1.36,
+          "meaning": 0.89,
+          "style": 0.56,
+          "pass": false
+        },
+        {
+          "ko": "{value}{unit} 늦음",
+          "natural": 1.45,
+          "meaning": 0.9,
+          "style": 0.55,
+          "pass": false
+        },
+        {
+          "ko": "예정 시간보다 {value}{unit} 지연",
+          "natural": 1.4,
+          "meaning": 0.86,
+          "style": 0.58,
+          "pass": false
+        }
+      ],
+      "result": "unresolved"
+    },
+    {
+      "key": "trigger.label",
+      "en": "Reminders",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "알림",
+          "natural": 1.86,
+          "meaning": 0.92,
+          "style": 0.67,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "trigger.one",
+      "en": "{count} reminder",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "알림 {count}개",
+          "natural": 1.57,
+          "meaning": 0.39,
+          "style": 0.62,
+          "pass": false
+        },
+        {
+          "ko": "{count}개의 알림",
+          "natural": 1.71,
+          "meaning": 0.59,
+          "style": 0.63,
+          "pass": false
+        },
+        {
+          "ko": "알림 {count}건",
+          "natural": 1.74,
+          "meaning": 0.76,
+          "style": 0.64,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "trigger.other",
+      "en": "{count} reminders",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "알림 {count}개",
+          "natural": 1.71,
+          "meaning": 0.84,
+          "style": 0.57,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "unit.day.one",
+      "en": "day",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "일",
+          "natural": 1.73,
+          "meaning": 0.85,
+          "style": 0.63,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "unit.day.other",
+      "en": "days",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "일",
+          "natural": 1.34,
+          "meaning": 0.51,
+          "style": 0.57,
+          "pass": false
+        },
+        {
+          "ko": "일간",
+          "natural": 1.1,
+          "meaning": 0.67,
+          "style": 0.63,
+          "pass": false
+        },
+        {
+          "ko": "일",
+          "natural": 1.39,
+          "meaning": 0.67,
+          "style": 0.66,
+          "pass": false
+        },
+        {
+          "ko": "일 동안",
+          "natural": 1.19,
+          "meaning": 0.78,
+          "style": 0.64,
+          "pass": false
+        }
+      ],
+      "result": "unresolved"
+    },
+    {
+      "key": "unit.hour.one",
+      "en": "hour",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "시간",
+          "natural": 1.84,
+          "meaning": 0.72,
+          "style": 0.62,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "unit.hour.other",
+      "en": "hours",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "시간",
+          "natural": 1.69,
+          "meaning": 0.62,
+          "style": 0.59,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "unit.minute.one",
+      "en": "minute",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "분",
+          "natural": 1.93,
+          "meaning": 0.66,
+          "style": 0.65,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "unit.minute.other",
+      "en": "minutes",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "분",
+          "natural": 1.86,
+          "meaning": 0.71,
+          "style": 0.62,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "unit.second.one",
+      "en": "second",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "초",
+          "natural": 1.9,
+          "meaning": 0.77,
+          "style": 0.67,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "unit.second.other",
+      "en": "seconds",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "초",
+          "natural": 1.85,
+          "meaning": 0.8,
+          "style": 0.62,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    }
+  ]
+}

@@ -290,3 +290,11 @@
 | job | 용어 | Exit code | 종료 코드 | — | 번역자 제안 |
 | job | 용어 | Signal | 시그널 | — | 번역자 제안 |
 | job | 용어 | Command line | 명령줄 | — | 번역자 제안 |
+| schedule.catalog | cron.day.both | Day {days} of every month or {weekdays}{months} | 매월 {days}일 또는 {weekdays}{months} | 1.06/0.93/0.56 | 4회 미통과 |
+| schedule.catalog | cron.day.bothStarred | Day {days} of every month and {weekdays}{months} | 매월 {days}일이면서 {weekdays}인 날{months} | 1.09/0.94/0.53 | 4회 미통과 |
+| schedule.catalog | cron.day.every | Every day{months} | 매일{months} | 1.45/0.94/0.67 | 4회 미통과 |
+| schedule.catalog | cron.months |  in {months} |  ({months}에만) | 1.37/0.75/0.7 | 4회 미통과 |
+| schedule.catalog | cron.time.hoursEveryMinute | every minute during hours {hours} | {hours}시에는 매분 실행합니다 | 1.46/0.93/0.78 | 4회 미통과 |
+| schedule.catalog | relative.overdue | {value} {unit} overdue | {value}{unit} 지남 | 1.47/0.93/0.59 | 4회 미통과 |
+| schedule.catalog | unit.day.other | days | 일 | 1.39/0.67/0.66 | 4회 미통과 |
+| schedule.catalog | 용어 | Reminder | 알림 | — | 번역자 제안 |
