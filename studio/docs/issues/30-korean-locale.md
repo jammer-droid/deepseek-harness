@@ -17,7 +17,7 @@ DSH 화면 문구 전체를 한국어로 제공한다. Studio는 이미 `ctx.loc
 ## 조사 결과
 
 - **원문:** 저장소 태그 `dsh-v0.2.0-rc.2`에 rc.2 사전 원본(`packages/client/*/src/**/locales.ts` 등)이 있다. 설치 앱(`app.asar`)의 `dsh-client-locale`이 `0.2.0-rc.2`임을 확인했다. alpha.2는 현재 workspace(`0.2.1-alpha.2`) 소스를 쓴다. 두 버전 사이에 사전 파일 14개가 바뀌었다.
-- **분량:** 클라이언트 사전 파일 약 60개, 문구 약 2,000개(줄 기준 추정, S1에서 확정). 큰 묶음: `ui-conversation` 약 370, `ui-trajectory`·`ui-plugin-manager`·`ui-chat` 각 약 190, `ui-schedule` 약 190(두 파일), `ui-settings-models`·`ui-workspace` 각 약 110.
+- **분량(S1 확정):** rc.2 58개 네임스페이스 2,615키, alpha.2 62개 2,773키, 합집합 2,779키. 큰 묶음: `conversation` 371, `pluginManager` 209, `trajectory` 192, `chat` 190, `schedule.manager` 188. 상세는 [S1 결과](../research/ko-locale/README.md).
 - **등록 동작(rc.2 `LocaleRuntime.register`):** 네임스페이스·언어별로 따로 저장하므로 DSH 사전보다 먼저 등록해도 된다. 같은 네임스페이스에 `ko`가 이미 있으면 예외가 난다. 조회 순서는 활성 언어의 fallback 체인(ko → en), 그다음 `common` 네임스페이스. `{name}` 자리 표시자는 `translate`가 치환한다.
 - **번역 불가:** 데스크톱 네이티브 메뉴와 대화상자(`apps/desktop/src/locale.ts`, 앱 소유), Host 쪽 문구(도구 설명·오류 메시지), 사전을 거치지 않고 코드에 쓴 문구.
 
@@ -49,11 +49,11 @@ DSH 화면 문구 전체를 한국어로 제공한다. Studio는 이미 `ctx.loc
 
 | ID | 결과 | 선행 | 수용 조건·검증 |
 | --- | --- | --- | --- |
-| S1 | 원문 추출 스크립트, 네임스페이스 목록과 키 수(rc.2·alpha.2) | — | 추출 결과의 네임스페이스·키 수 기록, 버전 간 차이 목록, 번역 불가 목록 |
+| S1 | 원문 추출 스크립트, 네임스페이스 목록과 키 수(rc.2·alpha.2) | — | 완료: [S1 결과](../research/ko-locale/README.md). 해석 실패 0, 추출 단위 테스트 2/2 |
 | S2 | 용어집과 검수 기준 확정 | S1 | 샘플 20문구 `judge` 판정 기록 |
 | S3 | Studio 사전 등록 코드와 빠진 키 검사 | S1 | 단위 테스트: 등록·해제, `ko` 중복 시 다른 네임스페이스 영향 없음, 빠진 키 보고 |
 | S4 | 번역 스킬 작성·설치 | S2, S3 | 다른 세션에서 작은 네임스페이스 하나 번역 완료 |
 | S5 | 네임스페이스별 번역(반복, 별도 세션) | S4 | 네임스페이스마다 판정 기록, 빠진 키 검사 통과 |
 | S6 | 독립 설치 검증 | S5 | 수정하지 않은 rc.2 + 패키징 Studio, 한국어 선택 시 화면 확인 |
 
-현재 단계: S1. 중요한 결정이 모두 확정되어 `ready`.
+현재 단계: S2(용어집 초안 검토 대기). 작업 브랜치 `studio/feat/ko-locale`(별도 worktree `deepseek-harness-ko-locale`).
