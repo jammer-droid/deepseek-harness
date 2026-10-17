@@ -46,9 +46,9 @@ node studio/scripts/extract-dsh-locale.mjs dsh-v0.2.1-alpha.2 --out studio/docs/
 | 사전을 거치지 않는 클라이언트 문구 | 컴포넌트에 직접 쓴 문자열, 사용자 데이터(프리셋 이름·설명, 플러그인 README) | 미집계, 번역 중 발견하면 이 표에 추가 |
 | 날짜·숫자 형식 | `schedule.catalog`·`schedule.manager`의 `time.locale` 키(`zh-CN`/`en`)는 번역문이 아니라 `Intl` 로케일 값이다. 한국어 사전에서는 `ko-KR`로 둔다 | 키 2개 |
 
-## 용어집 초안 (검토 대기)
+## 용어집
 
-빈도는 alpha.2 영어 원문에서 단어가 들어간 문구 수다. Studio 열은 Studio가 이미 쓰는 한국어다.
+빈도는 alpha.2 영어 원문에서 단어가 들어간 문구 수다. Studio 열은 Studio가 이미 쓰는 한국어다. Provider·Workspace·Trajectory는 사용자가 정했고, 나머지는 초안대로 쓴다.
 
 | 영어 | 빈도 | 초안 | Studio 사용 | 메모 |
 | --- | --- | --- | --- | --- |
@@ -56,11 +56,11 @@ node studio/scripts/extract-dsh-locale.mjs dsh-v0.2.1-alpha.2 --out studio/docs/
 | Session | 101 | 세션 | 세션 | |
 | Model | 89 | 모델 | 모델 | |
 | Tool | 57 | 도구 | 도구 | |
-| Provider | 42 | 프로바이더 | 제공자(4) | 설정 화면에서 자주 보이는 용어라 음차 제안. 확인 필요 |
+| Provider | 42 | 프로바이더 | 제공자(4) | 사용자 결정. Studio의 "제공자"도 맞춰 바꾼다(별도 작은 변경) |
 | Agent | 38 | 에이전트 | 에이전트 | |
 | Subagent | 38 | 서브에이전트 | 서브에이전트 | |
 | Command | 38 | 명령 | — | 슬래시 명령. 터미널 명령도 "명령" |
-| Workspace | 34 | 워크스페이스 | 작업 공간(1) | 사이드바 그룹 이름. 확인 필요 |
+| Workspace | 34 | 워크스페이스 | 작업 공간(1) | 사용자 결정. Studio의 "작업 공간"도 맞춰 바꾼다 |
 | Terminal | 33 | 터미널 | — | |
 | Turn | 28 | 턴 | 턴 | "{turn}번째 턴" |
 | Plan | 26 | 계획 | — | Plan 모드는 "계획 모드" |
@@ -78,7 +78,8 @@ node studio/scripts/extract-dsh-locale.mjs dsh-v0.2.1-alpha.2 --out studio/docs/
 | Skill | 8 | 스킬 | 스킬 | |
 | Attachment | 7 | 첨부 파일 | — | |
 | Sandbox | 6 | 샌드박스 | — | |
-| Trajectory | 6 | 실행 기록 | — | 탭 이름. "Trajectory" 그대로 둘지 확인 필요 |
+| Trajectory | 6 | Trajectory | — | 사용자 결정. 탭 이름 Trajectory·Chat은 영어 그대로 두고, 본문의 trajectory는 "Trajectory"로 쓴다 |
+| Chat(탭) | — | Chat | — | 탭 이름만. 본문의 chat/conversation은 "대화" |
 | Archive | 5 | 보관 | — | |
 | Profile | 5 | 프로필 | — | |
 | Workflow | 4 | 워크플로 | — | |

@@ -56,4 +56,4 @@ DSH 화면 문구 전체를 한국어로 제공한다. Studio는 이미 `ctx.loc
 | S5 | 네임스페이스별 번역(반복, 별도 세션) | S4 | 네임스페이스마다 판정 기록, 빠진 키 검사 통과 |
 | S6 | 독립 설치 검증 | S5 | 수정하지 않은 rc.2 + 패키징 Studio, 한국어 선택 시 화면 확인 |
 
-현재 단계: S2(용어집 초안 검토 대기). 작업 브랜치 `studio/feat/ko-locale`(별도 worktree `deepseek-harness-ko-locale`).
+현재 단계: S2. 용어집 확정, 샘플 20문구 `judge` 판정은 `judge` 도구가 있는 세션(Studio Master 등)에서 진행한다. S3은 S1만 필요하므로 먼저 진행할 수 있다. 작업 브랜치 `studio/feat/ko-locale`(별도 worktree `deepseek-harness-ko-locale`).
