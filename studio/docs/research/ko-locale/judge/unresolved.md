@@ -210,3 +210,15 @@
 | workspace | 용어 | Directory picker | 디렉터리 선택기 | — | 번역자 제안 |
 | workspace | 용어 | Migration | 마이그레이션 | — | 번역자 제안 |
 | workspace | 용어 | Branch | 분기 | — | 번역자 제안 |
+| settings.models | addCustomUnavailable | No API protocol is available to declare. | 설정 가능한 API 프로토콜이 없습니다. | 1.23/0.89/0.68 | 4회 미통과 |
+| settings.models | modelsEmpty | No models will be shown in the selector. Unlisted IDs can still be sent directly. | 선택기에 모델이 표시되지 않습니다. 목록에 없는 ID도 직접 전송할 수 있습니다. | 1.54/0.95/0.46 | 4회 미통과 |
+| settings.models | settingsPathUnresolvable | unresolvable settings path | 설정 파일 경로 확인 실패 | 1.47/0.75/0.77 | 4회 미통과 |
+| settings.models | 용어 | Catalog | 카탈로그 | — | 번역자 제안 |
+| settings.models | 용어 | Custom | 사용자 지정 | — | 번역자 제안 |
+| settings.models | 용어 | Base URL | 기본 URL | — | 번역자 제안 |
+| settings.models | 용어 | Context window | 컨텍스트 창 | — | 번역자 제안 |
+| settings.models | 용어 | Relay | 중계 서버 | — | 번역자 제안 |
+| settings.models | 용어 | Self-hosted server | 자체 호스팅 서버 | — | 번역자 제안 |
+| settings.models | 용어 | Endpoint | 엔드포인트 | — | 번역자 제안 |
+| settings.models | 용어 | Adapter | 어댑터 | — | 번역자 제안 |
+| settings.models | 용어 | Preview | 프리뷰 | — | 번역자 제안 |

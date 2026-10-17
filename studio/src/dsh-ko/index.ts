@@ -27,6 +27,7 @@ import sessionLogDownload from './session-log-download.ts';
 import settings from './settings.ts';
 import settingsAgentLoop from './settings.agentLoop.ts';
 import settingsLocale from './settings.locale.ts';
+import settingsModels from './settings.models.ts';
 import settingsPermission from './settings.permission.ts';
 import settingsPlugins from './settings.plugins.ts';
 import settingsSessionLog from './settings.sessionLog.ts';
@@ -78,6 +79,7 @@ export const dshKo: DshKoDictionaries = {
   settings: settings,
   'settings.agentLoop': settingsAgentLoop,
   'settings.locale': settingsLocale,
+  'settings.models': settingsModels,
   'settings.permission': settingsPermission,
   'settings.plugins': settingsPlugins,
   'settings.sessionLog': settingsSessionLog,
