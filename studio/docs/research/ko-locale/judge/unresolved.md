@@ -298,3 +298,20 @@
 | schedule.catalog | relative.overdue | {value} {unit} overdue | {value}{unit} 지남 | 1.47/0.93/0.59 | 4회 미통과 |
 | schedule.catalog | unit.day.other | days | 일 | 1.39/0.67/0.66 | 4회 미통과 |
 | schedule.catalog | 용어 | Reminder | 알림 | — | 번역자 제안 |
+| deliverables | diff.missing | The contents of this turn’s changes are no longer available | 이번 턴의 변경 사항은 더 이상 내용을 볼 수 없습니다. | 1.45/0.96/0.59 | 4회 미통과 |
+| deliverables | presented.directoryOpened | Requested opening containing folder | 해당 파일의 폴더를 여는 요청을 보냈습니다. | 1.15/0.86/0.9 | 4회 미통과 |
+| deliverables | presented.directoryOpening | Opening containing folder… | 파일이 들어 있는 폴더를 열고 있습니다… | 1.75/0.98/0.43 | 4회 미통과 |
+| deliverables | presented.expandAria | Show all {count} delivered files | 전달받은 파일 {count}개 모두 보기 | 1.43/0.97/0.7 | 4회 미통과 |
+| deliverables | presented.hostError | Could not read the Host desktop information | Host 데스크톱 정보 읽기에 실패했습니다. | 1.37/0.97/0.78 | 4회 미통과 |
+| deliverables | presented.opened | Open requested | 열기 요청 완료 | 1.25/0.94/0.66 | 4회 미통과 |
+| deliverables | presented.revealError | Could not show in file manager. Try again. | 파일 관리자에서 표시하는 데 실패했습니다. 다시 시도하십시오. | 1.42/0.95/0.82 | 4회 미통과 |
+| deliverables | presented.revealed | Requested display in file manager | 파일 관리자에 표시하는 요청을 보냈습니다. | 1.36/0.98/0.65 | 4회 미통과 |
+| deliverables | row.title | Present files | 파일 전달 | 1.2/0.85/0.69 | 4회 미통과 |
+| deliverables | 용어 | Deliverables | 결과물 | — | 번역자 제안 |
+| deliverables | 용어 | Delivered | 전달 완료 | — | 번역자 제안 |
+| deliverables | 용어 | Present files | 파일 제공 | — | 번역자 제안 |
+| deliverables | 용어 | Binary | 바이너리 | — | 번역자 제안 |
+| deliverables | 용어 | Sidebar | 사이드바 | — | 번역자 제안 |
+| deliverables | 용어 | Split view | 분할 보기 | — | 번역자 제안 |
+| deliverables | 용어 | Unified view | 통합 보기 | — | 번역자 제안 |
+| deliverables | 용어 | Line wrap | 자동 줄바꿈 | — | 번역자 제안 |

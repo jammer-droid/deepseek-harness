@@ -11,6 +11,7 @@ import command from './command.ts';
 import common from './common.ts';
 import conversation from './conversation.ts';
 import cotTranslation from './cotTranslation.ts';
+import deliverables from './deliverables.ts';
 import directoryBrowser from './directory-browser.ts';
 import documentHtml from './documentHtml.ts';
 import documentMarkdown from './documentMarkdown.ts';
@@ -72,6 +73,7 @@ export const dshKo: DshKoDictionaries = {
   common: common,
   conversation: conversation,
   cotTranslation: cotTranslation,
+  deliverables: deliverables,
   'directory-browser': directoryBrowser,
   documentHtml: documentHtml,
   documentMarkdown: documentMarkdown,
