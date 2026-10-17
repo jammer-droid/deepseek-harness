@@ -1,0 +1,743 @@
+{
+  "engine": "jev",
+  "date": "2026-10-17",
+  "thresholds": {
+    "natural": 1.5,
+    "meaning": 0.6,
+    "style": 0.5
+  },
+  "repeat": {
+    "note": "같은 입력 재판정(자연스러움만)",
+    "s02": [
+      1.14,
+      1.3
+    ],
+    "s09": [
+      1.49,
+      1.51
+    ],
+    "s10": [
+      0.73,
+      0.78
+    ],
+    "s12": [
+      1.56,
+      1.62
+    ],
+    "s20": [
+      1.18,
+      1.47
+    ]
+  },
+  "rows": [
+    {
+      "id": "s01",
+      "namespace": "conversation",
+      "key": "queue.save",
+      "en": "Save queued message",
+      "original": {
+        "ko": "대기 메시지 저장",
+        "natural": 1.68,
+        "meaning": 0.94,
+        "style": 0.75,
+        "pass": true
+      },
+      "rewrites": [],
+      "result": "pass",
+      "final": "대기 메시지 저장"
+    },
+    {
+      "id": "s02",
+      "namespace": "conversation",
+      "key": "detail.trace.ancestors",
+      "en": "Ancestor sessions",
+      "original": {
+        "ko": "상위 세션",
+        "natural": 1.14,
+        "meaning": 0.86,
+        "style": 0.74,
+        "pass": false
+      },
+      "rewrites": [
+        {
+          "ko": "조상 세션",
+          "natural": 1.4,
+          "meaning": 0.96,
+          "style": 0.73,
+          "pass": false
+        },
+        {
+          "ko": "상위 세션 목록",
+          "natural": 1.29,
+          "meaning": 0.93,
+          "style": 0.69,
+          "pass": false
+        },
+        {
+          "ko": "상위 세션 계보",
+          "natural": 1.29,
+          "meaning": 0.93,
+          "style": 0.64,
+          "pass": false
+        },
+        {
+          "ko": "선행 세션",
+          "natural": 1.39,
+          "meaning": 0.93,
+          "style": 0.7,
+          "pass": false
+        },
+        {
+          "ko": "상위 세션들",
+          "natural": 1.28,
+          "meaning": 0.65,
+          "style": 0.79,
+          "pass": false
+        },
+        {
+          "ko": "상위 세션 (+context)",
+          "natural": 1.5,
+          "meaning": 0.83,
+          "style": 0.69,
+          "pass": true
+        }
+      ],
+      "result": "unresolved",
+      "final": null
+    },
+    {
+      "id": "s03",
+      "namespace": "conversation",
+      "key": "placeholder.steerQueue",
+      "en": "Cmd/Ctrl+Enter steers all queued messages",
+      "original": {
+        "ko": "Cmd/Ctrl+Enter를 누르면 대기 중인 메시지를 모두 지금 보냅니다",
+        "natural": 1.16,
+        "meaning": 0.62,
+        "style": 0.6,
+        "pass": false
+      },
+      "rewrites": [
+        {
+          "ko": "Cmd/Ctrl+Enter를 누르면 대기 중인 메시지를 모두 현재 턴에 바로 보냅니다",
+          "natural": 1.36,
+          "meaning": 0.55,
+          "style": 0.76,
+          "pass": false
+        },
+        {
+          "ko": "Cmd/Ctrl+Enter: 대기 중인 메시지를 모두 즉시 전달",
+          "natural": 1.46,
+          "meaning": 0.92,
+          "style": 0.55,
+          "pass": false
+        },
+        {
+          "ko": "Cmd/Ctrl+Enter로 대기 중인 메시지를 모두 지금 보냅니다",
+          "natural": 1.15,
+          "meaning": 0.64,
+          "style": 0.59,
+          "pass": false
+        },
+        {
+          "ko": "Cmd/Ctrl+Enter: 대기 메시지 모두 바로 보내기",
+          "natural": 1.35,
+          "meaning": 0.85,
+          "style": 0.63,
+          "pass": false
+        },
+        {
+          "ko": "Cmd/Ctrl+Enter로 대기 중인 메시지를 모두 보냅니다",
+          "natural": 1.39,
+          "meaning": 0.36,
+          "style": 0.78,
+          "pass": false
+        },
+        {
+          "ko": "Cmd/Ctrl+Enter: 대기 중인 메시지를 모두 진행 중인 턴에 끼워 넣기",
+          "natural": 0.97,
+          "meaning": 0.72,
+          "style": 0.43,
+          "pass": false
+        },
+        {
+          "ko": "Cmd/Ctrl+Enter를 누르면 대기 중인 메시지를 모두 진행 중인 작업에 바로 전달합니다",
+          "natural": 1.16,
+          "meaning": 0.87,
+          "style": 0.67,
+          "pass": false
+        }
+      ],
+      "result": "unresolved",
+      "final": null
+    },
+    {
+      "id": "s04",
+      "namespace": "chat",
+      "key": "stats.dialog.title",
+      "en": "Session statistics",
+      "original": {
+        "ko": "세션 통계",
+        "natural": 1.81,
+        "meaning": 0.97,
+        "style": 0.67,
+        "pass": true
+      },
+      "rewrites": [],
+      "result": "pass",
+      "final": "세션 통계"
+    },
+    {
+      "id": "s05",
+      "namespace": "chat",
+      "key": "message.toolsRemovedCount",
+      "en": "{count} removed",
+      "original": {
+        "ko": "{count}개 제거됨",
+        "natural": 1.62,
+        "meaning": 0.91,
+        "style": 0.57,
+        "pass": true
+      },
+      "rewrites": [],
+      "result": "pass",
+      "final": "{count}개 제거됨"
+    },
+    {
+      "id": "s06",
+      "namespace": "chat",
+      "key": "message.stepProcess.prepare.webSearch",
+      "en": "Preparing to search the web",
+      "original": {
+        "ko": "웹 검색 준비 중",
+        "natural": 1.66,
+        "meaning": 0.95,
+        "style": 0.61,
+        "pass": true
+      },
+      "rewrites": [],
+      "result": "pass",
+      "final": "웹 검색 준비 중"
+    },
+    {
+      "id": "s07",
+      "namespace": "common",
+      "key": "markdown.truncatedCharacters",
+      "en": "… truncated at {total} characters",
+      "original": {
+        "ko": "… {total}자에서 잘림",
+        "natural": 1.3,
+        "meaning": 0.9,
+        "style": 0.5,
+        "pass": false
+      },
+      "rewrites": [
+        {
+          "ko": "… {total}자에서 잘렸습니다",
+          "natural": 1.43,
+          "meaning": 0.91,
+          "style": 0.49,
+          "pass": false
+        },
+        {
+          "ko": "… {total}자 이후 생략됨",
+          "natural": 1.6,
+          "meaning": 0.92,
+          "style": 0.48,
+          "pass": false
+        },
+        {
+          "ko": "… {total}자까지만 표시",
+          "natural": 1.29,
+          "meaning": 0.89,
+          "style": 0.67,
+          "pass": false
+        },
+        {
+          "ko": "… {total}자 초과분 생략",
+          "natural": 1.29,
+          "meaning": 0.87,
+          "style": 0.65,
+          "pass": false
+        },
+        {
+          "ko": "… {total}자에서 잘림 (+context)",
+          "natural": 1.37,
+          "meaning": 0.93,
+          "style": 0.5,
+          "pass": false
+        },
+        {
+          "ko": "… {total}자 이후는 생략했습니다",
+          "natural": 1.57,
+          "meaning": 0.87,
+          "style": 0.8,
+          "pass": true
+        }
+      ],
+      "result": "fixed",
+      "final": "… {total}자 이후는 생략했습니다"
+    },
+    {
+      "id": "s08",
+      "namespace": "workspace",
+      "key": "toast.stoppedAndArchived",
+      "en": "Session stopped and archived. You can ",
+      "original": {
+        "ko": "세션을 중지하고 보관했습니다. ",
+        "natural": 1.13,
+        "meaning": 0.23,
+        "style": 0.77,
+        "pass": false
+      },
+      "rewrites": [
+        {
+          "ko": "세션을 중지하고 보관했습니다. 보관된 세션 필터링 또는 실행 취소 (조립문)",
+          "natural": 1.07,
+          "meaning": 0.83,
+          "style": 0.72,
+          "pass": false
+        },
+        {
+          "ko": "세션을 중지하고 보관했습니다. 할 수 있는 작업: 보관된 세션 필터링 또는 실행 취소 (조립문)",
+          "natural": 1.12,
+          "meaning": 0.93,
+          "style": 0.79,
+          "pass": false
+        },
+        {
+          "ko": "세션을 중지하고 보관했습니다. [실행 취소] 또는 [보관된 세션 보기] (조립문)",
+          "natural": 1.38,
+          "meaning": 0.72,
+          "style": 0.57,
+          "pass": false
+        },
+        {
+          "ko": "세션을 중지하고 보관했습니다. (+context)",
+          "natural": 1.19,
+          "meaning": 0.39,
+          "style": 0.8,
+          "pass": false
+        }
+      ],
+      "result": "unresolved",
+      "final": null
+    },
+    {
+      "id": "s09",
+      "namespace": "workspace",
+      "key": "archive.confirm.jobs.one",
+      "en": "{n} background job: {names}",
+      "original": {
+        "ko": "백그라운드 작업 {n}개: {names}",
+        "natural": 1.49,
+        "meaning": 0.86,
+        "style": 0.55,
+        "pass": false
+      },
+      "rewrites": [
+        {
+          "ko": "백그라운드 작업 {n}개({names})",
+          "natural": 1.31,
+          "meaning": 0.81,
+          "style": 0.65,
+          "pass": false
+        },
+        {
+          "ko": "백그라운드 작업 {n}개 — {names}",
+          "natural": 1.57,
+          "meaning": 0.91,
+          "style": 0.67,
+          "pass": true
+        }
+      ],
+      "result": "fixed",
+      "final": "백그라운드 작업 {n}개 — {names}"
+    },
+    {
+      "id": "s10",
+      "namespace": "trajectory",
+      "key": "usage.sessionCumulative",
+      "en": "Session cumulative",
+      "original": {
+        "ko": "세션 누적",
+        "natural": 0.73,
+        "meaning": 0.64,
+        "style": 0.74,
+        "pass": false
+      },
+      "rewrites": [
+        {
+          "ko": "세션 누적 사용량",
+          "natural": 1.08,
+          "meaning": 0.62,
+          "style": 0.67,
+          "pass": false
+        },
+        {
+          "ko": "세션 전체 누적",
+          "natural": 0.9,
+          "meaning": 0.78,
+          "style": 0.66,
+          "pass": false
+        },
+        {
+          "ko": "세션 누적 합계",
+          "natural": 0.92,
+          "meaning": 0.71,
+          "style": 0.76,
+          "pass": false
+        },
+        {
+          "ko": "세션 전체 사용량",
+          "natural": 1.16,
+          "meaning": 0.81,
+          "style": 0.65,
+          "pass": false
+        },
+        {
+          "ko": "세션 누적 (+context)",
+          "natural": 0.91,
+          "meaning": 0.74,
+          "style": 0.76,
+          "pass": false
+        },
+        {
+          "ko": "세션 합계",
+          "natural": 1.25,
+          "meaning": 0.85,
+          "style": 0.8,
+          "pass": false
+        },
+        {
+          "ko": "세션 총계",
+          "natural": 1.52,
+          "meaning": 0.9,
+          "style": 0.71,
+          "pass": true
+        }
+      ],
+      "result": "fixed",
+      "final": "세션 총계"
+    },
+    {
+      "id": "s11",
+      "namespace": "pluginManager",
+      "key": "installBackgroundUnconfirmed",
+      "en": "Installation status is unconfirmed. View the installation for details.",
+      "original": {
+        "ko": "설치 상태를 확인하지 못했습니다. 자세한 내용은 설치 화면에서 확인하세요.",
+        "natural": 1.23,
+        "meaning": 0.92,
+        "style": 0.75,
+        "pass": false
+      },
+      "rewrites": [
+        {
+          "ko": "설치 상태가 아직 확인되지 않았습니다. 자세한 내용은 설치 내역에서 확인하십시오.",
+          "natural": 1.24,
+          "meaning": 0.92,
+          "style": 0.8,
+          "pass": false
+        },
+        {
+          "ko": "설치 상태를 확인할 수 없습니다. 자세한 내용은 설치 항목을 확인하십시오.",
+          "natural": 1.14,
+          "meaning": 0.89,
+          "style": 0.71,
+          "pass": false
+        },
+        {
+          "ko": "설치 상태를 아직 확인할 수 없습니다. 자세한 내용은 설치 항목에서 확인하세요.",
+          "natural": 1.16,
+          "meaning": 0.92,
+          "style": 0.63,
+          "pass": false
+        },
+        {
+          "ko": "설치 상태가 확인되지 않았습니다. 설치를 열어 자세한 내용을 확인하세요.",
+          "natural": 1.39,
+          "meaning": 0.94,
+          "style": 0.53,
+          "pass": false
+        },
+        {
+          "ko": "설치 상태를 확인하지 못했습니다. 설치 화면에서 자세히 확인하세요.",
+          "natural": 1.28,
+          "meaning": 0.89,
+          "style": 0.84,
+          "pass": false
+        },
+        {
+          "ko": "설치 상태를 확인하지 못했습니다. 자세한 내용은 설치 작업을 열어 확인하십시오.",
+          "natural": 1.15,
+          "meaning": 0.92,
+          "style": 0.77,
+          "pass": false
+        },
+        {
+          "ko": "설치 상태가 아직 확인되지 않았습니다. 설치 작업에서 자세한 내용을 볼 수 있습니다.",
+          "natural": 1.37,
+          "meaning": 0.95,
+          "style": 0.74,
+          "pass": false
+        }
+      ],
+      "result": "unresolved",
+      "final": null
+    },
+    {
+      "id": "s12",
+      "namespace": "pluginManager",
+      "key": "installBackgroundApplying",
+      "en": "Installation is being applied and cannot be cancelled. View installation progress.",
+      "original": {
+        "ko": "설치를 적용하는 중이라 취소할 수 없습니다. 설치 진행 상황을 확인하세요.",
+        "natural": 1.56,
+        "meaning": 0.94,
+        "style": 0.61,
+        "pass": true
+      },
+      "rewrites": [],
+      "result": "pass",
+      "final": "설치를 적용하는 중이라 취소할 수 없습니다. 설치 진행 상황을 확인하세요."
+    },
+    {
+      "id": "s13",
+      "namespace": "settings.models",
+      "key": "welcomeTitle",
+      "en": "Preview Notice",
+      "original": {
+        "ko": "미리 보기 안내",
+        "natural": 1.56,
+        "meaning": 0.91,
+        "style": 0.71,
+        "pass": true
+      },
+      "rewrites": [],
+      "result": "pass",
+      "final": "미리 보기 안내"
+    },
+    {
+      "id": "s14",
+      "namespace": "settings.models",
+      "key": "addCustom",
+      "en": "Custom model API",
+      "original": {
+        "ko": "사용자 지정 모델 API",
+        "natural": 1.6,
+        "meaning": 0.97,
+        "style": 0.68,
+        "pass": true
+      },
+      "rewrites": [],
+      "result": "pass",
+      "final": "사용자 지정 모델 API"
+    },
+    {
+      "id": "s15",
+      "namespace": "subagent",
+      "key": "duration.exactTitle",
+      "en": "Total active duration: {duration}",
+      "original": {
+        "ko": "총 활성 시간: {duration}",
+        "natural": 1.32,
+        "meaning": 0.95,
+        "style": 0.58,
+        "pass": false
+      },
+      "rewrites": [
+        {
+          "ko": "총 실행 시간: {duration}",
+          "natural": 1.47,
+          "meaning": 0.92,
+          "style": 0.67,
+          "pass": false
+        },
+        {
+          "ko": "총 활동 시간: {duration}",
+          "natural": 1.61,
+          "meaning": 0.95,
+          "style": 0.65,
+          "pass": true
+        }
+      ],
+      "result": "fixed",
+      "final": "총 활동 시간: {duration}"
+    },
+    {
+      "id": "s16",
+      "namespace": "job",
+      "key": "count.idle.one",
+      "en": "{count} background job",
+      "original": {
+        "ko": "백그라운드 작업 {count}개",
+        "natural": 1.7,
+        "meaning": 0.91,
+        "style": 0.68,
+        "pass": true
+      },
+      "rewrites": [],
+      "result": "pass",
+      "final": "백그라운드 작업 {count}개"
+    },
+    {
+      "id": "s17",
+      "namespace": "schedule.manager",
+      "key": "cron.time.everyNHours",
+      "en": "Every {count} hours",
+      "original": {
+        "ko": "{count}시간마다",
+        "natural": 1.73,
+        "meaning": 0.96,
+        "style": 0.63,
+        "pass": true
+      },
+      "rewrites": [],
+      "result": "pass",
+      "final": "{count}시간마다"
+    },
+    {
+      "id": "s18",
+      "namespace": "shortcuts",
+      "key": "review",
+      "en": "I have reviewed the latest configuration",
+      "original": {
+        "ko": "최신 설정을 확인했습니다",
+        "natural": 1.38,
+        "meaning": 0.94,
+        "style": 0.74,
+        "pass": false
+      },
+      "rewrites": [
+        {
+          "ko": "최신 설정을 검토했습니다",
+          "natural": 1.62,
+          "meaning": 0.94,
+          "style": 0.75,
+          "pass": true
+        },
+        {
+          "ko": "최신 설정을 모두 확인했습니다",
+          "natural": 1.49,
+          "meaning": 0.95,
+          "style": 0.81,
+          "pass": false
+        }
+      ],
+      "result": "fixed",
+      "final": "최신 설정을 검토했습니다"
+    },
+    {
+      "id": "s19",
+      "namespace": "permission.access",
+      "key": "preset.workspaceWrite",
+      "en": "Workspace Write",
+      "original": {
+        "ko": "워크스페이스 쓰기",
+        "natural": 1.32,
+        "meaning": 0.96,
+        "style": 0.72,
+        "pass": false
+      },
+      "rewrites": [
+        {
+          "ko": "워크스페이스 쓰기 허용",
+          "natural": 1.57,
+          "meaning": 0.94,
+          "style": 0.75,
+          "pass": true
+        },
+        {
+          "ko": "워크스페이스 내 쓰기",
+          "natural": 1.14,
+          "meaning": 0.92,
+          "style": 0.76,
+          "pass": false
+        }
+      ],
+      "result": "fixed",
+      "final": "워크스페이스 쓰기 허용"
+    },
+    {
+      "id": "s20",
+      "namespace": "goal",
+      "key": "phase.active.disarmed",
+      "en": "Inactive Goal",
+      "original": {
+        "ko": "비활성 목표",
+        "natural": 1.18,
+        "meaning": 0.95,
+        "style": 0.73,
+        "pass": false
+      },
+      "rewrites": [
+        {
+          "ko": "비활성화된 목표",
+          "natural": 1.45,
+          "meaning": 0.95,
+          "style": 0.76,
+          "pass": false
+        },
+        {
+          "ko": "비활성 상태의 목표",
+          "natural": 1.17,
+          "meaning": 0.96,
+          "style": 0.66,
+          "pass": false
+        },
+        {
+          "ko": "꺼진 목표",
+          "natural": 1.14,
+          "meaning": 0.93,
+          "style": 0.7,
+          "pass": false
+        },
+        {
+          "ko": "목표(비활성)",
+          "natural": 1.25,
+          "meaning": 0.95,
+          "style": 0.68,
+          "pass": false
+        },
+        {
+          "ko": "비활성 목표 (+context)",
+          "natural": 1.34,
+          "meaning": 0.93,
+          "style": 0.73,
+          "pass": false
+        },
+        {
+          "ko": "일시 중단된 목표",
+          "natural": 1.07,
+          "meaning": 0.87,
+          "style": 0.77,
+          "pass": false
+        },
+        {
+          "ko": "비활성 상태 목표",
+          "natural": 1.06,
+          "meaning": 0.92,
+          "style": 0.74,
+          "pass": false
+        },
+        {
+          "ko": "비활성 목표 상태",
+          "natural": 1.22,
+          "meaning": 0.94,
+          "style": 0.77,
+          "pass": false
+        },
+        {
+          "ko": "목표 비활성",
+          "natural": 1.21,
+          "meaning": 0.94,
+          "style": 0.78,
+          "pass": false
+        }
+      ],
+      "result": "unresolved",
+      "final": null
+    }
+  ]
+}

@@ -88,3 +88,29 @@ node studio/scripts/extract-dsh-locale.mjs dsh-v0.2.1-alpha.2 --out studio/docs/
 | Pin | 3 | 고정 | — | |
 
 문체: 문장은 합쇼체(-습니다), 버튼·라벨·제목은 짧은 명사구. 제품·코드 이름(DeepSeek, DSH, MCP, Cron, PTC, UTC 등)과 `{name}` 자리 표시자는 그대로 둔다.
+
+## S2 샘플 판정 (검수 기준 재확인)
+
+2026-10-17, 엔진 Jev. 표본은 [s2-sample.json](s2-sample.json)(14개 네임스페이스에서 고른 20문구, rc.2·alpha.2 모두에 있는 키), 판정 원자료는 [s2-judge.json](s2-judge.json)이다. 질문 세 개와 기준은 `studio-ko-locale-review`와 같다. 자연스러움은 0–2점이고 1.5 이상, 의미 일치는 0.6 이상, 문체(합쇼체·짧은 라벨)는 0.5 이상이어야 통과한다.
+
+| 결과 | 수 | 키 |
+| --- | --- | --- |
+| 첫 판정 통과 | 9 | `queue.save`, `stats.dialog.title`, `message.toolsRemovedCount`, `prepare.webSearch`, `installBackgroundApplying`, `welcomeTitle`, `addCustom`, `count.idle.one`, `everyNHours` |
+| 다시 써서 통과 | 6 | `truncatedCharacters` → "… {total}자 이후는 생략했습니다", `archive.confirm.jobs.one` → "백그라운드 작업 {n}개 — {names}", `usage.sessionCumulative` → "세션 총계", `duration.exactTitle` → "총 활동 시간: {duration}", `shortcuts.review` → "최신 설정을 검토했습니다", `preset.workspaceWrite` → "워크스페이스 쓰기 허용" |
+| 미해결 | 5 | `detail.trace.ancestors`(6회), `placeholder.steerQueue`(7회), `toast.stoppedAndArchived`(4회), `installBackgroundUnconfirmed`(7회), `phase.active.disarmed`(9회) |
+| 미판정 | 0 | |
+
+### 확인한 점
+
+- **세 기준은 그대로 둔다(D2 유지).** 의미·문체 기준은 실제로 틀린 번역을 잡았다. 예를 들어 "Cmd/Ctrl+Enter로 대기 중인 메시지를 모두 보냅니다"는 steer(실행 중인 턴에 끼워 넣기)가 빠져 의미 0.36이 나왔다. 조각 문구 `toast.stoppedAndArchived`는 영어 "You can "을 옮기지 않아 0.23이 나왔다.
+- **자연스러움 1.5가 가장 많이 걸린다.** 미해결 5건은 모두 자연스러움에서 걸렸고, 의미·문체는 대부분 통과했다. "상위 세션", "비활성 목표"처럼 짧은 라벨이 1.1–1.5에 머문다.
+- **점수가 흔들린다.** 같은 입력을 다시 판정하면 자연스러움이 최대 0.29 달라진다(`phase.active.disarmed` 1.18 → 1.47, `detail.trace.ancestors` 1.14 → 1.30). 판정 하나로 경계 근처 문구를 가르면 결과가 우연에 좌우된다.
+- **맥락을 더해도 효과가 없다.** state에 `context`(형제 키, 표시 위치)를 넣어도 점수가 거의 바뀌지 않았다. 스킬은 맥락 필드를 쓰지 않는다.
+- **조각 문구는 홀로 판정할 수 없다.** 코드가 여러 키를 이어 붙이는 문장(`toast.archived` + `toast.archivedUndo` + `toast.archivedOr` + `toast.archivedFilter`)은 한 키만 보면 의미가 비어 보인다. 이어 붙인 한국어·영어 전체를 한 항목으로 판정하고, 통과하면 조각을 함께 반영한다.
+
+### 스킬에 넣을 규칙
+
+1. 통과한 문구만 사전에 넣는다. 미해결 키는 사전에서 빼서 영어 fallback으로 표시하고, 마지막 후보와 점수를 판정 기록에 남겨 사용자가 고르게 한다.
+2. 다시 쓰기는 키 하나에 최대 3회로 제한한다. 3회 안에 통과하지 못하면 미해결로 둔다.
+3. 조각 문구는 이어 붙인 문장으로 판정한다(위 규칙).
+4. 도구 오류나 빠진 답은 미판정으로 기록하고 다시 판정한다. 실패로 세지 않는다.
