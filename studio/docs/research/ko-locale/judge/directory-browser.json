@@ -1,0 +1,125 @@
+{
+  "namespace": "directory-browser",
+  "date": "2026-10-17",
+  "engine": "jev",
+  "thresholds": { "natural": 1.5, "meaning": 0.6, "style": 0.5 },
+  "rows": [
+    {
+      "key": "browser.cancel",
+      "en": "Cancel",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "취소", "natural": 1.99, "meaning": 0.98, "style": 0.69, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "browser.create",
+      "en": "Create",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "만들기", "natural": 1.73, "meaning": 0.98, "style": 0.52, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "browser.createIn",
+      "en": "New folder in \"{name}\"",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "\"{name}\"에 새 폴더", "natural": 1.88, "meaning": 0.96, "style": 0.63, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "browser.editPath",
+      "en": "Edit path",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "경로 편집", "natural": 1.84, "meaning": 0.97, "style": 0.66, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "browser.folderName",
+      "en": "Folder name",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "폴더 이름", "natural": 1.98, "meaning": 0.98, "style": 0.67, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "browser.home",
+      "en": "Home",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "홈", "natural": 1.97, "meaning": 0.98, "style": 0.69, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "browser.loading",
+      "en": "Loading…",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "불러오고 있습니다…", "natural": 1.82, "meaning": 0.97, "style": 0.82, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "browser.newFolder",
+      "en": "New folder",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "새 폴더", "natural": 1.98, "meaning": 0.98, "style": 0.75, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "browser.open",
+      "en": "Open",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "열기", "natural": 1.98, "meaning": 0.98, "style": 0.64, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "browser.showHidden",
+      "en": "Show hidden files",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "숨김 파일 표시", "natural": 1.91, "meaning": 0.97, "style": 0.54, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "browser.title",
+      "en": "Select Workspace Directory",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "워크스페이스 디렉터리 선택", "natural": 1.59, "meaning": 0.98, "style": 0.63, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "browser.truncated",
+      "en": "Too many folders to list; only the beginning is shown.",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "폴더가 너무 많아 일부만 표시합니다.", "natural": 1.71, "meaning": 0.66, "style": 0.88, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "browser.untitledFolder",
+      "en": "Untitled folder",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "제목 없는 폴더", "natural": 1.75, "meaning": 0.97, "style": 0.69, "pass": true }
+      ],
+      "result": "pass"
+    }
+  ]
+}

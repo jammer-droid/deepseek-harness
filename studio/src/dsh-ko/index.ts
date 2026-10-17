@@ -5,6 +5,7 @@
 import type { DshKoDictionaries } from '../dsh-ko-locale.ts';
 import approval from './approval.ts';
 import claudeCodeMods from './claude-code-mods.ts';
+import directoryBrowser from './directory-browser.ts';
 import documentHtml from './documentHtml.ts';
 import documentMarkdown from './documentMarkdown.ts';
 import goal from './goal.ts';
@@ -26,6 +27,7 @@ import slashMenu from './slash.menu.ts';
 export const dshKo: DshKoDictionaries = {
   approval: approval,
   'claude-code-mods': claudeCodeMods,
+  'directory-browser': directoryBrowser,
   documentHtml: documentHtml,
   documentMarkdown: documentMarkdown,
   goal: goal,
