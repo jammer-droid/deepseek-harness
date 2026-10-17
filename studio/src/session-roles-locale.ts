@@ -48,8 +48,8 @@ export type SessionRolesTextKey = keyof typeof en;
 const ko: Record<SessionRolesTextKey, string> = {
   tab: 'Subagents',
   title: '이 세션의 서브에이전트',
-  description: '바꾼 내용은 이 세션에만, 다음 위임부터 적용됩니다. 이미 실행 중인 서브에이전트의 설정은 바뀌지 않습니다.',
-  unavailable: '이 세션에는 서브에이전트 역할 도구가 없습니다. 세션 역할을 쓰려면 위임하는 Studio 프리셋을 고르세요.',
+  description: '변경 사항은 이 세션의 다음 위임부터 적용됩니다. 이미 실행 중인 서브에이전트는 기존 설정을 유지합니다.',
+  unavailable: '이 세션에는 서브에이전트 역할 도구가 없습니다. 세션 역할을 사용하려면 위임 기능이 있는 Studio 프리셋을 선택하세요.',
   readOnly: '서브에이전트 세션입니다. 메인 세션의 역할을 그대로 쓰므로 메인 세션에서 편집하세요.',
   loading: '불러오는 중…',
   loadFailed: '이 세션의 역할을 불러오지 못했습니다.',
@@ -72,7 +72,7 @@ const ko: Record<SessionRolesTextKey, string> = {
   editTitle: '이 세션의 역할 편집',
   addTitle: '이 세션에만 쓰는 역할',
   copyHint: '처음 바꾸면 이 역할이 세션에 복사됩니다. 이후 프리셋을 바꿔도 \'프리셋 값 사용\'을 누르기 전까지 복사본은 바뀌지 않습니다.',
-  temporaryHint: '이 세션에만 있는 역할입니다. 새 대화로 시작하고 프리셋의 Tool Filter를 씁니다.',
+  temporaryHint: '이 세션에서만 사용하는 역할입니다. 새 대화로 시작하며 프리셋의 Tool Filter를 사용합니다.',
   name: '이름',
   roleId: '역할 ID',
   model: '모델',
@@ -86,7 +86,7 @@ const ko: Record<SessionRolesTextKey, string> = {
   saving: '저장 중…',
   cancel: '취소',
   saveFailed: '저장하지 못했습니다. 편집 내용은 이 창에 남아 있습니다.',
-  changeFailed: '이 세션의 역할을 바꾸지 못했습니다.',
+  changeFailed: '세션 역할을 변경하지 못했습니다.',
   dismiss: '닫기',
 };
 

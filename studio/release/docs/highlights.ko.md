@@ -41,9 +41,9 @@ DSH **설정 → 일반 → 언어**(영어 화면에서는 **Settings → Gener
 | 세션의 작업 폴더 복사 | 없음 |
 | 전체 화면 전환 | 없음 |
 
-키는 DSH 단축키 설정에서 지정하고, 페이지에서 명령을 켜고 끕니다. [Studio 단축키](guide.ko.md#studio-단축키-settingsx)를 참고하세요.
+단축키는 DSH 단축키 설정에서 지정합니다. 명령 사용 여부는 SettingsX 페이지에서 설정합니다. [Studio 단축키](guide.ko.md#studio-단축키-settingsx)를 참고하세요.
 
 ## 업그레이드 전에
 
-- 개발자 도구(Trajectory)를 꺼 두어도 모든 세션에 **Chat / Subagents** 탭 줄이 보입니다.
+- 개발자 도구(Trajectory)를 꺼 두어도 모든 세션에 **Chat / Subagents** 탭 표시줄이 나타납니다.
 - 모델이 보는 `subagent_role` 도구 문구가 모든 프리셋에서 조금 달라졌습니다.
