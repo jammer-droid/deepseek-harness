@@ -44,7 +44,8 @@ export function SessionRolesTab({ actions, locale }: { actions: SessionRolesActi
     try { setCatalog(await actions.models()); } catch { /* the editor still offers inherit and the current value */ }
     finally { setLoadingModels(false); }
   }, [actions]);
-  React.useEffect(() => { if (view?.available && !view.readOnly && !catalog) void refreshModels(); }, [view, catalog, refreshModels]);
+  // Read-only child views load it too, so cards show model names instead of route ids.
+  React.useEffect(() => { if (view?.available && !catalog) void refreshModels(); }, [view, catalog, refreshModels]);
 
   const models = (catalog?.groups ?? []).flatMap(group => group.models.map(model => ({ ...model, value: `${group.id}/${model.id}`, label: `${group.name} · ${model.name}` })));
   const modelLabel = (value: string) => value === 'inherit' ? t('inheritModel') : models.find(model => model.value === value)?.label ?? value;
