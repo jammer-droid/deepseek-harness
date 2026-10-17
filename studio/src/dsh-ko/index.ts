@@ -44,6 +44,7 @@ import sidebarRight from './sidebarRight.ts';
 import sidebarTerminal from './sidebarTerminal.ts';
 import skill from './skill.ts';
 import slashMenu from './slash.menu.ts';
+import trajectory from './trajectory.ts';
 import workflowRun from './workflowRun.ts';
 
 export const dshKo: DshKoDictionaries = {
@@ -88,5 +89,6 @@ export const dshKo: DshKoDictionaries = {
   sidebarTerminal: sidebarTerminal,
   skill: skill,
   'slash.menu': slashMenu,
+  trajectory: trajectory,
   workflowRun: workflowRun,
 };

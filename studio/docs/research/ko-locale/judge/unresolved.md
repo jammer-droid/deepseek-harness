@@ -85,3 +85,31 @@
 | conversation | 용어 | Provisioning | 프로비저닝 | — | 번역자 제안 |
 | conversation | 용어 | Worker | 작업자 | — | 번역자 제안 |
 | conversation | 용어 | Symbol | 심볼 | — | 번역자 제안 |
+| trajectory | column.think | Think | 생각 과정 | 1.47/0.89/0.84 | 4회 미통과 |
+| trajectory | details.resize | Resize event details | 이벤트 상세 정보의 크기를 조절하십시오 | 1.36/0.9/0.77 | 4회 미통과 |
+| trajectory | kind.sub | Sub | 하위 요소 | 1.17/0.78/0.7 | 4회 미통과 |
+| trajectory | request.collapsedSummary | Collapsed {kind} summary, {summary} | 접혀 있는 {kind} 요약: {summary} | 1.31/0.82/0.53 | 4회 미통과 |
+| trajectory | request.rowAriaCompaction | Request {request}, compaction | 요청 {request}, 컨텍스트 압축 | 1.3/0.91/0.7 | 4회 미통과 |
+| trajectory | request.rowPrefix | Request {request},  | 요청 번호 {request},  | 1.08/0.91/0.63 | 4회 미통과 |
+| trajectory | section.betweenTurns | Between turns | 턴 간 구간 | 1.47/0.94/0.74 | 4회 미통과 |
+| trajectory | timeline.ttftDecoding | TTFT {ttft} · Decoding {decoding} | TTFT {ttft} · 디코딩 시간 {decoding} | 1.4/0.94/0.63 | 4회 미통과 |
+| trajectory | timing.stepStartUnavailable | Step start unavailable | 단계 시작 정보 없음 | 1.47/0.96/0.58 | 4회 미통과 |
+| trajectory | toolbar.aria | Trajectory toolbar | Trajectory 도구 모음 영역 | 1.45/0.96/0.71 | 4회 미통과 |
+| trajectory | toolbar.useEqualWidth | Use equal-width operations | 각 작업을 동일한 너비로 표시합니다 | 1.15/0.89/0.71 | 4회 미통과 |
+| trajectory | usage.sessionCumulative | Session cumulative | 세션 누적 사용량 | 1.37/0.84/0.59 | 4회 미통과 |
+| trajectory | 용어 | Assistant | 어시스턴트 | — | 번역자 제안 |
+| trajectory | 용어 | Block | 블록 | — | 번역자 제안 |
+| trajectory | 용어 | Step | 단계 | — | 번역자 제안 |
+| trajectory | 용어 | Subtool | 하위 도구 | — | 번역자 제안 |
+| trajectory | 용어 | Parameters | 매개변수 | — | 번역자 제안 |
+| trajectory | 용어 | Payload | 페이로드 | — | 번역자 제안 |
+| trajectory | 용어 | Schema | 스키마 | — | 번역자 제안 |
+| trajectory | 용어 | Timing | 시간 측정 | — | 번역자 제안 |
+| trajectory | 용어 | Duration | 소요 시간 | — | 번역자 제안 |
+| trajectory | 용어 | Throughput | 처리량 | — | 번역자 제안 |
+| trajectory | 용어 | Timestamp | 타임스탬프 | — | 번역자 제안 |
+| trajectory | 용어 | Timeline | 타임라인 | — | 번역자 제안 |
+| trajectory | 용어 | Round | 라운드 | — | 번역자 제안 |
+| trajectory | 용어 | Think/Thinking | 생각 | — | 번역자 제안 |
+| trajectory | 용어 | Diff | 변경 사항 | — | 번역자 제안 |
+| trajectory | 용어 | Raw | 원본 | — | 번역자 제안 |
