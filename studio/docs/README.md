@@ -30,6 +30,7 @@
 
 ## 개발 기준과 조사
 
+- [Pixie Loop과 Jev 내부 구조](development/pixie-loop-and-jev.md): 생성·실행·판정 경계, 레시피·기록, 한도와 E2E 실측 운영 한계.
 - [DSH 호환성 오류 대응](development/dsh-compatibility-response.md): 업데이트 뒤 버전 경고·설치 차단·실행 실패의 조사, 플러그인 수정, 격리 검증, Desktop 반영과 복구 절차.
 - [디자인 시스템](development/design-system.md)
 - [프리셋 런타임 수명 조사](development/preset-runtime-lifecycle.md)
