@@ -1,5 +1,6 @@
 /** SettingsX screen and command copy (ko, en, zh). */
 const en = {
+  addProvider: 'Add provider', addChatgpt: 'Add ChatGPT and sign in', addClaude: 'Add Claude and sign in', templateNote: 'Subscription templates use third-party OAuth access, which may stop working or violate provider terms. Claude uses Claude Code compatibility headers. No credentials are imported from other apps. Review these terms before adding.',
   serviceLabel: 'SettingsX', navigation: 'SettingsX menu', group: 'Extensions',
   pageShortcuts: 'Shortcuts', pageShortcutsDescription: 'Studio commands added to DSH shortcut settings. Commands DSH already has are not repeated.',
   pageProviders: 'Providers', pageProvidersDescription: 'Model routes read from definition files. Each valid file appears in DSH model selection, Pixie, and roles.',
@@ -22,15 +23,16 @@ const en = {
   termsNote: 'Using a subscription outside its own app may break the provider’s terms. You are responsible for each provider’s terms of use.',
   'issue.json': 'The file is not valid JSON.', 'issue.shape': 'Expected an object.', 'issue.unknown-field': 'Unknown field.',
   'issue.required': 'Required.', 'issue.version': 'Use version 1.', 'issue.id': 'Use lowercase letters, digits, and hyphens, starting with a letter.',
-  'issue.protocol': 'Use openai-responses or openai-chat.', 'issue.url': 'Use an http or https address without credentials or a query.',
+  'issue.protocol': 'Use openai-responses, openai-chat or anthropic-messages.', 'issue.url': 'Use an http or https address without credentials or a query.',
   'issue.header': 'This header cannot be set here.', 'issue.models-empty': 'List at least one model.', 'issue.model-duplicate': 'Model ID is repeated.',
   'issue.number': 'Use a positive whole number.', 'issue.credential-kind': 'Use none, credential, command, or oauth.',
   credentialCommand: 'Token from command “{command}”', keySet: '{ref} is set', keyMissing: '{ref} is not set', keyPlaceholder: 'Paste key', keySave: 'Save key', keyDelete: 'Delete key',
-  signedIn: 'Signed in', signedOut: 'Not signed in', signingIn: 'Waiting for the browser sign-in…', signIn: 'Sign in', signInAgain: 'Sign in again', signOut: 'Sign out', openSignIn: 'Open sign-in page', cancel: 'Cancel',
+  signedIn: 'Signed in', signedOut: 'Not signed in', signingIn: 'Waiting for the browser sign-in…', signIn: 'Sign in', signInAgain: 'Add account', signOut: 'Sign out', openSignIn: 'Open sign-in page', cancel: 'Cancel',
   'issue.credential-field': 'Invalid credential setting.',
 } as const;
 export type SettingsXKey = keyof typeof en;
 const ko: Record<SettingsXKey, string> = {
+  addProvider: '프로바이더 추가', addChatgpt: 'ChatGPT 추가하고 로그인', addClaude: 'Claude 추가하고 로그인', templateNote: '구독 템플릿은 비공식 OAuth 연결로, 서비스 변경 시 작동하지 않거나 제공사 약관에 어긋날 수 있습니다. Claude는 Claude Code 호환 식별 헤더를 사용합니다. 다른 앱의 자격 증명은 가져오지 않습니다. 이 내용을 확인한 후 추가하세요.',
   serviceLabel: 'SettingsX', navigation: 'SettingsX 메뉴', group: '확장',
   pageShortcuts: '단축키', pageShortcutsDescription: 'DSH 단축키 설정에 추가되는 Studio 명령입니다. DSH에 이미 있는 명령은 다시 만들지 않습니다.',
   pageProviders: '프로바이더', pageProvidersDescription: '정의 파일에서 읽은 모델 경로입니다. 올바른 파일은 DSH 모델 선택, Pixie, 역할에 표시됩니다.',
@@ -53,14 +55,15 @@ const ko: Record<SettingsXKey, string> = {
   termsNote: '구독을 해당 앱 밖에서 쓰면 프로바이더 약관에 어긋날 수 있습니다. 각 프로바이더의 이용 약관은 사용자가 확인하고 책임집니다.',
   'issue.json': 'JSON 형식이 아닙니다.', 'issue.shape': '객체여야 합니다.', 'issue.unknown-field': '알 수 없는 필드입니다.',
   'issue.required': '필수 항목입니다.', 'issue.version': 'version은 1이어야 합니다.', 'issue.id': '영문 소문자로 시작하고 소문자, 숫자, 하이픈만 쓰세요.',
-  'issue.protocol': 'openai-responses 또는 openai-chat을 쓰세요.', 'issue.url': '자격 증명이나 쿼리가 없는 http 또는 https 주소를 쓰세요.',
+  'issue.protocol': 'openai-responses, openai-chat 또는 anthropic-messages을 쓰세요.', 'issue.url': '자격 증명이나 쿼리가 없는 http 또는 https 주소를 쓰세요.',
   'issue.header': '여기서 설정할 수 없는 헤더입니다.', 'issue.models-empty': '모델을 하나 이상 넣으세요.', 'issue.model-duplicate': '모델 ID가 중복됩니다.',
   'issue.number': '양의 정수를 쓰세요.', 'issue.credential-kind': 'none, credential, command, oauth 중 하나를 쓰세요.',
   credentialCommand: '“{command}” 명령에서 토큰을 받습니다', keySet: '{ref} 설정됨', keyMissing: '{ref} 설정 안 됨', keyPlaceholder: '키 붙여 넣기', keySave: '키 저장', keyDelete: '키 삭제',
-  signedIn: '로그인됨', signedOut: '로그인 안 됨', signingIn: '브라우저 로그인을 기다리는 중…', signIn: '로그인', signInAgain: '다시 로그인', signOut: '로그아웃', openSignIn: '로그인 페이지 열기', cancel: '취소',
+  signedIn: '로그인됨', signedOut: '로그인 안 됨', signingIn: '브라우저 로그인을 기다리는 중…', signIn: '로그인', signInAgain: '계정 추가', signOut: '로그아웃', openSignIn: '로그인 페이지 열기', cancel: '취소',
   'issue.credential-field': '자격 증명 설정이 올바르지 않습니다.',
 };
 const zh: Record<SettingsXKey, string> = {
+  addProvider: '添加提供方', addChatgpt: '添加 ChatGPT 并登录', addClaude: '添加 Claude 并登录', templateNote: '订阅模板使用非官方 OAuth 连接，可能失效或违反提供方条款。Claude 使用 Claude Code 兼容身份标头。不会导入其他应用的凭据。请确认后再添加。',
   serviceLabel: 'SettingsX', navigation: 'SettingsX 菜单', group: '扩展',
   pageShortcuts: '快捷键', pageShortcutsDescription: 'Studio 添加到 DSH 快捷键设置的命令。DSH 已有的命令不会重复添加。',
   pageProviders: '提供方', pageProvidersDescription: '从定义文件读取的模型路由。有效文件会出现在 DSH 模型选择、Pixie 和角色中。',
@@ -83,11 +86,11 @@ const zh: Record<SettingsXKey, string> = {
   termsNote: '在订阅自带应用之外使用订阅可能违反提供方条款。各提供方的使用条款由用户自行确认并负责',
   'issue.json': '不是有效的 JSON。', 'issue.shape': '应为对象。', 'issue.unknown-field': '未知字段。',
   'issue.required': '必填。', 'issue.version': 'version 应为 1。', 'issue.id': '以小写字母开头，只用小写字母、数字和连字符。',
-  'issue.protocol': '请使用 openai-responses 或 openai-chat。', 'issue.url': '请使用不含凭据和查询参数的 http 或 https 地址。',
+  'issue.protocol': '请使用 openai-responses、openai-chat 或 anthropic-messages。', 'issue.url': '请使用不含凭据和查询参数的 http 或 https 地址。',
   'issue.header': '此处不能设置该请求头。', 'issue.models-empty': '至少列出一个模型。', 'issue.model-duplicate': '模型 ID 重复。',
   'issue.number': '请使用正整数。', 'issue.credential-kind': '请使用 none、credential、command 或 oauth。',
   credentialCommand: '从命令“{command}”获取令牌', keySet: '{ref} 已设置', keyMissing: '{ref} 未设置', keyPlaceholder: '粘贴密钥', keySave: '保存密钥', keyDelete: '删除密钥',
-  signedIn: '已登录', signedOut: '未登录', signingIn: '正在等待浏览器登录…', signIn: '登录', signInAgain: '重新登录', signOut: '退出登录', openSignIn: '打开登录页面', cancel: '取消',
+  signedIn: '已登录', signedOut: '未登录', signingIn: '正在等待浏览器登录…', signIn: '登录', signInAgain: '添加账户', signOut: '退出登录', openSignIn: '打开登录页面', cancel: '取消',
   'issue.credential-field': '凭据设置无效。',
 };
 

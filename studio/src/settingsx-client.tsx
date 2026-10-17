@@ -4,23 +4,9 @@
  */
 import React from 'react';
 import type { StudioContext } from './contracts.js';
-import { PACKAGE_NAME } from './package-name.ts';
-import type { ProviderList } from './provider-contract.ts';
 import { currentCwd, DISABLED_KEY, readDisabled, resolveSessionTarget, STUDIO_COMMANDS, type SessionSnapshots, type StudioCommandSpec } from './settingsx-commands.ts';
 import { settingsxText } from './settingsx-locale.ts';
-import { commandLabel, SettingsXPage, type CommandRowState, type SettingsXProviderActions, type SettingsXShortcuts } from './settingsx-page.tsx';
-
-const NAMESPACE = 'studioProviders';
-const stringCodec = { mode: 'strict', typeSymbol: 'string', create: () => ({ parse: (value: unknown) => { if (typeof value !== 'string') throw new TypeError('Expected a string'); return value; } }) } as const;
-const descriptor = (method: string, parameters: string[] = []) => ({
-  id: `${PACKAGE_NAME}#${NAMESPACE}/${method}`, service: NAMESPACE, namespace: NAMESPACE, method,
-  invocation: { kind: 'direct' }, parameters: parameters.map(name => ({ name, wire: name, source: 'json', codec: stringCodec })), result: { mode: 'src-json' },
-});
-/** Remote descriptors mounted by the shell together with the other Studio services. */
-export const settingsxDescriptors = () => [
-  descriptor('list'), descriptor('reload'), descriptor('setKey', ['payload']),
-  ...['signIn', 'waitSignIn', 'cancelSignIn', 'signOut'].map(method => descriptor(method, ['route'])),
-];
+import { commandLabel, SettingsXPage, type CommandRowState, type SettingsXShortcuts } from './settingsx-page.tsx';
 
 type Observable<T> = { getSnapshot(): T; subscribe(listener: () => void): () => void };
 type ShortcutResolution = { status: 'handled'; run(): void } | { status: 'blocked'; reason: string };
@@ -34,15 +20,6 @@ interface ShortcutsSlice {
     resolve(context: { modal: string | null }): ShortcutResolution;
   }): () => void;
 }
-type RemoteValue<T> = Promise<{ ok: true; value: T } | { ok: false; error: { message: string } }>;
-
-async function unwrap<T>(call: RemoteValue<T> | undefined): Promise<T> {
-  if (!call) throw new Error('Provider API unavailable');
-  const result = await call;
-  if (!result.ok) throw new Error(result.error.message);
-  return result.value;
-}
-
 export function mountSettingsX(ctx: StudioContext, options: { navFooter?: (locale: string) => React.ReactNode } = {}) {
   const locale = () => ctx.locale.getLocale().active;
   const t = (key: Parameters<typeof settingsxText>[1]) => settingsxText(locale(), key);
@@ -97,20 +74,6 @@ export function mountSettingsX(ctx: StudioContext, options: { navFooter?: (local
     scope.effect(() => () => { listeners.delete(sync); for (const dispose of live.values()) dispose(); live.clear(); });
   });
 
-  const call = <T,>(method: string, ...args: string[]) => {
-    const remote = ctx.get('remote.studioProviders' as never) as unknown as Record<string, ((...args: string[]) => RemoteValue<T>) | undefined> | undefined;
-    return unwrap(remote?.[method]?.(...args));
-  };
-  const providerActions: SettingsXProviderActions = {
-    list: () => call<ProviderList>('list'),
-    reload: () => call<ProviderList>('reload'),
-    signIn: route => call<{ url: string }>('signIn', route),
-    waitSignIn: route => call<ProviderList>('waitSignIn', route),
-    cancelSignIn: route => call<ProviderList>('cancelSignIn', route),
-    signOut: route => call<ProviderList>('signOut', route),
-    setKey: (route, value) => call<ProviderList>('setKey', JSON.stringify({ route, value })),
-    openURL: url => { window.open(url, '_blank', 'noopener,noreferrer'); },
-  };
   const setEnabled = (id: string, enabled: boolean) => {
     const next = new Set(disabled);
     if (enabled) next.delete(id); else next.add(id);
@@ -129,7 +92,7 @@ export function mountSettingsX(ctx: StudioContext, options: { navFooter?: (local
     const rows: CommandRowState[] = STUDIO_COMMANDS.map(spec => ({ id: spec.id, enabled: !disabled.has(spec.id), keys: byId.get(spec.id)?.binding ? byId.get(spec.id)!.keys : null }));
     const open = byId.get('shortcuts.open');
     const state: SettingsXShortcuts = { rows, openKeys: open?.binding ? open.keys : null, desktop: shortcuts?.runtime === 'desktop', setEnabled };
-    return <SettingsXPage locale={active} shortcuts={state} providers={providerActions} navFooter={options.navFooter?.(active)} />;
+    return <SettingsXPage locale={active} shortcuts={state} navFooter={options.navFooter?.(active)} />;
   }
   ctx.slots.inject('local.dsh-studio.services', () => ctx.slots.register({
     name: 'local.dsh-studio.services', id: 'settingsx', order: 20, label: () => t('serviceLabel'),

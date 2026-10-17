@@ -2,6 +2,7 @@
  * Uses the shared {@link DetailLayout} frame like every Studio service.
  */
 import React from 'react';
+import { ProviderAccounts } from './settingsx-accounts.tsx';
 import { DetailLayout } from './detail-layout.tsx';
 import { Badge, Button, Note, Notice, PageHead, SettingsRow, Toggle } from './ui.tsx';
 import { protocolEndpoint, type ProviderAuthState, type ProviderDefinition, type ProviderEntry, type ProviderIssue, type ProviderList } from './provider-contract.ts';
@@ -21,6 +22,10 @@ export interface SettingsXShortcuts {
 }
 export interface SettingsXProviderActions {
   list(): Promise<ProviderList>; reload(): Promise<ProviderList>;
+  addTemplate?(template: string): Promise<ProviderList>;
+  selectAccount?(route: string, accountId: string): Promise<ProviderList>;
+  removeAccount?(route: string, accountId: string): Promise<ProviderList>;
+  usage?(route: string, accountId: string): Promise<import('./provider-contract.ts').ProviderUsage>;
   signIn?(route: string): Promise<{ url: string }>; waitSignIn?(route: string): Promise<ProviderList>; cancelSignIn?(route: string): Promise<ProviderList>;
   signOut?(route: string): Promise<ProviderList>; setKey?(route: string, value: string): Promise<ProviderList>; openURL?(url: string): void;
 }
@@ -101,7 +106,7 @@ function CredentialControl({ locale, definition, state, actions, onList }: { loc
     if (actions.signIn) controls = info?.pending
       ? <span className="studio-inline-form"><Button small onClick={() => actions.openURL?.(info.pending!.url)}>{t('openSignIn')}</Button><Button small onClick={() => { void run(() => actions.cancelSignIn!(definition.id)); }}>{t('cancel')}</Button></span>
       : <span className="studio-inline-form"><Button small disabled={busy} onClick={() => { void start(); }}>{info?.signedIn ? t('signInAgain') : t('signIn')}</Button>
-        {info?.signedIn && <Button small disabled={busy} onClick={() => { void run(() => actions.signOut!(definition.id)); }}>{t('signOut')}</Button>}</span>;
+</span>;
   }
   return <div className="studio-provider-credential">
     <p className="studio-muted">{t('credential')}: {status}</p>
@@ -146,11 +151,29 @@ function ProvidersPage({ locale, actions }: { locale: string; actions: SettingsX
   return <div className="studio-page-stack">
     <PageHead title={t('pageProviders')} description={t('pageProvidersDescription')}
       actions={<Button disabled={busy} onClick={() => { void reload(); }}>{busy ? t('reloading') : t('reload')}</Button>} />
+    {actions.addTemplate && <section className="studio-settings-card" aria-label={t('addProvider')}>
+      <p className="studio-muted">{t('templateNote')}</p>
+      <div className="studio-inline-form">{(['chatgpt', 'claude'] as const).map(template => <Button key={template} disabled={busy || !list || list.entries.some(entry => entry.status !== 'invalid' && entry.definition.id === `studio-${template}`)} onClick={() => {
+        setBusy(true); setError('');
+        void (async () => {
+          try {
+            const next = await actions.addTemplate!(template); setList(next);
+            const route = `studio-${template}`;
+            if (next.entries.some(entry => entry.status === 'registered' && entry.definition.id === route) && actions.signIn) {
+              const { url } = await actions.signIn(route); actions.openURL?.(url);
+              setList(await actions.list());
+              // Waiting must not lock the entire page: cancellation stays accessible on the row.
+              void actions.waitSignIn?.(route).then(setList, cause => setError(String(cause)));
+            }
+          } catch (cause) { setError(cause instanceof Error ? cause.message : String(cause)); } finally { setBusy(false); }
+        })();
+      }}>{t(template === 'chatgpt' ? 'addChatgpt' : 'addClaude')}</Button>)}</div>
+    </section>}
     {error && <Notice action={<Button small onClick={() => setError('')}>{t('dismiss')}</Button>}>{t('loadFailed')} {error}</Notice>}
     {list && <div className="studio-gate-path"><span className="studio-muted">{t('folder')}</span><code>{list.directory}</code>
       <Button small onClick={async () => { try { await navigator.clipboard.writeText(list.directory); setCopied(true); } catch { setCopied(false); } }}>{copied ? t('copied') : t('copyPath')}</Button></div>}
     {list && (list.entries.length
-      ? <section className="studio-settings-card" aria-label={t('pageProviders')}>{list.entries.map(entry => <ProviderRow key={entry.file} locale={locale} entry={entry} state={entry.status === 'registered' ? list.auth?.[entry.definition.id] : undefined} actions={actions} onList={setList} />)}</section>
+      ? <section className="studio-page-stack" aria-label={t('pageProviders')}>{list.entries.map(entry => <article className="studio-settings-card" key={entry.file}><ProviderRow locale={locale} entry={entry} state={entry.status === 'registered' ? list.auth?.[entry.definition.id] : undefined} actions={actions} onList={setList} />{entry.status === 'registered' && entry.definition.credential.kind === 'oauth' && <ProviderAccounts route={entry.definition.id} accounts={list.accounts?.[entry.definition.id] ?? []} locale={locale} actions={actions} onList={setList} />}</article>)}</section>
       : <p className="studio-muted" role="status">{t('emptyProviders')}</p>)}
     <p className="studio-muted">{t('skillNote')}</p>
     <p className="studio-muted">{t('termsNote')}</p>
@@ -158,12 +181,12 @@ function ProvidersPage({ locale, actions }: { locale: string; actions: SettingsX
 }
 
 export function SettingsXPage({ locale, shortcuts, providers, navFooter }: {
-  locale: string; shortcuts: SettingsXShortcuts; providers: SettingsXProviderActions; navFooter?: React.ReactNode;
+  locale: string; shortcuts: SettingsXShortcuts; providers?: SettingsXProviderActions; navFooter?: React.ReactNode;
 }) {
   const t = (key: SettingsXKey) => settingsxText(locale, key);
   const [page, setPage] = React.useState<PageId>('shortcuts');
   return <DetailLayout footer={navFooter} navigation={t('navigation')} selected={page} onSelect={next => setPage(next as PageId)} pages={[
     { id: 'shortcuts', label: t('pageShortcuts'), group: t('group'), content: <ShortcutsPage locale={locale} shortcuts={shortcuts} /> },
-    { id: 'providers', label: t('pageProviders'), group: t('group'), content: <ProvidersPage locale={locale} actions={providers} /> },
+    ...(providers ? [{ id: 'providers', label: t('pageProviders'), group: t('group'), content: <ProvidersPage locale={locale} actions={providers} /> }] : []),
   ]} />;
 }

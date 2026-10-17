@@ -6,7 +6,7 @@
  */
 
 /** Wire protocols a definition may name. */
-export const PROVIDER_PROTOCOLS = ['openai-responses', 'openai-chat'] as const;
+export const PROVIDER_PROTOCOLS = ['openai-responses', 'openai-chat', 'anthropic-messages'] as const;
 export type ProviderProtocol = typeof PROVIDER_PROTOCOLS[number];
 /** Credential supply kinds. */
 export type CredentialKind = typeof CREDENTIAL_KINDS_ALL[number];
@@ -42,7 +42,7 @@ export type ProviderCredential =
   | { kind: 'command'; command: string[]; timeoutMs?: number; header?: string; scheme?: string }
   /** OAuth 2.0 authorization code with PKCE and a loopback redirect; tokens stay in a DSH credential record. */
   | { kind: 'oauth'; authorizeURL: string; tokenURL: string; clientId: string; scopes?: string[]; redirectPort: number; redirectPath?: string;
-      authorizeParams?: Record<string, string>; claimHeaders?: Record<string, string[]>; header?: string; scheme?: string };
+      tokenFormat?: 'form' | 'json'; authorizeParams?: Record<string, string>; claimHeaders?: Record<string, string[]>; header?: string; scheme?: string };
 
 
 /** One rejection reason with a stable code and the offending field path. */
@@ -133,7 +133,7 @@ function parseCredential(raw: unknown, issue: (code: ProviderIssueCode, path: st
   if (!record(raw) || !CREDENTIAL_KINDS_ALL.includes(raw.kind as CredentialKind)) { issue('credential-kind', 'credential.kind'); return undefined; }
   const allowed: Record<CredentialKind, string[]> = {
     none: [], credential: ['ref', 'header', 'scheme'], command: ['command', 'timeoutMs', 'header', 'scheme'],
-    oauth: ['authorizeURL', 'tokenURL', 'clientId', 'scopes', 'redirectPort', 'redirectPath', 'authorizeParams', 'claimHeaders', 'header', 'scheme'],
+    oauth: ['authorizeURL', 'tokenURL', 'clientId', 'scopes', 'redirectPort', 'redirectPath', 'authorizeParams', 'claimHeaders', 'header', 'scheme', 'tokenFormat'],
   };
   const kind = raw.kind as CredentialKind;
   const before = { count: 0 };
@@ -155,13 +155,14 @@ function parseCredential(raw: unknown, issue: (code: ProviderIssueCode, path: st
   for (const key of ['authorizeURL', 'tokenURL'] as const) if (!httpsOrLoopback(raw[key])) report('url', `credential.${key}`);
   if (!text(raw.clientId)) report('required', 'credential.clientId');
   if (raw.scopes !== undefined && (!Array.isArray(raw.scopes) || !raw.scopes.every(text))) report('credential-field', 'credential.scopes');
-  if (!Number.isSafeInteger(raw.redirectPort) || (raw.redirectPort as number) < 1024 || (raw.redirectPort as number) > 65535) report('number', 'credential.redirectPort');
+  if (!Number.isSafeInteger(raw.redirectPort) || (raw.redirectPort !== 0 && (raw.redirectPort as number) < 1024) || (raw.redirectPort as number) > 65535) report('number', 'credential.redirectPort');
   if (raw.redirectPath !== undefined && (typeof raw.redirectPath !== 'string' || !/^\/[A-Za-z0-9/_.-]*$/.test(raw.redirectPath))) report('credential-field', 'credential.redirectPath');
   const reserved = ['response_type', 'client_id', 'redirect_uri', 'scope', 'state', 'code_challenge', 'code_challenge_method'];
   if (raw.authorizeParams !== undefined && (!record(raw.authorizeParams) || Object.entries(raw.authorizeParams).some(([key, param]) => reserved.includes(key) || typeof param !== 'string'))) report('credential-field', 'credential.authorizeParams');
   if (raw.claimHeaders !== undefined && (!record(raw.claimHeaders) || Object.entries(raw.claimHeaders).some(([name, path]) => !HEADER_NAME.test(name) || RESERVED_HEADERS.has(name.toLowerCase()) || !Array.isArray(path) || path.length === 0 || !path.every(text)))) report('credential-field', 'credential.claimHeaders');
+  if (raw.tokenFormat !== undefined && raw.tokenFormat !== 'form' && raw.tokenFormat !== 'json') report('credential-field', 'credential.tokenFormat');
   if (before.count) return undefined;
-  return { kind, authorizeURL: raw.authorizeURL as string, tokenURL: raw.tokenURL as string, clientId: raw.clientId as string, redirectPort: raw.redirectPort as number,
+  return { ...(raw.tokenFormat === undefined ? {} : { tokenFormat: raw.tokenFormat as 'form' | 'json' }), kind, authorizeURL: raw.authorizeURL as string, tokenURL: raw.tokenURL as string, clientId: raw.clientId as string, redirectPort: raw.redirectPort as number,
     ...(raw.scopes === undefined ? {} : { scopes: [...raw.scopes as string[]] }), ...(raw.redirectPath === undefined ? {} : { redirectPath: raw.redirectPath as string }),
     ...(raw.authorizeParams === undefined ? {} : { authorizeParams: { ...raw.authorizeParams as Record<string, string> } }),
     ...(raw.claimHeaders === undefined ? {} : { claimHeaders: structuredClone(raw.claimHeaders) as Record<string, string[]> }), ...auth };
@@ -169,7 +170,7 @@ function parseCredential(raw: unknown, issue: (code: ProviderIssueCode, path: st
 
 /** Endpoint the protocol sends requests to. */
 export function protocolEndpoint(definition: Pick<ProviderDefinition, 'protocol' | 'baseURL'>): string {
-  return `${definition.baseURL}${definition.protocol === 'openai-responses' ? '/responses' : '/chat/completions'}`;
+  return `${definition.baseURL}${definition.protocol === 'openai-responses' ? '/responses' : definition.protocol === 'anthropic-messages' ? '/messages' : '/chat/completions'}`;
 }
 
 /** What the Client sees about one definition file. */
@@ -177,7 +178,10 @@ export type ProviderEntry =
   | { file: string; status: 'registered'; definition: ProviderDefinition }
   | { file: string; status: 'invalid'; issues: ProviderIssue[] }
   | { file: string; status: 'conflict'; definition: ProviderDefinition; detail: string };
-export interface ProviderList { directory: string; entries: ProviderEntry[]; auth: Record<string, ProviderAuthState> }
+export interface ProviderAccount { id: string; label: string; email?: string; plan?: string; expiresAt?: number; isDefault: boolean }
+export interface UsageWindow { id: string; usedPercent: number; resetAt?: number }
+export type ProviderUsage = { status: 'ready'; checkedAt: number; plan?: string; windows: UsageWindow[] } | { status: 'unsupported' | 'unavailable'; checkedAt: number };
+export interface ProviderList { directory: string; entries: ProviderEntry[]; auth: Record<string, ProviderAuthState>; accounts?: Record<string, ProviderAccount[]> }
 /** What the page shows about a route's credential; never the value. */
 export type ProviderAuthState =
   | { kind: 'none' }

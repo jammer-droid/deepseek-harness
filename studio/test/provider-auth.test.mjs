@@ -99,7 +99,7 @@ test('OAuth sign-in: PKCE authorize URL, loopback redirect, stored grant, claim 
   now += 3600_000;
   assert.deepEqual(await auth.headers(def), { 'chatgpt-account-id': 'acct_42', Authorization: 'Bearer access-2' });
   assert.deepEqual(tokens.forms[1], { grant_type: 'refresh_token', refresh_token: 'r1', client_id: 'app_1' });
-  assert.equal(credentials.records.get('studio-providers/route').payload.refresh, 'r1');
+  assert.equal([...credentials.records.entries()].find(([key]) => key.startsWith('studio-provider-accounts/'))[1].payload.refresh, 'r1');
   await auth.signOut('route');
   assert.equal(credentials.records.has('studio-providers/route'), false);
   assert.equal((await auth.state(def)).signedIn, false);

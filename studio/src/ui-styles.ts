@@ -523,6 +523,9 @@ ${adapter}.studio-ui *, .studio-ui *::before, .studio-ui *::after { box-sizing: 
   .studio-ui .studio-component-summary { display: none; }
   .studio-ui .studio-facts { grid-template-columns: 1fr; gap: 4px; }
 }
+.studio-ui .studio-subscription-meter { display: grid; gap: 6px; font-size: 12px; }
+.studio-ui .studio-subscription-meter progress { width: 100%; height: 6px; accent-color: var(--studio-muted); }
+.studio-ui .studio-settings-card { min-width: 0; overflow-wrap: anywhere; }
 /* Settings card rows, segmented choice, and switch (shapes follow DSH Settings, SegmentedControl, and Switch). */
 .studio-ui .studio-settings-card { padding: 4px 20px; border: .5px solid var(--studio-line); border-radius: var(--studio-radius); background: var(--studio-surface); }
 .studio-ui .studio-settings-row { display: grid; gap: 10px; padding: 14px 0; border-bottom: .5px solid var(--studio-line); }

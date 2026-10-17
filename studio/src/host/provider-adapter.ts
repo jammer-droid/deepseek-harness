@@ -6,10 +6,15 @@ import type { Context } from '@deepseek-ai/cordis';
 import { attributionHeaders, LlmAdapter, LlmError } from '@deepseek-ai/dsh-llm';
 import type { GenerateOptions, LlmModelInfo, LlmProviderInfo, LlmResolvedModelInfo, StreamChunk } from '@deepseek-ai/dsh-llm';
 import { Remote, TypertRemoteService } from '@deepseek-ai/dsh-typert-protocol';
-import { mkdir, readdir, readFile } from 'node:fs/promises';
+import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
+import { providerTemplate, claudeSubscriptionHeaders } from '../provider-templates.ts';
+import { anthropicRequestBody, translateAnthropic } from './provider-anthropic.ts';
 import { join } from 'node:path';
 import { parseProviderDefinition, protocolEndpoint, type ProviderDefinition, type ProviderEntry, type ProviderList } from '../provider-contract.ts';
 import { requestBody, sseData, translate } from './provider-wire.ts';
+import { applyChatGptSpeed, type SessionSpeedStore } from './provider-speed.ts';
+import { fetchProviderUsage } from './provider-usage.ts';
+import type { ProviderUsage } from '../provider-contract.ts';
 import { ProviderAuth, type CredentialsSlice } from './provider-auth.ts';
 
 type Fetch = typeof fetch;
@@ -26,7 +31,7 @@ function httpFailure(status: number, body: string, retryAfter: string | null): L
 /** Adapter over the current definition set; `definitions` is swapped as a whole on reload. */
 export class StudioProviderAdapter extends LlmAdapter {
   definitions = new Map<string, ProviderDefinition>();
-  constructor(private readonly fetchImpl: Fetch = fetch, readonly auth: ProviderAuth = new ProviderAuth({ credentials: () => undefined })) { super(); }
+  constructor(private readonly fetchImpl: Fetch = fetch, readonly auth: ProviderAuth = new ProviderAuth({ credentials: () => undefined }), private readonly speed?: Pick<SessionSpeedStore, 'get'>) { super(); }
   private definition(provider: string): ProviderDefinition {
     const definition = this.definitions.get(provider);
     if (!definition) throw new LlmError(`Studio provider "${provider}" is not registered`, 'UNKNOWN_PROVIDER');
@@ -46,11 +51,14 @@ export class StudioProviderAdapter extends LlmAdapter {
     // Capture once: a reload during the request does not switch endpoints mid-call.
     const definition = this.definition(options.provider);
     const maxTokens = options.maxTokens ?? definition.models.find(model => model.id === options.model)?.maxTokens;
-    const body = JSON.stringify(requestBody(definition.protocol, options, maxTokens));
+    const wire = definition.protocol === 'anthropic-messages' ? anthropicRequestBody(options, maxTokens) : requestBody(definition.protocol, options, maxTokens);
+    const body = JSON.stringify(definition.baseURL === 'https://chatgpt.com/backend-api/codex' && definition.protocol === 'openai-responses' ? await applyChatGptSpeed(wire, options, this.speed) : wire);
+    const accountId = definition.credential.kind === 'oauth' ? (await this.auth.accounts(definition)).find(account => account.isDefault)?.id : undefined;
+    if (definition.credential.kind === 'oauth' && !accountId) throw new LlmError('Select a default account in Studio SettingsX.', 'AUTHENTICATION');
     const send = async (retry: boolean) => {
       // Credential headers come first so attribution and protocol headers always win.
-      const headers: Record<string, string> = { ...definition.headers, ...await this.auth.headers(definition, { retry, ...(options.signal ? { signal: options.signal } : {}) }),
-        ...attributionHeaders(), 'content-type': 'application/json', accept: 'text/event-stream' };
+      const headers: Record<string, string> = { ...definition.headers, ...await this.auth.headers(definition, { retry, accountId, ...(options.signal ? { signal: options.signal } : {}) }),
+        ...attributionHeaders(), ...(definition.protocol === 'anthropic-messages' ? { 'anthropic-version': '2023-06-01' } : {}), ...claudeSubscriptionHeaders(definition), 'content-type': 'application/json', accept: 'text/event-stream' };
       try {
         return await this.fetchImpl(protocolEndpoint(definition), { method: 'POST', headers, body, signal: options.signal ?? null });
       } catch (error) {
@@ -66,7 +74,8 @@ export class StudioProviderAdapter extends LlmAdapter {
     }
     if (!response.ok) throw httpFailure(response.status, await response.text().catch(() => ''), response.headers.get('retry-after'));
     if (!response.body) throw new LlmError('Provider response has no body', 'MALFORMED_RESPONSE');
-    yield* translate(definition.protocol, sseData(response.body as unknown as AsyncIterable<Uint8Array>));
+    const data = sseData(response.body as unknown as AsyncIterable<Uint8Array>);
+    yield* definition.protocol === 'anthropic-messages' ? translateAnthropic(data) : translate(definition.protocol, data);
   }
 }
 
@@ -96,7 +105,7 @@ export class StudioProviders extends TypertRemoteService {
   constructor(ctx: Context, private readonly directory: string, fetchImpl?: Fetch) {
     super(ctx, 'studioProviders');
     this.auth = new ProviderAuth({ credentials: () => ctx.get('credentials') as unknown as CredentialsSlice | undefined, ...(fetchImpl ? { fetch: fetchImpl } : {}) });
-    this.adapter = new StudioProviderAdapter(fetchImpl, this.auth);
+    this.adapter = new StudioProviderAdapter(fetchImpl, this.auth, { get: sessionId => (ctx.get('studioProviderSpeed') as SessionSpeedStore | undefined)?.get(sessionId) ?? Promise.resolve(false) });
     ctx.effect(() => () => { this.auth.dispose(); this.registration?.(); this.registration = undefined; });
     void this.reload().catch(error => ctx.logger?.warn?.(`studio: provider definitions not loaded: ${String(error)}`));
   }
@@ -114,6 +123,17 @@ export class StudioProviders extends TypertRemoteService {
 
   @Remote
   async list(): Promise<ProviderList> { await this.loading?.catch(() => undefined); return this.snapshot(); }
+
+  /** Create an opt-in template without overwriting any existing user definition. */
+  @Remote
+  async addTemplate(template: string): Promise<ProviderList> {
+    const definition = providerTemplate(template);
+    const current = await this.list();
+    if (current.entries.some(entry => entry.status !== 'invalid' && entry.definition.id === definition.id)) throw new Error('Provider route already exists');
+    await mkdir(this.directory, { recursive: true });
+    await writeFile(join(this.directory, `${definition.id}.json`), `${JSON.stringify(definition, null, 2)}\n`, { flag: 'wx', mode: 0o600 });
+    return this.reload();
+  }
 
   /** Begin an OAuth sign-in; the Client opens the returned URL. Resolves before the user finishes. */
   @Remote
@@ -138,6 +158,23 @@ export class StudioProviders extends TypertRemoteService {
     return this.snapshot();
   }
 
+  @Remote
+  async selectAccount(route: string, accountId: string): Promise<ProviderList> {
+    await this.auth.selectAccount(this.registered(route), accountId);
+    return this.snapshot();
+  }
+  @Remote
+  async removeAccount(route: string, accountId: string): Promise<ProviderList> {
+    await this.auth.removeAccount(this.registered(route), accountId);
+    return this.snapshot();
+  }
+  @Remote
+  async usage(route: string, accountId: string): Promise<ProviderUsage> {
+    const definition = this.registered(route);
+    if (!(await this.auth.accounts(definition)).some(account => account.id === accountId)) throw new Error('Unknown provider account');
+    return fetchProviderUsage(definition, signal => this.auth.headers(definition, { accountId, signal }));
+  }
+
   private registered(route: string): ProviderDefinition {
     const entry = this.entries.find(item => item.status === 'registered' && item.definition.id === route);
     if (!entry || entry.status !== 'registered') throw new Error(`Provider route ${route} is not registered`);
@@ -146,7 +183,9 @@ export class StudioProviders extends TypertRemoteService {
   private async snapshot(): Promise<ProviderList> {
     const auth: ProviderList['auth'] = {};
     for (const entry of this.entries) if (entry.status === 'registered') auth[entry.definition.id] = await this.auth.state(entry.definition).catch(() => ({ kind: entry.definition.credential.kind } as ProviderList['auth'][string]));
-    return { directory: this.directory, entries: this.entries, auth };
+    const accounts: NonNullable<ProviderList['accounts']> = {};
+    for (const entry of this.entries) if (entry.status === 'registered' && entry.definition.credential.kind === 'oauth') accounts[entry.definition.id] = await this.auth.accounts(entry.definition);
+    return { directory: this.directory, entries: this.entries, auth, accounts };
   }
 
   private async load(): Promise<ProviderList> {

@@ -11,7 +11,7 @@ import { PACKAGE_NAME, STUDIO_VERSION } from './package-name.ts';
 import { createUpdateStore, type UpdateActions } from './update-store.ts';
 import { SidebarIcon, VersionFooter } from './update-indicator.tsx';
 import { mountPixie, pixieDescriptors } from './pixie-client.tsx';
-import { mountSettingsX, settingsxDescriptors } from './settingsx-client.tsx';
+import { mountSettingsX } from './settingsx-client.tsx';
 import { DshMarkdown } from './ui-host.tsx';
 
 export const inject = ["slots", "locale", "remote"];
@@ -31,7 +31,7 @@ export async function apply(ctx: StudioContext) {
     })), ...['listPresets', 'savePreset', 'applyPreset', 'unapplyPreset', 'roleModels', 'deletePreset', 'readExtensions', 'saveExtensions', 'catalogChange', 'confirmCatalogChange', 'addMasterPlugin', 'removeMasterPlugin'].map(method => ({
         id: `${PACKAGE_NAME}#studioCatalog/${method}`, service: 'studioCatalog', namespace: 'studioCatalog', method,
         invocation: { kind: 'direct' }, parameters: ['listPresets', 'readExtensions', 'roleModels', 'catalogChange', 'confirmCatalogChange'].includes(method) ? [] : [{ name: ['savePreset', 'saveExtensions', 'addMasterPlugin'].includes(method) ? 'payload' : 'id', wire: ['savePreset', 'saveExtensions', 'addMasterPlugin'].includes(method) ? 'payload' : 'id', source: 'json', codec: { mode: 'strict', typeSymbol: 'string', create: () => ({ parse: (value: unknown) => { if (typeof value !== 'string') throw new TypeError('Expected a string'); return value; } }) } }], result: { mode: 'src-json' },
-    })), ...pixieDescriptors(), ...settingsxDescriptors()] });
+    })), ...pixieDescriptors()] });
     // `updates` is created below; the footer reads it only when the page renders.
     mountPixie(ctx, { navFooter: locale => <VersionFooter store={updates} locale={locale} />, markdown: DshMarkdown });
     mountSettingsX(ctx, { navFooter: locale => <VersionFooter store={updates} locale={locale} /> });

@@ -138,3 +138,18 @@ test('reload registers valid files, reports invalid and conflicting ones, and re
   assert.deepEqual([...service.adapter.definitions.keys()], ['beta']);
   assert.deepEqual((await service.list()).auth, { beta: { kind: 'none' } });
 });
+
+
+test('adapter pins the selected OAuth account across 401 and applies session priority on wire', async () => {
+  const seen = []; const authCalls = []; let selected = 'a';
+  const auth = { accounts: async () => [{ id: selected, isDefault: true }], headers: async (_, options) => { authCalls.push(options); return { Authorization: `Bearer ${options.accountId}` }; } };
+  const adapter = new StudioProviderAdapter(async (_, init) => {
+    seen.push(JSON.parse(init.body));
+    if (seen.length === 1) { selected = 'b'; return new Response('', { status: 401 }); }
+    return new Response('data: {"type":"response.output_text.delta","delta":"ok"}\n\ndata: {"type":"response.completed","response":{"status":"completed","output":[]}}\n\n');
+  }, auth, { get: async id => id === 'session' });
+  adapter.definitions.set('studio-chatgpt', definition('https://chatgpt.com/backend-api/codex', 'openai-responses', { id: 'studio-chatgpt', credential: { kind: 'oauth' } }));
+  await collect(adapter.stream(request({ provider: 'studio-chatgpt', model: 'gpt-5.5', sessionId: 'session' })));
+  assert.equal(seen[0].service_tier, 'priority'); assert.deepEqual(seen[0], seen[1]);
+  assert.deepEqual(authCalls.map(call => [call.accountId, call.retry]), [['a', false], ['a', true]]);
+});

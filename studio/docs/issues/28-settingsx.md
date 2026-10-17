@@ -5,7 +5,16 @@ status: ready
 
 # #28 SettingsX — 단축키 확장과 사용자 프로바이더 등록
 
-## 요약
+## 현재 배포 범위 — 사용자 결정 D10 (2026-10-17)
+
+프로바이더 메뉴와 관련 기능 전체를 이번 작업·배포 범위에서 제외한다. SettingsX는 단축키만 배포한다. 아래 프로바이더 설계와 검증 이력은 보류 기록이며 출시 기능이나 남은 필수 작업 목록이 아니다.
+
+- 제외: 프로바이더 정의 등록·가이드 자동 설치·API 키/OAuth·ChatGPT/Claude 템플릿·사용량·다중 계정·빠른 모드(S13–S17 포함).
+- 배포 진입점에서 Host 서비스·LLM 등록, Client Remote 및 입력창 토글을 제거하고 프로바이더 메뉴를 제공하지 않는다.
+- 연구 코드·테스트는 보존한다. 기존 사용자 정의 파일·계정 기록은 삭제하지 않는다.
+- 앞서 실행한 19391 테스트 웹은 제외 전 패키지다. 새 배포 범위로 자동 교체하지 않는다.
+
+## 요약 (최초 설계, 프로바이더 부분은 D10으로 보류)
 
 Studio에 DSH 기본 설정을 확장하는 **SettingsX** 영역을 만든다. 첫 두 기능은 키보드 단축키 확장과 사용자 프로바이더 등록이다. 둘 다 기존 DSH 설정(단축키 설정, 모델 선택)에 결과가 이어진다.
 
@@ -107,7 +116,7 @@ Studio가 소유하는 것은 계약과 그 계약의 실행이다. 계약은 **
 - **D5 자격 증명 공급:** 확정 — 계약은 `none`·`credential`·`command` 세 방식을 열거하되, 첫 구현은 `none`만 받는다(S5). 다른 값은 "아직 지원하지 않음"으로 거절한다. `credential`·`command`는 S11에서 추가한다. `command`가 구독 토큰 갱신을 사용자 스크립트에 맡기는 통로다. 따라서 OAI 구독의 실제 사용은 S11 이후이고, S6의 `openai-responses`는 가짜 서버로 검증한다. `none` 단계(S5·S6·S9)는 가짜 서버로만 검증하고, 실제 응답 확인은 S11에서 한다. 로컬 서버(Ollama·LM Studio)는 이 Mac에 없어 선택 사항으로 둔다.
 - **D6 작성 지원:** 확정 — Studio는 계약·예시·검증 절차를 담은 프로바이더 작성 스킬을 제공한다.
 - **D7 OAuth 등록:** 사용자 결정(2026-10-17) — 정의 파일에 `credential.kind: "oauth"`를 추가하고, 프로바이더 페이지에 로그인·다시 로그인·로그아웃을 둔다. 흐름은 범용 authorization code + PKCE + 루프백 리디렉션 하나다. 프로바이더별 화면이나 기기 ID 같은 비표준 단계는 넣지 않는다. 클라이언트 ID·주소는 정의 파일이 정하며, 그 값을 쓸 권한과 약관 책임은 사용자에게 있다. ChatGPT 구독은 이 형식의 예시로만 제공하고(Codex CLI 공개 값), Studio 기본 설치에 정의를 넣지 않는다.
-- **D8 구독 템플릿(2026-10-17, 미구현):** 사용자 피드백 — 정의 파일 작성은 어렵다. `dsh-plugin-subscriptions`처럼 대표 프로바이더는 Studio가 OAuth 로그인과 토큰 관리를 맡는다. 결정된 범위:
+- **D8 구독 템플릿(2026-10-17, 최초 결정; 공급자 범위는 D9로 확장):** 사용자 피드백 — 정의 파일 작성은 어렵다. `dsh-plugin-subscriptions`처럼 대표 프로바이더는 Studio가 OAuth 로그인과 토큰 관리를 맡는다. 결정된 범위:
   - **ChatGPT(Codex) 구독만** 먼저 한다. 기존 OAuth 엔진(S12) 위에 기본 템플릿을 두고 원클릭으로 추가·로그인한다. 사용자는 JSON을 보지 않는다.
   - **UI는 구독 플러그인의 Settings → Subscriptions를 참고한다**(사용자 제공 스크린샷): 프로바이더 카드(상태 점, 이름, "N개 계정 연결됨"), 계정 행(기본 별표, 이메일, 플랜, 만료, 로그아웃), 사용량(플랜, 기간별 사용률 막대, 초기화 시각, 새로 고침), 계정 추가·관리 버튼. 페이지 위에 "프로바이더 추가"(ChatGPT, API 키, 로컬 서버 템플릿). 직접 만든 정의 파일도 같은 카드로 보인다.
   - **사용량:** ChatGPT `https://chatgpt.com/backend-api/wham/usage`(비공개, 5시간·주간 창의 `used_percent`·`reset_at`). `dsh-plugin-subscriptions`(MIT)의 `src/providers/codex.ts`가 참고 구현.
@@ -135,6 +144,7 @@ Studio가 소유하는 것은 계약과 그 계약의 실행이다. 계약은 **
 | S14 | 구독 카드 UI(계정 행, 사용량 막대·새로 고침, 계정 추가·관리) | S13 | UI 테스트, 라이트·다크·좁은 폭 |
 | S15 | ChatGPT 사용량 조회(`wham/usage`) | S13 | 가짜 응답 파싱 테스트, 토큰 비노출 |
 | S16 | 여러 계정(계정별 레코드, 기본 계정 선택) | S14 | 계정 추가·삭제·기본 전환 테스트, 기존 단일 레코드 이전 |
+| S17 | ChatGPT 세션별 빠른 모드 | S13 | 입력창 토글, 재시작 후 상태 유지, priority 요청 및 다른 모델·보조 호출 비영향 |
 
 ## 진행과 검증 기록
 
@@ -164,14 +174,37 @@ Studio가 소유하는 것은 계약과 그 계약의 실행이다. 계약은 **
 
 **검사:** `npm --prefix studio test`(타입 검사·빌드·561개 테스트) 통과.
 
-현재 단계: S13 시작 전(코드 변경 없음). S1–S12는 커밋 `4478f493b2`까지 반영.
+현재 단계: S13–S17 코드·자동 검사 완료, 실제 로그인·GUI 및 독립 설치 검증 대기. S1–S12는 커밋 `4478f493b2`까지 반영.
+
+S13 검증 기록 (2026-10-17): Studio 타입 검사·빌드 성공, Studio 테스트 570/570 통과, `git diff --check` 통과. ChatGPT·Claude 템플릿 검증, 기존 파일 보존, Claude JSON OAuth 교환·갱신/동적 포트, Anthropic 도구·thinking replay·오류 스트림, 추가 버튼→로그인 URL UI 연결을 가짜 서버/DOM으로 검증했다. 실제 계정 로그인·모델 호출, 라이트/다크·좁은 폭 GUI 및 수정하지 않은 rc.2에 새 패키지 독립 설치는 미검증이다. 현재 실행 중인 GUI와 사용자 프로필은 변경하지 않았다. 모델 목록은 편집 가능한 초기 정적 목록이며 실시간 카탈로그 동기화는 아직 없다.
+
+### D9 템플릿 범위 확장 (2026-10-17 사용자 승인)
+
+- S13을 ChatGPT와 Claude 구독 템플릿으로 확장한다. 경로는 `studio-chatgpt`, `studio-claude`; 사용자가 추가할 때만 정의를 생성하며 기존 파일을 덮어쓰지 않는다. 다른 플러그인의 자격 증명과 Claude Code 저장소는 읽거나 수정하지 않는다.
+- 사용자는 Claude 구독의 Claude Code 호환 식별 헤더를 기존 클라이언트 위장 제외 원칙의 예외로 승인했다. OpenCode 무료 등급 우회와 자동 계정 전환은 계속 제외한다. Claude 요청만 전용 식별 헤더를 사용하며 일반 경로의 DSH attribution은 유지한다.
+- Claude는 `anthropic-messages` 프로토콜, JSON OAuth 토큰 교환·갱신, state 전달 및 동적 루프백 포트를 추가한다. 참고: https://github.com/V1ki/dsh-plugin-subscriptions (구현 의존·코드 복사 없음).
+- S13 수용 조건: 템플릿 검증, 파일 덮어쓰기 거절, 가짜 OAuth JSON 교환·갱신, Messages 텍스트/도구 스트림 테스트, 추가→로그인 UI 연결. 실제 구독 로그인·응답은 사용자 계정으로 별도 검증한다.
+- S14–S16 구현: 구독 카드·관리 창, 수동 사용량 조회, 계정 추가·기본 선택·확인 후 삭제. 사용량은 S15 ChatGPT 범위이며 Claude는 미지원 사유를 표시한다.
+- S17 추가: ChatGPT 빠른 모드(기존 D8 포함 결정 유지). 공개 입력창 확장점과 세션별 옵션 전달 확인 후 구현하며 요청의 `service_tier: priority`와 다른 경로 비영향을 검증한다.
+- S8의 기존 검증은 S1–S12에 대한 기록이다. S13 이후 변경분은 격리 프로필에서 독립 설치를 다시 검증한다.
 
 남은 일:
-- S13–S16(D8 범위, ChatGPT만). 시작 전 확정할 것: Studio 경로 ID(`studio-chatgpt`)와 구독 플러그인 공존, 빠른 모드 포함 여부.
+- S13–S17 새 패키지의 수정하지 않은 rc.2 독립 설치 및 라이트·다크·좁은 폭 GUI 검증. 실시간 모델 카탈로그·Claude 사용량 조회는 범위 밖.
 - S1 데스크톱 창 전체화면·⌃⌘F 실험, S3 Studio 세션 이동 키 사용자 확인, 실제 ChatGPT 로그인·대화 확인(사용자 계정 필요), 역할 모델 목록 화면 확인.
 
 재개 메모:
 - 워크트리 `deepseek-harness-28`(브랜치 `studio/feat/28-settingsx`). 메인 checkout은 `studio/feat/utils`를 사용자가 쓰고 있으므로 건드리지 않는다.
-- OAuth 엔진: [provider-auth.ts](../../src/host/provider-auth.ts). 레코드 키 `studio-providers/<route>`, 페이로드 `{ access, refresh?, expiresAt?, claims? }`. S16에서 계정별 키로 바꿀 때 이 단일 레코드를 이전한다.
+- OAuth 엔진: [provider-auth.ts](../../src/host/provider-auth.ts). 레코드 키 `studio-providers/<route>`, 현재 페이로드 `{ version: 2, accounts, defaultId? }`; 이전 단일 grant를 읽으면 계정별 `studio-provider-accounts` 레코드로 이전한다. 기본 계정 삭제 시 다른 계정을 자동 선택하지 않는다. 여러 레코드 쓰기는 공개 API의 단일 레코드 잠금으로 순차 수행하며 다중 레코드 트랜잭션은 아니다.
 - ChatGPT 요청 형식과 OAuth 값: [examples.md](../../release/docs/appendix/studio-provider-guide/examples.md)의 ChatGPT 정의(Codex CLI 공개 값, `chatgpt-account-id`는 `claimHeaders`로 토큰에서 읽음). S13 템플릿은 이 정의를 출발점으로 쓴다.
 - 독립 설치 검증 방식: `STUDIO_PACK_DIST=<dir> node pack.mjs` → 격리 `DSH_HOME`에 `dsh plugin --profile web add <tgz>` → `dsh --profile web --port 19391`. 가짜 OAuth·모델 서버로 로그인 흐름을 계정 없이 검증할 수 있다.
+
+
+### S14–S17 구현 검증 (2026-10-17)
+
+최종 자동 검사: Studio 전체 테스트 **583/583 통과**, Host/Client 타입 검사 및 Studio 빌드 성공, `git diff --check` 통과. 변경 범위는 `studio/`뿐이다.
+
+- S14: 기존 Studio 카드·SectionHead·Badge·DetailDialog·Button 재사용. 계정별 수동 기본 선택·로그아웃 확인, 사용량·조회 시각·실패/미지원 상태를 ko/en/zh로 제공. 디자인 규칙·공용 UI 테스트 통과.
+- S15: 고정 ChatGPT usage URL만 조회, 15초 제한·리다이렉트 거절·응답 오류 본문 비노출. 응답의 검증된 백분율·초기화 시각만 표시하며 0%를 임의 생성하지 않는다. 구간 길이는 서버별로 달라질 수 있어 기본/추가 기간으로 표시한다.
+- S16: 기존 grant 이전, 계정별 기록, 수동 기본 선택, 제거 후 refresh 재생성 방지. 요청 시작 때 계정 ID를 고정해 401 재시도에도 유지한다. 자동 전환 없음.
+- S17: 공개 `conversation.input.left` 슬롯과 `storageDomain`으로 세션별 토글 저장. `studio-chatgpt/gpt-5.5`에서만 `service_tier: priority` 적용. DSH 공개 모델 선택에 임의 옵션 필드가 없어 Studio 전용 저장 도메인을 쓰며 세션 로그 replay 메타데이터는 아니다. 보조 purpose·세션 없는 호출 제외.
+- 새 코드의 설치 런타임 검증은 아직 없음. Client Inspect가 연결 시간 초과를 반환했고 현 checkout에 Playwright가 없어 브라우저 캡처를 실행하지 않았다. 실행 중인 GUI·설치 앱·사용자 프로필은 변경하지 않았다. 단위 검증을 독립 배포/실제 구독 성공으로 간주하지 않는다.
