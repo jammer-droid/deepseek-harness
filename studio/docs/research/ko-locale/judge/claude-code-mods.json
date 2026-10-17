@@ -1,0 +1,50 @@
+{
+  "namespace": "claude-code-mods",
+  "date": "2026-10-17",
+  "engine": "jev",
+  "thresholds": { "natural": 1.5, "meaning": 0.6, "style": 0.5 },
+  "rows": [
+    {
+      "key": "band",
+      "en": "Claude Code mods",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "Claude Code 모드", "natural": 1.23, "meaning": 0.91, "style": 0.74, "pass": false },
+        { "ko": "Claude Code 모드 밴드", "natural": 0.69, "meaning": 0.56, "style": 0.79, "pass": false },
+        { "ko": "Claude Code 모듈", "natural": 1.19, "meaning": 0.86, "style": 0.86, "pass": false },
+        { "ko": "Claude Code 모드 영역", "natural": 1.1, "meaning": 0.76, "style": 0.83, "pass": false }
+      ],
+      "result": "unresolved"
+    },
+    {
+      "key": "press.failed",
+      "en": "The button failed: {message}",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "버튼 조작에 실패했습니다: {message}", "natural": 1.58, "meaning": 0.92, "style": 0.9, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "press.stale",
+      "en": "That button belonged to an earlier drawing; the band has refreshed",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "이 버튼은 이전 렌더링의 버튼입니다. 밴드가 새로 고쳐졌습니다.", "natural": 0.82, "meaning": 0.8, "style": 0.49, "pass": false },
+        { "ko": "이 버튼은 이전 화면의 버튼입니다. 밴드가 새로 고쳐졌습니다.", "natural": 0.9, "meaning": 0.84, "style": 0.65, "pass": false },
+        { "ko": "이 버튼은 이전 화면에 속한 것입니다. 밴드가 새로 고쳐졌습니다.", "natural": 0.8, "meaning": 0.75, "style": 0.74, "pass": false },
+        { "ko": "이 버튼은 이전 화면의 버튼입니다. 표시줄이 갱신되었습니다.", "natural": 1.08, "meaning": 0.79, "style": 0.57, "pass": false }
+      ],
+      "result": "unresolved"
+    },
+    {
+      "key": "pressing",
+      "en": "Working…",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "처리 중…", "natural": 1.9, "meaning": 0.96, "style": 0.63, "pass": true }
+      ],
+      "result": "pass"
+    }
+  ]
+}
