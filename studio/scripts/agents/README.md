@@ -21,9 +21,9 @@
 
 이슈 완료 검증과 배포 검증의 E2E는 이 흐름을 따른다. 각 단계의 세부는 아래 절에 있다.
 
-1. **지침서 작성(메인 세션):** [템플릿](TEMPLATE-e2e.md)을 복사해 이 이슈에서 확인할 것, L0 시나리오, L1 명세, 올림 조건만 채운다. 새 L0 시나리오는 `studio/scripts/e2e/`에 [browser.mjs](../e2e/browser.mjs)의 `app.step()`으로 쓴다.
+1. **지침서 작성(메인 세션):** [템플릿](TEMPLATE-e2e.md)을 복사해 이 이슈에서 확인할 것, L0 시나리오, L1 명세, 올림 조건만 채운다. 새 L0 시나리오는 `studio/scripts/e2e/`에 쓴다. 화면은 [browser.mjs](../e2e/browser.mjs)의 `app.step()`, 에이전트 제어(역할 자식·Tool Filter·persona·상속·게이트)는 [에이전트 제어 시나리오 가이드](../e2e/agent-scenarios.md)의 `runAgent()`로 쓴다.
 2. **실행(새 세션 검증자):** 사용자가 "`<지침서>`를 읽고 진행해"라고 지시한다. 검증자는 제품을 고치지 않는다.
-3. **서버:** `node studio/scripts/e2e/server.mjs up`. 구독 모델·Jev·DeepSeek 키가 필요한 검증은 `--with-desktop-plugins --with-secrets keys,subscriptions`를 붙인다(아래 [격리 서버](#격리-서버)의 토큰 갱신 주의).
+3. **서버:** `node studio/scripts/e2e/server.mjs up`. 에이전트 제어를 각본으로 확인할 때는 `--mock-llm`(토큰 0)을 붙인다. 구독 모델·Jev·DeepSeek 키가 필요한 검증은 `--with-desktop-plugins --with-secrets keys,subscriptions`를 붙인다(아래 [격리 서버](#격리-서버)의 토큰 갱신 주의).
 4. **L0:** `smoke.mjs`부터 실행하고, 이어서 기능 시나리오와 필요한 RPC 검사를 실행한다.
 5. **L1:** L0 요약에 `repair.items`가 있으면 [셀렉터 복구](../e2e/selector-repair.md)를 실행하고 L0을 다시 실행한다. 코드로 판정할 수 없는 항목은 `judge`·`pixie_loop`으로 판정한다. 실모델·루프·게이트 완료는 `wait.mjs`로 기다린다.
 6. **L2:** L1에서도 판정되지 않은 항목만 검증자가 원문을 보고 판단하고, 결함 후보로 보고한다.
@@ -96,7 +96,8 @@ node studio/scripts/e2e/server.mjs down [--profile e2e]
   - `subscriptions`: 구독 플러그인 OAuth 저장소 `plugins/subscriptions/auth.json`.
   - **주의:** 격리 환경에서 토큰이 갱신되면 갱신된 토큰은 격리 home에만 저장된다. 공급자가 갱신 토큰을 한 번만 쓰게 하면 사용자 Desktop의 로그인이 끊길 수 있다. 접근 토큰 만료가 120분 안이면 `secrets.warning`이 나온다. 경고가 있으면 실모델 실행 전에 Desktop에서 먼저 사용해 갱신하거나 진행 여부를 사용자에게 묻는다. 갱신이 일어나는 경우는 아직 시험하지 않았다(2026-10-17: 복사·화면 표시·사용량 조회만 확인, 갱신 미발생, Desktop 파일 불변).
 - 포트는 지정하지 않으면 19410–19499에서 빈 곳을 고른다. 다른 서버를 종료하지 않는다.
-- `down`은 이 스크립트가 띄운 프로세스(상태 파일의 pid)만 종료하고 포트가 비었는지 확인한다.
+- `--mock-llm`: 각본 목 모델([mock-llm.mjs](../e2e/mock-llm.mjs))을 함께 띄우고 DeepSeek 제공자를 그쪽으로 돌린다. 요청은 `<home>/e2e-runs/<profile>/mock-llm.jsonl`에 남는다. 사용법은 [에이전트 제어 시나리오 가이드](../e2e/agent-scenarios.md).
+- `down`은 이 스크립트가 띄운 프로세스(상태 파일의 pid, 목 모델 포함)만 종료하고 포트가 비었는지 확인한다.
 - 인증 URL은 출력과 상태 파일(0600)에만 있다. 보고서·문서·Git에 옮기지 않는다.
 - 설치·기동 성공은 Client 플러그인 활성화나 화면 동작을 뜻하지 않는다. 그 확인은 L0 브라우저 검사의 몫이다.
 

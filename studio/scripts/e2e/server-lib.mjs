@@ -32,6 +32,7 @@ export function parseArgs(argv) {
       case '--plugin': options.plugins.push(next()); break;
       case '--with-desktop-plugins': options.desktopPlugins = true; break;
       case '--reuse-profile': options.reuseProfile = true; break;
+      case '--mock-llm': options.mockLlm = true; break;
       case '--with-secrets': options.secrets = next().split(',').map(part => part.trim()).filter(Boolean); break;
       case '--skip-build': options.skipBuild = true; break;
       case '--timeout': options.timeoutMs = parseDuration(next()); break;

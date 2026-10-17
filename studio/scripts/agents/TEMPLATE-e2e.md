@@ -29,9 +29,10 @@
 | 단계 | 명령 | 기준선 | 올림 조건 |
 | --- | --- | --- | --- |
 | 기본 | `node studio/scripts/e2e/smoke.mjs` | 12/12, pageerror 0, 플러그인 실패 0 | 셀렉터 실패 → L1 셀렉터 복구 |
+| <에이전트 제어> | `node studio/scripts/e2e/<시나리오>.mjs` (`up --mock-llm`) | <통과 수> | 불일치 → L2 결함 후보 |
 | <기능 시나리오> | `node <시나리오>.mjs` | <통과 수·값> | <조건> |
 
-- 시나리오는 [browser.mjs](../e2e/browser.mjs)의 `run()`·`app.step()`으로 쓴다. 상태를 바꾸는 행동(저장·삭제)은 이 단계에서만 한다.
+- 화면 시나리오는 [browser.mjs](../e2e/browser.mjs)의 `run()`·`app.step()`, 에이전트 제어 시나리오는 [agent.mjs](../e2e/agent.mjs)의 `runAgent()`([가이드](../e2e/agent-scenarios.md))로 쓴다. 상태를 바꾸는 행동(저장·삭제)은 이 단계에서만 한다.
 - RPC 확인이 필요하면 `STUDIO_TEST_ISOLATED=1 STUDIO_TEST_PORT=<port> node studio/scripts/check-web-runtime.mjs '<url>'`.
 
 ## 2. L1

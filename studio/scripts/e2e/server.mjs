@@ -3,7 +3,7 @@
  * Isolated E2E Web server for agent verification. One call returns only when the result is known.
  *
  *   node studio/scripts/e2e/server.mjs up [--profile e2e] [--port N] [--archive <tgz>] [--skip-build]
- *        [--plugin <spec>]... [--with-desktop-plugins] [--with-secrets keys,subscriptions] [--reuse-profile] [--timeout 90s]
+ *        [--plugin <spec>]... [--with-desktop-plugins] [--with-secrets keys,subscriptions] [--mock-llm] [--reuse-profile] [--timeout 90s]
  *   node studio/scripts/e2e/server.mjs status [--profile e2e]
  *   node studio/scripts/e2e/server.mjs down [--profile e2e] [--timeout 20s]
  *
@@ -14,6 +14,8 @@
  * The user's ~/.dsh is only read (--with-desktop-plugins, --with-secrets), never written.
  * --with-secrets copies, on every up, API key refs (keys) and/or the subscription OAuth store
  * (subscriptions) into the isolated home with mode 0600; only names and counts are printed.
+ * --mock-llm starts the scripted mock model (mock-llm.mjs) and points the DeepSeek provider at it
+ * (DEEPSEEK_BASE_URL, DEEPSEEK_API_KEY=mock-key); requests are captured to <run dir>/mock-llm.jsonl.
  */
 import { spawn, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
@@ -61,9 +63,9 @@ function portFree(port) {
   });
 }
 
-async function pickPort() {
-  if (options.port) return (await portFree(options.port)) ? options.port : undefined;
-  for (let port = PORT_RANGE[0]; port <= PORT_RANGE[1]; port++) if (await portFree(port)) return port;
+async function pickPort(from) {
+  if (from === undefined && options.port) return (await portFree(options.port)) ? options.port : undefined;
+  for (let port = from ?? PORT_RANGE[0]; port <= PORT_RANGE[1]; port++) if (await portFree(port)) return port;
   return undefined;
 }
 
@@ -116,6 +118,25 @@ async function up() {
     if (/WARN/.test(added.output)) warnings.push(`${path.basename(spec)}: ${added.output.match(/.*WARN.*/)[0].trim()}`);
   }
 
+  let mock;
+  if (options.mockLlm) {
+    const mockPort = await pickPort(port + 1);
+    if (!mockPort) finish({ ok: false, step: 'mock-llm', error: 'No free port for the mock model' });
+    const capture = path.join(runDir, 'mock-llm.jsonl');
+    rmSync(capture, { force: true });
+    const mockLog = path.join(runDir, 'mock-llm.log');
+    const out = openSync(mockLog, 'w');
+    const mockChild = spawn(process.execPath, [path.join(studio, 'scripts/e2e/mock-llm.mjs'), '--port', String(mockPort), '--capture', capture], { detached: true, stdio: ['ignore', out, out] });
+    closeSync(out);
+    mockChild.unref();
+    const mockDeadline = Date.now() + 10_000;
+    while (Date.now() < mockDeadline && !/mock-llm: /.test(readFileSync(mockLog, 'utf8'))) await sleep(200);
+    if (!/mock-llm: /.test(readFileSync(mockLog, 'utf8'))) finish({ ok: false, step: 'mock-llm', output: tail(readFileSync(mockLog, 'utf8')) });
+    mock = { pid: mockChild.pid, port: mockPort, capture, baseUrl: `http://127.0.0.1:${mockPort}` };
+    env.DEEPSEEK_BASE_URL = mock.baseUrl;
+    env.DEEPSEEK_API_KEY = 'mock-key';
+  }
+
   const log = openSync(logPath, 'w');
   chmodSync(logPath, 0o600);
   const child = spawn(runtime, ['--profile', profile, '--host', '127.0.0.1', '--port', String(port), '--no-open'], {
@@ -139,14 +160,15 @@ async function up() {
     }
     await sleep(1000);
   }
-  const state = { pid: child.pid, port, profile, home, log: logPath, url, archive, sha256, runtime, version, startedAt: new Date().toISOString() };
+  const state = { pid: child.pid, port, profile, home, log: logPath, url, archive, sha256, runtime, version, mock, startedAt: new Date().toISOString() };
   writeFileSync(statePath, JSON.stringify(state, null, 2), { mode: 0o600 });
   if (!ready) {
     if (alive(child.pid)) { try { process.kill(-child.pid, 'SIGTERM'); } catch { /* already gone */ } }
+    if (mock) { try { process.kill(-mock.pid, 'SIGTERM'); } catch { /* gone */ } }
     rmSync(statePath, { force: true });
     finish({ ok: false, step: 'start', error: alive(child.pid) ? `Not ready within ${timeoutMs}ms` : 'Server exited', log: logPath, output: redactUrl(tail(readFileSync(logPath, 'utf8'))) });
   }
-  finish({ ok: true, url, port, pid: child.pid, profile, home, version, package: path.basename(archive), sha256, installed, warnings, secrets, log: logPath, state: statePath });
+  finish({ ok: true, url, port, pid: child.pid, profile, home, version, package: path.basename(archive), sha256, installed, warnings, secrets, mock, log: logPath, state: statePath });
 }
 
 /** Copy the requested secret kinds from the user home. Returns names and counts only. */
@@ -185,6 +207,7 @@ async function down() {
   const deadline = Date.now() + (options.timeoutMs ?? 20_000);
   while (Date.now() < deadline && (alive(state.pid) || !(await portFree(state.port)))) await sleep(500);
   if (alive(state.pid)) { try { process.kill(-state.pid, 'SIGKILL'); } catch { /* gone */ } await sleep(500); }
+  if (state.mock?.pid && alive(state.mock.pid)) { try { process.kill(-state.mock.pid, 'SIGTERM'); } catch { try { process.kill(state.mock.pid, 'SIGTERM'); } catch { /* gone */ } } }
   const free = await portFree(state.port);
   if (!alive(state.pid)) rmSync(statePath, { force: true });
   finish({ ok: !alive(state.pid) && free, profile, stopped: !alive(state.pid), port: state.port, portFree: free });
