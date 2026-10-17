@@ -70,4 +70,4 @@ status: ready
 | S4 | Subagents 탭(`conversation.view`), ko·en·zh 문구 | S2 | UI 스냅샷, 라이트·다크·좁은 폭, 자식 세션 읽기 전용 |
 | S5 | 독립 설치 검증 | 모두 | 수정하지 않은 rc.2 + 패키징 Studio, 실세션에서 세션 역할로 위임 확인 |
 
-현재 단계: S1.
+진행: S1 완료([session-roles.ts](../../src/session-roles.ts), [테스트](../../test/session-roles.test.mjs) 8개 통과). 현재 단계: S2.
