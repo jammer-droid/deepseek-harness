@@ -54,6 +54,24 @@
 
 결과 표의 항목마다 판정 단계(`L0 / L1 / L2`)를 적는다. L1 판정에는 job id와 통과·escalated·error 수를 함께 적는다. 스크립트 판정과 결정 엔진의 확률 판정은 신뢰도가 다르므로 섞어 집계하지 않는다.
 
+## 격리 서버
+
+설치·기동·종료는 [server.mjs](../e2e/server.mjs)로 한다. 각 호출은 결과가 정해진 뒤에 JSON 요약 하나만 출력하고 끝난다.
+
+```sh
+node studio/scripts/e2e/server.mjs up [--profile e2e] [--with-desktop-plugins] [--plugin <spec>] [--archive <tgz>] [--skip-build] [--port N] [--timeout 90s]
+node studio/scripts/e2e/server.mjs status [--profile e2e]
+node studio/scripts/e2e/server.mjs down [--profile e2e]
+```
+
+- `up`: Studio 빌드·pack(`--archive`가 있으면 생략) → 출하 `web` 템플릿으로 프로필 재생성 → 격리 home에 설치 → 수정하지 않은 `dsh` 기동 → 인증 URL이 응답할 때까지 스크립트 안에서 대기. 출력: `url`, `port`, `pid`, 런타임 `version`, 패키지 이름·`sha256`, 설치 목록, peer 경고, 로그 경로.
+- 격리 home은 기본 `studio/dist/e2e/home`(Git 제외, `--home` 또는 `STUDIO_E2E_HOME`으로 변경)이며 회차 사이에 유지한다. 프로필은 매번 새로 만든다(`--reuse-profile`로 유지). `~/.dsh`는 home으로 쓸 수 없다.
+- `--with-desktop-plugins`: Desktop 프로필 `package.json`을 **읽기만** 해서 Studio를 뺀 플러그인(구독 플러그인 등)을 같은 버전으로 설치한다. 토큰·자격 증명은 복사하지 않는다.
+- 포트는 지정하지 않으면 19410–19499에서 빈 곳을 고른다. 다른 서버를 종료하지 않는다.
+- `down`은 이 스크립트가 띄운 프로세스(상태 파일의 pid)만 종료하고 포트가 비었는지 확인한다.
+- 인증 URL은 출력과 상태 파일(0600)에만 있다. 보고서·문서·Git에 옮기지 않는다.
+- 설치·기동 성공은 Client 플러그인 활성화나 화면 동작을 뜻하지 않는다. 그 확인은 L0 브라우저 검사의 몫이다.
+
 ## 목록
 
 | 문서 | 대상 |
