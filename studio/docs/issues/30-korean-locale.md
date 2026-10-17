@@ -88,6 +88,8 @@ DSH 화면 문구 전체를 한국어로 제공한다. Studio는 이미 `ctx.loc
 
 ## S5 진행 방법
 
-- 순차 진행 지침: [dsh-ko-sequential.md](../../scripts/agents/dsh-ko-sequential.md). 새 세션에서 이 문서를 읽으라고 지시하면 남은 네임스페이스를 작은 것부터 번역하고, 네임스페이스마다 로컬 커밋한다.
-- 진행률과 다음 대상: `node --import tsx scripts/dsh-ko-next.mjs`(`studio/`에서). `index.ts`에 등록된 네임스페이스는 완료, 등록되지 않은 사전 파일은 진행 중으로 본다. 끊긴 세션은 남은 키부터 이어 간다.
-- 미해결 문구와 용어집 제안은 `docs/research/ko-locale/judge/unresolved.md`에 모은다. S5 완료 전에 사용자가 검토한다.
+- 진행 지침: [dsh-ko-sequential.md](../../scripts/agents/dsh-ko-sequential.md). 조율자 세션이 남은 네임스페이스를 묶음(약 250키)으로 나눠 서브에이전트에 번역을 맡긴다. 판정은 [dsh-ko-judge.mjs](../../scripts/dsh-ko-judge.mjs)가 Jev로 일괄 처리하고, 조율자가 등록·검사·커밋한다.
+- 판정 스크립트: `judge` 도구와 같은 `JevJudgeEngine`, 같은 세 질문과 기준을 쓴다. 판정을 마친 문구는 다시 보내지 않는다. 첫 번역과 다시 쓰기 3회까지 통과하지 못한 키는 `fallback`으로 옮긴다. 버전 사이에 영어가 다른 키는 두 영어 모두로 판정하고 낮은 점수를 쓴다. Jev 키는 `TYPESAFE_API_KEY` 환경 변수, 없으면 `~/.dsh/.credentials.yaml`을 읽기만 한다.
+- 이전 방식(에이전트가 `judge`를 직접 호출)은 판정 요청·응답이 대화에 쌓여 한 세션 400키에서 멈췄다. 2026-10-17에 40개 네임스페이스(583키)를 이 방식으로 마쳤다.
+- 시험: `sidebarRight`(34키)를 새 방식으로 처리했다. 판정 4회차, Jev 요청 5번. 결과 통과 24, 재작성 통과 6, fallback 4. 회차마다 바뀐 키만 다시 판정했다.
+- 진행률과 다음 대상: `node --import tsx scripts/dsh-ko-next.mjs`(`studio/`에서). 미해결 문구와 용어집 제안은 `docs/research/ko-locale/judge/unresolved.md`에 모으고 S5 완료 전에 사용자가 검토한다.
