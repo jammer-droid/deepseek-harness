@@ -107,6 +107,14 @@ Studio가 소유하는 것은 계약과 그 계약의 실행이다. 계약은 **
 - **D5 자격 증명 공급:** 확정 — 계약은 `none`·`credential`·`command` 세 방식을 열거하되, 첫 구현은 `none`만 받는다(S5). 다른 값은 "아직 지원하지 않음"으로 거절한다. `credential`·`command`는 S11에서 추가한다. `command`가 구독 토큰 갱신을 사용자 스크립트에 맡기는 통로다. 따라서 OAI 구독의 실제 사용은 S11 이후이고, S6의 `openai-responses`는 가짜 서버로 검증한다. `none` 단계(S5·S6·S9)는 가짜 서버로만 검증하고, 실제 응답 확인은 S11에서 한다. 로컬 서버(Ollama·LM Studio)는 이 Mac에 없어 선택 사항으로 둔다.
 - **D6 작성 지원:** 확정 — Studio는 계약·예시·검증 절차를 담은 프로바이더 작성 스킬을 제공한다.
 - **D7 OAuth 등록:** 사용자 결정(2026-10-17) — 정의 파일에 `credential.kind: "oauth"`를 추가하고, 프로바이더 페이지에 로그인·다시 로그인·로그아웃을 둔다. 흐름은 범용 authorization code + PKCE + 루프백 리디렉션 하나다. 프로바이더별 화면이나 기기 ID 같은 비표준 단계는 넣지 않는다. 클라이언트 ID·주소는 정의 파일이 정하며, 그 값을 쓸 권한과 약관 책임은 사용자에게 있다. ChatGPT 구독은 이 형식의 예시로만 제공하고(Codex CLI 공개 값), Studio 기본 설치에 정의를 넣지 않는다.
+- **D8 구독 템플릿(2026-10-17, 미구현):** 사용자 피드백 — 정의 파일 작성은 어렵다. `dsh-plugin-subscriptions`처럼 대표 프로바이더는 Studio가 OAuth 로그인과 토큰 관리를 맡는다. 결정된 범위:
+  - **ChatGPT(Codex) 구독만** 먼저 한다. 기존 OAuth 엔진(S12) 위에 기본 템플릿을 두고 원클릭으로 추가·로그인한다. 사용자는 JSON을 보지 않는다.
+  - **Claude 구독은 하지 않는다.** pi-ai·`dsh-plugin-subscriptions`는 구독 토큰을 쓰려고 Claude Code로 위장한다(시스템 프롬프트 첫 줄 `You are Claude Code, …`, `user-agent: claude-cli/…`, `x-app: cli`, `claude-code-20250219` 베타 헤더). 이는 제외 범위의 클라이언트 위장이다. 사용자는 약관이 바뀌었다고 했으나 확인한 [소비자 약관](https://www.anthropic.com/legal/consumer-terms)(2025-10-08 시행)과 [Pro/Max의 Claude Code 안내](https://support.claude.com/en/articles/11145838-use-claude-code-with-your-pro-or-max-plan)에서는 변경을 찾지 못했다. 위장 없는 공식 OAuth 경로가 확인되면 템플릿으로 추가한다. 대안은 Anthropic Messages 프로토콜 + API 키 템플릿.
+  - **UI는 구독 플러그인의 Settings → Subscriptions를 참고한다**(사용자 제공 스크린샷): 프로바이더 카드(상태 점, 이름, "N개 계정 연결됨"), 계정 행(기본 별표, 이메일, 플랜, 만료, 로그아웃), 사용량(플랜, 기간별 사용률 막대, 초기화 시각, 새로 고침), 계정 추가·관리 버튼. 페이지 위에 "프로바이더 추가"(ChatGPT, API 키, 로컬 서버 템플릿). 직접 만든 정의 파일도 같은 카드로 보인다.
+  - **사용량:** ChatGPT `https://chatgpt.com/backend-api/wham/usage`(비공개, 5시간·주간 창의 `used_percent`·`reset_at`). `dsh-plugin-subscriptions`(MIT)의 `src/providers/codex.ts`가 참고 구현.
+  - **여러 계정:** 레코드를 계정별 키로 나누고 기본 계정을 수동 선택한다. 한도 도달 시 자동 전환은 한도 회피 성격이라 넣지 않는다(별도 결정 필요).
+  - **빠른 모드**(`service_tier: priority`, 입력창 토글): 가능하나 포함 여부 미결정.
+  - **공존:** 구독 플러그인과 같이 쓰도록 Studio 경로 ID를 `studio-chatgpt`처럼 구분한다(추천안, 미확정).
 
 ## 단계
 
@@ -124,6 +132,10 @@ Studio가 소유하는 것은 계약과 그 계약의 실행이다. 계약은 **
 | S10 | 프로바이더 작성 스킬(계약, 로컬 서버 예시, 검증 절차; OAI 예시는 S11 뒤 추가) | S5 | 스킬 설치 테스트, 예시 정의가 S5 검증 통과 |
 | S11 | 자격 증명 `credential`·`command`와 OAI 구독 예시 | S6 | 단위 테스트(키·토큰 비노출, `command` 캐시·만료·401 재실행), 실제 프로바이더 응답 확인 |
 | S12 | 자격 증명 `oauth`: PKCE 로그인, 레코드 저장·갱신, 페이지의 로그인·로그아웃 | S11 | 단위 테스트(authorize 매개변수, state 불일치 거절, 코드 교환, 갱신, 포트 사용 중, 토큰 비노출), 설치 런타임에서 가짜 OAuth 서버로 로그인 → 대화 |
+| S13 | ChatGPT 구독 템플릿과 "프로바이더 추가"(정의 자동 생성 → 바로 로그인) | S12 | 템플릿 정의가 계약 통과, 설치 런타임에서 추가 → 로그인 화면 이동 |
+| S14 | 구독 카드 UI(계정 행, 사용량 막대·새로 고침, 계정 추가·관리) | S13 | UI 테스트, 라이트·다크·좁은 폭 |
+| S15 | ChatGPT 사용량 조회(`wham/usage`) | S13 | 가짜 응답 파싱 테스트, 토큰 비노출 |
+| S16 | 여러 계정(계정별 레코드, 기본 계정 선택) | S14 | 계정 추가·삭제·기본 전환 테스트, 기존 단일 레코드 이전 |
 
 ## 진행과 검증 기록
 
@@ -153,4 +165,14 @@ Studio가 소유하는 것은 계약과 그 계약의 실행이다. 계약은 **
 
 **검사:** `npm --prefix studio test`(타입 검사·빌드·561개 테스트) 통과.
 
-현재 단계: 사용자 화면 확인. 남은 일: S1 데스크톱 전체화면 실험, S3 Studio 세션 이동 키 확인, 실제 프로바이더(구독 포함) 대화 확인.
+현재 단계: S13 시작 전(코드 변경 없음). S1–S12는 커밋 `4478f493b2`까지 반영.
+
+남은 일:
+- S13–S16(D8 범위, ChatGPT만). 시작 전 확정할 것: Studio 경로 ID(`studio-chatgpt`)와 구독 플러그인 공존, 빠른 모드 포함 여부.
+- S1 데스크톱 창 전체화면·⌃⌘F 실험, S3 Studio 세션 이동 키 사용자 확인, 실제 ChatGPT 로그인·대화 확인(사용자 계정 필요), 역할 모델 목록 화면 확인.
+
+재개 메모:
+- 워크트리 `deepseek-harness-28`(브랜치 `studio/feat/28-settingsx`). 메인 checkout은 `studio/feat/utils`를 사용자가 쓰고 있으므로 건드리지 않는다.
+- OAuth 엔진: [provider-auth.ts](../../src/host/provider-auth.ts). 레코드 키 `studio-providers/<route>`, 페이로드 `{ access, refresh?, expiresAt?, claims? }`. S16에서 계정별 키로 바꿀 때 이 단일 레코드를 이전한다.
+- ChatGPT 요청 형식과 OAuth 값: [examples.md](../../release/docs/appendix/studio-provider-guide/examples.md)의 ChatGPT 정의(Codex CLI 공개 값, `chatgpt-account-id`는 `claimHeaders`로 토큰에서 읽음). S13 템플릿은 이 정의를 출발점으로 쓴다.
+- 독립 설치 검증 방식: `STUDIO_PACK_DIST=<dir> node pack.mjs` → 격리 `DSH_HOME`에 `dsh plugin --profile web add <tgz>` → `dsh --profile web --port 19391`. 가짜 OAuth·모델 서버로 로그인 흐름을 계정 없이 검증할 수 있다.
