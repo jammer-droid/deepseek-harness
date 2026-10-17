@@ -109,11 +109,10 @@ Studio가 소유하는 것은 계약과 그 계약의 실행이다. 계약은 **
 - **D7 OAuth 등록:** 사용자 결정(2026-10-17) — 정의 파일에 `credential.kind: "oauth"`를 추가하고, 프로바이더 페이지에 로그인·다시 로그인·로그아웃을 둔다. 흐름은 범용 authorization code + PKCE + 루프백 리디렉션 하나다. 프로바이더별 화면이나 기기 ID 같은 비표준 단계는 넣지 않는다. 클라이언트 ID·주소는 정의 파일이 정하며, 그 값을 쓸 권한과 약관 책임은 사용자에게 있다. ChatGPT 구독은 이 형식의 예시로만 제공하고(Codex CLI 공개 값), Studio 기본 설치에 정의를 넣지 않는다.
 - **D8 구독 템플릿(2026-10-17, 미구현):** 사용자 피드백 — 정의 파일 작성은 어렵다. `dsh-plugin-subscriptions`처럼 대표 프로바이더는 Studio가 OAuth 로그인과 토큰 관리를 맡는다. 결정된 범위:
   - **ChatGPT(Codex) 구독만** 먼저 한다. 기존 OAuth 엔진(S12) 위에 기본 템플릿을 두고 원클릭으로 추가·로그인한다. 사용자는 JSON을 보지 않는다.
-  - **Claude 구독은 하지 않는다.** pi-ai·`dsh-plugin-subscriptions`는 구독 토큰을 쓰려고 Claude Code로 위장한다(시스템 프롬프트 첫 줄 `You are Claude Code, …`, `user-agent: claude-cli/…`, `x-app: cli`, `claude-code-20250219` 베타 헤더). 이는 제외 범위의 클라이언트 위장이다. 사용자는 약관이 바뀌었다고 했으나 확인한 [소비자 약관](https://www.anthropic.com/legal/consumer-terms)(2025-10-08 시행)과 [Pro/Max의 Claude Code 안내](https://support.claude.com/en/articles/11145838-use-claude-code-with-your-pro-or-max-plan)에서는 변경을 찾지 못했다. 위장 없는 공식 OAuth 경로가 확인되면 템플릿으로 추가한다. 대안은 Anthropic Messages 프로토콜 + API 키 템플릿.
   - **UI는 구독 플러그인의 Settings → Subscriptions를 참고한다**(사용자 제공 스크린샷): 프로바이더 카드(상태 점, 이름, "N개 계정 연결됨"), 계정 행(기본 별표, 이메일, 플랜, 만료, 로그아웃), 사용량(플랜, 기간별 사용률 막대, 초기화 시각, 새로 고침), 계정 추가·관리 버튼. 페이지 위에 "프로바이더 추가"(ChatGPT, API 키, 로컬 서버 템플릿). 직접 만든 정의 파일도 같은 카드로 보인다.
   - **사용량:** ChatGPT `https://chatgpt.com/backend-api/wham/usage`(비공개, 5시간·주간 창의 `used_percent`·`reset_at`). `dsh-plugin-subscriptions`(MIT)의 `src/providers/codex.ts`가 참고 구현.
   - **여러 계정:** 레코드를 계정별 키로 나누고 기본 계정을 수동 선택한다. 한도 도달 시 자동 전환은 한도 회피 성격이라 넣지 않는다(별도 결정 필요).
-  - **빠른 모드**(`service_tier: priority`, 입력창 토글): 가능하나 포함 여부 미결정.
+  - **빠른 모드**(`service_tier: priority`, 입력창 토글): 포함
   - **공존:** 구독 플러그인과 같이 쓰도록 Studio 경로 ID를 `studio-chatgpt`처럼 구분한다(추천안, 미확정).
 
 ## 단계
