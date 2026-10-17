@@ -11,6 +11,7 @@ Requires DSH `0.2.0-rc.2` or `0.2.1-alpha.2`.
 - **Per-session subagent roles.** A new **Subagents** tab next to Chat and Trajectory changes a role's model, reasoning effort and instructions for one session only, and adds roles that exist only in that session. The preset and other sessions are unchanged. See [Per-session subagent roles](docs/guide.md#per-session-subagent-roles).
 - **Independent of later preset changes.** The first change copies the whole role into the session; later preset edits do not reach the copy until you choose **Use preset**.
 - **Subagents follow their main session.** Subagents started from the session, and the subagents they start, use its roles. A subagent session's tab shows them read-only.
+- **DSH in Korean.** Choosing **한국어** in DSH **Settings → General → Language** now also translates DSH's own screens: 2,721 of 2,779 client strings in DSH `0.2.0-rc.2` and `0.2.1-alpha.2`. See [Show DSH in Korean](docs/guide.md#show-dsh-in-korean).
 
 ### Changes
 
@@ -18,6 +19,8 @@ Requires DSH `0.2.0-rc.2` or `0.2.1-alpha.2`.
 - Models are checked when a session role is saved and again before each call.
 - A session role added to a preset without roles is used instead of the parent-matching child.
 - Session roles are stored in `<profile>/studio-data/session-roles/`, kept for archived sessions and removed with deleted sessions.
+- Korean dictionaries are registered per DSH namespace. A namespace where DSH already ships Korean keeps DSH's dictionary, and Studio logs a warning for it; the other namespaces still register.
+- Strings without a natural Korean translation (58) and text from the DSH Host or desktop app stay in English.
 
 ### Upgrade notes
 
@@ -33,6 +36,7 @@ DSH `0.2.0-rc.2` 또는 `0.2.1-alpha.2`가 필요합니다.
 - **세션별 서브에이전트 역할.** Chat, Trajectory 옆의 새 **Subagents** 탭에서 역할의 모델·추론 수준·지침을 한 세션에서만 바꾸고, 그 세션에서만 쓸 역할을 추가합니다. 프리셋과 다른 세션은 바뀌지 않습니다. [세션별 서브에이전트 역할](docs/guide.ko.md#세션별-서브에이전트-역할)을 참고하세요.
 - **이후 프리셋 변경과 무관.** 처음 바꿀 때 역할 전체가 세션에 복사됩니다. 이후 프리셋을 고쳐도 **프리셋 값 사용**을 누르기 전까지 복사본은 바뀌지 않습니다.
 - **서브에이전트는 메인 세션을 따름.** 세션에서 시작한 서브에이전트와, 그 서브에이전트가 다시 시작한 서브에이전트도 그 세션의 역할을 씁니다. 서브에이전트 세션의 탭은 읽기 전용입니다.
+- **DSH 화면 한국어.** DSH **Settings → General → Language**(한국어 화면에서는 **설정 → 일반 → 언어**)에서 **한국어**를 고르면 DSH 자체 화면도 한국어로 바뀝니다. DSH `0.2.0-rc.2`·`0.2.1-alpha.2`의 클라이언트 문구 2,779개 중 2,721개를 번역했습니다. [DSH 화면을 한국어로 보기](docs/guide.ko.md#dsh-화면을-한국어로-보기)를 참고하세요.
 
 #### 변경 사항
 
@@ -40,6 +44,8 @@ DSH `0.2.0-rc.2` 또는 `0.2.1-alpha.2`가 필요합니다.
 - 세션 역할의 모델은 저장할 때와 매 호출 전에 확인합니다.
 - 역할이 없는 프리셋에 세션 역할을 추가하면 부모와 같은 설정 대신 그 역할로 위임합니다.
 - 세션 역할은 `<프로필>/studio-data/session-roles/`에 저장되며, 보관한 세션은 유지하고 삭제한 세션은 함께 지웁니다.
+- 한국어 사전은 DSH 네임스페이스마다 따로 등록합니다. DSH가 이미 한국어를 넣은 네임스페이스는 DSH 사전을 쓰고 경고만 남기며, 나머지 네임스페이스는 그대로 등록합니다.
+- 자연스러운 번역을 찾지 못한 문구 58개와 DSH Host·데스크톱 앱이 보내는 문구는 영어로 남습니다.
 
 #### 업그레이드 참고
 

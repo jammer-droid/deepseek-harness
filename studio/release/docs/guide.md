@@ -12,6 +12,7 @@ DSH Studio is a page inside the DeepSeek Harness web GUI for building **agent pr
   - [Execution settings](#execution-settings)
   - [Subagent settings](#subagent-settings)
 - [Per-session subagent roles](#per-session-subagent-roles)
+- [Show DSH in Korean](#show-dsh-in-korean)
 - [Adapt Optimized to your work](#adapt-optimized-to-your-work)
 - [Apply a preset to DSH](#apply-a-preset-to-dsh)
 - [Tools that depend on your profile](#tools-that-depend-on-your-profile)
@@ -262,6 +263,15 @@ You can add roles even when the preset defines none; `subagent_role` then delega
 
 Session roles are stored per session in `<profile>/studio-data/session-roles/`. Archived sessions keep them; deleting a session removes them.
 
+## Show DSH in Korean
+
+Installing Studio adds **한국어** (Korean) to DSH's language list. Choose it in DSH **Settings → General → Language**, and DSH's own screens — chat, sidebars, settings, plugin manager, Trajectory and more — switch to Korean along with Studio. Studio translates 2,721 of the 2,779 client strings in DSH `0.2.0-rc.2` and `0.2.1-alpha.2`.
+
+- Untranslated strings stay in English: 58 strings without a natural translation yet, plus app names, units and format strings that are kept as they are.
+- Tab names Chat and Trajectory and product names such as DeepSeek, DSH and MCP stay in English.
+- Desktop app menus and dialogs, and text the DSH Host sends (tool descriptions, error messages), cannot be changed by a plugin and stay in English.
+- If DSH later ships Korean for a screen, that screen uses DSH's translation and the rest keep Studio's.
+
 ## Adapt Optimized to your work
 
 Optimized is tuned for **coding-agent work**: reading and editing code, running commands, and checking results. For anything else, treat it as a starting point. Select **Create copy** on Optimized and adjust the copy with the same screens described above — everything in the copy can be changed.
@@ -324,5 +334,7 @@ Your saved presets are kept and migrated automatically.
 **A preset shows "Needs reapply".** It was saved after it was last applied. Apply it again to update DSH.
 
 **Applying fails with "does not supply tools" or "not provided by this composition", or the list notes "selected tools unavailable".** The preset selects a tool that this profile does not provide, such as `load_workspace_dependencies` outside the desktop app, or you excluded the plugin that provides it. Install or include the plugin, or turn the tool off in your copy and apply again. See [Tools that depend on your profile](#tools-that-depend-on-your-profile).
+
+**Some text is still English after choosing Korean.** It is either not translated yet or sent by the DSH Host or desktop app. See [Show DSH in Korean](#show-dsh-in-korean).
 
 **Optimized has different tools or plugins after an update.** This is expected: Optimized follows the installed Studio version and DSH `standard`. Your copies keep their own tools.
