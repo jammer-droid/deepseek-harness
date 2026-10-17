@@ -4,7 +4,7 @@
 import React from 'react';
 import { DetailLayout } from './detail-layout.tsx';
 import { Badge, Button, Note, Notice, PageHead, SettingsRow, Toggle } from './ui.tsx';
-import { protocolEndpoint, type ProviderEntry, type ProviderIssue, type ProviderList } from './provider-contract.ts';
+import { protocolEndpoint, type ProviderAuthState, type ProviderDefinition, type ProviderEntry, type ProviderIssue, type ProviderList } from './provider-contract.ts';
 import { STUDIO_COMMANDS, type StudioCommandSpec } from './settingsx-commands.ts';
 import { settingsxText, type SettingsXKey } from './settingsx-locale.ts';
 
@@ -19,7 +19,11 @@ export interface SettingsXShortcuts {
   desktop: boolean;
   setEnabled(id: string, enabled: boolean): void;
 }
-export interface SettingsXProviderActions { list(): Promise<ProviderList>; reload(): Promise<ProviderList> }
+export interface SettingsXProviderActions {
+  list(): Promise<ProviderList>; reload(): Promise<ProviderList>;
+  signIn?(route: string): Promise<{ url: string }>; waitSignIn?(route: string): Promise<ProviderList>; cancelSignIn?(route: string): Promise<ProviderList>;
+  signOut?(route: string): Promise<ProviderList>; setKey?(route: string, value: string): Promise<ProviderList>; openURL?(url: string): void;
+}
 
 type PageId = 'shortcuts' | 'providers';
 const keysText = (keys: readonly string[]) => keys.join(' ');
@@ -62,7 +66,51 @@ function issueText(locale: string, issue: ProviderIssue) {
   return issue.path ? `${issue.path}: ${message}` : message;
 }
 
-function ProviderRow({ locale, entry }: { locale: string; entry: ProviderEntry }) {
+/** Credential status and controls for one registered route. Values go in only; nothing secret is shown. */
+function CredentialControl({ locale, definition, state, actions, onList }: { locale: string; definition: ProviderDefinition; state: ProviderAuthState | undefined; actions: SettingsXProviderActions; onList: (list: ProviderList) => void }) {
+  const t = (key: SettingsXKey, values?: Record<string, string | number>) => settingsxText(locale, key, values);
+  const [busy, setBusy] = React.useState(false);
+  const [error, setError] = React.useState('');
+  const [draft, setDraft] = React.useState('');
+  const run = async (work: () => Promise<ProviderList | void>) => {
+    setBusy(true); setError('');
+    try { const next = await work(); if (next) onList(next); } catch (cause) { setError(cause instanceof Error ? cause.message : String(cause)); } finally { setBusy(false); }
+  };
+  const credential = definition.credential;
+  let status: string;
+  let controls: React.ReactNode = null;
+  if (credential.kind === 'none') status = t('credentialNone');
+  else if (credential.kind === 'command') status = t('credentialCommand', { command: credential.command[0] ?? '' });
+  else if (credential.kind === 'credential') {
+    const info = state?.kind === 'credential' ? state : undefined;
+    status = info?.configured ? t('keySet', { ref: credential.ref }) + (info.source ? ` (${info.source})` : '') : t('keyMissing', { ref: credential.ref });
+    if (actions.setKey && info?.writable !== false) controls = <span className="studio-inline-form">
+      <input type="password" autoComplete="off" aria-label={t('keyPlaceholder')} placeholder={t('keyPlaceholder')} value={draft} onChange={event => setDraft(event.target.value)} />
+      <Button small disabled={busy || !draft.trim()} onClick={() => { void run(async () => { const next = await actions.setKey!(definition.id, draft); setDraft(''); return next; }); }}>{t('keySave')}</Button>
+      {info?.configured && <Button small disabled={busy} onClick={() => { void run(() => actions.setKey!(definition.id, '')); }}>{t('keyDelete')}</Button>}
+    </span>;
+  } else {
+    const info = state?.kind === 'oauth' ? state : undefined;
+    status = info?.pending ? t('signingIn') : info?.signedIn ? t('signedIn') : t('signedOut');
+    const start = () => run(async () => {
+      const { url } = await actions.signIn!(definition.id);
+      actions.openURL?.(url);
+      onList(await actions.list());
+      return actions.waitSignIn!(definition.id);
+    });
+    if (actions.signIn) controls = info?.pending
+      ? <span className="studio-inline-form"><Button small onClick={() => actions.openURL?.(info.pending!.url)}>{t('openSignIn')}</Button><Button small onClick={() => { void run(() => actions.cancelSignIn!(definition.id)); }}>{t('cancel')}</Button></span>
+      : <span className="studio-inline-form"><Button small disabled={busy} onClick={() => { void start(); }}>{info?.signedIn ? t('signInAgain') : t('signIn')}</Button>
+        {info?.signedIn && <Button small disabled={busy} onClick={() => { void run(() => actions.signOut!(definition.id)); }}>{t('signOut')}</Button>}</span>;
+  }
+  return <div className="studio-provider-credential">
+    <p className="studio-muted">{t('credential')}: {status}</p>
+    {controls}
+    {error && <Notice action={<Button small onClick={() => setError('')}>{t('dismiss')}</Button>}>{error}</Notice>}
+  </div>;
+}
+
+function ProviderRow({ locale, entry, state, actions, onList }: { locale: string; entry: ProviderEntry; state: ProviderAuthState | undefined; actions: SettingsXProviderActions; onList: (list: ProviderList) => void }) {
   const t = (key: SettingsXKey, values?: Record<string, string | number>) => settingsxText(locale, key, values);
   if (entry.status === 'invalid') {
     return <SettingsRow title={<>{entry.file} <Badge tone="warning">{t('statusInvalid')}</Badge></>}>
@@ -70,12 +118,13 @@ function ProviderRow({ locale, entry }: { locale: string; entry: ProviderEntry }
     </SettingsRow>;
   }
   const { definition } = entry;
-  const facts = [`${t('protocol')}: ${definition.protocol}`, `${t('endpoint')}: ${protocolEndpoint(definition)}`, `${t('credential')}: ${t('credentialNone')}`].join(' · ');
+  const facts = [`${t('protocol')}: ${definition.protocol}`, `${t('endpoint')}: ${protocolEndpoint(definition)}`].join(' · ');
   return <SettingsRow title={<>{definition.name} <code className="studio-mono">{definition.id}</code>{' '}
     {entry.status === 'registered' ? <Badge tone="success">{t('statusRegistered')}</Badge> : <Badge tone="warning">{t('statusConflict')}</Badge>}</>}
   description={`${entry.file} · ${facts}`}>
     {entry.status === 'conflict' && <p className="studio-muted">{t(entry.detail === 'duplicate' ? 'conflictDuplicate' : 'conflictRoute', { id: definition.id })}</p>}
     <p className="studio-muted">{t('models')}: {definition.models.map(model => model.name ?? model.id).join(', ')}</p>
+    {entry.status === 'registered' && <CredentialControl locale={locale} definition={definition} state={state} actions={actions} onList={onList} />}
   </SettingsRow>;
 }
 
@@ -101,7 +150,7 @@ function ProvidersPage({ locale, actions }: { locale: string; actions: SettingsX
     {list && <div className="studio-gate-path"><span className="studio-muted">{t('folder')}</span><code>{list.directory}</code>
       <Button small onClick={async () => { try { await navigator.clipboard.writeText(list.directory); setCopied(true); } catch { setCopied(false); } }}>{copied ? t('copied') : t('copyPath')}</Button></div>}
     {list && (list.entries.length
-      ? <section className="studio-settings-card" aria-label={t('pageProviders')}>{list.entries.map(entry => <ProviderRow key={entry.file} locale={locale} entry={entry} />)}</section>
+      ? <section className="studio-settings-card" aria-label={t('pageProviders')}>{list.entries.map(entry => <ProviderRow key={entry.file} locale={locale} entry={entry} state={entry.status === 'registered' ? list.auth?.[entry.definition.id] : undefined} actions={actions} onList={setList} />)}</section>
       : <p className="studio-muted" role="status">{t('emptyProviders')}</p>)}
     <p className="studio-muted">{t('skillNote')}</p>
     <p className="studio-muted">{t('termsNote')}</p>

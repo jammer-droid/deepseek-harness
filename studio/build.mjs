@@ -49,3 +49,4 @@ await cp(new URL('appendix/pixie-gate.md', docsRoot), new URL('guide.md', skillO
 const providerSkillOut = new URL('packages/shell/skills/studio-provider-guide/', import.meta.url);
 await mkdirp(providerSkillOut, { recursive: true });
 await cp(new URL('appendix/studio-provider-guide/SKILL.md', docsRoot), new URL('SKILL.md', providerSkillOut));
+await cp(new URL('appendix/studio-provider-guide/examples.md', docsRoot), new URL('examples.md', providerSkillOut));

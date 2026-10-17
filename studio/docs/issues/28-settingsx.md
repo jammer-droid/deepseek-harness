@@ -22,12 +22,12 @@ Studio에 DSH 기본 설정을 확장하는 **SettingsX** 영역을 만든다. �
 - 단축키: Studio는 DSH에 없는 명령만 `ctx.shortcuts.register`로 등록한다. 세션 이동 외 명령은 기본 키 없이 등록하고, 키 지정·충돌 검사·기본값 복원은 DSH 단축키 설정이 맡는다. SettingsX 페이지는 Studio 명령 목록, 참고 키(다른 하네스 기준), 켜기/끄기, DSH 단축키 설정 열기를 제공한다.
 - 세션 이동(이전/다음): session-cycle과 **같은 로직**. 사이드바 저장 상태 `dsh.workspace.view.v5`를 읽기만 하고 배포 버전의 정렬을 독립 구현한다. 알 수 없는 형식이면 차단한다.
 - 프로바이더: Studio는 **통로**만 만든다. 정의 파일 계약, 그 계약을 읽는 Studio LLM 어댑터(`ctx.llm.registerAdapter`), 지원 프로토콜, 자격 증명 공급 방식을 정한다. 사용자는 계약에 맞는 정의 파일과(필요하면) 토큰 공급 스크립트를 직접 만들거나 Studio가 제공하는 스킬로 만든다. 등록된 경로는 DSH 모델 선택·Pixie·역할 모델에서 보인다.
-- 프로바이더 작성 스킬: 계약·예시(OAI 구독, 로컬 OpenAI 호환 서버)·검증 방법을 담은 에이전트 스킬. 기존 Pixie 훅 스킬과 같은 방식(`<DSH home>/skills` 설치)으로 배포한다.
+- 프로바이더 작성 스킬: 계약·예시(로컬 서버, API 키, ChatGPT 구독 OAuth, 토큰 명령)·검증 방법을 담은 에이전트 스킬. 기존 Pixie 훅 스킬과 같은 방식(`<DSH home>/skills` 설치)으로 배포한다.
 
 **제외**
 
 - DSH 기본 단축키의 기본값 변경, DSH 단축키 설정 화면 교체, DSH에 이미 있는 명령의 재등록
-- 프로바이더별 로그인·OAuth GUI. Studio는 토큰을 발급하지 않고 공급받은 값만 쓴다.
+- 프로바이더별 전용 로그인 화면. OAuth는 정의 파일이 선언한 범용 PKCE 흐름 하나로만 지원한다(D7).
 - `dsh-plugin-subscriptions`의 코드 재사용·의존. Studio 프로바이더는 독립적이다.
 - 모든 프로바이더의 내장 지원. 계약에 맞지 않는 프로토콜은 지원하지 않는다.
 - 상대 서비스의 클라이언트 제한·한도를 피하는 우회(클라이언트 위장, 세션 ID 위조, 가짜 도구 주입, IP 돌려쓰기). Studio 코드·스킬·예시에 넣지 않는다. OpenCode 무료 등급은 이 이유로 제외한다(S1 조사 기록).
@@ -43,7 +43,8 @@ Studio에 DSH 기본 설정을 확장하는 **SettingsX** 영역을 만든다. �
 | 전체화면 | 없음(DSH에는 패널 전체화면 `pane.fullscreen.toggle`만 있음) | 브라우저 `document.documentElement.requestFullscreen()`로 시도. 데스크톱 창 전체화면과 다를 수 있고, macOS가 ⌃⌘F를 먼저 가져갈 수 있다 → S1에서 실험 |
 | 어댑터 등록 | Host `llm.registerAdapter`, `LlmAdapter`(`@deepseek-ai/dsh-llm`) | 모든 요청에 `attributionHeaders()` 포함 필수. 경로 이름이 다른 어댑터와 겹치면 로딩 실패 |
 | 모델 목록 | `LlmAdapter.listModels` | GUI 선택은 목록에 있는 모델만 가능. 정의의 모델 목록은 필수 |
-| 비밀값 | Host `credentials` | 정적 키는 설정 파일에 넣지 않는다(#27 Jev 키와 같은 방식) |
+| 비밀값 | Host `credentials`(`resolve`·`set`·`unset`, 레코드 `readRecord`·`modifyRecord`·`deleteRecord`) | 정적 키는 설정 파일에 넣지 않는다(#27 Jev 키와 같은 방식). OAuth 토큰은 레코드 `studio-providers/<id>`에 두고 `modifyRecord` 잠금 안에서 갱신한다. rc.2 번들에 레코드 API가 있음을 확인 |
+| OAuth 리디렉션 | 없음(Studio Host가 `127.0.0.1:<redirectPort>`에서 직접 받음) | 브라우저와 Host가 같은 기기여야 하고 포트가 비어 있어야 한다. 클라이언트 등록은 프로바이더 몫 |
 | 스킬 배포 | `<DSH home>/skills` 파일(skill-filesystem) | 기존 `skill-install.ts` 재사용. 사용자 수정 파일은 덮어쓰지 않음 |
 
 ## DSH 기본 단축키(rc.2 번들 확인)
@@ -74,13 +75,13 @@ Studio는 아래 명령을 다시 만들지 않는다. 키는 데스크톱 macOS
 
 고정·읽지 않음 표시, 글자 크기는 공개 API가 없을 가능성이 높아 제외 후보다.
 
-## 프로바이더 계약(초안)
+## 프로바이더 계약
 
 Studio가 소유하는 것은 계약과 그 계약의 실행이다. 계약은 **정의**(무엇에 어떻게 보낼지)와 **자격 증명 공급**(무엇으로 인증할지)으로 나뉜다.
 
 - **정의 파일:** Studio 데이터 디렉터리의 프로바이더 폴더에 경로당 파일 하나. 필드는 경로 ID, 표시 이름, 프로토콜, 기본 주소, 추가 헤더, 모델 목록(ID·이름·컨텍스트·출력 한도·입력 형식), 자격 증명 공급 방식. 비밀값은 넣지 않는다.
 - **프로토콜:** 계약이 열거하는 값만 받는다. 첫 값은 `openai-responses`(OAI 구독, S6), 다음 `openai-chat`(OpenAI 호환 서버·API, S9).
-- **자격 증명 공급:** D5 — 첫 구현은 `none`. 이후 `credential`(DSH credentials에 저장한 키), `command`(사용자 명령이 표준 출력으로 `{ token, expiresAt?, headers? }` JSON을 반환; Studio는 만료까지 캐시하고 만료·401 때 다시 실행). OAuth 발급·갱신은 사용자 명령이 맡는다.
+- **자격 증명 공급:** `none`, `credential`(DSH credentials 참조 이름), `command`(셸 없이 실행한 프로그램이 `{ token, expiresAt?, headers? }`를 출력; 메모리에 만료까지 캐시, 401 때 한 번 다시 실행), `oauth`(정의가 선언한 authorize·token 주소와 client로 PKCE 로그인; 토큰은 DSH 자격 증명 레코드, 만료·401 때 갱신 토큰으로 갱신, `claimHeaders`로 토큰 클레임을 헤더로 보냄). 헤더 이름과 접두어는 `header`·`scheme`으로 바꾼다.
 - **검증:** 알 수 없는 프로토콜·필드, 빈 모델 목록, 다른 어댑터와 겹치는 경로 ID는 등록 전에 거절하고 SettingsX에 이유를 표시한다. 토큰과 키는 로그·UI·오류 메시지에 노출하지 않는다.
 - **약관:** 구독·무료 경로의 이용 약관 위험은 사용자가 감수한다. SettingsX와 스킬에 안내한다.
 
@@ -105,6 +106,7 @@ Studio가 소유하는 것은 계약과 그 계약의 실행이다. 계약은 **
 - **D4 단축키 세트:** 확정 원칙 — DSH에 있는 명령은 DSH를 따르고, 없는 명령만 추가한다. 세션 이동 외에는 기본 키 없이 등록한다. 명령 목록은 S1에서 위 후보 표로 확정한다.
 - **D5 자격 증명 공급:** 확정 — 계약은 `none`·`credential`·`command` 세 방식을 열거하되, 첫 구현은 `none`만 받는다(S5). 다른 값은 "아직 지원하지 않음"으로 거절한다. `credential`·`command`는 S11에서 추가한다. `command`가 구독 토큰 갱신을 사용자 스크립트에 맡기는 통로다. 따라서 OAI 구독의 실제 사용은 S11 이후이고, S6의 `openai-responses`는 가짜 서버로 검증한다. `none` 단계(S5·S6·S9)는 가짜 서버로만 검증하고, 실제 응답 확인은 S11에서 한다. 로컬 서버(Ollama·LM Studio)는 이 Mac에 없어 선택 사항으로 둔다.
 - **D6 작성 지원:** 확정 — Studio는 계약·예시·검증 절차를 담은 프로바이더 작성 스킬을 제공한다.
+- **D7 OAuth 등록:** 사용자 결정(2026-10-17) — 정의 파일에 `credential.kind: "oauth"`를 추가하고, 프로바이더 페이지에 로그인·다시 로그인·로그아웃을 둔다. 흐름은 범용 authorization code + PKCE + 루프백 리디렉션 하나다. 프로바이더별 화면이나 기기 ID 같은 비표준 단계는 넣지 않는다. 클라이언트 ID·주소는 정의 파일이 정하며, 그 값을 쓸 권한과 약관 책임은 사용자에게 있다. ChatGPT 구독은 이 형식의 예시로만 제공하고(Codex CLI 공개 값), Studio 기본 설치에 정의를 넣지 않는다.
 
 ## 단계
 
@@ -121,5 +123,34 @@ Studio가 소유하는 것은 계약과 그 계약의 실행이다. 계약은 **
 | S9 | `openai-chat` 프로토콜과 로컬 서버 예시 | S6 | 가짜 서버 스트림 테스트, 예시 정의 검증 통과 |
 | S10 | 프로바이더 작성 스킬(계약, 로컬 서버 예시, 검증 절차; OAI 예시는 S11 뒤 추가) | S5 | 스킬 설치 테스트, 예시 정의가 S5 검증 통과 |
 | S11 | 자격 증명 `credential`·`command`와 OAI 구독 예시 | S6 | 단위 테스트(키·토큰 비노출, `command` 캐시·만료·401 재실행), 실제 프로바이더 응답 확인 |
+| S12 | 자격 증명 `oauth`: PKCE 로그인, 레코드 저장·갱신, 페이지의 로그인·로그아웃 | S11 | 단위 테스트(authorize 매개변수, state 불일치 거절, 코드 교환, 갱신, 포트 사용 중, 토큰 비노출), 설치 런타임에서 가짜 OAuth 서버로 로그인 → 대화 |
 
-현재 단계: S1 진행 중. 남은 일: 창 전체화면 데스크톱 실험(수동). 이 실험은 S4 명령 목록에만 영향을 주므로 S2·S5는 시작할 수 있다.
+## 진행과 검증 기록
+
+작업 위치: 워크트리 `deepseek-harness-28`, 브랜치 `studio/feat/28-settingsx`. 워크트리의 무시되는 `lib/` 산출물은 원본 checkout에서 복사했다(DSH 빌드 없음). 개발 편의 환경이며 독립 배포 증거가 아니다.
+
+| ID | 상태 | 증거 |
+| --- | --- | --- |
+| S1 | 일부 | 후보 표·API·OAI 경로 기록 완료. 데스크톱 창 전체화면·⌃⌘F 전달은 미실험 |
+| S2 | 완료 | [settingsx-page.tsx](../../src/settingsx-page.tsx), ko·en·zh 문구. 설치 런타임에서 라이트·다크·700px 확인 |
+| S3 | 구현 | [session-order.ts](../../src/session-order.ts)와 이식 테스트 13개 통과. Studio 명령의 실제 키 동작은 사용자 확인 대기 |
+| S4 | 완료 | 설치 런타임에서 DSH 단축키 목록에 Studio 명령 표시, SettingsX에서 끄면 목록에서 빠지고 켜면 돌아옴 |
+| S5 | 완료 | [provider-contract.ts](../../src/provider-contract.ts), 계약 테스트 |
+| S6 | 완료 | [provider-wire.ts](../../src/host/provider-wire.ts)·[provider-adapter.ts](../../src/host/provider-adapter.ts), 가짜 서버 테스트(속성 헤더 포함) |
+| S7 | 완료 | 설치 런타임에서 DSH 모델 선택·Pixie 모델 목록에 정의 모델 표시. 역할 모델 목록은 같은 카탈로그를 쓰며 화면 확인은 안 함 |
+| S8 | 완료 | 아래 독립 설치 기록, 가이드 [settingsx.md](../reference/settingsx.md) |
+| S9 | 완료 | `openai-chat` 가짜 서버 테스트, 로컬 서버 예시 |
+| S10 | 완료 | 스킬 설치 확인, 예시 4개가 계약 검증을 통과하는 테스트 |
+| S11 | 구현 | `credential`·`command` 단위 테스트, 설치 런타임에서 키 저장·비노출 확인. 실제 프로바이더 응답은 사용자 계정이 필요해 미확인 |
+| S12 | 구현 | [provider-auth.ts](../../src/host/provider-auth.ts) 단위 테스트, 설치 런타임에서 가짜 OAuth 서버로 로그인 → 대화 성공. 실제 ChatGPT 로그인은 미확인 |
+
+**독립 설치 검증(2026-10-17):** 수정하지 않은 DSH `0.2.0-rc.2`(`/usr/local/bin/dsh`), 웹 프로필, 격리 `DSH_HOME`에 `pack.mjs`로 만든 `@matamt-dbg/dsh-studio@0.5.0` tgz만 설치했다.
+- Studio 로딩, SettingsX 두 페이지 렌더링, 스킬 두 개 설치
+- 정의 파일 상태(등록됨·잘못됨) 표시, DSH 모델 선택·Pixie 모델 목록에 정의 모델 표시
+- 키 저장 후 "설정됨" 표시, 값은 화면에 나오지 않음
+- 로컬 가짜 OAuth·모델 서버: 로그인 버튼 → 브라우저 리디렉션 → PKCE 코드 교환 → "로그인됨" → 그 모델로 대화 응답. 서버 로그에서 `Authorization`·`User-Agent: deepseek-harness/0.2.0-rc.2` 확인
+- 단축키: DSH 단축키 목록 표시, 끄기·켜기 반영
+
+**검사:** `npm --prefix studio test`(타입 검사·빌드·561개 테스트) 통과.
+
+현재 단계: 사용자 화면 확인. 남은 일: S1 데스크톱 전체화면 실험, S3 Studio 세션 이동 키 확인, 실제 프로바이더(구독 포함) 대화 확인.

@@ -671,6 +671,11 @@ ${adapter}.studio-ui *, .studio-ui *::before, .studio-ui *::after { box-sizing: 
 .studio-ui .studio-gate-path { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 12px; }
 .studio-ui .studio-gate-path code { padding: 1px 6px; border-radius: var(--studio-small-radius); background: var(--studio-inset); overflow-wrap: anywhere; }
 .studio-ui .studio-gate-path .studio-button { margin: 0; }
+.studio-ui .studio-provider-credential { display: grid; gap: 6px; }
+.studio-ui .studio-provider-credential > p { margin: 0; }
+.studio-ui .studio-inline-form { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.studio-ui .studio-inline-form input { flex: 1 1 200px; width: auto; max-width: 320px; }
+.studio-ui .studio-inline-form .studio-button { margin: 0; }
 .studio-ui .studio-gate-judge { display: grid; gap: 8px; }
 .studio-ui .studio-gate-judge .studio-field { margin: 0; }
 .studio-ui .studio-gate-trial { display: grid; gap: 8px; padding-top: 12px; border-top: .5px solid var(--studio-line); }

@@ -1,16 +1,16 @@
 /** SettingsX provider definition contract: one JSON file per provider route, validated before registration.
  * Pure and Node-testable; shared by the Host adapter, the Client page, and the authoring skill.
- * Definitions hold no secrets. Credential supply is declared by kind; only `none` is implemented in this release.
+ * Definitions hold no secrets: keys live in DSH credentials, OAuth tokens in a DSH credential record, and command
+ * output only in memory. The definition declares how to obtain them.
  * Requests carry text only: DSH replaces image attachments with text handles before the adapter sees them.
  */
 
 /** Wire protocols a definition may name. */
 export const PROVIDER_PROTOCOLS = ['openai-responses', 'openai-chat'] as const;
 export type ProviderProtocol = typeof PROVIDER_PROTOCOLS[number];
-/** Credential supply kinds of the contract; `SUPPORTED_CREDENTIALS` are the ones this release accepts. */
-export const CREDENTIAL_KINDS = ['none', 'credential', 'command'] as const;
-export type CredentialKind = typeof CREDENTIAL_KINDS[number];
-export const SUPPORTED_CREDENTIALS: readonly CredentialKind[] = ['none'];
+/** Credential supply kinds. */
+export type CredentialKind = typeof CREDENTIAL_KINDS_ALL[number];
+export const CREDENTIAL_KINDS_ALL = ['none', 'credential', 'command', 'oauth'] as const;
 /** Version of the definition file format. */
 export const PROVIDER_DEFINITION_VERSION = 1;
 
@@ -30,14 +30,26 @@ export interface ProviderDefinition {
   baseURL: string;
   headers?: Record<string, string>;
   models: ProviderModel[];
-  credential: { kind: 'none' };
+  credential: ProviderCredential;
 }
+
+/** How a request authenticates. Every kind except `none` adds `Authorization: Bearer <token>` unless `header` says otherwise. */
+export type ProviderCredential =
+  | { kind: 'none' }
+  /** A DSH credential reference (environment-variable name), resolved on every request. */
+  | { kind: 'credential'; ref: string; header?: string; scheme?: string }
+  /** A program run without a shell; stdout is `{ "token": string, "expiresAt"?: epoch ms, "headers"?: {...} }`. */
+  | { kind: 'command'; command: string[]; timeoutMs?: number; header?: string; scheme?: string }
+  /** OAuth 2.0 authorization code with PKCE and a loopback redirect; tokens stay in a DSH credential record. */
+  | { kind: 'oauth'; authorizeURL: string; tokenURL: string; clientId: string; scopes?: string[]; redirectPort: number; redirectPath?: string;
+      authorizeParams?: Record<string, string>; claimHeaders?: Record<string, string[]>; header?: string; scheme?: string };
+
 
 /** One rejection reason with a stable code and the offending field path. */
 export interface ProviderIssue { code: ProviderIssueCode; path: string; detail?: string }
 export type ProviderIssueCode =
   | 'json' | 'shape' | 'unknown-field' | 'required' | 'version' | 'id' | 'protocol' | 'url' | 'header'
-  | 'models-empty' | 'model-duplicate' | 'number' | 'credential-kind' | 'credential-unsupported';
+  | 'models-empty' | 'model-duplicate' | 'number' | 'credential-kind' | 'credential-field';
 export type ProviderParse = { ok: true; definition: ProviderDefinition } | { ok: false; issues: ProviderIssue[] };
 
 const ROUTE_ID = /^[a-z][a-z0-9-]{0,62}$/;
@@ -101,15 +113,58 @@ export function parseProviderDefinition(input: unknown): ProviderParse {
       models.push(model);
     });
   }
-  if (!record(value.credential) || !CREDENTIAL_KINDS.includes(value.credential.kind as CredentialKind)) issue('credential-kind', 'credential.kind');
-  else if (!SUPPORTED_CREDENTIALS.includes(value.credential.kind as CredentialKind)) issue('credential-unsupported', 'credential.kind', String(value.credential.kind));
-  else for (const key of Object.keys(value.credential)) if (key !== 'kind') issue('unknown-field', `credential.${key}`);
+  const credential = parseCredential(value.credential, issue);
   if (issues.length) return { ok: false, issues };
   const raw = value as Record<string, string>;
   return { ok: true, definition: {
     version: 1, id: raw.id!, name: raw.name!.trim(), protocol: raw.protocol as ProviderProtocol, baseURL: raw.baseURL!.replace(/\/+$/, ''),
-    ...(Object.keys(headers).length ? { headers } : {}), models, credential: { kind: 'none' },
+    ...(Object.keys(headers).length ? { headers } : {}), models, credential: credential!,
   } };
+}
+
+const ENV_REF = /^[A-Za-z_][A-Za-z0-9_]*$/;
+const httpsOrLoopback = (raw: unknown) => {
+  if (!text(raw)) return false;
+  try { const url = new URL(raw); return url.protocol === 'https:' || (url.protocol === 'http:' && ['127.0.0.1', 'localhost', '[::1]'].includes(url.hostname)); } catch { return false; }
+};
+
+/** Validate the `credential` object; reports issues and returns the normalized value when valid. */
+function parseCredential(raw: unknown, issue: (code: ProviderIssueCode, path: string, detail?: string) => void): ProviderCredential | undefined {
+  if (!record(raw) || !CREDENTIAL_KINDS_ALL.includes(raw.kind as CredentialKind)) { issue('credential-kind', 'credential.kind'); return undefined; }
+  const allowed: Record<CredentialKind, string[]> = {
+    none: [], credential: ['ref', 'header', 'scheme'], command: ['command', 'timeoutMs', 'header', 'scheme'],
+    oauth: ['authorizeURL', 'tokenURL', 'clientId', 'scopes', 'redirectPort', 'redirectPath', 'authorizeParams', 'claimHeaders', 'header', 'scheme'],
+  };
+  const kind = raw.kind as CredentialKind;
+  const before = { count: 0 };
+  const report = (code: ProviderIssueCode, path: string) => { before.count++; issue(code, path); };
+  for (const key of Object.keys(raw)) if (key !== 'kind' && !allowed[kind].includes(key)) report('unknown-field', `credential.${key}`);
+  if (raw.header !== undefined && (!text(raw.header) || !HEADER_NAME.test(raw.header) || ['content-type', 'content-length', 'host', 'user-agent', 'accept'].includes(raw.header.toLowerCase()))) report('credential-field', 'credential.header');
+  if (raw.scheme !== undefined && (typeof raw.scheme !== 'string' || /[\r\n\0]/.test(raw.scheme))) report('credential-field', 'credential.scheme');
+  const auth = { ...(raw.header === undefined ? {} : { header: raw.header as string }), ...(raw.scheme === undefined ? {} : { scheme: raw.scheme as string }) };
+  if (kind === 'none') return before.count ? undefined : { kind };
+  if (kind === 'credential') {
+    if (!text(raw.ref) || !ENV_REF.test(raw.ref)) report('credential-field', 'credential.ref');
+    return before.count ? undefined : { kind, ref: raw.ref as string, ...auth };
+  }
+  if (kind === 'command') {
+    if (!Array.isArray(raw.command) || raw.command.length === 0 || !raw.command.every(text)) report('credential-field', 'credential.command');
+    if (raw.timeoutMs !== undefined && (!Number.isSafeInteger(raw.timeoutMs) || (raw.timeoutMs as number) < 100 || (raw.timeoutMs as number) > 120_000)) report('number', 'credential.timeoutMs');
+    return before.count ? undefined : { kind, command: [...raw.command as string[]], ...(raw.timeoutMs === undefined ? {} : { timeoutMs: raw.timeoutMs as number }), ...auth };
+  }
+  for (const key of ['authorizeURL', 'tokenURL'] as const) if (!httpsOrLoopback(raw[key])) report('url', `credential.${key}`);
+  if (!text(raw.clientId)) report('required', 'credential.clientId');
+  if (raw.scopes !== undefined && (!Array.isArray(raw.scopes) || !raw.scopes.every(text))) report('credential-field', 'credential.scopes');
+  if (!Number.isSafeInteger(raw.redirectPort) || (raw.redirectPort as number) < 1024 || (raw.redirectPort as number) > 65535) report('number', 'credential.redirectPort');
+  if (raw.redirectPath !== undefined && (typeof raw.redirectPath !== 'string' || !/^\/[A-Za-z0-9/_.-]*$/.test(raw.redirectPath))) report('credential-field', 'credential.redirectPath');
+  const reserved = ['response_type', 'client_id', 'redirect_uri', 'scope', 'state', 'code_challenge', 'code_challenge_method'];
+  if (raw.authorizeParams !== undefined && (!record(raw.authorizeParams) || Object.entries(raw.authorizeParams).some(([key, param]) => reserved.includes(key) || typeof param !== 'string'))) report('credential-field', 'credential.authorizeParams');
+  if (raw.claimHeaders !== undefined && (!record(raw.claimHeaders) || Object.entries(raw.claimHeaders).some(([name, path]) => !HEADER_NAME.test(name) || RESERVED_HEADERS.has(name.toLowerCase()) || !Array.isArray(path) || path.length === 0 || !path.every(text)))) report('credential-field', 'credential.claimHeaders');
+  if (before.count) return undefined;
+  return { kind, authorizeURL: raw.authorizeURL as string, tokenURL: raw.tokenURL as string, clientId: raw.clientId as string, redirectPort: raw.redirectPort as number,
+    ...(raw.scopes === undefined ? {} : { scopes: [...raw.scopes as string[]] }), ...(raw.redirectPath === undefined ? {} : { redirectPath: raw.redirectPath as string }),
+    ...(raw.authorizeParams === undefined ? {} : { authorizeParams: { ...raw.authorizeParams as Record<string, string> } }),
+    ...(raw.claimHeaders === undefined ? {} : { claimHeaders: structuredClone(raw.claimHeaders) as Record<string, string[]> }), ...auth };
 }
 
 /** Endpoint the protocol sends requests to. */
@@ -122,4 +177,10 @@ export type ProviderEntry =
   | { file: string; status: 'registered'; definition: ProviderDefinition }
   | { file: string; status: 'invalid'; issues: ProviderIssue[] }
   | { file: string; status: 'conflict'; definition: ProviderDefinition; detail: string };
-export interface ProviderList { directory: string; entries: ProviderEntry[] }
+export interface ProviderList { directory: string; entries: ProviderEntry[]; auth: Record<string, ProviderAuthState> }
+/** What the page shows about a route's credential; never the value. */
+export type ProviderAuthState =
+  | { kind: 'none' }
+  | { kind: 'credential'; configured: boolean; writable: boolean; source?: string }
+  | { kind: 'command' }
+  | { kind: 'oauth'; signedIn: boolean; expiresAt?: number; pending?: { url: string } };

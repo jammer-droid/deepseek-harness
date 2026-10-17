@@ -11,12 +11,16 @@ import { settingsxText } from './settingsx-locale.ts';
 import { commandLabel, SettingsXPage, type CommandRowState, type SettingsXProviderActions, type SettingsXShortcuts } from './settingsx-page.tsx';
 
 const NAMESPACE = 'studioProviders';
-const descriptor = (method: string) => ({
+const stringCodec = { mode: 'strict', typeSymbol: 'string', create: () => ({ parse: (value: unknown) => { if (typeof value !== 'string') throw new TypeError('Expected a string'); return value; } }) } as const;
+const descriptor = (method: string, parameters: string[] = []) => ({
   id: `${PACKAGE_NAME}#${NAMESPACE}/${method}`, service: NAMESPACE, namespace: NAMESPACE, method,
-  invocation: { kind: 'direct' }, parameters: [], result: { mode: 'src-json' },
+  invocation: { kind: 'direct' }, parameters: parameters.map(name => ({ name, wire: name, source: 'json', codec: stringCodec })), result: { mode: 'src-json' },
 });
 /** Remote descriptors mounted by the shell together with the other Studio services. */
-export const settingsxDescriptors = () => ['list', 'reload'].map(descriptor);
+export const settingsxDescriptors = () => [
+  descriptor('list'), descriptor('reload'), descriptor('setKey', ['payload']),
+  ...['signIn', 'waitSignIn', 'cancelSignIn', 'signOut'].map(method => descriptor(method, ['route'])),
+];
 
 type Observable<T> = { getSnapshot(): T; subscribe(listener: () => void): () => void };
 type ShortcutResolution = { status: 'handled'; run(): void } | { status: 'blocked'; reason: string };
@@ -93,9 +97,19 @@ export function mountSettingsX(ctx: StudioContext, options: { navFooter?: (local
     scope.effect(() => () => { listeners.delete(sync); for (const dispose of live.values()) dispose(); live.clear(); });
   });
 
+  const call = <T,>(method: string, ...args: string[]) => {
+    const remote = ctx.get('remote.studioProviders' as never) as unknown as Record<string, ((...args: string[]) => RemoteValue<T>) | undefined> | undefined;
+    return unwrap(remote?.[method]?.(...args));
+  };
   const providerActions: SettingsXProviderActions = {
-    list: () => unwrap((ctx.get('remote.studioProviders' as never) as unknown as { list?(): RemoteValue<ProviderList> } | undefined)?.list?.()),
-    reload: () => unwrap((ctx.get('remote.studioProviders' as never) as unknown as { reload?(): RemoteValue<ProviderList> } | undefined)?.reload?.()),
+    list: () => call<ProviderList>('list'),
+    reload: () => call<ProviderList>('reload'),
+    signIn: route => call<{ url: string }>('signIn', route),
+    waitSignIn: route => call<ProviderList>('waitSignIn', route),
+    cancelSignIn: route => call<ProviderList>('cancelSignIn', route),
+    signOut: route => call<ProviderList>('signOut', route),
+    setKey: (route, value) => call<ProviderList>('setKey', JSON.stringify({ route, value })),
+    openURL: url => { window.open(url, '_blank', 'noopener,noreferrer'); },
   };
   const setEnabled = (id: string, enabled: boolean) => {
     const next = new Set(disabled);

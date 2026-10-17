@@ -40,8 +40,8 @@ export function responsesBody(options: GenerateOptions, maxTokens: number | unde
   }
   const declared = tools(options);
   return {
-    model: options.model, stream: true, store: false, input,
-    ...(system ? { instructions: system } : {}),
+    // Some Responses servers (ChatGPT's Codex backend) require instructions; an empty string satisfies the rest.
+    model: options.model, stream: true, store: false, input, instructions: system,
     ...(declared.length ? { tools: declared.map(tool => ({ type: 'function', name: tool.name, description: tool.description, parameters: tool.parameters })) } : {}),
     ...(options.reasoningEffort ? { reasoning: { effort: options.reasoningEffort } } : {}),
     ...(maxTokens ? { max_output_tokens: maxTokens } : {}),

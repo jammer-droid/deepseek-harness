@@ -68,6 +68,6 @@ test('built client mounts read-only catalog and registers Studio optimization', 
   assert.ok(pixie.every(item => item.parameters.every(parameter => parameter.codec.mode === 'strict')));
   assert.equal(pixie.find(item => item.method === 'follow').mode, 'stream');
   assert.deepEqual(Object.keys(registrations[2].children), ['local.dsh-studio.services']);
-  assert.deepEqual(mounts[0].descriptors.filter(item => item.service === 'studioProviders').map(item => item.method).join(), 'list,reload');
+  assert.deepEqual(mounts[0].descriptors.filter(item => item.service === 'studioProviders').map(item => item.method).join(), 'list,reload,setKey,signIn,waitSignIn,cancelSignIn,signOut');
   assert.deepEqual(subscriptions, ['local.dsh-studio.services']);
 });

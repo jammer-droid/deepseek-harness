@@ -7,6 +7,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { attributionHeaders } from '@deepseek-ai/dsh-llm';
 import { StudioProviderAdapter, StudioProviders } from '../src/host/provider-adapter.ts';
+import { ProviderAuth } from '../src/host/provider-auth.ts';
 
 /** One server per test; each request records the body and replies with the queued SSE frames or status. */
 async function fakeServer(t, reply) {
@@ -79,6 +80,7 @@ test('responses: stateless body and reasoning, text, and function-call items', a
   assert.equal(sent.url, '/v1/responses');
   assert.equal(sent.body.store, false);
   assert.equal(sent.body.instructions, 'Be brief.');
+  assert.equal(sent.body.max_output_tokens, 64);
   assert.deepEqual(sent.body.reasoning, { effort: 'low' });
   assert.deepEqual(sent.body.input.map(item => item.type ?? item.role), ['user', 'assistant', 'function_call', 'function_call_output']);
   const ends = chunks.filter(chunk => chunk.type === 'block-end').map(chunk => chunk.block);
@@ -119,7 +121,8 @@ test('reload registers valid files, reports invalid and conflicting ones, and re
   await writeFile(join(dir, 'c.json'), JSON.stringify(definition('http://127.0.0.1:1/v1', 'openai-chat', { id: 'deepseek' })));
   await writeFile(join(dir, 'd.json'), JSON.stringify(definition('http://127.0.0.1:1/v1', 'openai-chat', { id: 'alpha' })));
   const service = Object.create(StudioProviders.prototype);
-  Object.assign(service, { ctx, directory: dir, adapter: new StudioProviderAdapter(), entries: [] });
+  const auth = new ProviderAuth({ credentials: () => undefined });
+  Object.assign(service, { ctx, directory: dir, auth, adapter: new StudioProviderAdapter(fetch, auth), entries: [] });
   const first = await service.reload();
   assert.deepEqual(first.entries.map(entry => `${entry.file}:${entry.status}${entry.detail ? `:${entry.detail}` : ''}`), ['a.json:registered', 'b.json:invalid', 'c.json:conflict:route', 'd.json:conflict:duplicate']);
   assert.deepEqual(routes, ['alpha']);
@@ -133,4 +136,5 @@ test('reload registers valid files, reports invalid and conflicting ones, and re
   assert.deepEqual(routes, ['beta']);
   assert.deepEqual(calls.map(call => call[0]), ['register', 'replace', 'replace']);
   assert.deepEqual([...service.adapter.definitions.keys()], ['beta']);
+  assert.deepEqual((await service.list()).auth, { beta: { kind: 'none' } });
 });
