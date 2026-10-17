@@ -1,0 +1,248 @@
+# Studio 0.6.1 E2E 검증 (DSH 0.2.1-rc.1·rc.2 호환 배포)
+
+이 문서를 받은 에이전트(**검증자**)는 아래 E1–E5 중 지시받은 단계를 실행하고, 마지막 보고 양식으로 결과를 낸다. 지시가 없으면 **준비된 단계 전부**를 순서대로 실행한다. 제품을 고치지 않는다. 산출물은 후보와 기록뿐이고, 반영은 메인 세션이 한다.
+
+배경: Studio 0.6.0은 npm에 배포하지 않았다. DSH `0.2.1-rc.1` 호환 수정(`b3c992d54f`), 구버전 검증(`e0c13c3dd3`), `0.2.1-rc.2` 지원 선언을 묶어 **0.6.1**로 배포한다. 지원 버전은 `0.2.0-rc.2`, `0.2.1-alpha.2`, `0.2.1-rc.1`, `0.2.1-rc.2`이고, **주 대상 런타임은 현재 Desktop의 `0.2.1-rc.2`**다. 근거 기록은 [rc.2 검증](../../docs/verification/dsh-0.2.1-rc.2.md), [rc.1 검증](../../docs/verification/dsh-0.2.1-rc.1.md), [구버전 Web 검증](../../docs/verification/older-dsh-web.md)이다.
+
+rc.1→rc.2 사이 DSH 코어 공개 API(`dsh-llm`, `dsh-tools`, `dsh-subagent`, `dsh-session`, `dsh-jobs`, `dsh-scope`, `dsh-system-prompt`, `dsh-app-boot`, `typert`, `client-locale`)의 소스 변경은 없다. 바뀐 것은 DeepSeek Search·Fetch API(`dsh-web-deepseek-api`, `dsh-web` 설정의 volatile 전환, 웹 검색 설정 화면)와 DeepSeek Flash `1017` 배지다. Studio에 닿는 곳은 한국어 사전(`settings.webSearch`)과 Master 플러그인 목록의 라벨뿐이다.
+
+**버전 표기:** 이 문서에서 `rc.1`·`rc.2`는 DSH `0.2.1-rc.1`·`0.2.1-rc.2`다. DSH `0.2.0-rc.2`는 항상 `0.2.0-rc.2`로 적는다. 저장소의 `source-rc2.json`과 [구버전 Web 검증](../../docs/verification/older-dsh-web.md)의 `rc.2`는 `0.2.0-rc.2`를 뜻한다.
+
+## 작업 위치와 범위
+
+- 명령의 기준 디렉터리는 저장소 루트다. `tsx`가 필요한 명령만 `studio/`에서 실행한다.
+- **쓰는 위치는 `studio/dist/e2e/0.6.1/` 하나다**(Git 제외 경로). tracked 파일, `src/dsh-ko/*`, 릴리즈 문서, 사용자 Desktop·web 프로필은 바꾸지 않는다. 같은 worktree에서 메인 세션이 0.6.1 문서·버전을 동시에 고치고 있다.
+- 커밋·푸시·배포·이슈 변경은 하지 않는다.
+- `pixie_loop`에 넣는 항목(UI 문구, 문서 문단, 검증 기록)은 Pixie 모델 제공자와 결정 엔진(TypeSafe Jev)으로 전송된다. E2·E3 시작 전에 이 사실을 사용자에게 한 줄로 알린다.
+
+## 0. 시작 확인
+
+1. `git status --short`, `git branch --show-current`, `git log --oneline -5`를 기록한다. 예상 밖의 변경은 메인 세션의 작업일 수 있으니 건드리지 않고 목록만 남긴다.
+2. 도구 `pixie_loop`, `bash`, `read`가 있는지 확인한다. `pixie_loop`이 없으면 E2·E3·E4는 `환경 차단`이다. 프리셋을 바꾸거나 `judge` 도구·번역 스킬로 대신해 우회하지 않는다.
+3. `dsh --version`이 `0.2.1-rc.2`인지 기록한다(E5 대상 런타임). 다르면 E5는 `대기`이고, 실제 버전을 적는다.
+4. 단계별 준비 상태를 판정해 표로 알린다.
+
+   | 단계 | 실행 조건 |
+   | --- | --- |
+   | E1 기계 검사 | 항상 |
+   | E2 rc.1·rc.2 한국어 후보 | E1의 locale 결과가 있음 |
+   | E3 문서 사실 검증 | `studio/release/CHANGELOG.md`에 `## 0.6.1` 섹션이 커밋되어 있음 |
+   | E4 한국어 문체 교정 | E3과 같음 |
+   | E5 패키지 설치·RPC | `studio/packages/shell/package.json`의 `version`이 `0.6.1`이고 E3 대상 커밋 이후 tracked 변경이 없음 |
+
+   조건이 안 된 단계는 `대기`로 적고 건너뛴다. 메인 세션의 미커밋 편집본으로 E3–E5를 실행하지 않는다.
+
+## E1. 기계 검사 (판정 엔진 없음)
+
+결과가 정해진 검사다. `pixie_loop`이나 `judge`를 쓰지 않는다.
+
+1. **rc.1·rc.2 문구 원문 추출:** 저장소 루트에서 실행한다(`studio/`에서 실행하면 git pathspec이 맞지 않아 실패한다). 파일이 이미 있어도 다시 추출해 덮어쓴다.
+
+   ```sh
+   mkdir -p studio/dist/e2e/0.6.1
+   node studio/scripts/extract-dsh-locale.mjs dsh-v0.2.1-rc.1 --out studio/dist/e2e/0.6.1/source-0.2.1-rc.1.json
+   node studio/scripts/extract-dsh-locale.mjs dsh-v0.2.1-rc.2 --out studio/dist/e2e/0.6.1/source-0.2.1-rc.2.json
+   ```
+
+   기대값: rc.1 `64 namespaces, 2900 keys, 0 unresolved`, rc.2 `65 namespaces, 2910 keys, 0 unresolved`. 다르면 숫자를 그대로 기록한다. `0.2.0-rc.2`·alpha.2 원문은 저장소의 `studio/docs/research/ko-locale/source-rc2.json`, `source-alpha2.json`을 쓴다.
+
+2. **사전 대조:** `studio/`에서 지원 버전 네 소스를 함께 검사한다.
+
+   ```sh
+   node --import tsx scripts/check-dsh-ko-locale.mjs docs/research/ko-locale/source-rc2.json docs/research/ko-locale/source-alpha2.json dist/e2e/0.6.1/source-0.2.1-rc.1.json dist/e2e/0.6.1/source-0.2.1-rc.2.json
+   node --import tsx scripts/check-dsh-ko-locale.mjs dist/e2e/0.6.1/source-0.2.1-rc.2.json --json > dist/e2e/0.6.1/ko-rc2-report.json
+   ```
+
+   2026-10-17 기준선: 0.2.0-rc.2·alpha.2는 `ok`, rc.1·rc.2는 `FAIL`이다. rc.2 기준 누락 63키는 rc.1의 54키(`settings.models` 24, `pluginManager` 12, `settings` 7, `reference` 4, `workspace` 3, `chat` 2, `conversation` 2)에 **rc.2에서 새로 생긴 `settings.webSearch` 9키**를 더한 것이다. 자리표시자 불일치 3키(`pluginManager.installDoneRestart`, `reasonIncompatibleVersion`, `restartNotice`)는 rc.1·rc.2 공통이다. 사전 없는 네임스페이스는 `pluginMarket`(78키), `secretMask`(2키), `deepseek-model-label-1017`(1키, 영어가 `1017`이라 번역하지 않음)이다. 네 소스를 함께 넣으면 `stray key`가 0이어야 한다. 한 소스만 넣었을 때 나오는 `stray key`는 다른 지원 버전의 키라서 정상이다. 기준선과 다른 항목만 따로 적는다.
+
+3. **영어가 바뀐 기존 번역:** 검사 스크립트는 이 경우를 잡지 못한다(키는 있고 자리표시자만 비교한다). 화면에 예전 뜻의 한국어가 나오므로 누락보다 위험하다. alpha.2(없으면 0.2.0-rc.2) 영어와 rc.1 또는 rc.2 영어가 다른데 `ko`가 이미 있는 키를 뽑아 `dist/e2e/0.6.1/ko-changed-en.json`에 `{ns, key, alpha2, rc1, rc2, ko}`로 저장한다. 사전은 `src/dsh-ko/index.ts`의 `dshKo`에서 읽는다. 기준선은 10키다.
+   - rc.1에서 바뀐 7키: 위 자리표시자 3키, `settings.agentPreset.guideMinimalExplanation`, `presetMinimalDescription`, `settings.models.baseUrlDefault`, `deepSeekBaseUrl`
+   - rc.2에서 바뀐 3키: `settings.webSearch.baseUrl`(Endpoint → Messages API base URL), `baseUrlHint`, `maxUsesHint`
+
+4. **버전별로 갈리는 키 분류:** 3번의 키마다 0.2.0-rc.2·alpha.2와 rc.1·rc.2의 `{...}` 자리표시자 집합을 비교한다. 집합이 다르면 **버전 충돌**로 표시한다. DSH는 넘기지 않은 자리표시자를 글자 그대로 남기므로, 하나의 한국어 문구로는 두 버전을 모두 맞출 수 없다(예: `{peers}` ↔ `{requirements}`, rc.1부터 생긴 `{reason}`). 기준선은 자리표시자 3키다. 충돌 키는 E2에서 번역하지 않고 보고서의 **결정 필요**로 넘긴다.
+
+5. **지원 버전 문구:** 아래 grep으로 `0.2.1-rc.1`이나 `0.2.1-rc.2`가 빠진 지원 버전 문장을 찾는다. `packages/shell/package.json` peer 8개, `dev.mjs`, `start-web.mjs`의 목록은 네 버전이 모두 있어야 한다. 과거 버전(0.5.0 이하) CHANGELOG 섹션과 "0.2.0-rc.2·alpha.2에서 검증"처럼 검증 범위를 말하는 문장은 정상이다. 결과를 파일:줄과 함께 `정상 / 누락`으로 분류한다.
+
+   ```sh
+   git grep -n -E "0\.2\.1-alpha\.2" -- studio/release studio/packages/shell/package.json studio/dev.mjs studio/start-web.mjs
+   ```
+
+6. **플러그인 라벨:** rc.2에서 Master 플러그인 목록에 새로 나오는 `@deepseek-ai/dsh-web-deepseek-api`, `@deepseek-ai/dsh-client-ui-deepseek-model-label-1017`이 `src/plugin-labels.ts`에 있는지 기록한다. 없으면 목록에 패키지 이름이 그대로 나오고 설명이 비는 정도라 `발견`(기능 영향 없음)으로 적는다.
+
+7. **Studio 테스트:** `npm --prefix studio test`를 실행하고 종료 코드·테스트 수·실패 목록을 기록한다. 이 결과는 workspace 회귀이며 독립 배포 증거가 아니다.
+
+**완료 기준:** 1–7의 결과와 기준선 차이가 `dist/e2e/0.6.1/e1.md`에 있다.
+
+## E2. rc.1·rc.2 한국어 후보 번역 (Pixie Loop)
+
+**번역과 판정은 `pixie_loop` 도구 한 번(필요하면 남은 id만 재실행)으로 한다.** `studio-dsh-ko-translate` 스킬, `judge` 도구로 문구마다 판정하기, `scripts/dsh-ko-judge.mjs`, 서브에이전트 번역, 검증자가 직접 쓴 번역은 이 단계에서 쓰지 않는다. 그 방법들은 #30 사전 작성용이고, 이 단계는 Pixie Loop으로 후보를 만드는 검증이다. `pixie_loop`이 없거나 시작이 계속 거부되면 E2를 `환경 차단`으로 적고 멈춘다.
+
+E1의 rc.2 기준 누락 63키와 사전 없는 네임스페이스 `pluginMarket`·`secretMask` 80키를 번역 후보로 만든다(합계 143항목). `deepseek-model-label-1017`은 넣지 않는다. **버전 충돌 키는 넣지 않는다.** 영어만 바뀐 기존 키(충돌 없는 7키)는 새 영어 기준으로 다시 번역한다. 입력 영어는 rc.2 원문을 쓴다. rc.1과 rc.2 영어가 다른 키가 있으면 보고서에 적는다(기준선에서는 없다).
+
+1. **용어집:** `studio/docs/research/ko-locale/README.md`의 "용어집" 표와 바로 아래 문체 문단을 읽는다. 표를 `영어 → 한국어` 한 줄씩으로 줄여 `shared`에 넣는다. 다른 항목의 문구는 `shared`에 넣지 않는다.
+2. **항목 파일:** `studio/dist/e2e/0.6.1/ko-items.jsonl`에 한 줄에 `{"id":"<ns>::<key>","input":"<rc.2 영어>"}`를 쓴다. 입력은 영어 원문만 넣는다(키 이름이나 설명을 붙이면 의미 판정을 흐린다). 영어가 빈 문자열이거나 앞뒤 공백이 있는 키는 다른 키와 이어 붙는 조각일 수 있다. 기준선에는 없었지만, 나오면 항목에서 빼고 보고서에 적는다.
+3. **실행:** 아래 명세를 그대로 `pixie_loop` 도구에 넘긴다(`run_in_background: true`). 반환된 job id를 기록하고, 기다리는 동안 다른 단계를 진행한 뒤 `job_output`으로 회수한다. 판정 질문과 기준값은 기존 번역(#30)에서 쓴 것과 같다(자연스러움 score ≥ 1.5, 의미 ≥ 0.6, 문체 ≥ 0.5). calibration은 이미 승인된 실제 사전 문구다. 시작이 거부되면(`Calibration failed`) 오류에 나온 질문 문구만 고치고, 기준을 낮추지 않는다.
+
+   ```json
+   {
+     "items": { "path": "studio/dist/e2e/0.6.1/ko-items.jsonl" },
+     "shared": "<1번의 용어집과 문체 규칙>\nStyle: sentences use 합쇼체 (-습니다/-십시오); buttons, labels and headings are short noun phrases. Keep {placeholders}, product and code names (DeepSeek, DSH, MCP, Cron, PTC, UTC, GitHub, npm, API, URL, HMR) and tab names Trajectory and Chat unchanged.",
+     "work": { "instruction": "Translate this English UI string from the DeepSeek Harness desktop app into Korean. Keep every {placeholder} with the same name and count, line breaks and Markdown. Reply with the Korean text only." },
+     "checks": {
+       "questions": {
+         "natural": { "type": "score", "instructions": "How natural and clear is `output` as Korean UI text for a developer tool?", "criteria": ["awkward or unclear", "understandable but stiff", "natural and clear"] },
+         "meaning": { "type": "noul", "instructions": "Does `output` convey the same meaning as the English `input`, including conditions, numbers, and negations?" },
+         "style": { "type": "noul", "instructions": "Does `output` end sentences in the formal polite style (합쇼체, e.g. -습니다/-합니다) or use a short label/noun phrase?" }
+       },
+       "pass": { "natural": { "min": 1.5 }, "meaning": { "min": 0.6 }, "style": { "min": 0.5 } }
+     },
+     "codeChecks": [{ "type": "placeholders" }, { "type": "regex", "pattern": "[가-힣]", "expect": "match" }],
+     "calibration": {
+       "pass": [
+         { "input": "Could not enable: {reason}", "output": "활성화 실패: {reason}" },
+         { "input": "Enter an API key to continue.", "output": "계속하려면 API 키를 입력하십시오." },
+         { "input": "GitHub connection timed out", "output": "GitHub 연결 시간이 초과되었습니다." }
+       ],
+       "fail": [
+         { "input": "Uninstall {name}", "output": "{name} 설치" },
+         { "input": "Enter an API key to continue.", "output": "계속하려면 API 키를 입력해라." },
+         { "input": "Each model ID may appear once.", "output": "모델 ID는 여러 번 등록할 수 있습니다." }
+       ]
+     },
+     "maxAttempts": 3,
+     "concurrency": 4,
+     "limits": { "tokens": 2500000, "timeMs": 3600000 },
+     "output": "studio/dist/e2e/0.6.1/ko-done.jsonl",
+     "run_in_background": true
+   }
+   ```
+
+4. **결과 정리:** `job_output`으로 요약을 받는다. `errors`는 원인이 일시적이면 그 id만 한 번 다시 실행한다. `stopped`면 결과 파일에 없는 id만 다시 실행한다. 통과 항목은 다시 돌리지 않는다.
+5. **후보 파일:** 통과 항목을 네임스페이스별로 묶어 `dist/e2e/0.6.1/ko-candidates.json`(`{ns: {key: ko}}`)에 쓴다. `escalated` 항목은 마지막 출력·실패한 검사·피드백과 함께 `ko-escalated.md`에 남긴다. 직접 고쳐 통과로 바꾸지 않는다.
+6. `settings.webSearch` 후보는 같은 네임스페이스의 기존 번역(`src/dsh-ko/settings.webSearch.ts`)과 용어가 맞는지 확인한다. 특히 `baseUrl`(Messages API)과 새 `searchApiBaseUrl`(Search / Fetch API)이 서로 구별되는지 본다.
+7. 같은 영어가 여러 키에 있으면 후보 한국어가 같은지 확인하고, 다르면 보고서에 적는다.
+
+**완료 기준:** 모든 항목이 통과·escalated·error 중 하나로 정리되고, 후보·escalated 파일과 토큰 사용량이 남았다.
+
+## E3. 0.6.1 문서 사실 검증 (Pixie Loop)
+
+배포 문서의 주장이 검증 기록을 넘지 않는지 본다. 결정 엔진은 `input`과 `output`만 보므로, 작업자가 근거를 인용하고 검증자가 그 인용이 실제 기록에 있는지 스크립트로 다시 확인한다.
+
+1. **항목:** E3 대상 커밋에서 `0.6.0` 태그(`dsh-studio-v0.6.0`) 이후 바뀐 문단을 뽑는다. 대상은 `studio/release/CHANGELOG.md`의 `## 0.6.1` 섹션(영어·한국어), `studio/release/README.md`, `studio/release/docs/guide*.md`, `studio/release/docs/highlights*.md`다. 항목 하나는 문단 하나(목록이면 항목 하나), id는 `파일:줄`이다. 코드 블록과 표 구분선은 뺀다. `dist/e2e/0.6.1/facts-items.jsonl`에 쓴다.
+2. **근거(`shared`):** 아래 원문을 그대로 이어 붙인다(합계 약 23KB). 요약하지 않는다.
+   - `studio/docs/verification/dsh-0.2.1-rc.2.md`
+   - `studio/docs/verification/dsh-0.2.1-rc.1.md`
+   - `studio/docs/verification/older-dsh-web.md`
+   - `studio/packages/shell/package.json`의 `version`과 `peerDependencies`
+   - E1의 요약(rc.1·rc.2 한국어 누락 수, 영어가 바뀐 키, 버전 충돌 키)
+   - 이번 E5 결과(`e5.md`)가 있으면 그것도 넣는다. 없으면 rc.2에서 설치·RPC를 확인했다는 주장은 rc.2 검증 기록만 근거가 된다.
+3. **실행:**
+
+   ```json
+   {
+     "items": { "path": "studio/dist/e2e/0.6.1/facts-items.jsonl" },
+     "shared": "<2번의 근거 원문>",
+     "work": { "instruction": "The input is one paragraph of release documentation for DSH Studio. List each factual claim about supported versions, what was tested or verified, results, guarantees, stored data, or behavior. For each claim give an exact quote from the shared evidence that supports it, or null when no quote supports it. Then give a verdict: supported (every claim has a quote that says the same thing), overstated (a quote exists but the claim says more, e.g. broader versions, features, or a guarantee), or unsupported (some claim has no quote). Reply with JSON only: {\"claims\":[{\"claim\":\"...\",\"quote\":\"...\"|null}],\"verdict\":\"supported|overstated|unsupported\"}." },
+     "checks": {
+       "questions": {
+         "verdict": { "type": "choice", "instructions": "`input` is a release-note paragraph and `output` lists its claims with supporting quotes from verification records. Judge whether every claim in `input` is backed by a quote in `output` that says the same thing, without the claim being broader than its quote.", "criteria": { "supported": "every claim is backed by a quote saying the same thing", "overstated": "a claim is broader than its quote (more versions, features, or a guarantee)", "unsupported": "a claim has no quote", "no_claims": "the paragraph makes no factual claim" } }
+       },
+       "pass": { "verdict": { "accept": ["supported", "no_claims"] } }
+     },
+     "codeChecks": [{ "type": "json", "keys": ["claims", "verdict"] }],
+     "calibration": {
+       "pass": [
+         { "input": "Requires DSH `0.2.0-rc.2`, `0.2.1-alpha.2`, `0.2.1-rc.1` or `0.2.1-rc.2`.", "output": "{\"claims\":[{\"claim\":\"Studio supports DSH 0.2.0-rc.2, 0.2.1-alpha.2, 0.2.1-rc.1 and 0.2.1-rc.2\",\"quote\":\"\\\"@deepseek-ai/dsh\\\": \\\"0.2.0-rc.2 || 0.2.1-alpha.2 || 0.2.1-rc.1 || 0.2.1-rc.2\\\"\"}],\"verdict\":\"supported\"}" }
+       ],
+       "fail": [
+         { "input": "On DSH 0.2.1-rc.2, Fresh and Fork role children keep their instructions and Tool Filter after a restart.", "output": "{\"claims\":[{\"claim\":\"rc.2 Fresh/Fork children keep persona and filter after restart\",\"quote\":\"rc.2에서 실제 외부 모델 응답·OAuth 신규 로그인·이미지/영상 생성·역할 자식 재시작 시나리오는 실행하지 않았다.\"}],\"verdict\":\"overstated\"}" },
+         { "input": "Studio is fully compatible with DSH 0.2.0-rc.2 and 0.2.1-alpha.2, including Fresh and Fork role children.", "output": "{\"claims\":[{\"claim\":\"Fully compatible with rc.2 and alpha.2 including Fresh/Fork children\",\"quote\":\"이는 신규 설치와 Web Host RPC의 결과다. 브라우저 렌더링·화면 조작, 실제 역할 자식 실행, native persona/toolFilter 적용, 0.5→0.6 데이터 업그레이드의 성공을 뜻하지 않는다.\"}],\"verdict\":\"overstated\"}" },
+         { "input": "Studio was tested on Windows and Linux.", "output": "{\"claims\":[{\"claim\":\"Tested on Windows and Linux\",\"quote\":null}],\"verdict\":\"unsupported\"}" }
+       ]
+     },
+     "maxAttempts": 2,
+     "concurrency": 4,
+     "limits": { "tokens": 1500000, "timeMs": 1800000 },
+     "output": "studio/dist/e2e/0.6.1/facts-done.jsonl",
+     "run_in_background": true
+   }
+   ```
+
+   rc.2에 대해서는 설치·RPC·Desktop 표시만 검증됐고, 역할 자식 실행·재시작은 rc.1에서만 검증됐다. 문서가 rc.1 결과를 rc.2에도 적용하면 `overstated`가 맞다.
+
+   `escalated`는 이 단계의 **발견 사항**이다(문서를 고쳐야 통과하므로 재시도로는 해결되지 않는다).
+
+4. **인용 재확인:** 결과 파일의 모든 `quote`가 2번 원문에 그대로 들어 있는지 스크립트로 확인한다(공백만 정규화). 없는 인용이 있는 통과 항목은 `인용 불일치`로 강등해 발견 사항에 더한다. Pixie의 판정 근거나 피드백을 사실로 옮겨 적지 않는다.
+5. **한국어·영어 대응:** CHANGELOG 영어 항목과 같은 위치의 한국어 항목이 같은 주장을 하는지 메인 에이전트가 직접 짝지어 확인하고, 한쪽에만 있는 주장을 적는다.
+
+**완료 기준:** 모든 항목이 `supported / no_claims / 발견 사항` 중 하나이고, 발견 사항마다 파일:줄·주장·근거 상태가 `dist/e2e/0.6.1/e3.md`에 있다.
+
+## E4. 한국어 문체 교정 (Pixie Loop)
+
+[완료·배포 절차](../../docs/release-workflow.md)의 "4. 한국어 문체 교정" 명세를 그대로 쓴다. 대상은 E3 대상 커밋의 0.6.1 한국어 변경 문단이고, 경로만 바꾼다(`items.path` → `studio/dist/e2e/0.6.1/ko-polish.jsonl`, `output` → `studio/dist/e2e/0.6.1/ko-polish-done.jsonl`). 그 절차의 **반영** 단계는 하지 않는다. 대신 입력과 출력이 다른 항목만 `dist/e2e/0.6.1/ko-polish-diff.md`에 `파일:줄 / 원문 / 교정안`으로 남기고, 그 절차의 거름 규칙(구조 변경·용어 변경)에 걸린 교정안에는 표시를 단다.
+
+## E5. 패키지 설치와 RPC (수정하지 않은 rc.2)
+
+[개발 문서](../../development.ko.md)의 "4. 지원 버전별 동일 패키지 검증 (matrix)"를 따른다. 이 문서는 대상과 경로만 정한다.
+
+1. E3 대상 커밋에서 패키지를 만들고 SHA256을 기록한다.
+
+   ```sh
+   STUDIO_PACK_DIST=dist/e2e/0.6.1/release node studio/pack.mjs
+   shasum -a 256 studio/dist/e2e/0.6.1/release/*.tgz
+   ```
+
+   파일 이름에 `0.6.1`이 없으면 멈춘다.
+
+2. 런타임은 설치된 Desktop 배포본의 `dsh`(`0.2.1-rc.2`, `/usr/local/bin/dsh` → 앱 내부 `runtime/cli/bin/dsh`)다. home은 `$PWD/studio/dist/e2e/0.6.1/home`(절대 경로), 프로필은 새 `verify`, 포트는 비어 있음을 확인한 값(예: 19390)이다. 사용자의 desktop·web 프로필과 현재 GUI는 쓰지 않는다.
+3. 서버는 관리형 background job으로 띄우고, 출력된 인증 URL로 RPC 검사를 실행한다.
+
+   ```sh
+   STUDIO_TEST_ISOLATED=1 STUDIO_TEST_PORT=<port> node studio/scripts/check-web-runtime.mjs '<인증 URL>'
+   ```
+
+   토큰이 든 URL은 보고서와 파일에 남기지 않는다.
+
+4. **브라우저 확인(가능할 때만):** 같은 격리 서버에서 DSH 언어를 한국어로 바꾸고 다음을 본다. 브라우저 도구가 없으면 `미실행`이다.
+   - 플러그인 관리 화면: `{peers}`, `{reason}` 같은 중괄호 글자가 보이는지
+   - 설정 → 웹 검색: 새 API 스위치·결과 수 등 영어로 남은 문구, `baseUrl`·`maxUsesHint`의 한국어가 rc.2 영어와 뜻이 다른지
+   - Master 플러그인 목록: `dsh-web-deepseek-api`가 라벨 없이 패키지 이름으로 나오는지
+   - E2 후보가 아직 반영되지 않은 영어 문구가 그 밖에 어디에 보이는지
+5. rc.2에서 역할 자식(Fresh/Fork)의 persona·Tool Filter·재시작 복원은 미검증이다. 실행하라는 지시가 있으면 [rc.1 역할 검증 지침](dsh-rc1-compat-check.md)의 4절(격리 B 모드)을 rc.2 런타임으로 실행한다. 지시가 없으면 `미실행`으로 적는다.
+6. 다른 지원 버전(0.2.0-rc.2·alpha.2·rc.1) 재검증은 지시가 있을 때만 한다. 하게 되면 같은 tarball을 개발 문서 4절대로 npm 격리 설치 런타임에 설치한다.
+7. 시작한 서버를 종료하고, 포트에 listener가 없는지 확인한다.
+
+**완료 기준:** 패키지 해시, 런타임 버전·경로, 설치 경고, RPC 4개 결과, 브라우저 확인 여부, 역할 자식 검사 실행 여부, 서버 종료가 `dist/e2e/0.6.1/e5.md`에 있다.
+
+## 보고 양식
+
+각 항목은 `통과 / 실패 / 발견 / 대기 / 미실행 / 환경 차단` 중 하나로 적는다. 요청한 단계가 모두 끝나기 전에는 0.6.1 배포 가능이라고 쓰지 않는다. workspace 테스트 통과를 독립 설치 성공으로 바꾸어 적지 않는다.
+
+```markdown
+## Studio 0.6.1 E2E 결과
+
+- 소스 커밋 / 작업 트리 상태:
+- DSH 버전·경로 / 패키지 SHA256:
+- Pixie Loop job id·토큰 사용량:
+
+| 단계 | 판정 | 근거·산출물 |
+| --- | --- | --- |
+| E1 rc.1·rc.2 문구 추출·사전 대조 | … | 기준선과 차이 |
+| E1 영어가 바뀐 기존 번역 | … | n키 (기준선 10) |
+| E1 플러그인 라벨 | … | 없는 패키지 |
+| E1 지원 버전 문구 | … | 누락 파일:줄 |
+| E1 Studio 테스트 | … | 종료 코드·테스트 수 |
+| E2 한국어 후보 | … | 통과 n / escalated n / error n |
+| E3 문서 사실 검증 | … | 발견 n (파일:줄) |
+| E4 문체 교정안 | … | 교정안 n / 거른 것 n |
+| E5 rc.2 설치·RPC | … | 4개 결과 |
+| E5 rc.2 역할 자식 실행 | … | 실행 여부 |
+| E5 브라우저 | … | 중괄호 노출·웹 검색 설정·영어 노출 위치 |
+
+### 결정 필요
+- 버전 충돌 키: 키, 버전별 영어, 현재 ko, 화면 영향
+- 그 밖에 메인 세션이 정해야 할 것
+
+### 산출물
+- studio/dist/e2e/0.6.1/ 아래 파일 목록
+```
