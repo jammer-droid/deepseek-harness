@@ -46,7 +46,7 @@ test('built client mounts read-only catalog and registers Studio optimization', 
     effect: fn => fn(),
     // Optional services such as the right sidebar never appear in this fake runtime.
     inject: () => ({ dispose() {} }),
-    locale: { addLanguage() {}, subscribe() { return () => {}; } },
+    locale: { addLanguage() {}, subscribe() { return () => {}; }, getLocale: () => ({ active: 'en' }) },
     slots: {
       entriesOfSlot: () => [],
       subscribe: name => { subscriptions.push(name); return () => {}; },
@@ -55,8 +55,18 @@ test('built client mounts read-only catalog and registers Studio optimization', 
     },
   };
   await plugin.apply(ctx);
-  // Without the right sidebar, Pixie adds only its Studio settings page; the tab and /pixie row need sidebarRightTabs.
-  assert.deepEqual(registrations.map(item => item.name), ['local.dsh-studio.services', 'main', 'local.dsh-studio.services', 'sidebar.panellist']);
+  // Every session gets the Subagents view after Chat and Trajectory. Without the right sidebar, Pixie adds only
+  // its Studio settings page; the tab and /pixie row need sidebarRightTabs.
+  assert.deepEqual(registrations.map(item => item.name), ['conversation.view', 'local.dsh-studio.services', 'main', 'local.dsh-studio.services', 'sidebar.panellist']);
+  const subagents = registrations.shift();
+  assert.deepEqual(Array.from([subagents.id, subagents.order]), ['studio-subagents', 20]);
+  assert.equal(subagents.label(), 'Subagents');
+  const face = subagents.inject('session-1');
+  assert.deepEqual(Array.from(Object.keys(face.sessionRoles)).sort(), ['add', 'edit', 'follow', 'models', 'remove', 'view']);
+  assert.deepEqual(Array.from(Object.keys(face.hooks)), ['studioLocale']);
+  const roles = mounts[0].descriptors.filter(item => item.service === 'studioSessionRoles');
+  assert.deepEqual(Array.from(roles, item => item.method), ['view', 'editRole', 'addRole', 'removeRole', 'follow']);
+  assert.equal(roles.find(item => item.method === 'follow').mode, 'stream');
   assert.equal(registrations[0].id, 'pixie');
   assert.equal(registrations[1].key, 'local-dsh-studio');
   assert.equal(registrations[2].id, 'optimization-prototype');

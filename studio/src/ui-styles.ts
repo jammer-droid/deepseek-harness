@@ -693,6 +693,12 @@ ${adapter}.studio-ui *, .studio-ui *::before, .studio-ui *::after { box-sizing: 
   .studio-ui .studio-gate-node-meta { display: none; }
   .studio-ui .studio-gate-io { grid-template-columns: minmax(0, 1fr); }
 }
+/* Subagents conversation view: centered like the chat column, narrows on its own width. */
+.studio-ui.studio-session-roles-view { container: studio-session-roles / inline-size; width: 100%; max-width: 960px; margin: 0 auto; padding: 20px 24px 32px; box-sizing: border-box; }
+@container studio-session-roles (max-width: 560px) {
+  .studio-ui.studio-session-roles-view { padding: 16px 12px 24px; }
+  .studio-ui .studio-session-roles .studio-tool-cards.studio-card-pair { grid-template-columns: minmax(0, 1fr); }
+}
 @media (max-width: 480px) {
   .studio-ui .studio-card, .studio-ui article, .studio-ui .studio-agents { padding: 12px; }
   .studio-ui dl { grid-template-columns: 1fr; gap: 4px; }

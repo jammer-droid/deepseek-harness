@@ -92,7 +92,7 @@ test('Remote view, edit, add and remove follow the root and its preset', async (
   const h = await service({ headers, presets });
   try {
     let view = await h.remote.view('root');
-    assert.deepEqual({ ...view, roles: view.roles.map(r => [r.role, r.source]) }, { available: true, rootSessionId: 'root', readOnly: false, presetId: 'studio', roles: [['review', 'preset']] });
+    assert.deepEqual({ ...view, roles: view.roles.map(r => [r.role, r.source]) }, { available: true, rootSessionId: 'root', readOnly: false, presetId: 'studio', roles: [['review', 'preset']], presetRoleIds: ['review'] });
     view = await h.remote.editRole('root', JSON.stringify({ role: 'review', persona: 'Session persona', spawn: 'fresh' }));
     assert.deepEqual([view.roles[0].source, view.roles[0].persona, view.roles[0].spawn], ['session', 'Session persona', 'fork']);
     view = await h.remote.addRole('root', JSON.stringify({ name: 'Scout', role: 'scout', reasoning: 'low' }));
@@ -103,7 +103,7 @@ test('Remote view, edit, add and remove follow the root and its preset', async (
     await assert.rejects(h.remote.editRole('child', JSON.stringify({ role: 'review', persona: 'x' })), /read-only/);
     await assert.rejects(h.remote.removeRole('child', 'scout'), /read-only/);
     // A preset without the Studio role tool shows unavailable and refuses edits.
-    assert.deepEqual(await h.remote.view('bare'), { available: false, rootSessionId: 'bare', readOnly: false, presetId: 'plain', roles: [] });
+    assert.deepEqual(await h.remote.view('bare'), { available: false, rootSessionId: 'bare', readOnly: false, presetId: 'plain', roles: [], presetRoleIds: [] });
     await assert.rejects(h.remote.addRole('bare', JSON.stringify({ name: 'x', role: 'x' })), /no Studio role tool/);
     view = await h.remote.removeRole('root', 'review');
     assert.deepEqual(view.roles.map(r => [r.role, r.source, r.persona]), [['review', 'preset', 'Review'], ['scout', 'session', '']]);

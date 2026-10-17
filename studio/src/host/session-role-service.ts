@@ -4,23 +4,13 @@ import type {} from '@deepseek-ai/dsh-agent-preset-registry';
 import { ROLE_PLUGIN } from '../package-name.ts';
 import type { CompositionRow } from '../prompt-composition.ts';
 import { executableRoles, parseRoles } from '../role-settings.ts';
-import { addSessionRole, editSessionRole, mergeRoles, removeSessionRole, type ExecutableRole, type MergedRole, type SessionRolePatch, type TemporaryRoleInput } from '../session-roles.ts';
+import { addSessionRole, editSessionRole, mergeRoles, removeSessionRole, type ExecutableRole, type SessionRolePatch, type SessionRolesView, type TemporaryRoleInput } from '../session-roles.ts';
 import { parseComposition } from './composition-plan.ts';
 import { validateRoleModel } from './role-validation.ts';
 import { SessionRoleStore, sessionRolesRoot } from './session-role-store.ts';
 import { headerLookup, resolveRootSession, type SessionLineage } from './session-root.ts';
 
-/** What the Subagents tab shows for one session. */
-export interface SessionRolesView {
-  /** False when the session's preset has no Studio role tool; saved roles are kept but unused. */
-  available: boolean;
-  /** The session whose roles apply. Differs from the asked session for a subagent child. */
-  rootSessionId: string;
-  /** A child follows its root and cannot edit. */
-  readOnly: boolean;
-  presetId?: string;
-  roles: MergedRole[];
-}
+export type { SessionRolesView };
 export type SessionRolesFrame = { type: 'sync' };
 
 interface SessionControllerSlice {
@@ -105,7 +95,8 @@ export class SessionRoleService extends TypertRemoteService {
   async view(sessionId: string): Promise<SessionRolesView> {
     const { rootSessionId, presetId, preset } = await this.resolve(sessionId);
     const record = await this.store.read(rootSessionId);
-    return { available: !!preset, rootSessionId, readOnly: rootSessionId !== sessionId, ...(presetId ? { presetId } : {}), roles: mergeRoles(preset ?? [], record) };
+    return { available: !!preset, rootSessionId, readOnly: rootSessionId !== sessionId, ...(presetId ? { presetId } : {}),
+      roles: mergeRoles(preset ?? [], record), presetRoleIds: (preset ?? []).map(role => role.role) };
   }
 
   /** Payload `{ role, model?, reasoning?, persona? }`. The first edit copies the preset role. */

@@ -15,6 +15,20 @@ export type SessionRolePatch = Partial<Pick<StudioRole, 'model' | 'reasoning' | 
 /** Input for a temporary role. It always starts a new conversation and uses the preset tool filter. */
 export type TemporaryRoleInput = Pick<StudioRole, 'name' | 'role'> & SessionRolePatch;
 
+/** What the Subagents tab shows for one session. */
+export interface SessionRolesView {
+  /** False when the session's preset has no Studio role tool; saved roles are kept but unused. */
+  available: boolean;
+  /** The session whose roles apply. Differs from the asked session for a subagent child. */
+  rootSessionId: string;
+  /** A child follows its root and cannot edit. */
+  readOnly: boolean;
+  presetId?: string;
+  roles: MergedRole[];
+  /** Role ids the preset declares. A `session` role listed here is a copy that reverts to the preset when removed. */
+  presetRoleIds: string[];
+}
+
 /** Implicit role used when no role is available: same model, reasoning and persona as the parent, new conversation. */
 export const PARENT_ROLE = { name: 'Subagent', role: 'subagent', model: 'inherit', reasoning: 'inherit', spawn: 'fresh', persona: '' } as const satisfies ExecutableRole;
 
