@@ -46,3 +46,6 @@ const docsRoot = ['release/docs/', 'docs/'].map(dir => new URL(dir, import.meta.
 if (!docsRoot) throw new Error('build: Pixie Gate guide not found in release/docs or docs');
 await cp(new URL('appendix/studio-pixie-hook-guide/SKILL.md', docsRoot), new URL('SKILL.md', skillOut));
 await cp(new URL('appendix/pixie-gate.md', docsRoot), new URL('guide.md', skillOut));
+const providerSkillOut = new URL('packages/shell/skills/studio-provider-guide/', import.meta.url);
+await mkdirp(providerSkillOut, { recursive: true });
+await cp(new URL('appendix/studio-provider-guide/SKILL.md', docsRoot), new URL('SKILL.md', providerSkillOut));

@@ -56,15 +56,18 @@ test('built client mounts read-only catalog and registers Studio optimization', 
   };
   await plugin.apply(ctx);
   // Without the right sidebar, Pixie adds only its Studio settings page; the tab and /pixie row need sidebarRightTabs.
-  assert.deepEqual(registrations.map(item => item.name), ['local.dsh-studio.services', 'main', 'local.dsh-studio.services', 'sidebar.panellist']);
+  // SettingsX adds its page; its shortcut commands wait for the shortcuts service, which this fake runtime lacks.
+  assert.deepEqual(registrations.map(item => item.name), ['local.dsh-studio.services', 'local.dsh-studio.services', 'main', 'local.dsh-studio.services', 'sidebar.panellist']);
   assert.equal(registrations[0].id, 'pixie');
-  assert.equal(registrations[1].key, 'local-dsh-studio');
-  assert.equal(registrations[2].id, 'optimization-prototype');
-  assert.equal(registrations[3].id, 'local-dsh-studio');
+  assert.equal(registrations[1].id, 'settingsx');
+  assert.equal(registrations[2].key, 'local-dsh-studio');
+  assert.equal(registrations[3].id, 'optimization-prototype');
+  assert.equal(registrations[4].id, 'local-dsh-studio');
   const pixie = mounts[0].descriptors.filter(item => item.service === 'studioPixie');
   assert.ok(pixie.length > 0);
   assert.ok(pixie.every(item => item.parameters.every(parameter => parameter.codec.mode === 'strict')));
   assert.equal(pixie.find(item => item.method === 'follow').mode, 'stream');
-  assert.deepEqual(Object.keys(registrations[1].children), ['local.dsh-studio.services']);
+  assert.deepEqual(Object.keys(registrations[2].children), ['local.dsh-studio.services']);
+  assert.deepEqual(mounts[0].descriptors.filter(item => item.service === 'studioProviders').map(item => item.method).join(), 'list,reload');
   assert.deepEqual(subscriptions, ['local.dsh-studio.services']);
 });
