@@ -1,0 +1,266 @@
+{
+  "namespace": "sidebarTerminal",
+  "date": "2026-10-17",
+  "engine": "jev",
+  "thresholds": { "natural": 1.5, "meaning": 0.6, "style": 0.5 },
+  "rows": [
+    {
+      "key": "attachmentEnded",
+      "en": "The terminal connection ended. Reconnect to continue.",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "터미널 연결이 종료되었습니다. 계속하려면 다시 연결하십시오.", "natural": 1.83, "meaning": 0.97, "style": 0.95, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "cleanupFailed",
+      "en": "Terminal “{title}” could not be ended: {message}",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "터미널 “{title}” 종료에 실패했습니다: {message}", "natural": 1.85, "meaning": 0.95, "style": 0.86, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "closed",
+      "en": "Terminal closed.",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "터미널이 닫혔습니다.", "natural": 1.89, "meaning": 0.98, "style": 0.92, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "connecting",
+      "en": "Connecting…",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "연결하고 있습니다…", "natural": 1.94, "meaning": 0.98, "style": 0.59, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "control",
+      "en": "Take control",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "제어권 가져오기", "natural": 1.69, "meaning": 0.96, "style": 0.48, "pass": false },
+        { "ko": "제어권을 가져옵니다", "natural": 1.31, "meaning": 0.96, "style": 0.91, "pass": false },
+        { "ko": "제어하기", "natural": 1.47, "meaning": 0.93, "style": 0.5, "pass": false },
+        { "ko": "터미널 제어권 가져오기", "natural": 1.39, "meaning": 0.84, "style": 0.6, "pass": false }
+      ],
+      "result": "unresolved"
+    },
+    {
+      "key": "creating",
+      "en": "Starting…",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "시작하고 있습니다…", "natural": 1.88, "meaning": 0.98, "style": 0.75, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "description",
+      "en": "Run commands in the Session workspace",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "세션 워크스페이스에서 명령을 실행합니다", "natural": 1.61, "meaning": 0.97, "style": 0.93, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "disconnected",
+      "en": "Disconnected.",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "연결이 끊어졌습니다.", "natural": 1.84, "meaning": 0.98, "style": 0.55, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "exited",
+      "en": "Process exited ({code})",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "프로세스가 종료되었습니다({code})", "natural": 1.81, "meaning": 0.95, "style": 0.77, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "failed",
+      "en": "Terminal error: {message}",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "터미널 오류: {message}", "natural": 1.93, "meaning": 0.96, "style": 0.45, "pass": false },
+        { "ko": "터미널 오류가 발생했습니다: {message}", "natural": 1.69, "meaning": 0.93, "style": 0.89, "pass": true }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "inputFull",
+      "en": "The input buffer is full. Reconnect and try again.",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "입력 버퍼가 가득 찼습니다. 다시 연결하고 시도하십시오.", "natural": 1.79, "meaning": 0.96, "style": 0.95, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "invalidOutput",
+      "en": "The terminal screen could not be received. Reconnect to recover it.",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "터미널 화면을 받지 못했습니다. 다시 연결하여 복구하십시오.", "natural": 1.69, "meaning": 0.96, "style": 0.92, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "loading",
+      "en": "Reading terminal environment…",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "터미널 환경을 읽고 있습니다…", "natural": 1.8, "meaning": 0.98, "style": 0.49, "pass": false },
+        { "ko": "터미널 환경을 읽는 중입니다…", "natural": 1.79, "meaning": 0.97, "style": 0.43, "pass": false },
+        { "ko": "터미널 환경을 불러오고 있습니다…", "natural": 1.63, "meaning": 0.95, "style": 0.84, "pass": true }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "missingTerminal",
+      "en": "This terminal no longer exists. Open a new terminal.",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "이 터미널은 더 이상 없습니다. 새 터미널을 여십시오.", "natural": 1.87, "meaning": 0.97, "style": 0.72, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "new",
+      "en": "New terminal",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "새 터미널", "natural": 1.97, "meaning": 0.98, "style": 0.75, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "readonly",
+      "en": "This view is read-only.",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "이 보기는 읽기 전용입니다.", "natural": 1.96, "meaning": 0.98, "style": 0.92, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "reconnect",
+      "en": "Reconnect",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "다시 연결", "natural": 1.92, "meaning": 0.98, "style": 0.53, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "recoveryFailed",
+      "en": "Terminal recovery failed: {message}",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "터미널 복구에 실패했습니다: {message}", "natural": 1.88, "meaning": 0.95, "style": 0.86, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "rename",
+      "en": "Terminal name",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "터미널 이름", "natural": 1.93, "meaning": 0.98, "style": 0.65, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "retry",
+      "en": "Retry",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "다시 시도하십시오", "natural": 1.63, "meaning": 0.94, "style": 0.87, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "retryRecovery",
+      "en": "Retry terminal recovery",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "터미널 복구 다시 시도", "natural": 1.78, "meaning": 0.97, "style": 0.61, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "shell",
+      "en": "Choose shell",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "셸 선택", "natural": 1.93, "meaning": 0.98, "style": 0.54, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "shellEmpty",
+      "en": "No shells available",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "사용할 수 있는 셸이 없습니다", "natural": 1.88, "meaning": 0.97, "style": 0.55, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "shellLoading",
+      "en": "Loading shells…",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "셸을 불러오고 있습니다…", "natural": 1.87, "meaning": 0.98, "style": 0.77, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "shortcut.noSession",
+      "en": "Select a session first",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "먼저 세션을 선택하십시오.", "natural": 1.9, "meaning": 0.98, "style": 0.92, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "terminalLimit",
+      "en": "The terminal limit has been reached. Close unused terminals and try again. Exited terminals also count toward the limit.",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "터미널 한도에 도달했습니다. 사용하지 않는 터미널을 닫고 다시 시도하십시오. 종료된 터미널도 한도에 포함됩니다.", "natural": 1.61, "meaning": 0.94, "style": 0.93, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "title",
+      "en": "Terminal",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "터미널", "natural": 1.95, "meaning": 0.97, "style": 0.72, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "unavailable",
+      "en": "Unavailable",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "사용할 수 없음", "natural": 1.79, "meaning": 0.95, "style": 0.69, "pass": true }
+      ],
+      "result": "pass"
+    }
+  ]
+}

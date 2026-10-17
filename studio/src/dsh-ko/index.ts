@@ -35,6 +35,7 @@ import sidebarFiles from './sidebarFiles.ts';
 import sidebarImage from './sidebarImage.ts';
 import sidebarOffice from './sidebarOffice.ts';
 import sidebarPdf from './sidebarPdf.ts';
+import sidebarTerminal from './sidebarTerminal.ts';
 import skill from './skill.ts';
 import slashMenu from './slash.menu.ts';
 import workflowRun from './workflowRun.ts';
@@ -72,6 +73,7 @@ export const dshKo: DshKoDictionaries = {
   sidebarImage: sidebarImage,
   sidebarOffice: sidebarOffice,
   sidebarPdf: sidebarPdf,
+  sidebarTerminal: sidebarTerminal,
   skill: skill,
   'slash.menu': slashMenu,
   workflowRun: workflowRun,

@@ -31,3 +31,4 @@
 | sidebarBrowser | go | Go | 이동 | 1.64/0.92/0.47 | 단어 하나짜리 버튼 라벨의 문체 기준 미달 |
 | command | listbox.aria | /{command} matches | /{command} 검색 결과 | 1.46/0.73/0.57 | 슬래시 명령 일치 목록의 aria-label, 후보 모두 자연스러움 미달 |
 | command | search.aria | Filter options | 옵션 필터링 | 1.42/0.84/0.66 | 옵션 필터 입력의 aria-label, 후보 모두 자연스러움 미달 |
+| sidebarTerminal | control | Take control | 제어권 가져오기 | 1.69/0.96/0.48 | 버튼 라벨 후보 모두 문체 기준 미달 |
