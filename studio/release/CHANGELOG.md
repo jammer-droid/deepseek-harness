@@ -11,7 +11,8 @@ Requires DSH `0.2.0-rc.2` or `0.2.1-alpha.2`.
 - **Per-session subagent roles.** A new **Subagents** tab next to Chat and Trajectory changes a role's model, reasoning effort and instructions for one session only, and adds roles that exist only in that session. The preset and other sessions are unchanged. See [Per-session subagent roles](docs/guide.md#per-session-subagent-roles).
 - **Independent of later preset changes.** The first change copies the whole role into the session; later preset edits do not reach the copy until you choose **Use preset**.
 - **Subagents follow their main session.** Subagents started from the session, and the subagents they start, use its roles. A subagent session's tab shows them read-only.
-- **DSH in Korean.** Choosing **한국어** in DSH **Settings → General → Language** now also translates DSH's own screens: 2,721 of 2,779 client strings in DSH `0.2.0-rc.2` and `0.2.1-alpha.2`. See [Show DSH in Korean](docs/guide.md#show-dsh-in-korean).
+- **Studio shortcuts.** **DSH Studio → SettingsX → Shortcuts** adds keyboard commands DSH does not have: previous/next session in sidebar order, go to session 1–9, copy the working folder, and full screen. Assign keys in DSH's shortcut settings. See [Studio shortcuts](docs/guide.md#studio-shortcuts-settingsx).
+- **DSH in Korean.** Choosing **한국어** in DSH **Settings → General → Language** now also translates DSH's own screens: 2,610 of the 2,779 client strings in DSH `0.2.0-rc.2` and `0.2.1-alpha.2` are translated, and 111 app names, units and format strings stay as they are. See [Show DSH in Korean](docs/guide.md#show-dsh-in-korean).
 
 ### Changes
 
@@ -36,7 +37,8 @@ DSH `0.2.0-rc.2` 또는 `0.2.1-alpha.2`가 필요합니다.
 - **세션별 서브에이전트 역할.** Chat, Trajectory 옆의 새 **Subagents** 탭에서 역할의 모델·추론 수준·지침을 한 세션에서만 바꾸고, 그 세션에서만 쓸 역할을 추가합니다. 프리셋과 다른 세션은 바뀌지 않습니다. [세션별 서브에이전트 역할](docs/guide.ko.md#세션별-서브에이전트-역할)을 참고하세요.
 - **이후 프리셋 변경과 무관.** 처음 바꿀 때 역할 전체가 세션에 복사됩니다. 이후 프리셋을 고쳐도 **프리셋 값 사용**을 누르기 전까지 복사본은 바뀌지 않습니다.
 - **서브에이전트는 메인 세션을 따름.** 세션에서 시작한 서브에이전트와, 그 서브에이전트가 다시 시작한 서브에이전트도 그 세션의 역할을 씁니다. 서브에이전트 세션의 탭은 읽기 전용입니다.
-- **DSH 화면 한국어.** DSH **Settings → General → Language**(한국어 화면에서는 **설정 → 일반 → 언어**)에서 **한국어**를 고르면 DSH 자체 화면도 한국어로 바뀝니다. DSH `0.2.0-rc.2`·`0.2.1-alpha.2`의 클라이언트 문구 2,779개 중 2,721개를 번역했습니다. [DSH 화면을 한국어로 보기](docs/guide.ko.md#dsh-화면을-한국어로-보기)를 참고하세요.
+- **Studio 단축키.** **DSH Studio → SettingsX → 단축키**에서 DSH에 없는 키보드 명령을 더합니다. 사이드바 순서로 이전·다음 세션, 세션 1–9로 이동, 작업 폴더 복사, 전체 화면입니다. 키는 DSH 단축키 설정에서 지정합니다. [Studio 단축키](docs/guide.ko.md#studio-단축키-settingsx)를 참고하세요.
+- **DSH 화면 한국어.** DSH **Settings → General → Language**(한국어 화면에서는 **설정 → 일반 → 언어**)에서 **한국어**를 고르면 DSH 자체 화면도 한국어로 바뀝니다. DSH `0.2.0-rc.2`·`0.2.1-alpha.2`의 클라이언트 문구 2,779개 중 2,610개를 번역했고, 앱 이름·단위·형식 문자열 111개는 그대로 둡니다. [DSH 화면을 한국어로 보기](docs/guide.ko.md#dsh-화면을-한국어로-보기)를 참고하세요.
 
 #### 변경 사항
 

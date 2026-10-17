@@ -11,7 +11,7 @@
 - 도구·프롬프트·Config 편집과 프로필별 영속화
 - 역할의 모델·reasoning·fresh/fork·persona 설정과 네이티브 서브에이전트 호출
 - 적용·호출 전 런타임 모델 검증과 Optimized 도구 정책
-- [SettingsX](docs/reference/settingsx.md): DSH에 없는 단축키 명령(세션 이동 등)과 정의 파일로 등록하는 사용자 프로바이더(키 없음·API 키·OAuth 로그인·토큰 명령)
+- [SettingsX](docs/reference/settingsx.md): DSH에 없는 단축키 명령(세션 이동 등). 정의 파일로 등록하는 사용자 프로바이더는 연구 코드로만 보존하고 배포에서 제외했다(#28 D10)
 - Host/Client 패키지, 설치 번들과 Studio 범위 회귀 테스트
 
 기능 기준 커밋은 `4f42345dd8`이다. Desktop DSH `0.2.0-rc.2` 설치 후 사용자가 반영을 확인했다. 이 결과는 모든 화면·접근성·세션 수명 검증을 의미하지 않는다.

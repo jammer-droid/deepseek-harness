@@ -5,7 +5,7 @@ description: "SettingsX 서비스: Studio 단축키 명령과 정의 파일로 �
 
 # SettingsX
 
-SettingsX는 DSH 기본 설정을 확장하는 Studio 서비스다. **DSH Studio → SettingsX**에 **단축키**와 **프로바이더** 두 페이지가 있다. 결정과 구현 단계는 [#28 명세](../issues/28-settingsx.md)에 있다.
+SettingsX는 DSH 기본 설정을 확장하는 Studio 서비스다. 배포판의 **DSH Studio → SettingsX**에는 **단축키** 페이지만 있다. 프로바이더는 [#28 명세](../issues/28-settingsx.md)의 결정 D10에 따라 배포에서 제외했다. 아래 [프로바이더](#프로바이더) 절은 보존한 연구 코드의 동작 기록이며, 배포판은 Host 서비스·LLM 경로·가이드 스킬을 등록하지 않는다.
 
 ## 단축키
 
@@ -19,11 +19,12 @@ Studio는 DSH에 없는 명령만 DSH 단축키 서비스에 등록한다. 키 �
 | `studio.settingsx.fullscreen` | 브라우저 전체 화면 전환(`requestFullscreen`) | 없음 |
 
 - 세션 명령은 고정·수동 정렬·폴더 트리를 포함한 사이드바 순서를 따르며, 접힌 그룹과 "더 보기" 제한은 무시한다. 순서는 DSH 내부 저장값 `dsh.workspace.view.v5`를 읽어 계산한다(사용자 승인 비공개 의존). 목록이 로딩 중이거나 저장값 형식을 알 수 없으면, 또는 대화상자가 열려 있으면 이동하지 않는다.
-- 별도 `@local/dsh-session-cycle` 플러그인과 기본 키가 같아 함께 설치하면 등록이 실패한다. 하나만 쓴다.
 - 웹에는 기본 키가 없다. Chrome이 ⌘⇧[ / ]를 탭 전환에 먼저 쓰므로 웹에서는 ⌃⇧[ / ] 같은 다른 키를 지정한다.
 - 전체 화면은 페이지 전체 화면이다. 데스크톱 창 전체 화면과 같은지는 확인하지 않았다.
 
 ## 프로바이더
+
+> **배포 제외(#28 D10).** 이 절은 보존한 코드의 동작 기록이다. 배포판에서는 페이지가 보이지 않고, 정의 파일을 읽지 않으며, `studio-provider-guide` 스킬도 설치하지 않는다.
 
 `<profile>/studio-data/providers/*.json`의 정의 파일을 읽어 DSH 모델 경로로 등록한다. 올바른 파일의 모델은 DSH 모델 선택·Pixie·역할 모델 목록에 프로바이더 이름 아래로 나온다. 파일을 바꾼 뒤 **다시 읽기**를 누르면 폴더를 다시 읽어 등록 경로를 한 번에 교체한다. 형식과 예시는 `studio-provider-guide` 스킬([SKILL.md](../../release/docs/appendix/studio-provider-guide/SKILL.md), [examples.md](../../release/docs/appendix/studio-provider-guide/examples.md))에 있으며, Studio 시작 시 `<DSH home>/skills`에 설치된다(사용자가 고친 파일은 덮어쓰지 않는다).
 

@@ -13,6 +13,7 @@ DSH Studio is a page inside the DeepSeek Harness web GUI for building **agent pr
   - [Subagent settings](#subagent-settings)
 - [Per-session subagent roles](#per-session-subagent-roles)
 - [Show DSH in Korean](#show-dsh-in-korean)
+- [Studio shortcuts (SettingsX)](#studio-shortcuts-settingsx)
 - [Adapt Optimized to your work](#adapt-optimized-to-your-work)
 - [Apply a preset to DSH](#apply-a-preset-to-dsh)
 - [Tools that depend on your profile](#tools-that-depend-on-your-profile)
@@ -265,12 +266,27 @@ Session roles are stored per session in `<profile>/studio-data/session-roles/`. 
 
 ## Show DSH in Korean
 
-Installing Studio adds **한국어** (Korean) to DSH's language list. Choose it in DSH **Settings → General → Language**, and DSH's own screens — chat, sidebars, settings, plugin manager, Trajectory and more — switch to Korean along with Studio. Studio translates 2,721 of the 2,779 client strings in DSH `0.2.0-rc.2` and `0.2.1-alpha.2`.
+Installing Studio adds **한국어** (Korean) to DSH's language list. Choose it in DSH **Settings → General → Language**, and DSH's own screens — chat, sidebars, settings, plugin manager, Trajectory and more — switch to Korean along with Studio. Studio translates 2,610 of the 2,779 client strings in DSH `0.2.0-rc.2` and `0.2.1-alpha.2`.
 
 - Untranslated strings stay in English: 58 strings without a natural translation yet, plus app names, units and format strings that are kept as they are.
 - Tab names Chat and Trajectory and product names such as DeepSeek, DSH and MCP stay in English.
 - Desktop app menus and dialogs, and text the DSH Host sends (tool descriptions, error messages), cannot be changed by a plugin and stay in English.
 - If DSH later ships Korean for a screen, that screen uses DSH's translation and the rest keep Studio's.
+
+## Studio shortcuts (SettingsX)
+
+**DSH Studio → SettingsX → Shortcuts** lists keyboard commands that Studio adds to DSH's shortcut catalog. Commands DSH already has are not repeated. Assign or change keys in DSH **Settings → Shortcuts** (**Open DSH shortcut settings** on the page); turn a command off here to remove it from DSH's list too.
+
+| Command | What it does | Default key |
+|---|---|---|
+| Previous / next session | Moves through sessions in sidebar order, wrapping at the ends | ⌘⇧[ / ⌘⇧] on the macOS desktop app; none on the web |
+| Go to session 1–9 | Opens the nth session in the sidebar | none |
+| Copy working folder | Copies the current session's working folder path | none |
+| Toggle full screen | Toggles browser full screen for the page | none |
+
+- Session commands follow the sidebar order, including pinned sessions, manual order and folder trees; collapsed groups and the "show more" limit are ignored. They do nothing while lists load or a dialog is open.
+- On the web, Chrome uses ⌘⇧[ / ] for tabs first, so assign another key such as ⌃⇧[ / ].
+- On/off choices are saved in this browser only.
 
 ## Adapt Optimized to your work
 
