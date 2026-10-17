@@ -6,11 +6,11 @@ Release notes for `@matamt-dbg/dsh-studio`. Each version lists English notes fir
 
 Requires DSH `0.2.0-rc.2`, `0.2.1-alpha.2`, `0.2.1-rc.1` or `0.2.1-rc.2`.
 
-0.6.0 was tagged but not published to npm. 0.6.1 is the first npm release of the 0.6 line and includes everything in [0.6.0](#060--2026-10-17). See [What's new in 0.6.1](docs/highlights.md) for a walkthrough with screenshots, including a Pixie Loop example.
+0.6.0 was released on GitHub but not on npm. 0.6.1 includes everything in [0.6.0](#060--2026-10-17). See [What's new in 0.6.1](docs/highlights.md) for a walkthrough with screenshots, including a Pixie Loop example.
 
 ### Highlights
 
-- **DSH `0.2.1-rc.1` and `0.2.1-rc.2` support.** These releases no longer apply a role's instructions and Tool Filter when a subagent starts. Studio now saves each role subagent's instructions and Tool Filter when it is created and applies them before it runs, for both Fresh and Fork subagents. They are stored under `<profile>/studio-data/child-policies/` and reused when a finished subagent is continued.
+- **DSH `0.2.1-rc.1` and `0.2.1-rc.2` support.** These releases no longer apply a role's instructions and Tool Filter when a subagent starts. Studio now saves each role subagent's instructions and Tool Filter when it is created and applies them before it runs, for both Fresh and Fork subagents. Running role subagents with these instructions and Tool Filter was tested on `0.2.1-rc.1`; on `0.2.1-rc.2`, which made no change to the APIs Studio uses for this, only saving and reapplying roles was tested. They are stored under `<profile>/studio-data/child-policies/` and reused when a finished subagent is continued.
 - **Loop recipe editor.** **Insert example** fills in a working spec, invalid names are flagged while you type, and the page tells you before a save replaces an existing recipe.
 
 ### Changes
@@ -29,17 +29,17 @@ Requires DSH `0.2.0-rc.2`, `0.2.1-alpha.2`, `0.2.1-rc.1` or `0.2.1-rc.2`.
 ### Upgrade notes
 
 - Keep `<profile>/studio-data/child-policies/` when backing up or moving a profile. A role subagent whose file is missing or damaged will not run.
-- On DSH `0.2.1-rc.1` and `0.2.1-rc.2`, Korean covers the strings of `0.2.1-alpha.2`. Text added or reworded in the newer releases shows in English, for example parts of model settings, the plugin manager and web search settings, and a few reworded strings keep the earlier Korean wording.
+- On DSH `0.2.1-rc.2`, 2,710 of its 2,910 client strings are translated, including the plugin market, web search settings and the newer model settings. 74 strings without a natural translation yet stay in English. Three plugin-manager messages follow `0.2.1-rc.1` and later, so on `0.2.0-rc.2` and `0.2.1-alpha.2` they show a placeholder such as `{reason}` as text.
 
 ### 한국어
 
 DSH `0.2.0-rc.2`, `0.2.1-alpha.2`, `0.2.1-rc.1` 또는 `0.2.1-rc.2`가 필요합니다.
 
-0.6.0은 태그만 만들고 npm에는 공개하지 않았습니다. 0.6.1은 0.6 버전 중 npm에 처음 공개하는 릴리스이며 [0.6.0](#060--2026-10-17)의 내용을 모두 담고 있습니다. 화면과 Pixie Loop 사용 예시는 [0.6.1 새 기능](docs/highlights.ko.md)을 참고하세요.
+0.6.0은 GitHub에만 공개하고 npm에는 올리지 않았습니다. 0.6.1은 [0.6.0](#060--2026-10-17)의 내용을 모두 담고 있습니다. 화면과 Pixie Loop 사용 예시는 [0.6.1 새 기능](docs/highlights.ko.md)을 참고하세요.
 
 #### 주요 변경
 
-- **DSH `0.2.1-rc.1`, `0.2.1-rc.2` 지원.** 이 버전부터 DSH는 서브에이전트를 시작할 때 역할 지침과 Tool Filter를 적용하지 않습니다. 그래서 Studio가 역할 서브에이전트를 만들 때 지침과 Tool Filter를 저장하고 실행 전에 직접 적용합니다. Fresh와 Fork 모두 해당합니다. 이 값은 `<프로필>/studio-data/child-policies/`에 저장되고, 끝난 서브에이전트를 이어서 실행할 때도 다시 쓰입니다.
+- **DSH `0.2.1-rc.1`, `0.2.1-rc.2` 지원.** 이 버전부터 DSH는 서브에이전트를 시작할 때 역할 지침과 Tool Filter를 적용하지 않습니다. 그래서 Studio가 역할 서브에이전트를 만들 때 지침과 Tool Filter를 저장하고 실행 전에 직접 적용합니다. Fresh와 Fork 모두 해당합니다. 이 지침과 Tool Filter로 역할 서브에이전트를 실제로 실행하는 것은 `0.2.1-rc.1`에서 확인했습니다. `0.2.1-rc.2`는 Studio가 여기에 쓰는 API에 변경이 없으며, 역할 저장·재적용까지만 확인했습니다. 이 값은 `<프로필>/studio-data/child-policies/`에 저장되고, 끝난 서브에이전트를 이어서 실행할 때도 다시 쓰입니다.
 - **Loop 레시피 편집기.** **예시 넣기**로 바로 쓸 수 있는 명세를 채우고, 잘못된 이름은 입력할 때 바로 알려 주며, 저장하면 기존 레시피를 바꾸게 될 때도 미리 알려 줍니다.
 
 #### 변경 사항
@@ -58,7 +58,7 @@ DSH `0.2.0-rc.2`, `0.2.1-alpha.2`, `0.2.1-rc.1` 또는 `0.2.1-rc.2`가 필요합
 #### 업그레이드 참고
 
 - 프로필을 백업하거나 옮길 때 `<프로필>/studio-data/child-policies/`도 함께 보존하세요. 파일이 없거나 손상된 역할 서브에이전트는 실행되지 않습니다.
-- DSH `0.2.1-rc.1`, `0.2.1-rc.2`에서 한국어는 `0.2.1-alpha.2`의 문구 기준입니다. 새 버전에서 새로 생기거나 바뀐 문구는 영어로 보입니다(모델 설정, 플러그인 관리, 웹 검색 설정 일부 등). 원문이 바뀐 일부 문구는 이전 한국어 표현이 그대로 보입니다.
+- DSH `0.2.1-rc.2`에서는 클라이언트 문구 2,910개 중 2,710개를 번역했습니다. 플러그인 마켓, 웹 검색 설정, 새 모델 설정이 포함됩니다. 자연스러운 번역을 찾지 못한 74개는 영어로 둡니다. 플러그인 관리의 안내 문구 3개는 `0.2.1-rc.1` 이후 기준이라, `0.2.0-rc.2`·`0.2.1-alpha.2`에서는 `{reason}` 같은 자리표시자가 글자 그대로 보입니다.
 
 ## 0.6.0 — 2026-10-17
 

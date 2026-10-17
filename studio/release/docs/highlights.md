@@ -4,13 +4,13 @@ English | [한국어](highlights.ko.md)
 
 Requires DSH `0.2.0-rc.2`, `0.2.1-alpha.2`, `0.2.1-rc.1` or `0.2.1-rc.2`. Full details are in the [Changelog](../CHANGELOG.md).
 
-0.6.1 is the first npm release of the 0.6 line. It includes everything from 0.6.0, plus support for newer DSH releases and a few fixes:
+0.6.0 was released on GitHub but not on npm. 0.6.1 includes everything from 0.6.0, plus support for newer DSH releases and a few fixes:
 
 - **Pixie Loop**: repeat work → check → judge → retry over many items, outside the agent's context.
 - **Per-session subagent roles**: change a role for one task without touching the preset.
 - **DSH in Korean**: DSH's own screens in Korean along with Studio.
 - **Studio shortcuts**: keyboard commands DSH does not have.
-- **Newer DSH**: works on DSH `0.2.1-rc.1` and `0.2.1-rc.2`, and role subagents still get their instructions and Tool Filter.
+- **Newer DSH**: supports DSH `0.2.1-rc.1` and `0.2.1-rc.2`. Studio now applies role subagents' instructions and Tool Filter itself.
 
 ## Pixie Loop
 
@@ -77,7 +77,7 @@ Choose **한국어** in DSH **Settings → General → Language**, and DSH's own
 ![DSH settings shown in Korean](images/ko/dsh-korean-settings.png)
 
 - **2,610 of 2,779** client strings in DSH `0.2.0-rc.2` and `0.2.1-alpha.2` are translated. Translated strings were checked by a decision engine for natural wording, meaning and tone. App names, units and format strings are kept as they are, and strings without a natural translation yet stay in English.
-- **On DSH `0.2.1-rc.1` and `0.2.1-rc.2`, text added or reworded in those releases is not translated yet.** It shows in English, for example parts of model settings, the plugin manager and web search settings. A few reworded strings keep the earlier Korean wording.
+- **DSH `0.2.1-rc.1` and `0.2.1-rc.2` are covered too.** On DSH `0.2.1-rc.2`, 2,710 of its 2,910 client strings are translated, including the plugin market, web search settings and the newer model settings. 74 strings without a natural translation yet stay in English. Three plugin-manager messages follow `0.2.1-rc.1` and later, so on `0.2.0-rc.2` and `0.2.1-alpha.2` they show a placeholder such as `{reason}` as text.
 - Text a plugin cannot reach stays in English: desktop app menus and dialogs, and text the DSH Host sends, such as tool descriptions and error messages.
 - If DSH later ships Korean for a screen, that screen uses DSH's translation.
 
@@ -101,6 +101,7 @@ Assign keys in DSH's shortcut settings and turn commands on or off on the page. 
 ## Newer DSH releases
 
 - **DSH `0.2.1-rc.1` and `0.2.1-rc.2` are supported.** These releases no longer apply a role's instructions and Tool Filter when a subagent starts. Studio now saves each role subagent's instructions and Tool Filter when it is created and applies them before it runs, for both Fresh and Fork subagents.
+- Running role subagents with these instructions and Tool Filter was tested on `0.2.1-rc.1`; on `0.2.1-rc.2`, which made no change to the APIs Studio uses for this, only saving and reapplying roles was tested.
 - They are saved under `<profile>/studio-data/child-policies/` and used again when a finished subagent is continued. **Keep this folder when backing up or moving a profile**; a subagent whose file is missing or damaged will not run.
 
 ## Before you upgrade

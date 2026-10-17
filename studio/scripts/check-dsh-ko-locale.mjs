@@ -1,5 +1,5 @@
 /**
- * Check Studio's Korean DSH dictionaries against extracted DSH sources (rc.2 and alpha.2 by default).
+ * Check Studio's Korean DSH dictionaries against extracted DSH sources (every supported version by default).
  * Reports missing, extra, and placeholder-mismatched keys per namespace; exits 1 when any source fails.
  *
  * Usage: node --import tsx studio/scripts/check-dsh-ko-locale.mjs [source.json ...] [--json]
@@ -13,7 +13,7 @@ const args = process.argv.slice(2);
 const json = args.includes('--json');
 const research = fileURLToPath(new URL('../docs/research/ko-locale/', import.meta.url));
 const files = args.filter(arg => arg !== '--json');
-const sources = (files.length > 0 ? files : [`${research}source-rc2.json`, `${research}source-alpha2.json`])
+const sources = (files.length > 0 ? files : ['source-rc2.json', 'source-alpha2.json', 'source-rc1-0.2.1.json', 'source-rc2-0.2.1.json'].map(name => `${research}${name}`))
   .map(file => JSON.parse(readFileSync(file, 'utf8')));
 const result = checkDshKoSupport(dshKo, sources);
 

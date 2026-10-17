@@ -63,7 +63,7 @@ Each supported DSH version was checked on macOS with a fresh install into an iso
 | `0.2.1-rc.1` | The same HTTP checks; Fresh and Fork role subagents keeping their instructions and Tool Filter, also after a restart, with a local test model |
 | `0.2.0-rc.2`, `0.2.1-alpha.2` | The same HTTP checks |
 
-Not checked: external model calls in these checks, upgrading data from 0.5.0, and other operating systems. On DSH `0.2.1-rc.1` and `0.2.1-rc.2`, text those releases added or reworded is not translated into Korean yet. Back up your profile before upgrading. See the [0.6.1 release notes](CHANGELOG.md#061--2026-10-17).
+Not checked: external model calls in these checks, upgrading data from 0.5.0, and other operating systems. Back up your profile before upgrading. See the [0.6.1 release notes](CHANGELOG.md#061--2026-10-17).
 
 ## Features
 
