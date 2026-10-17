@@ -24,6 +24,7 @@ import settingsPermission from './settings.permission.ts';
 import settingsPlugins from './settings.plugins.ts';
 import settingsSessionLog from './settings.sessionLog.ts';
 import settingsShell from './settings.shell.ts';
+import settingsTheme from './settings.theme.ts';
 import settingsWebSearch from './settings.webSearch.ts';
 import shortcutsLayout from './shortcuts.layout.ts';
 import sidebar from './sidebar.ts';
@@ -62,6 +63,7 @@ export const dshKo: DshKoDictionaries = {
   'settings.plugins': settingsPlugins,
   'settings.sessionLog': settingsSessionLog,
   'settings.shell': settingsShell,
+  'settings.theme': settingsTheme,
   'settings.webSearch': settingsWebSearch,
   'shortcuts.layout': shortcutsLayout,
   sidebar: sidebar,

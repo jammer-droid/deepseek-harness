@@ -1,0 +1,276 @@
+{
+  "namespace": "settings.theme",
+  "date": "2026-10-17",
+  "engine": "jev",
+  "thresholds": { "natural": 1.5, "meaning": 0.6, "style": 0.5 },
+  "rows": [
+    {
+      "key": "appearance.dark",
+      "en": "Dark",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "다크", "natural": 1.71, "meaning": 0.94, "style": 0.6, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "appearance.light",
+      "en": "Light",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "라이트", "natural": 1.64, "meaning": 0.95, "style": 0.54, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "appearance.system",
+      "en": "System",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "시스템", "natural": 1.72, "meaning": 0.97, "style": 0.56, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "appearance.title",
+      "en": "Appearance",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "화면 테마", "natural": 1.5, "meaning": 0.55, "style": 0.42, "pass": false },
+        { "ko": "모양", "natural": 0.9, "meaning": 0.82, "style": 0.63, "pass": false },
+        { "ko": "테마", "natural": 0.94, "meaning": 0.12, "style": 0.66, "pass": false },
+        { "ko": "화면 모드", "natural": 0.72, "meaning": 0.18, "style": 0.65, "pass": false }
+      ],
+      "result": "unresolved"
+    },
+    {
+      "key": "fontSize.decrease",
+      "en": "Decrease font size",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "글꼴 크기를 줄입니다", "natural": 1.9, "meaning": 0.98, "style": 0.54, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "fontSize.description",
+      "en": "Only affects conversation content",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "대화 내용에만 적용됩니다.", "natural": 1.85, "meaning": 0.97, "style": 0.94, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "fontSize.increase",
+      "en": "Increase font size",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "글꼴 크기 키우기", "natural": 1.91, "meaning": 0.98, "style": 0.24, "pass": false },
+        { "ko": "글꼴 크기를 키웁니다", "natural": 1.63, "meaning": 0.97, "style": 0.97, "pass": true }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "fontSize.title",
+      "en": "Font size",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "글꼴 크기", "natural": 1.96, "meaning": 0.97, "style": 0.57, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "fontSize.unit",
+      "en": "px",
+      "kind": "verbatim",
+      "attempts": [],
+      "result": "verbatim"
+    },
+    {
+      "key": "fontFamily.code.description",
+      "en": "Used for code blocks, inline code, and tool output. Separate fonts with commas; leave empty for the default",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "코드 블록, 인라인 코드, 도구 출력에 사용됩니다. 글꼴은 쉼표로 구분하며, 비워 두면 기본값이 사용됩니다", "natural": 1.7, "meaning": 0.95, "style": 0.6, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "fontFamily.code.title",
+      "en": "Code font",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "코드 글꼴", "natural": 1.96, "meaning": 0.95, "style": 0.56, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "fontFamily.placeholder",
+      "en": "Default",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "기본값", "natural": 1.97, "meaning": 0.97, "style": 0.63, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "fontFamily.terminal.description",
+      "en": "Used for the sidebar terminal. Separate fonts with commas; leave empty for the default",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "사이드바 터미널에 사용됩니다. 글꼴은 쉼표로 구분하며, 비워 두면 기본값이 사용됩니다", "natural": 1.81, "meaning": 0.97, "style": 0.77, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "fontFamily.terminal.title",
+      "en": "Terminal font",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "터미널 글꼴", "natural": 1.93, "meaning": 0.96, "style": 0.6, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "fontFamily.text.description",
+      "en": "Used for the interface and conversation text. Separate fonts with commas; leave empty for the default",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "인터페이스와 대화 텍스트에 사용됩니다. 글꼴은 쉼표로 구분하며, 비워 두면 기본값이 사용됩니다", "natural": 1.82, "meaning": 0.97, "style": 0.74, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "fontFamily.text.title",
+      "en": "Text font",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "텍스트 글꼴", "natural": 1.8, "meaning": 0.9, "style": 0.6, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "fontSize.code.decrease",
+      "en": "Decrease code font size",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "코드 글꼴 크기 줄이기", "natural": 1.92, "meaning": 0.98, "style": 0.31, "pass": false },
+        { "ko": "코드 글꼴 크기를 줄입니다", "natural": 1.86, "meaning": 0.98, "style": 0.94, "pass": true }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "fontSize.code.description",
+      "en": "Used for code blocks, inline code, and tool output",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "코드 블록, 인라인 코드, 도구 출력에 사용됩니다.", "natural": 1.88, "meaning": 0.97, "style": 0.89, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "fontSize.code.increase",
+      "en": "Increase code font size",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "코드 글꼴 크기 키우기", "natural": 1.92, "meaning": 0.98, "style": 0.36, "pass": false },
+        { "ko": "코드 글꼴 크기를 키웁니다", "natural": 1.85, "meaning": 0.98, "style": 0.95, "pass": true }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "fontSize.code.title",
+      "en": "Code font size",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "코드 글꼴 크기", "natural": 1.91, "meaning": 0.97, "style": 0.53, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "fontSize.more",
+      "en": "More font settings",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "글꼴 설정 더 보기", "natural": 1.67, "meaning": 0.96, "style": 0.53, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "fontSize.terminal.decrease",
+      "en": "Decrease terminal font size",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "터미널 글꼴 크기 줄이기", "natural": 1.91, "meaning": 0.98, "style": 0.38, "pass": false },
+        { "ko": "터미널 글꼴 크기를 줄입니다", "natural": 1.82, "meaning": 0.98, "style": 0.9, "pass": true }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "fontSize.terminal.description",
+      "en": "Used for the sidebar terminal",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "사이드바 터미널에 사용됩니다.", "natural": 1.82, "meaning": 0.98, "style": 0.9, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "fontSize.terminal.increase",
+      "en": "Increase terminal font size",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "터미널 글꼴 크기 키우기", "natural": 1.91, "meaning": 0.98, "style": 0.56, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "fontSize.terminal.title",
+      "en": "Terminal font size",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "터미널 글꼴 크기", "natural": 1.9, "meaning": 0.98, "style": 0.61, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "fontSize.text.decrease",
+      "en": "Decrease font size",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "글꼴 크기 줄이기", "natural": 1.89, "meaning": 0.98, "style": 0.34, "pass": false },
+        { "ko": "글꼴 크기를 줄입니다", "natural": 1.83, "meaning": 0.98, "style": 0.51, "pass": true }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "fontSize.text.description",
+      "en": "Only affects conversation content",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "대화 내용에만 적용됩니다.", "natural": 1.88, "meaning": 0.97, "style": 0.93, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "fontSize.text.increase",
+      "en": "Increase font size",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "글꼴 크기 키우기", "natural": 1.94, "meaning": 0.98, "style": 0.36, "pass": false },
+        { "ko": "글꼴 크기를 키웁니다", "natural": 1.79, "meaning": 0.98, "style": 0.96, "pass": true }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "fontSize.text.title",
+      "en": "Font size",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "글꼴 크기", "natural": 1.97, "meaning": 0.98, "style": 0.51, "pass": true }
+      ],
+      "result": "pass"
+    }
+  ]
+}

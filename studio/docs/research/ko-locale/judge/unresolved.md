@@ -32,3 +32,4 @@
 | command | listbox.aria | /{command} matches | /{command} 검색 결과 | 1.46/0.73/0.57 | 슬래시 명령 일치 목록의 aria-label, 후보 모두 자연스러움 미달 |
 | command | search.aria | Filter options | 옵션 필터링 | 1.42/0.84/0.66 | 옵션 필터 입력의 aria-label, 후보 모두 자연스러움 미달 |
 | sidebarTerminal | control | Take control | 제어권 가져오기 | 1.69/0.96/0.48 | 버튼 라벨 후보 모두 문체 기준 미달 |
+| settings.theme | appearance.title | Appearance | 화면 테마 | 1.50/0.55/0.42 | 모양·테마·화면 모드 모두 의미 기준 미달 |
