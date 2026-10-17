@@ -12,6 +12,7 @@ import settingsLocale from './settings.locale.ts';
 import settingsPlugins from './settings.plugins.ts';
 import settingsSessionLog from './settings.sessionLog.ts';
 import shortcutsLayout from './shortcuts.layout.ts';
+import sidebar from './sidebar.ts';
 import sidebarCodePreview from './sidebarCodePreview.ts';
 
 export const dshKo: DshKoDictionaries = {
@@ -24,5 +25,6 @@ export const dshKo: DshKoDictionaries = {
   'settings.plugins': settingsPlugins,
   'settings.sessionLog': settingsSessionLog,
   'shortcuts.layout': shortcutsLayout,
+  sidebar: sidebar,
   'sidebarCodePreview': sidebarCodePreview,
 };
