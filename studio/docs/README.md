@@ -30,6 +30,7 @@
 
 ## 개발 기준과 조사
 
+- [DSH 호환성 오류 대응](development/dsh-compatibility-response.md): 업데이트 뒤 버전 경고·설치 차단·실행 실패의 조사, 플러그인 수정, 격리 검증, Desktop 반영과 복구 절차.
 - [디자인 시스템](development/design-system.md)
 - [프리셋 런타임 수명 조사](development/preset-runtime-lifecycle.md)
 - [런타임 카탈로그 API 조사](development/runtime-catalog-api.md)
