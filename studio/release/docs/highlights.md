@@ -4,7 +4,7 @@ English | [한국어](highlights.ko.md)
 
 Requires DSH `0.2.0-rc.2`, `0.2.1-alpha.2`, `0.2.1-rc.1` or `0.2.1-rc.2`. Full details are in the [Changelog](../CHANGELOG.md).
 
-0.6.0 was released on GitHub but not on npm. 0.6.1 includes everything from 0.6.0, plus support for newer DSH releases and a few fixes:
+0.6.0 was released on GitHub but not on npm. 0.6.1 includes the 0.6.0 changes, plus support for newer DSH releases and a few fixes:
 
 - **Pixie Loop**: repeat work → check → judge → retry over many items, outside the agent's context.
 - **Per-session subagent roles**: change a role for one task without touching the preset.
