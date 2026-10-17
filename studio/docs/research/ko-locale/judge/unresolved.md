@@ -279,3 +279,4 @@
 | open-in-app | 용어 | Property path | 속성 경로 | — | 번역자 제안 |
 | open-in-app | 용어 | Footnotes | 각주 | — | 번역자 제안 |
 | open-in-app | 용어 | Sidebar | 사이드바 | — | 번역자 제안 |
+| common | copy.optionsHint | {action}; right-click for copy options | {action}; 우클릭하면 복사 옵션이 나타납니다. | 1.4/0.92/0.72 | 4회 미통과 |

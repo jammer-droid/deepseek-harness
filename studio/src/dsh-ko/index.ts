@@ -8,6 +8,7 @@ import approval from './approval.ts';
 import chat from './chat.ts';
 import claudeCodeMods from './claude-code-mods.ts';
 import command from './command.ts';
+import common from './common.ts';
 import conversation from './conversation.ts';
 import cotTranslation from './cotTranslation.ts';
 import directoryBrowser from './directory-browser.ts';
@@ -65,6 +66,7 @@ export const dshKo: DshKoDictionaries = {
   chat: chat,
   'claude-code-mods': claudeCodeMods,
   command: command,
+  common: common,
   conversation: conversation,
   cotTranslation: cotTranslation,
   'directory-browser': directoryBrowser,
