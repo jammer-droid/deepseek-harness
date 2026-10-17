@@ -320,3 +320,18 @@
 | settings.agentPreset | 용어 | Minimal mode | 최소 모드 | — | 번역자 제안 |
 | settings.agentPreset | 용어 | Built-in | 기본 제공 | — | 번역자 제안 |
 | settings.agentPreset | 용어 | Custom | 사용자 정의 | — | 번역자 제안 |
+| cordis | a11y.preparing | Preparing a Cordis tool call | Cordis 도구 호출을 준비하고 있습니다. | 1.42/0.97/0.86 | 4회 미통과 |
+| cordis | panel.approvals.aria | Cordis approvals | Cordis 승인 요청 | 1.43/0.9/0.85 | 4회 미통과 |
+| cordis | panel.hint | Run controls live in the Cordis panel above Settings | 실행 제어는 설정 상단의 Cordis 패널에서 가능합니다. | 1.36/0.9/0.71 | 4회 미통과 |
+| cordis | render.failedAbdicated | Rendering failed in {slot}; the default UI was restored: | {slot}에서 렌더링에 실패하여 기본 UI를 복원했습니다: | 1.41/0.96/0.58 | 4회 미통과 |
+| cordis | 용어 | Define | 정의 | — | 번역자 제안 |
+| cordis | 용어 | Client | 클라이언트 | — | 번역자 제안 |
+| cordis | 용어 | Host | 호스트 | — | 번역자 제안 |
+| cordis | 용어 | Inspect | 살펴보기 | — | 번역자 제안 |
+| cordis | 용어 | Roll back | 롤백 | — | 번역자 제안 |
+| cordis | 용어 | Rendering | 렌더링 | — | 번역자 제안 |
+| cordis | 용어 | Package | 패키지 | — | 번역자 제안 |
+| cordis | 용어 | Inventory | 목록 | — | 번역자 제안 |
+| cordis | 용어 | Run card | 실행 카드 | — | 번역자 제안 |
+| cordis | 용어 | Activate | 활성화 | — | 번역자 제안 |
+| cordis | 용어 | Purpose | 용도 | — | 번역자 제안 |

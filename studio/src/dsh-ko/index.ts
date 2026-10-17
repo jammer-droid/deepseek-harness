@@ -10,6 +10,7 @@ import claudeCodeMods from './claude-code-mods.ts';
 import command from './command.ts';
 import common from './common.ts';
 import conversation from './conversation.ts';
+import cordis from './cordis.ts';
 import cotTranslation from './cotTranslation.ts';
 import deliverables from './deliverables.ts';
 import directoryBrowser from './directory-browser.ts';
@@ -73,6 +74,7 @@ export const dshKo: DshKoDictionaries = {
   command: command,
   common: common,
   conversation: conversation,
+  cordis: cordis,
   cotTranslation: cotTranslation,
   deliverables: deliverables,
   'directory-browser': directoryBrowser,

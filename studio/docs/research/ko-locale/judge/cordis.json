@@ -1,0 +1,896 @@
+{
+  "namespace": "cordis",
+  "date": "2026-10-17",
+  "engine": "jev",
+  "thresholds": {
+    "natural": 1.5,
+    "meaning": 0.6,
+    "style": 0.5
+  },
+  "rows": [
+    {
+      "key": "a11y.defining",
+      "en": "Defining the plugin",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "플러그인 정의 중",
+          "natural": 1.34,
+          "meaning": 0.91,
+          "style": 0.67,
+          "pass": false
+        },
+        {
+          "ko": "플러그인을 정의하고 있습니다.",
+          "natural": 1.49,
+          "meaning": 0.97,
+          "style": 0.86,
+          "pass": false
+        },
+        {
+          "ko": "플러그인을 정의하는 중입니다.",
+          "natural": 1.54,
+          "meaning": 0.97,
+          "style": 0.86,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "a11y.failed",
+      "en": "Definition failed",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "정의 실패",
+          "natural": 1.74,
+          "meaning": 0.96,
+          "style": 0.69,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "a11y.preparing",
+      "en": "Preparing a Cordis tool call",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "Cordis 도구 호출 준비 중",
+          "natural": 1.42,
+          "meaning": 0.96,
+          "style": 0.58,
+          "pass": false
+        },
+        {
+          "ko": "Cordis 도구 호출을 준비하고 있습니다.",
+          "natural": 1.42,
+          "meaning": 0.97,
+          "style": 0.86,
+          "pass": false
+        },
+        {
+          "ko": "Cordis 도구를 호출할 준비를 하고 있습니다.",
+          "natural": 1.33,
+          "meaning": 0.96,
+          "style": 0.72,
+          "pass": false
+        },
+        {
+          "ko": "Cordis 도구 호출을 준비 중입니다.",
+          "natural": 1.4,
+          "meaning": 0.97,
+          "style": 0.86,
+          "pass": false
+        }
+      ],
+      "result": "unresolved"
+    },
+    {
+      "key": "a11y.stopped",
+      "en": "Definition interrupted",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "정의 중단",
+          "natural": 1.65,
+          "meaning": 0.96,
+          "style": 0.63,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "action.approve",
+      "en": "Allow",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "허용",
+          "natural": 1.81,
+          "meaning": 0.95,
+          "style": 0.7,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "action.approveOnce",
+      "en": "Allow this version only",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "이 버전만 허용",
+          "natural": 1.78,
+          "meaning": 0.96,
+          "style": 0.57,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "action.approvePlugin",
+      "en": "Allow future versions of this plugin",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "이 플러그인의 향후 버전도 허용",
+          "natural": 1.77,
+          "meaning": 0.97,
+          "style": 0.56,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "action.decline",
+      "en": "Decline",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "거절",
+          "natural": 1.79,
+          "meaning": 0.97,
+          "style": 0.66,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "action.inspect",
+      "en": "Inspect",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "살펴보기",
+          "natural": 1.84,
+          "meaning": 0.95,
+          "style": 0.6,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "action.remove",
+      "en": "Remove",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "제거",
+          "natural": 1.93,
+          "meaning": 0.97,
+          "style": 0.66,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "action.retry",
+      "en": "Retry",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "재시도",
+          "natural": 1.97,
+          "meaning": 0.97,
+          "style": 0.67,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "action.rollback",
+      "en": "Roll back",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "롤백",
+          "natural": 1.81,
+          "meaning": 0.96,
+          "style": 0.61,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "action.run",
+      "en": "Run",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "실행",
+          "natural": 1.95,
+          "meaning": 0.97,
+          "style": 0.59,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "action.stop",
+      "en": "Stop",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "중지",
+          "natural": 1.96,
+          "meaning": 0.96,
+          "style": 0.67,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "body.clientCode",
+      "en": "Client",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "클라이언트",
+          "natural": 1.76,
+          "meaning": 0.96,
+          "style": 0.69,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "body.copied",
+      "en": "Copied",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "복사 완료",
+          "natural": 1.78,
+          "meaning": 0.85,
+          "style": 0.66,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "body.copy",
+      "en": "Copy",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "복사",
+          "natural": 1.97,
+          "meaning": 0.97,
+          "style": 0.64,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "body.hostCode",
+      "en": "Host",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "호스트",
+          "natural": 1.65,
+          "meaning": 0.96,
+          "style": 0.66,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "body.output",
+      "en": "Result",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "결과",
+          "natural": 1.93,
+          "meaning": 0.96,
+          "style": 0.69,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "body.source",
+      "en": "Plugin source",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "플러그인 소스",
+          "natural": 1.79,
+          "meaning": 0.97,
+          "style": 0.66,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "panel.approvals.aria",
+      "en": "Cordis approvals",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "Cordis 승인",
+          "natural": 1.34,
+          "meaning": 0.76,
+          "style": 0.68,
+          "pass": false
+        },
+        {
+          "ko": "Cordis 승인 목록",
+          "natural": 1.44,
+          "meaning": 0.94,
+          "style": 0.78,
+          "pass": false
+        },
+        {
+          "ko": "Cordis 플러그인 승인",
+          "natural": 1.22,
+          "meaning": 0.8,
+          "style": 0.79,
+          "pass": false
+        },
+        {
+          "ko": "Cordis 승인 요청",
+          "natural": 1.43,
+          "meaning": 0.9,
+          "style": 0.85,
+          "pass": false
+        }
+      ],
+      "result": "unresolved"
+    },
+    {
+      "key": "panel.current",
+      "en": "Current: {packageId}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "현재: {packageId}",
+          "natural": 1.57,
+          "meaning": 0.98,
+          "style": 0.64,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "panel.empty",
+      "en": "No plugins defined yet",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "아직 정의된 플러그인이 없습니다",
+          "natural": 1.78,
+          "meaning": 0.97,
+          "style": 0.56,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "panel.group.current",
+      "en": "This session",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "이 세션",
+          "natural": 1.83,
+          "meaning": 0.98,
+          "style": 0.67,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "panel.group.others",
+      "en": "Other sessions",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "다른 세션",
+          "natural": 1.82,
+          "meaning": 0.98,
+          "style": 0.71,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "panel.hint",
+      "en": "Run controls live in the Cordis panel above Settings",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "실행 제어 기능은 설정 위의 Cordis 패널에 있습니다",
+          "natural": 1.36,
+          "meaning": 0.95,
+          "style": 0.6,
+          "pass": false
+        },
+        {
+          "ko": "설정 위에 있는 Cordis 패널에서 실행을 제어할 수 있습니다.",
+          "natural": 1.32,
+          "meaning": 0.91,
+          "style": 0.62,
+          "pass": false
+        },
+        {
+          "ko": "실행 제어는 설정 상단의 Cordis 패널에서 가능합니다.",
+          "natural": 1.36,
+          "meaning": 0.9,
+          "style": 0.71,
+          "pass": false
+        },
+        {
+          "ko": "설정 위쪽의 Cordis 패널에 실행 제어 버튼이 있습니다.",
+          "natural": 1.27,
+          "meaning": 0.91,
+          "style": 0.75,
+          "pass": false
+        }
+      ],
+      "result": "unresolved"
+    },
+    {
+      "key": "panel.loading",
+      "en": "Reading…",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "읽는 중…",
+          "natural": 1.91,
+          "meaning": 0.97,
+          "style": 0.64,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "panel.next",
+      "en": "Next: {packageId}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "다음: {packageId}",
+          "natural": 1.67,
+          "meaning": 0.97,
+          "style": 0.68,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "panel.plugins.aria",
+      "en": "Cordis plugins",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "Cordis 플러그인",
+          "natural": 1.71,
+          "meaning": 0.95,
+          "style": 0.69,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "panel.readFailed",
+      "en": "Reading the plugin inventory failed: {message}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "플러그인 목록을 읽지 못했습니다: {message}",
+          "natural": 1.46,
+          "meaning": 0.96,
+          "style": 0.46,
+          "pass": false
+        },
+        {
+          "ko": "플러그인 목록 읽기에 실패했습니다. 오류: {message}",
+          "natural": 1.61,
+          "meaning": 0.95,
+          "style": 0.71,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "panel.runningCount",
+      "en": "{count} running",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{count}개 실행 중",
+          "natural": 1.74,
+          "meaning": 0.92,
+          "style": 0.68,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "panel.title",
+      "en": "Cordis plugins",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "Cordis 플러그인",
+          "natural": 1.75,
+          "meaning": 0.84,
+          "style": 0.64,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "panel.trigger",
+      "en": "Cordis Plugin",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "Cordis 플러그인",
+          "natural": 1.64,
+          "meaning": 0.77,
+          "style": 0.66,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "panel.version",
+      "en": "Version",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "버전",
+          "natural": 1.96,
+          "meaning": 0.97,
+          "style": 0.69,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "purpose.missing",
+      "en": "(no purpose given)",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "(용도 미지정)",
+          "natural": 1.6,
+          "meaning": 0.97,
+          "style": 0.71,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "render.failedAbdicated",
+      "en": "Rendering failed in {slot}; the default UI was restored:",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{slot}에서 렌더링에 실패하여 기본 UI를 복원했습니다:",
+          "natural": 1.41,
+          "meaning": 0.96,
+          "style": 0.58,
+          "pass": false
+        },
+        {
+          "ko": "{slot} 렌더링에 실패했습니다. 기본 UI로 복원했습니다. 오류:",
+          "natural": 1.26,
+          "meaning": 0.94,
+          "style": 0.64,
+          "pass": false
+        },
+        {
+          "ko": "{slot}의 렌더링 실패로 기본 UI가 복원되었습니다:",
+          "natural": 1.3,
+          "meaning": 0.94,
+          "style": 0.62,
+          "pass": false
+        },
+        {
+          "ko": "{slot} 렌더링에 실패해 기본 화면으로 돌아갔습니다:",
+          "natural": 1.21,
+          "meaning": 0.9,
+          "style": 0.66,
+          "pass": false
+        }
+      ],
+      "result": "unresolved"
+    },
+    {
+      "key": "render.failedHeld",
+      "en": "Rendering failed in {slot}:",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{slot}에서 렌더링에 실패했습니다:",
+          "natural": 1.72,
+          "meaning": 0.97,
+          "style": 0.49,
+          "pass": false
+        },
+        {
+          "ko": "{slot} 렌더링 실패:",
+          "natural": 1.53,
+          "meaning": 0.97,
+          "style": 0.72,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "row.defineTitle",
+      "en": "Register Cordis Plugin",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "Cordis 플러그인 등록",
+          "natural": 1.6,
+          "meaning": 0.97,
+          "style": 0.6,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "row.removeTitle",
+      "en": "Remove Cordis Plugin",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "Cordis 플러그인 제거",
+          "natural": 1.68,
+          "meaning": 0.97,
+          "style": 0.63,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "row.runTitle",
+      "en": "Run Cordis Plugin",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "Cordis 플러그인 실행",
+          "natural": 1.69,
+          "meaning": 0.97,
+          "style": 0.64,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "row.stopTitle",
+      "en": "Stop Cordis Plugin",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "Cordis 플러그인 중지",
+          "natural": 1.65,
+          "meaning": 0.97,
+          "style": 0.63,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "row.updateTitle",
+      "en": "Update Cordis Plugin",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "Cordis 플러그인 업데이트",
+          "natural": 1.8,
+          "meaning": 0.97,
+          "style": 0.61,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "run.removed",
+      "en": "This package no longer exists",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "이 패키지는 더 이상 존재하지 않습니다",
+          "natural": 1.76,
+          "meaning": 0.98,
+          "style": 0.61,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "run.superseded",
+      "en": "A newer run card is available below",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "아래에 더 새로운 실행 카드가 있습니다",
+          "natural": 1.53,
+          "meaning": 0.97,
+          "style": 0.46,
+          "pass": false
+        },
+        {
+          "ko": "아래에서 최신 실행 카드를 확인할 수 있습니다.",
+          "natural": 1.59,
+          "meaning": 0.84,
+          "style": 0.69,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "status.awaitingApproval",
+      "en": "Awaiting approval",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "승인 대기 중",
+          "natural": 1.72,
+          "meaning": 0.97,
+          "style": 0.63,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "status.clientPending",
+      "en": "Client ready to activate",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "클라이언트 활성화 준비 완료",
+          "natural": 1.56,
+          "meaning": 0.98,
+          "style": 0.61,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "status.failed",
+      "en": "Run failed",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "실행 실패",
+          "natural": 1.87,
+          "meaning": 0.97,
+          "style": 0.64,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "status.idle",
+      "en": "Ready",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "준비 완료",
+          "natural": 1.91,
+          "meaning": 0.97,
+          "style": 0.63,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "status.removed",
+      "en": "Removed",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "제거됨",
+          "natural": 1.71,
+          "meaning": 0.97,
+          "style": 0.57,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "status.running",
+      "en": "Running",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "실행 중",
+          "natural": 1.94,
+          "meaning": 0.97,
+          "style": 0.67,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "status.superseded",
+      "en": "Newer run available",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "새로운 실행 있음",
+          "natural": 1.6,
+          "meaning": 0.91,
+          "style": 0.65,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    }
+  ]
+}
