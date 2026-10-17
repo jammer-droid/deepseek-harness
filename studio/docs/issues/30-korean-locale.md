@@ -51,9 +51,17 @@ DSH 화면 문구 전체를 한국어로 제공한다. Studio는 이미 `ctx.loc
 | --- | --- | --- | --- |
 | S1 | 원문 추출 스크립트, 네임스페이스 목록과 키 수(rc.2·alpha.2) | — | 완료: [S1 결과](../research/ko-locale/README.md). 해석 실패 0, 추출 단위 테스트 2/2 |
 | S2 | 용어집과 검수 기준 확정 | S1 | 완료: [S2 판정](../research/ko-locale/README.md#s2-샘플-판정-검수-기준-재확인). 20문구 중 첫 통과 9, 재작성 통과 6, 미해결 5, 미판정 0. 기준 유지 |
-| S3 | Studio 사전 등록 코드와 빠진 키 검사 | S1 | 단위 테스트: 등록·해제, `ko` 중복 시 다른 네임스페이스 영향 없음, 빠진 키 보고 |
+| S3 | Studio 사전 등록 코드와 빠진 키 검사 | S1 | 완료: [dsh-ko-locale.ts](../../src/dsh-ko-locale.ts), 사전 묶음 [dsh-ko/index.ts](../../src/dsh-ko/index.ts), 검사 `node --import tsx studio/scripts/check-dsh-ko-locale.mjs`. 단위 테스트 5/5 |
 | S4 | 번역 스킬 작성·설치 | S2, S3 | 다른 세션에서 작은 네임스페이스 하나 번역 완료 |
 | S5 | 네임스페이스별 번역(반복, 별도 세션) | S4 | 네임스페이스마다 판정 기록, 빠진 키 검사 통과 |
 | S6 | 독립 설치 검증 | S5 | 수정하지 않은 rc.2 + 패키징 Studio, 한국어 선택 시 화면 확인 |
 
-현재 단계: S3. S2에서 기준은 그대로 두고, 미해결 문구는 사전에서 빼 영어 fallback으로 둔다. 재작성은 키당 3회까지, 이어 붙이는 조각 문구는 문장 전체로 판정한다. 작업 브랜치 `studio/feat/ko-locale`(별도 worktree `deepseek-harness-ko-locale`).
+현재 단계: S4. S2에서 기준은 그대로 두고, 미해결 문구는 사전에서 빼 영어 fallback으로 둔다. 재작성은 키당 3회까지, 이어 붙이는 조각 문구는 문장 전체로 판정한다. 작업 브랜치 `studio/feat/ko-locale`(별도 worktree `deepseek-harness-ko-locale`).
+
+## S3 구현 메모
+
+- `registerDshKo`는 네임스페이스마다 `locale.register(ns, 'ko', dict)`를 따로 부른다. 한 네임스페이스에서 예외가 나면(DSH가 `ko`를 이미 넣은 경우) 경고만 남기고 나머지는 등록한다. 빈 사전은 등록하지 않는다. `shell.tsx`가 `ctx.effect`로 감싸 플러그인 해제 시 모두 지운다.
+- 사전 파일은 `studio/src/dsh-ko/<namespace>.ts` 하나에 `{ ko, fallback }`. `fallback`은 판정을 통과하지 못해 영어로 두는 키다. 빠진 키 검사는 `ko`와 `fallback`을 합쳐 원문 키를 모두 덮는지 본다.
+- 검사 기준: rc.2와 alpha.2 각각에 대해 빠진 키·자리 표시자 불일치가 없어야 한다. 한 버전에만 있는 키·네임스페이스는 허용하고, 두 버전 모두에 없는 키만 실패로 센다.
+- 실제 `LocaleRuntime`은 CSS 모듈 때문에 Node 테스트에서 불러올 수 없다. 테스트는 rc.2 `register`의 중복 예외와 해제 동작을 그대로 흉내 낸 가짜를 쓴다. 실제 동작은 S6 설치 검증에서 확인한다.
+- 검증 환경 메모: 이 worktree에서 host 타입 검사(`batch-tool.ts`·`task-tool.ts` 8건)와 `node build.mjs`(`zod` 해석 실패)는 S3 변경 전에도 똑같이 실패한다. client 타입 검사와 client 번들은 통과한다.

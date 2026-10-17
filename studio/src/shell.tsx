@@ -12,6 +12,8 @@ import { createUpdateStore, type UpdateActions } from './update-store.ts';
 import { SidebarIcon, VersionFooter } from './update-indicator.tsx';
 import { mountPixie, pixieDescriptors } from './pixie-client.tsx';
 import { DshMarkdown } from './ui-host.tsx';
+import { registerDshKo } from './dsh-ko-locale.ts';
+import { dshKo } from './dsh-ko/index.ts';
 
 export const inject = ["slots", "locale", "remote"];
 const panel = "local-dsh-studio";
@@ -34,6 +36,8 @@ export async function apply(ctx: StudioContext) {
     // `updates` is created below; the footer reads it only when the page renders.
     mountPixie(ctx, { navFooter: locale => <VersionFooter store={updates} locale={locale} />, markdown: DshMarkdown });
     ctx.effect(() => ctx.locale.addLanguage({ id: 'ko', label: '한국어', fallback: 'en' }));
+    // A namespace where DSH already ships `ko` keeps DSH's dictionary; the others still register.
+    ctx.effect(() => registerDshKo(ctx.locale, dshKo, ({ ns, error }) => ctx.logger?.warn?.(`studio: DSH ko dictionary for ${ns} skipped: ${String(error)}`)));
     const serviceListeners = new Set<() => void>();
     let services: readonly StudioServiceItem[] = [];
     const syncServices = () => {
