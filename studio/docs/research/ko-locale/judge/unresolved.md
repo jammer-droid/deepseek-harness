@@ -242,3 +242,12 @@
 | schedule.manager | 용어 | Time zone | 시간대 | — | 번역자 제안 |
 | schedule.manager | 용어 | Retention rules | 보존 규칙 | — | 번역자 제안 |
 | schedule.manager | 용어 | Task instruction | 작업 지시문 | — | 번역자 제안 |
+| settings.pluginInventory | globalSubtitle | Shared by the system and every session | 시스템 전체와 모든 세션이 공유합니다 | 1.21/0.93/0.8 | 4회 미통과 |
+| settings.pluginInventory | loading | Reading plugins… | 플러그인 읽는 중… | 1.79/0.97/0.43 | 4회 미통과 |
+| settings.pluginInventory | matchesInOtherPresets | {count} more matches in other presets:  | 다른 프리셋의 추가 검색 결과 {count}개:  | 1.36/0.96/0.53 | 4회 미통과 |
+| settings.pluginInventory | presetProvidedDetail | Disabled globally; agent presets provide it per session | 전역에서는 사용하지 않습니다. 에이전트 프리셋을 통해 각 세션에 제공됩니다. | 1.42/0.93/0.54 | 4회 미통과 |
+| settings.pluginInventory | presetSubtitle | Composed per session by agent presets | 에이전트 프리셋이 각 세션의 구성을 결정합니다 | 1.48/0.9/0.49 | 4회 미통과 |
+| settings.pluginInventory | 용어 | Global plugins | 전역 플러그인 | — | 번역자 제안 |
+| settings.pluginInventory | 용어 | Dependencies | 의존성 | — | 번역자 제안 |
+| settings.pluginInventory | 용어 | Unloading | 언로드 중 | — | 번역자 제안 |
+| settings.pluginInventory | 용어 | Metadata | 메타데이터 | — | 번역자 제안 |

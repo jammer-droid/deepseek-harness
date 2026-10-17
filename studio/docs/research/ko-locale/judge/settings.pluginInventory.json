@@ -1,0 +1,780 @@
+{
+  "namespace": "settings.pluginInventory",
+  "date": "2026-10-17",
+  "engine": "jev",
+  "thresholds": {
+    "natural": 1.5,
+    "meaning": 0.6,
+    "style": 0.5
+  },
+  "rows": [
+    {
+      "key": "active",
+      "en": "Running",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "실행 중",
+          "natural": 1.96,
+          "meaning": 0.97,
+          "style": 0.7,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "clientSyncFailed",
+      "en": "Some plugins could not sync on this page. Host enablement is unchanged.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "이 페이지에서 일부 플러그인을 동기화하지 못했습니다. Host의 활성화 상태는 변경되지 않았습니다.",
+          "natural": 1.51,
+          "meaning": 0.94,
+          "style": 0.66,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "clientSyncRetry",
+      "en": "Retry this page",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "이 페이지에서 다시 시도",
+          "natural": 1.78,
+          "meaning": 0.96,
+          "style": 0.48,
+          "pass": false
+        },
+        {
+          "ko": "이 페이지 동기화 재시도",
+          "natural": 1.35,
+          "meaning": 0.93,
+          "style": 0.65,
+          "pass": false
+        },
+        {
+          "ko": "이 페이지에서 다시 시도하십시오",
+          "natural": 1.36,
+          "meaning": 0.94,
+          "style": 0.7,
+          "pass": false
+        },
+        {
+          "ko": "현재 페이지에서 재시도",
+          "natural": 1.69,
+          "meaning": 0.95,
+          "style": 0.6,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "clientSyncing",
+      "en": "Syncing plugins on this page…",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "이 페이지의 플러그인 동기화 중…",
+          "natural": 1.73,
+          "meaning": 0.97,
+          "style": 0.43,
+          "pass": false
+        },
+        {
+          "ko": "이 페이지에서 플러그인을 동기화하고 있습니다…",
+          "natural": 1.6,
+          "meaning": 0.96,
+          "style": 0.73,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "condition",
+      "en": "Disabled when",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "비활성화 조건",
+          "natural": 1.62,
+          "meaning": 0.88,
+          "style": 0.63,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "conditionalTag",
+      "en": "Conditional",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "조건부",
+          "natural": 1.8,
+          "meaning": 0.95,
+          "style": 0.7,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "configuration",
+      "en": "Configuration",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "설정",
+          "natural": 1.95,
+          "meaning": 0.95,
+          "style": 0.63,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "countUnit",
+      "en": "plugins",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "개 플러그인",
+          "natural": 0.34,
+          "meaning": 0.39,
+          "style": 0.61,
+          "pass": false
+        },
+        {
+          "ko": "플러그인",
+          "natural": 1.87,
+          "meaning": 0.95,
+          "style": 0.77,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "disabledTag",
+      "en": "Disabled",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "비활성화됨",
+          "natural": 1.92,
+          "meaning": 0.97,
+          "style": 0.59,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "empty",
+      "en": "No plugins are available.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "사용할 수 있는 플러그인이 없습니다.",
+          "natural": 1.88,
+          "meaning": 0.97,
+          "style": 0.56,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "emptySearch",
+      "en": "No matching plugins.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "일치하는 플러그인이 없습니다.",
+          "natural": 1.88,
+          "meaning": 0.96,
+          "style": 0.64,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "enabledIn",
+      "en": "Enabled in",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "활성화된 위치",
+          "natural": 1.65,
+          "meaning": 0.94,
+          "style": 0.63,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "enabledTag",
+      "en": "Enabled",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "활성화됨",
+          "natural": 1.95,
+          "meaning": 0.97,
+          "style": 0.6,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "error",
+      "en": "Plugins are temporarily unavailable.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "플러그인을 일시적으로 사용할 수 없습니다.",
+          "natural": 1.59,
+          "meaning": 0.96,
+          "style": 0.49,
+          "pass": false
+        },
+        {
+          "ko": "현재 플러그인을 사용할 수 없는 상태입니다.",
+          "natural": 1.69,
+          "meaning": 0.93,
+          "style": 0.58,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "failed",
+      "en": "Failed to start",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "시작 실패",
+          "natural": 1.83,
+          "meaning": 0.94,
+          "style": 0.65,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "failedCountLabel",
+      "en": "failed",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "실패",
+          "natural": 1.43,
+          "meaning": 0.68,
+          "style": 0.66,
+          "pass": false
+        },
+        {
+          "ko": "실패 항목",
+          "natural": 1.35,
+          "meaning": 0.55,
+          "style": 0.73,
+          "pass": false
+        },
+        {
+          "ko": "실패함",
+          "natural": 1.65,
+          "meaning": 0.95,
+          "style": 0.7,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "failedTag",
+      "en": "Failed",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "실패",
+          "natural": 1.79,
+          "meaning": 0.84,
+          "style": 0.71,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "fromPreset",
+      "en": "From",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "출처",
+          "natural": 1.71,
+          "meaning": 0.89,
+          "style": 0.72,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "globalSubtitle",
+      "en": "Shared by the system and every session",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "시스템과 모든 세션에서 공유",
+          "natural": 1.21,
+          "meaning": 0.94,
+          "style": 0.51,
+          "pass": false
+        },
+        {
+          "ko": "시스템과 모든 세션이 함께 사용합니다",
+          "natural": 1.15,
+          "meaning": 0.95,
+          "style": 0.52,
+          "pass": false
+        },
+        {
+          "ko": "시스템 및 모든 세션의 공용 플러그인",
+          "natural": 1.07,
+          "meaning": 0.9,
+          "style": 0.66,
+          "pass": false
+        },
+        {
+          "ko": "시스템 전체와 모든 세션이 공유합니다",
+          "natural": 1.21,
+          "meaning": 0.93,
+          "style": 0.8,
+          "pass": false
+        }
+      ],
+      "result": "unresolved"
+    },
+    {
+      "key": "globalTitle",
+      "en": "Global plugins",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "전역 플러그인",
+          "natural": 1.66,
+          "meaning": 0.86,
+          "style": 0.64,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "loading",
+      "en": "Reading plugins…",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "플러그인 읽는 중…",
+          "natural": 1.79,
+          "meaning": 0.97,
+          "style": 0.43,
+          "pass": false
+        },
+        {
+          "ko": "플러그인 정보를 읽고 있습니다…",
+          "natural": 1.63,
+          "meaning": 0.85,
+          "style": 0.48,
+          "pass": false
+        },
+        {
+          "ko": "플러그인을 읽어 들이는 중입니다…",
+          "natural": 1.75,
+          "meaning": 0.97,
+          "style": 0.4,
+          "pass": false
+        },
+        {
+          "ko": "플러그인 정보를 확인하고 있습니다…",
+          "natural": 1.79,
+          "meaning": 0.93,
+          "style": 0.45,
+          "pass": false
+        }
+      ],
+      "result": "unresolved"
+    },
+    {
+      "key": "loadingPhase",
+      "en": "Loading",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "불러오는 중",
+          "natural": 1.8,
+          "meaning": 0.93,
+          "style": 0.66,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "matchesInOtherPresets",
+      "en": "{count} more matches in other presets: ",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "다른 프리셋에 일치하는 항목 {count}개 더 있음: ",
+          "natural": 1.35,
+          "meaning": 0.96,
+          "style": 0.44,
+          "pass": false
+        },
+        {
+          "ko": "다른 프리셋에서 추가로 일치하는 항목 {count}개: ",
+          "natural": 1.25,
+          "meaning": 0.95,
+          "style": 0.46,
+          "pass": false
+        },
+        {
+          "ko": "다른 프리셋에도 일치하는 항목이 {count}개 있습니다: ",
+          "natural": 1.28,
+          "meaning": 0.95,
+          "style": 0.43,
+          "pass": false
+        },
+        {
+          "ko": "다른 프리셋의 추가 검색 결과 {count}개: ",
+          "natural": 1.36,
+          "meaning": 0.96,
+          "style": 0.53,
+          "pass": false
+        }
+      ],
+      "result": "unresolved"
+    },
+    {
+      "key": "metadataError",
+      "en": "Package metadata error: {error}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "패키지 메타데이터 오류: {error}",
+          "natural": 1.76,
+          "meaning": 0.96,
+          "style": 0.57,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "moduleLabel",
+      "en": "Module",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "모듈",
+          "natural": 1.78,
+          "meaning": 0.91,
+          "style": 0.74,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "pending",
+      "en": "Waiting for dependencies",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "의존성 대기 중",
+          "natural": 1.78,
+          "meaning": 0.97,
+          "style": 0.6,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "presetEnabledTag",
+      "en": "Via presets",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "프리셋을 통해 활성화",
+          "natural": 1.56,
+          "meaning": 0.95,
+          "style": 0.66,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "presetOptionBroken",
+      "en": "{name} (failed to load)",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{name} (불러오기 실패)",
+          "natural": 1.72,
+          "meaning": 0.96,
+          "style": 0.51,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "presetOptionDefault",
+      "en": "{name} (default)",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{name} (기본값)",
+          "natural": 1.91,
+          "meaning": 0.97,
+          "style": 0.66,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "presetProvidedDetail",
+      "en": "Disabled globally; agent presets provide it per session",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "전역에서는 비활성화되어 있으며, 에이전트 프리셋이 세션별로 제공합니다",
+          "natural": 1.42,
+          "meaning": 0.95,
+          "style": 0.5,
+          "pass": false
+        },
+        {
+          "ko": "전역에서는 사용하지 않습니다. 에이전트 프리셋을 통해 각 세션에 제공됩니다.",
+          "natural": 1.42,
+          "meaning": 0.93,
+          "style": 0.54,
+          "pass": false
+        },
+        {
+          "ko": "전역 사용은 비활성화된 상태입니다. 에이전트 프리셋에서 세션별로 제공합니다.",
+          "natural": 1.13,
+          "meaning": 0.9,
+          "style": 0.48,
+          "pass": false
+        },
+        {
+          "ko": "전역으로 활성화하지 않고 에이전트 프리셋을 통해 세션마다 제공합니다.",
+          "natural": 1.22,
+          "meaning": 0.89,
+          "style": 0.46,
+          "pass": false
+        }
+      ],
+      "result": "unresolved"
+    },
+    {
+      "key": "presetSubtitle",
+      "en": "Composed per session by agent presets",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "에이전트 프리셋으로 세션별 구성",
+          "natural": 1.11,
+          "meaning": 0.94,
+          "style": 0.54,
+          "pass": false
+        },
+        {
+          "ko": "에이전트 프리셋에 따라 세션마다 구성됩니다",
+          "natural": 1.38,
+          "meaning": 0.95,
+          "style": 0.41,
+          "pass": false
+        },
+        {
+          "ko": "각 세션의 에이전트 프리셋으로 구성한 플러그인",
+          "natural": 1.04,
+          "meaning": 0.94,
+          "style": 0.57,
+          "pass": false
+        },
+        {
+          "ko": "에이전트 프리셋이 각 세션의 구성을 결정합니다",
+          "natural": 1.48,
+          "meaning": 0.9,
+          "style": 0.49,
+          "pass": false
+        }
+      ],
+      "result": "unresolved"
+    },
+    {
+      "key": "presetTitle",
+      "en": "Session plugins",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "세션 플러그인",
+          "natural": 1.72,
+          "meaning": 0.96,
+          "style": 0.72,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "retry",
+      "en": "Retry",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "다시 시도",
+          "natural": 1.96,
+          "meaning": 0.97,
+          "style": 0.62,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "runtime",
+      "en": "Status",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "상태",
+          "natural": 1.97,
+          "meaning": 0.97,
+          "style": 0.74,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "search",
+      "en": "Search plugins",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "플러그인 검색",
+          "natural": 1.89,
+          "meaning": 0.98,
+          "style": 0.69,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "switcherLabel",
+      "en": "Choose the agent preset to inspect",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "확인할 에이전트 프리셋 선택",
+          "natural": 1.64,
+          "meaning": 0.98,
+          "style": 0.47,
+          "pass": false
+        },
+        {
+          "ko": "확인할 에이전트 프리셋을 선택하십시오",
+          "natural": 1.69,
+          "meaning": 0.98,
+          "style": 0.77,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "tab",
+      "en": "Plugin list",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "플러그인 목록",
+          "natural": 1.94,
+          "meaning": 0.98,
+          "style": 0.69,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "unloading",
+      "en": "Unloading",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "언로드 중",
+          "natural": 1.87,
+          "meaning": 0.98,
+          "style": 0.65,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "unobserved",
+      "en": "Not running",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "실행 중이 아님",
+          "natural": 1.83,
+          "meaning": 0.98,
+          "style": 0.73,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "viewInPreset",
+      "en": "View in the preset group",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "프리셋 그룹에서 보기",
+          "natural": 1.6,
+          "meaning": 0.97,
+          "style": 0.63,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    }
+  ]
+}
