@@ -77,7 +77,7 @@ DSH 화면 문구 전체를 한국어로 제공한다. Studio는 이미 `ctx.loc
 ## Studio 한국어 검수 스킬 (#30 밖 부속 작업)
 
 - 사용자 요청으로 `studio/scripts/agents/studio-ko-review/SKILL.md`를 추가했다. 이슈 하나가 바꾼 명세·UI 문구·공개 문서의 한국어를 `judge`로 검수하고, 빠진 ko 문구를 새로 쓴다. 사용자가 승인한 행만 반영한다.
-- 이 스킬이 Pixie 파일 2개 전용이던 `studio-ko-locale-review`를 대체한다. 기존 스킬은 저장소에 원본이 없고 `~/.dsh/skills/`에만 있다. 설치본 삭제와 새 스킬 설치는 사용자 프로필 변경이라 사용자가 하거나 승인한다.
+- 이 스킬이 Pixie 파일 2개 전용이던 `studio-ko-locale-review`를 대체한다. 기존 스킬은 저장소에 원본이 없고 `~/.dsh/skills/`에만 있었다.
 - 문서용 문체 질문을 Jev로 확인했다. 한다체 질문은 한다체 문장 0.86, 합쇼체 문장 0.06, 반말 0.23으로 구분했다. 합쇼체 질문은 합쇼체 문장 0.58, 한다체 문장 0.07, 반말 0.04였다. 맞는 합쇼체도 0.58로 기준 0.5에 가깝다. 의미 질문은 "기록되지 않고 전달되지 않습니다"를 "전달됩니다"로 바꾼 문장에 0.06을 주었다.
 
 ## S4 시범 번역 결과
@@ -101,3 +101,13 @@ DSH 화면 문구 전체를 한국어로 제공한다. Studio는 이미 `ctx.loc
 - 같은 검토에서 버튼·라벨을 문장으로 바꾼 재작성 27개를 이전 라벨 후보로 되돌렸다. 짧은 라벨은 문체 점수가 낮게 나와, 번역자가 라벨을 "…합니다" 문장으로 바꿔 통과시킨 경우다. 지침에 라벨을 문장으로 바꾸지 말라는 규칙을 넣었다.
 - 용어 통일: 새로 고침, 미리 보기, 상위·하위 세션 계보, 팀 작업, 추론 강도. 바꾼 문구는 다시 판정했고, 통과하지 못한 10개는 이전 문구를 유지했다.
 - 판정 통과·승인 문구 모두 판정 기록과 사전이 일치한다(검사 스크립트 기준 불일치 0).
+
+## 개발용 스킬 배포 정책
+
+- 사용자 결정(2026-10-17): `studio-dsh-ko-translate`와 `studio-ko-review`는 Studio 개발용 스킬이다. 배포 패키지에 넣지 않고 개발 기기에만 설치한다. 원본은 `studio/scripts/agents/<skill>/SKILL.md`다.
+- 배포에 들어가는 스킬은 `build.mjs`가 `packages/shell/skills/`로 복사하는 것뿐이다(현재 `studio-pixie-hook-guide`). 두 스킬은 `build.mjs`·`pack.mjs`·`packages/shell/package.json` 어디에도 없어 패키지에 들어가지 않는다.
+- 설치(2026-10-17, 이 기기): 두 스킬의 `SKILL.md`를 `~/.dsh/skills/<skill>/`에 복사했다. 대체된 `~/.dsh/skills/studio-ko-locale-review`는 지웠다. 원본을 고치면 같은 방법으로 다시 복사한다.
+
+  ```sh
+  for s in studio-dsh-ko-translate studio-ko-review; do mkdir -p ~/.dsh/skills/$s && cp studio/scripts/agents/$s/SKILL.md ~/.dsh/skills/$s/; done
+  ```
