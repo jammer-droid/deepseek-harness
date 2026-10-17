@@ -1,0 +1,586 @@
+{
+  "namespace": "sidebarBrowser",
+  "date": "2026-10-17",
+  "engine": "jev",
+  "thresholds": {
+    "natural": 1.5,
+    "meaning": 0.6,
+    "style": 0.5
+  },
+  "rows": [
+    {
+      "key": "address.changed",
+      "en": "URL changed",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "URL 변경됨",
+          "natural": 1.77,
+          "meaning": 0.96,
+          "style": 0.41,
+          "pass": false
+        },
+        {
+          "ko": "URL이 변경되었습니다",
+          "natural": 1.8,
+          "meaning": 0.96,
+          "style": 0.91,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "address.placeholder",
+      "en": "Enter an HTTP(S) address",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "HTTP(S) 주소 입력",
+          "natural": 1.67,
+          "meaning": 0.96,
+          "style": 0.38,
+          "pass": false
+        },
+        {
+          "ko": "HTTP(S) 주소를 입력하십시오",
+          "natural": 1.51,
+          "meaning": 0.96,
+          "style": 0.94,
+          "pass": true
+        }
+      ],
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "HTTP(S) 주소 입력",
+        "note": "버튼·라벨을 문장으로 바꾼 재작성 대신 이전 라벨 후보로 되돌림(자연·의미 통과, 문체만 미달)"
+      }
+    },
+    {
+      "key": "address.unknown",
+      "en": "The page navigated; this carrier cannot read its new URL.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "페이지가 이동했지만 이 캐리어는 새 URL을 읽을 수 없습니다.",
+          "natural": 1.27,
+          "meaning": 0.96,
+          "style": 0.43,
+          "pass": false
+        },
+        {
+          "ko": "페이지가 이동했습니다. 이 캐리어는 새 URL을 읽을 수 없습니다.",
+          "natural": 1.29,
+          "meaning": 0.95,
+          "style": 0.55,
+          "pass": false
+        },
+        {
+          "ko": "이 캐리어는 페이지가 이동한 뒤의 새 URL을 읽을 수 없습니다.",
+          "natural": 1.26,
+          "meaning": 0.93,
+          "style": 0.58,
+          "pass": false
+        }
+      ],
+      "result": "unresolved"
+    },
+    {
+      "key": "back",
+      "en": "Back",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "뒤로",
+          "natural": 1.96,
+          "meaning": 0.98,
+          "style": 0.6,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "error.application-origin",
+      "en": "The embedded browser cannot open the DSH application itself.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "내장 브라우저에서는 DSH 애플리케이션 자체를 열 수 없습니다.",
+          "natural": 1.67,
+          "meaning": 0.97,
+          "style": 0.53,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "error.credentials",
+      "en": "Addresses cannot contain a username or password.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "주소에는 사용자 이름이나 암호를 넣을 수 없습니다.",
+          "natural": 1.63,
+          "meaning": 0.97,
+          "style": 0.43,
+          "pass": false
+        },
+        {
+          "ko": "주소에 사용자 이름이나 암호를 포함할 수 없습니다.",
+          "natural": 1.63,
+          "meaning": 0.97,
+          "style": 0.78,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "error.empty",
+      "en": "Enter an address.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "주소를 입력하십시오.",
+          "natural": 1.35,
+          "meaning": 0.96,
+          "style": 0.93,
+          "pass": false
+        },
+        {
+          "ko": "주소를 입력해 주십시오.",
+          "natural": 1.66,
+          "meaning": 0.97,
+          "style": 0.82,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "error.invalid",
+      "en": "That address is invalid or too long.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "주소가 잘못되었거나 너무 깁니다.",
+          "natural": 1.66,
+          "meaning": 0.92,
+          "style": 0.25,
+          "pass": false
+        },
+        {
+          "ko": "주소가 유효하지 않거나 너무 깁니다.",
+          "natural": 1.64,
+          "meaning": 0.92,
+          "style": 0.41,
+          "pass": false
+        },
+        {
+          "ko": "주소가 올바르지 않거나 너무 깁니다.",
+          "natural": 1.77,
+          "meaning": 0.94,
+          "style": 0.28,
+          "pass": false
+        },
+        {
+          "ko": "주소가 유효하지 않거나 너무 깁니다",
+          "natural": 1.72,
+          "meaning": 0.9,
+          "style": 0.38,
+          "pass": false
+        }
+      ],
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "주소가 유효하지 않거나 너무 깁니다",
+        "note": "문체 점수만 미달(짧은 라벨)"
+      }
+    },
+    {
+      "key": "error.protocol",
+      "en": "Only HTTP and HTTPS addresses are supported; use Document Preview for local files.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "HTTP 및 HTTPS 주소만 지원합니다. 로컬 파일은 문서 미리보기를 사용하십시오.",
+          "natural": 1.64,
+          "meaning": 0.95,
+          "style": 0.86,
+          "pass": true
+        },
+        {
+          "ko": "HTTP 및 HTTPS 주소만 지원합니다. 로컬 파일은 문서 미리 보기를 사용하십시오.",
+          "natural": 1.61,
+          "meaning": 0.96,
+          "style": 0.81,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "external",
+      "en": "Open in system browser",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "시스템 브라우저에서 열기",
+          "natural": 1.86,
+          "meaning": 0.97,
+          "style": 0.44,
+          "pass": false
+        },
+        {
+          "ko": "시스템 브라우저로 열기",
+          "natural": 1.85,
+          "meaning": 0.97,
+          "style": 0.39,
+          "pass": false
+        },
+        {
+          "ko": "시스템 브라우저에서 엽니다",
+          "natural": 1.76,
+          "meaning": 0.96,
+          "style": 0.81,
+          "pass": true
+        }
+      ],
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "시스템 브라우저에서 열기",
+        "note": "버튼·라벨을 문장으로 바꾼 재작성 대신 이전 라벨 후보로 되돌림(자연·의미 통과, 문체만 미달)"
+      }
+    },
+    {
+      "key": "forward",
+      "en": "Forward",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "앞으로",
+          "natural": 1.9,
+          "meaning": 0.96,
+          "style": 0.6,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "go",
+      "en": "Go",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "이동",
+          "natural": 1.64,
+          "meaning": 0.92,
+          "style": 0.47,
+          "pass": false
+        },
+        {
+          "ko": "이동하기",
+          "natural": 1.38,
+          "meaning": 0.9,
+          "style": 0.33,
+          "pass": false
+        },
+        {
+          "ko": "이동합니다",
+          "natural": 1.04,
+          "meaning": 0.7,
+          "style": 0.8,
+          "pass": false
+        },
+        {
+          "ko": "이 주소로 이동",
+          "natural": 1.47,
+          "meaning": 0.41,
+          "style": 0.43,
+          "pass": false
+        }
+      ],
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "이동",
+        "note": "문체 점수만 미달(짧은 라벨)"
+      }
+    },
+    {
+      "key": "guide.description",
+      "en": "Browse web pages",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "웹 페이지를 둘러봅니다",
+          "natural": 1.35,
+          "meaning": 0.96,
+          "style": 0.75,
+          "pass": false
+        },
+        {
+          "ko": "웹 페이지를 살펴봅니다",
+          "natural": 1.28,
+          "meaning": 0.95,
+          "style": 0.86,
+          "pass": false
+        },
+        {
+          "ko": "웹 페이지 탐색",
+          "natural": 1.77,
+          "meaning": 0.97,
+          "style": 0.71,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "guide.title",
+      "en": "Browser",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "브라우저",
+          "natural": 1.9,
+          "meaning": 0.97,
+          "style": 0.65,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "load.failed",
+      "en": "The page could not load; reload or open it in the system browser.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "페이지를 불러오지 못했습니다. 새로 고치거나 시스템 브라우저에서 여십시오.",
+          "natural": 1.76,
+          "meaning": 0.96,
+          "style": 0.57,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "load.failed.detail",
+      "en": "Page load failed ({code}): {description}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "페이지를 불러오지 못했습니다({code}): {description}",
+          "natural": 1.73,
+          "meaning": 0.95,
+          "style": 0.85,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "loading",
+      "en": "Opening…",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "열고 있습니다…",
+          "natural": 1.94,
+          "meaning": 0.97,
+          "style": 0.36,
+          "pass": false
+        },
+        {
+          "ko": "페이지를 열고 있습니다…",
+          "natural": 1.66,
+          "meaning": 0.85,
+          "style": 0.82,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "reload",
+      "en": "Reload",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "새로 고침",
+          "natural": 1.93,
+          "meaning": 0.97,
+          "style": 0.52,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "restore.action",
+      "en": "Restore page",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "페이지 복원",
+          "natural": 1.69,
+          "meaning": 0.96,
+          "style": 0.56,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "restore.previous",
+      "en": "Previously opened",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "이전에 연 페이지",
+          "natural": 1.42,
+          "meaning": 0.93,
+          "style": 0.54,
+          "pass": false
+        },
+        {
+          "ko": "이전에 열었던 페이지",
+          "natural": 1.5,
+          "meaning": 0.95,
+          "style": 0.58,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "sandbox.disable",
+      "en": "Disable sandbox restrictions",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "샌드박스 제한 해제",
+          "natural": 1.68,
+          "meaning": 0.96,
+          "style": 0.46,
+          "pass": false
+        },
+        {
+          "ko": "샌드박스 제한을 해제합니다",
+          "natural": 1.52,
+          "meaning": 0.9,
+          "style": 0.85,
+          "pass": true
+        }
+      ],
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "샌드박스 제한 해제",
+        "note": "버튼·라벨을 문장으로 바꾼 재작성 대신 이전 라벨 후보로 되돌림(자연·의미 통과, 문체만 미달)"
+      }
+    },
+    {
+      "key": "sandbox.enable",
+      "en": "Restore sandbox restrictions",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "샌드박스 제한 복원",
+          "natural": 1.72,
+          "meaning": 0.97,
+          "style": 0.51,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "sandbox.warning",
+      "en": "Sandbox restrictions are disabled; the page can navigate the top-level app and use downloads, modal dialogs, and input locks.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "샌드박스 제한이 해제되어 이 페이지가 최상위 앱을 탐색하고 다운로드, 모달 대화상자, 입력 잠금을 사용할 수 있습니다.",
+          "natural": 1.49,
+          "meaning": 0.95,
+          "style": 0.75,
+          "pass": false
+        },
+        {
+          "ko": "샌드박스 제한이 해제되어 있습니다. 이 페이지는 최상위 앱을 탐색하고 다운로드, 모달 대화상자, 입력 잠금을 사용할 수 있습니다.",
+          "natural": 1.42,
+          "meaning": 0.96,
+          "style": 0.8,
+          "pass": false
+        },
+        {
+          "ko": "샌드박스 제한이 해제되었습니다. 이 페이지는 최상위 앱을 탐색할 수 있고 다운로드, 모달 대화상자, 입력 잠금도 사용할 수 있습니다.",
+          "natural": 1.5,
+          "meaning": 0.95,
+          "style": 0.72,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "shortcut.noSession",
+      "en": "Open a session first",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "먼저 세션을 여십시오.",
+          "natural": 1.74,
+          "meaning": 0.97,
+          "style": 0.82,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "start",
+      "en": "Enter an HTTP(S) address to start browsing",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "탐색을 시작하려면 HTTP(S) 주소를 입력하십시오.",
+          "natural": 1.72,
+          "meaning": 0.97,
+          "style": 0.91,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "type.label",
+      "en": "Browser",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "브라우저",
+          "natural": 1.84,
+          "meaning": 0.95,
+          "style": 0.68,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    }
+  ]
+}

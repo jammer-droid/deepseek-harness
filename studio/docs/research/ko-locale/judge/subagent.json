@@ -1,0 +1,677 @@
+{
+  "namespace": "subagent",
+  "date": "2026-10-17",
+  "engine": "jev",
+  "thresholds": {
+    "natural": 1.5,
+    "meaning": 0.6,
+    "style": 0.5
+  },
+  "rows": [
+    {
+      "key": "activity.completed",
+      "en": "completed",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "완료",
+          "natural": 1.93,
+          "meaning": 0.98,
+          "style": 0.71,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "activity.inactive",
+      "en": "not running",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "실행 중 아님",
+          "natural": 1.66,
+          "meaning": 0.97,
+          "style": 0.67,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "activity.running",
+      "en": "running",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "실행 중",
+          "natural": 1.96,
+          "meaning": 0.98,
+          "style": 0.63,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "branch.collapse",
+      "en": "Collapse {label} descendants",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{label} 하위 항목 접기",
+          "natural": 1.65,
+          "meaning": 0.94,
+          "style": 0.45,
+          "pass": false
+        },
+        {
+          "ko": "{label}의 하위 항목을 접습니다.",
+          "natural": 1.52,
+          "meaning": 0.93,
+          "style": 0.96,
+          "pass": true
+        }
+      ],
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "{label} 하위 항목 접기",
+        "note": "버튼·라벨을 문장으로 바꾼 재작성 대신 이전 라벨 후보로 되돌림(자연·의미 통과, 문체만 미달)"
+      }
+    },
+    {
+      "key": "branch.expand",
+      "en": "Expand {label} descendants",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{label} 하위 항목 펼치기",
+          "natural": 1.75,
+          "meaning": 0.97,
+          "style": 0.57,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "count.running.one",
+      "en": "{count} subagent running",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "서브에이전트 {count}개 실행 중",
+          "natural": 1.65,
+          "meaning": 0.64,
+          "style": 0.56,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "count.running.other",
+      "en": "{count} subagents running",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "서브에이전트 {count}개 실행 중",
+          "natural": 1.79,
+          "meaning": 0.9,
+          "style": 0.56,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "count.total.one",
+      "en": "{count} subagent",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "서브에이전트 {count}개",
+          "natural": 1.69,
+          "meaning": 0.8,
+          "style": 0.67,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "count.total.other",
+      "en": "{count} subagents",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "서브에이전트 {count}개",
+          "natural": 1.78,
+          "meaning": 0.9,
+          "style": 0.61,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "duration.days",
+      "en": "{days}d",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{days}일",
+          "natural": 1.87,
+          "meaning": 0.86,
+          "style": 0.67,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "duration.daysHours",
+      "en": "{days}d {hours}h",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{days}일 {hours}시간",
+          "natural": 1.85,
+          "meaning": 0.97,
+          "style": 0.54,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "duration.exactDays",
+      "en": "{days}d {hours}h {minutes}m {seconds}s",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{days}일 {hours}시간 {minutes}분 {seconds}초",
+          "natural": 1.72,
+          "meaning": 0.97,
+          "style": 0.43,
+          "pass": false
+        },
+        {
+          "ko": "{days}일 {hours}시간 {minutes}분 {seconds}초입니다.",
+          "natural": 1.42,
+          "meaning": 0.91,
+          "style": 0.95,
+          "pass": false
+        },
+        {
+          "ko": "기간: {days}일 {hours}시간 {minutes}분 {seconds}초",
+          "natural": 1.74,
+          "meaning": 0.92,
+          "style": 0.69,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "duration.exactTitle",
+      "en": "Total active duration: {duration}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "총 활동 시간: {duration}",
+          "natural": 1.54,
+          "meaning": 0.96,
+          "style": 0.5,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "duration.hours",
+      "en": "{hours}h {minutes}m {seconds}s",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{hours}시간 {minutes}분 {seconds}초",
+          "natural": 1.89,
+          "meaning": 0.98,
+          "style": 0.51,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "duration.minutes",
+      "en": "{minutes}m {seconds}s",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{minutes}분 {seconds}초",
+          "natural": 1.94,
+          "meaning": 0.97,
+          "style": 0.62,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "duration.months",
+      "en": "~{months}mo",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "~{months}개월",
+          "natural": 1.85,
+          "meaning": 0.94,
+          "style": 0.61,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "duration.monthsDays",
+      "en": "~{months}mo {days}d",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "~{months}개월 {days}일",
+          "natural": 1.75,
+          "meaning": 0.96,
+          "style": 0.56,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "duration.seconds",
+      "en": "{seconds}s",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{seconds}초",
+          "natural": 1.91,
+          "meaning": 0.95,
+          "style": 0.54,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "duration.years",
+      "en": "~{years}y",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "~{years}년",
+          "natural": 1.86,
+          "meaning": 0.95,
+          "style": 0.66,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "duration.yearsMonths",
+      "en": "~{years}y {months}mo",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "~{years}년 {months}개월",
+          "natural": 1.83,
+          "meaning": 0.97,
+          "style": 0.61,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "load.error",
+      "en": "Unable to load subagents",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "서브에이전트를 불러올 수 없습니다.",
+          "natural": 1.72,
+          "meaning": 0.97,
+          "style": 0.67,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "loading.label",
+      "en": "Loading subagents…",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "서브에이전트 불러오는 중…",
+          "natural": 1.7,
+          "meaning": 0.98,
+          "style": 0.51,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "mode.continuable",
+      "en": "continuable",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "계속 가능",
+          "natural": 1.29,
+          "meaning": 0.87,
+          "style": 0.76,
+          "pass": false
+        },
+        {
+          "ko": "이어서 진행 가능",
+          "natural": 1.22,
+          "meaning": 0.89,
+          "style": 0.74,
+          "pass": false
+        },
+        {
+          "ko": "계속 진행할 수 있습니다.",
+          "natural": 1.37,
+          "meaning": 0.74,
+          "style": 0.88,
+          "pass": false
+        },
+        {
+          "ko": "이어가기 가능",
+          "natural": 1.53,
+          "meaning": 0.92,
+          "style": 0.82,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "mode.oneShot",
+      "en": "one-shot",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "일회성",
+          "natural": 1.69,
+          "meaning": 0.96,
+          "style": 0.81,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "mode.unknown",
+      "en": "unknown mode",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "알 수 없는 모드",
+          "natural": 1.74,
+          "meaning": 0.97,
+          "style": 0.76,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "open.sidebar",
+      "en": "Open in sidebar",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "사이드바에서 열기",
+          "natural": 1.89,
+          "meaning": 0.98,
+          "style": 0.58,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "open.sidebar.aria",
+      "en": "Open {label} in sidebar",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "사이드바에서 {label} 열기",
+          "natural": 1.8,
+          "meaning": 0.97,
+          "style": 0.47,
+          "pass": false
+        },
+        {
+          "ko": "사이드바에서 {label}을 엽니다.",
+          "natural": 1.76,
+          "meaning": 0.96,
+          "style": 0.68,
+          "pass": true
+        }
+      ],
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "사이드바에서 {label} 열기",
+        "note": "버튼·라벨을 문장으로 바꾼 재작성 대신 이전 라벨 후보로 되돌림(자연·의미 통과, 문체만 미달)"
+      }
+    },
+    {
+      "key": "readonly.body",
+      "en": "The parent session is offline; reopen it to continue sending messages.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "상위 세션이 오프라인 상태입니다. 메시지를 계속 보내려면 상위 세션을 다시 여십시오.",
+          "natural": 1.56,
+          "meaning": 0.97,
+          "style": 0.54,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "readonly.oneShot.body",
+      "en": "One-shot tasks do not accept follow-ups; review the full execution record here.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "일회성 작업에는 후속 메시지를 보낼 수 없습니다. 여기에서 전체 실행 기록을 확인하십시오.",
+          "natural": 1.57,
+          "meaning": 0.95,
+          "style": 0.72,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "readonly.oneShot.title",
+      "en": "One-shot subagent record",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "일회성 서브에이전트 기록",
+          "natural": 1.65,
+          "meaning": 0.96,
+          "style": 0.77,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "readonly.title",
+      "en": "This subagent is read-only for now",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "현재 이 서브에이전트는 읽기 전용입니다.",
+          "natural": 1.63,
+          "meaning": 0.88,
+          "style": 0.38,
+          "pass": false
+        },
+        {
+          "ko": "이 서브에이전트는 현재 읽기만 가능합니다.",
+          "natural": 1.65,
+          "meaning": 0.93,
+          "style": 0.78,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "readonly.unknown.body",
+      "en": "Read the child session to determine whether it can be continued.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "계속 진행할 수 있는지 확인하려면 하위 세션을 읽으십시오.",
+          "natural": 1.26,
+          "meaning": 0.95,
+          "style": 0.42,
+          "pass": false
+        },
+        {
+          "ko": "하위 세션의 내용을 확인하여 이어서 진행할 수 있는지 판단하십시오.",
+          "natural": 1.38,
+          "meaning": 0.96,
+          "style": 0.9,
+          "pass": false
+        },
+        {
+          "ko": "하위 세션을 읽고 계속 진행할 수 있는지 확인하십시오.",
+          "natural": 1.2,
+          "meaning": 0.93,
+          "style": 0.75,
+          "pass": false
+        },
+        {
+          "ko": "하위 세션의 내용을 살펴보고 이어서 진행할 수 있는지 확인하십시오.",
+          "natural": 1.34,
+          "meaning": 0.94,
+          "style": 0.77,
+          "pass": false
+        }
+      ],
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "하위 세션의 내용을 확인하여 이어서 진행할 수 있는지 판단하십시오.",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
+    },
+    {
+      "key": "retry",
+      "en": "Retry",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "다시 시도",
+          "natural": 1.94,
+          "meaning": 0.98,
+          "style": 0.7,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "switcher.aria",
+      "en": "Switch subagent: {title}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "서브에이전트 전환: {title}",
+          "natural": 1.75,
+          "meaning": 0.97,
+          "style": 0.72,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "tokens.total",
+      "en": "{value} tok",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{value} 토큰",
+          "natural": 1.52,
+          "meaning": 0.86,
+          "style": 0.76,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "tree.aria",
+      "en": "Subagent sessions",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "서브에이전트 세션",
+          "natural": 1.76,
+          "meaning": 0.97,
+          "style": 0.75,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "catalog.migrationRequired",
+      "en": "Migration required",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "마이그레이션 필요",
+          "natural": 1.72,
+          "meaning": 0.96,
+          "style": 0.75,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "mode.external",
+      "en": "External task",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "외부 작업",
+          "natural": 1.79,
+          "meaning": 0.98,
+          "style": 0.81,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    }
+  ]
+}

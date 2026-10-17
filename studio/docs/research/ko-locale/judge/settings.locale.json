@@ -1,0 +1,17 @@
+{
+  "namespace": "settings.locale",
+  "date": "2026-10-17",
+  "engine": "jev",
+  "thresholds": { "natural": 1.5, "meaning": 0.6, "style": 0.5 },
+  "rows": [
+    {
+      "key": "language.title",
+      "en": "Language",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "언어", "natural": 1.94, "meaning": 0.97, "style": 0.54, "pass": true }
+      ],
+      "result": "pass"
+    }
+  ]
+}

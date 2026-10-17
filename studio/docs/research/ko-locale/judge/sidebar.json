@@ -1,0 +1,54 @@
+{
+  "namespace": "sidebar",
+  "date": "2026-10-17",
+  "engine": "jev",
+  "thresholds": { "natural": 1.5, "meaning": 0.6, "style": 0.5 },
+  "rows": [
+    {
+      "key": "panels.label",
+      "en": "Global panels",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "전역 패널", "natural": 1.26, "meaning": 0.92, "style": 0.58, "pass": false },
+        { "ko": "전역 패널 목록", "natural": 1.52, "meaning": 0.78, "style": 0.6, "pass": true }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "session.new",
+      "en": "New Session",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "새 세션", "natural": 1.84, "meaning": 0.94, "style": 0.61, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "session.new.label",
+      "en": "New session",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "새 세션", "natural": 1.93, "meaning": 0.97, "style": 0.64, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "toggle.collapse",
+      "en": "Collapse sidebar",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "사이드바 접기", "natural": 1.66, "meaning": 0.96, "style": 0.53, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "toggle.open",
+      "en": "Open sidebar",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "사이드바 열기", "natural": 1.8, "meaning": 0.98, "style": 0.61, "pass": true }
+      ],
+      "result": "pass"
+    }
+  ]
+}

@@ -1,0 +1,169 @@
+{
+  "namespace": "workflowRun",
+  "date": "2026-10-17",
+  "engine": "jev",
+  "thresholds": { "natural": 1.5, "meaning": 0.6, "style": 0.5 },
+  "rows": [
+    {
+      "key": "member.empty",
+      "en": "Empty member name",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "빈 멤버 이름", "natural": 1.62, "meaning": 0.98, "style": 0.59, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "member.open",
+      "en": "Open {name}",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "{name} 열기", "natural": 1.81, "meaning": 0.96, "style": 0.54, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "phase.empty",
+      "en": "Empty phase name",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "빈 단계 이름", "natural": 1.69, "meaning": 0.97, "style": 0.53, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "phase.unassigned",
+      "en": "Unphased",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "단계 없음", "natural": 1.54, "meaning": 0.95, "style": 0.66, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "run.empty",
+      "en": "No members started",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "시작된 멤버가 없습니다", "natural": 1.81, "meaning": 0.97, "style": 0.55, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "run.members.one",
+      "en": "{count} member",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "멤버 {count}개", "natural": 1.8, "meaning": 0.93, "style": 0.55, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "run.members.other",
+      "en": "{count} members",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "멤버 {count}개", "natural": 1.81, "meaning": 0.93, "style": 0.55, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "run.title",
+      "en": "{name}",
+      "kind": "verbatim",
+      "attempts": [],
+      "result": "verbatim"
+    },
+    {
+      "key": "status.cancelled",
+      "en": "Cancelled",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "취소됨", "natural": 1.92, "meaning": 0.97, "style": 0.52, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "status.completed",
+      "en": "Completed",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "완료됨", "natural": 1.94, "meaning": 0.98, "style": 0.53, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "status.failed",
+      "en": "Failed",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "실패함", "natural": 1.76, "meaning": 0.97, "style": 0.53, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "status.interrupted",
+      "en": "Interrupted",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "중단됨", "natural": 1.79, "meaning": 0.96, "style": 0.54, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "status.running",
+      "en": "Running",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "실행 중", "natural": 1.98, "meaning": 0.97, "style": 0.53, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "statusCount.cancelled",
+      "en": "Cancelled {count}",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "취소됨 {count}", "natural": 1.61, "meaning": 0.96, "style": 0.52, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "statusCount.completed",
+      "en": "Completed {count}",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "완료됨 {count}", "natural": 1.82, "meaning": 0.97, "style": 0.5, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "statusCount.failed",
+      "en": "Failed {count}",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "실패함 {count}", "natural": 1.78, "meaning": 0.96, "style": 0.52, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "statusCount.interrupted",
+      "en": "Interrupted {count}",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "중단됨 {count}", "natural": 1.82, "meaning": 0.96, "style": 0.51, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "statusCount.running",
+      "en": "Running {count}",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "실행 중 {count}", "natural": 1.86, "meaning": 0.97, "style": 0.47, "pass": false },
+        { "ko": "실행 중 {count}개", "natural": 1.6, "meaning": 0.87, "style": 0.58, "pass": true }
+      ],
+      "result": "fixed"
+    }
+  ]
+}

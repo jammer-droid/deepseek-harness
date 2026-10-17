@@ -1,0 +1,379 @@
+{
+  "namespace": "open-in-app",
+  "date": "2026-10-17",
+  "engine": "jev",
+  "thresholds": {
+    "natural": 1.5,
+    "meaning": 0.6,
+    "style": 0.5
+  },
+  "rows": [
+    {
+      "key": "app.androidstudio",
+      "en": "Android Studio",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "Android Studio",
+          "natural": 1.72,
+          "meaning": 0.99,
+          "style": 0.66,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "app.explorer",
+      "en": "File Explorer",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "파일 탐색기",
+          "natural": 1.81,
+          "meaning": 0.96,
+          "style": 0.63,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "app.filemanager",
+      "en": "Files",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "파일",
+          "natural": 1.66,
+          "meaning": 0.86,
+          "style": 0.75,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "app.gitbash",
+      "en": "Git Bash",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "Git Bash",
+          "natural": 1.78,
+          "meaning": 0.98,
+          "style": 0.62,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "app.github",
+      "en": "GitHub Desktop",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "GitHub Desktop",
+          "natural": 1.81,
+          "meaning": 0.98,
+          "style": 0.63,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "app.gnometerminal",
+      "en": "GNOME Terminal",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "GNOME Terminal",
+          "natural": 1.61,
+          "meaning": 0.98,
+          "style": 0.62,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "app.intellij",
+      "en": "IntelliJ IDEA",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "IntelliJ IDEA",
+          "natural": 1.71,
+          "meaning": 0.98,
+          "style": 0.64,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "app.sublimemerge",
+      "en": "Sublime Merge",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "Sublime Merge",
+          "natural": 1.73,
+          "meaning": 0.98,
+          "style": 0.58,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "app.sublimetext",
+      "en": "Sublime Text",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "Sublime Text",
+          "natural": 1.67,
+          "meaning": 0.97,
+          "style": 0.72,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "app.terminal",
+      "en": "Terminal",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "터미널",
+          "natural": 1.88,
+          "meaning": 0.97,
+          "style": 0.74,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "app.vscode",
+      "en": "VS Code",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "VS Code",
+          "natural": 1.7,
+          "meaning": 0.96,
+          "style": 0.74,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "app.vscodeinsiders",
+      "en": "VS Code Insiders",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "VS Code Insiders",
+          "natural": 1.64,
+          "meaning": 0.96,
+          "style": 0.69,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "app.windowsterminal",
+      "en": "Windows Terminal",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "Windows Terminal",
+          "natural": 1.56,
+          "meaning": 0.98,
+          "style": 0.69,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "open.title",
+      "en": "Open in {app}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{app}에서 열기",
+          "natural": 1.63,
+          "meaning": 0.95,
+          "style": 0.53,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "open.tooltip",
+      "en": "Open locally",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "로컬에서 열기",
+          "natural": 1.71,
+          "meaning": 0.96,
+          "style": 0.62,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "path.appDefault",
+      "en": "{app} (default)",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{app} (기본값)",
+          "natural": 1.65,
+          "meaning": 0.95,
+          "style": 0.65,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "path.appsError",
+      "en": "Could not load applications",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "앱을 불러오지 못했습니다.",
+          "natural": 1.57,
+          "meaning": 0.96,
+          "style": 0.79,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "path.more",
+      "en": "More ways to open",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "다른 방법으로 열기",
+          "natural": 1.77,
+          "meaning": 0.9,
+          "style": 0.63,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "path.open",
+      "en": "Open",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "열기",
+          "natural": 1.98,
+          "meaning": 0.98,
+          "style": 0.82,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "path.openError",
+      "en": "Could not open. Try again.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "열지 못했습니다. 다시 시도하십시오.",
+          "natural": 1.63,
+          "meaning": 0.93,
+          "style": 0.81,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "path.reveal",
+      "en": "Show file location",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "파일 위치 표시",
+          "natural": 1.74,
+          "meaning": 0.97,
+          "style": 0.73,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "path.revealError",
+      "en": "Could not show the file location. Try again.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "파일 위치를 표시하지 못했습니다. 다시 시도하십시오.",
+          "natural": 1.71,
+          "meaning": 0.95,
+          "style": 0.84,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "shortcut.busy",
+      "en": "Opening workspace",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "워크스페이스 여는 중",
+          "natural": 1.91,
+          "meaning": 0.97,
+          "style": 0.64,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "shortcut.unavailable",
+      "en": "Current workspace or local application unavailable",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "현재 워크스페이스 또는 로컬 앱을 사용할 수 없습니다.",
+          "natural": 1.37,
+          "meaning": 0.95,
+          "style": 0.68,
+          "pass": false
+        },
+        {
+          "ko": "현재 워크스페이스나 로컬 앱이 사용 불가능한 상태입니다.",
+          "natural": 1.56,
+          "meaning": 0.93,
+          "style": 0.88,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    }
+  ]
+}

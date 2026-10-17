@@ -1,0 +1,42 @@
+{
+  "namespace": "documentMarkdown",
+  "date": "2026-10-17",
+  "engine": "jev",
+  "thresholds": { "natural": 1.5, "meaning": 0.6, "style": 0.5 },
+  "rows": [
+    {
+      "key": "code.copied",
+      "en": "Copied",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "복사됨", "natural": 1.82, "meaning": 0.96, "style": 0.52, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "code.copy",
+      "en": "Copy",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "복사", "natural": 1.97, "meaning": 0.96, "style": 0.7, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "footnotes",
+      "en": "Footnotes",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "각주", "natural": 1.89, "meaning": 0.95, "style": 0.64, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "viewer.label",
+      "en": "Markdown",
+      "kind": "verbatim",
+      "attempts": [],
+      "result": "verbatim"
+    }
+  ]
+}

@@ -1,0 +1,3314 @@
+{
+  "namespace": "chat",
+  "date": "2026-10-17",
+  "engine": "jev",
+  "thresholds": {
+    "natural": 1.5,
+    "meaning": 0.6,
+    "style": 0.5
+  },
+  "rows": [
+    {
+      "key": "chat.deepDiving",
+      "en": "Deep diving",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "심층 분석 중",
+          "natural": 1.68,
+          "meaning": 0.9,
+          "style": 0.69,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "chat.deepDivingFor",
+      "en": "Deep diving for {duration} ···",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{duration} 동안 심층 분석 중 ···",
+          "natural": 1.41,
+          "meaning": 0.94,
+          "style": 0.55,
+          "pass": false
+        },
+        {
+          "ko": "심층 분석 중 · {duration} 경과 ···",
+          "natural": 1.51,
+          "meaning": 0.86,
+          "style": 0.64,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "chat.loadError",
+      "en": "Failed to load history: {message} ({code})",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "기록을 불러오지 못했습니다: {message} ({code})",
+          "natural": 1.76,
+          "meaning": 0.93,
+          "style": 0.71,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "chat.loadOlder",
+      "en": "Load earlier",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "이전 기록 불러오기",
+          "natural": 1.66,
+          "meaning": 0.92,
+          "style": 0.67,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "chat.loadingHistory",
+      "en": "Loading history…",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "기록 불러오는 중…",
+          "natural": 1.91,
+          "meaning": 0.97,
+          "style": 0.46,
+          "pass": false
+        },
+        {
+          "ko": "기록을 불러오고 있습니다…",
+          "natural": 1.9,
+          "meaning": 0.96,
+          "style": 0.88,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "chat.toBottom",
+      "en": "Back to bottom",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "맨 아래로 이동",
+          "natural": 1.73,
+          "meaning": 0.91,
+          "style": 0.51,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "chat.turnNavigation.jump",
+      "en": "Jump to turn {turn}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{turn}번째 턴으로 이동",
+          "natural": 1.7,
+          "meaning": 0.96,
+          "style": 0.45,
+          "pass": false
+        },
+        {
+          "ko": "{turn}번째 턴 바로 이동",
+          "natural": 1.46,
+          "meaning": 0.95,
+          "style": 0.61,
+          "pass": false
+        },
+        {
+          "ko": "{turn}번째 턴으로 바로 이동",
+          "natural": 1.47,
+          "meaning": 0.93,
+          "style": 0.54,
+          "pass": false
+        },
+        {
+          "ko": "{turn}번째 턴으로 이동합니다",
+          "natural": 1.4,
+          "meaning": 0.87,
+          "style": 0.92,
+          "pass": false
+        }
+      ],
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "{turn}번째 턴으로 이동합니다",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
+    },
+    {
+      "key": "chat.turnNavigation.jumpLoad",
+      "en": "Load and jump to turn {turn}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{turn}번째 턴을 불러와 이동",
+          "natural": 1.2,
+          "meaning": 0.97,
+          "style": 0.43,
+          "pass": false
+        },
+        {
+          "ko": "{turn}번째 턴 불러오기 및 이동",
+          "natural": 1.45,
+          "meaning": 0.96,
+          "style": 0.56,
+          "pass": false
+        },
+        {
+          "ko": "{turn}번째 턴 로드 후 이동",
+          "natural": 1.25,
+          "meaning": 0.92,
+          "style": 0.51,
+          "pass": false
+        },
+        {
+          "ko": "{turn}번째 턴을 불러온 뒤 이동합니다",
+          "natural": 1.07,
+          "meaning": 0.92,
+          "style": 0.66,
+          "pass": false
+        }
+      ],
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "{turn}번째 턴 불러오기 및 이동",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
+    },
+    {
+      "key": "chat.turnNavigation.label",
+      "en": "Turn navigation",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "턴 탐색",
+          "natural": 1.73,
+          "meaning": 0.97,
+          "style": 0.72,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "chat.turnNavigation.turn",
+      "en": "Turn {turn}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{turn}번째 턴",
+          "natural": 1.85,
+          "meaning": 0.97,
+          "style": 0.7,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "command.done",
+      "en": "Completed",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "완료",
+          "natural": 1.92,
+          "meaning": 0.95,
+          "style": 0.68,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "command.failed",
+      "en": "Command failed",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "명령 실패",
+          "natural": 1.83,
+          "meaning": 0.97,
+          "style": 0.63,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "command.running",
+      "en": "Running…",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "실행 중…",
+          "natural": 1.94,
+          "meaning": 0.97,
+          "style": 0.61,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "command.title",
+      "en": "Command",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "명령",
+          "natural": 1.78,
+          "meaning": 0.97,
+          "style": 0.66,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "duration.compactMinutes",
+      "en": "{minutes}m{seconds}s",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{minutes}분{seconds}초",
+          "natural": 1.74,
+          "meaning": 0.94,
+          "style": 0.58,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "duration.compactSeconds",
+      "en": "{seconds}s",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{seconds}초",
+          "natural": 1.89,
+          "meaning": 0.9,
+          "style": 0.64,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "duration.hourUnit",
+      "en": "h ",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "시간 ",
+          "natural": 0.8,
+          "meaning": 0.75,
+          "style": 0.62,
+          "pass": false
+        },
+        {
+          "ko": " 시간 ",
+          "natural": 1.37,
+          "meaning": 0.74,
+          "style": 0.75,
+          "pass": false
+        },
+        {
+          "ko": "시간 ",
+          "natural": 1.16,
+          "meaning": 0.41,
+          "style": 0.79,
+          "pass": false
+        }
+      ],
+      "result": "approved",
+      "approval": {
+        "by": "user",
+        "date": "2026-10-17",
+        "note": "판정 미통과 문구를 사용자가 그대로 승인(단위·제품 이름)",
+        "ko": "h "
+      }
+    },
+    {
+      "key": "duration.minuteUnit",
+      "en": "m ",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "분 ",
+          "natural": 1.48,
+          "meaning": 0.89,
+          "style": 0.63,
+          "pass": false
+        },
+        {
+          "ko": " 분 ",
+          "natural": 1.78,
+          "meaning": 0.89,
+          "style": 0.71,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "duration.secondUnit",
+      "en": "s",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "초",
+          "natural": 1.82,
+          "meaning": 0.89,
+          "style": 0.69,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "fileOpen.title",
+      "en": "Couldn’t open file",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "파일 열기 실패",
+          "natural": 1.79,
+          "meaning": 0.95,
+          "style": 0.66,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "fileOpen.unknown",
+      "en": "Couldn’t open this file",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "이 파일을 열지 못했습니다",
+          "natural": 1.82,
+          "meaning": 0.96,
+          "style": 0.83,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "image.close",
+      "en": "Close image preview",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "이미지 미리보기 닫기",
+          "natural": 1.91,
+          "meaning": 0.98,
+          "style": 0.66,
+          "pass": true
+        },
+        {
+          "ko": "이미지 미리 보기 닫기",
+          "natural": 1.86,
+          "meaning": 0.97,
+          "style": 0.62,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "image.dialog",
+      "en": "Image preview",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "이미지 미리보기",
+          "natural": 1.94,
+          "meaning": 0.97,
+          "style": 0.76,
+          "pass": true
+        },
+        {
+          "ko": "이미지 미리 보기",
+          "natural": 1.94,
+          "meaning": 0.97,
+          "style": 0.76,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "image.failed",
+      "en": "Image preview unavailable",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "이미지 미리보기를 사용할 수 없습니다",
+          "natural": 1.84,
+          "meaning": 0.97,
+          "style": 0.69,
+          "pass": true
+        },
+        {
+          "ko": "이미지 미리 보기를 사용할 수 없습니다",
+          "natural": 1.81,
+          "meaning": 0.97,
+          "style": 0.7,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "image.loading",
+      "en": "Loading image…",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "이미지 불러오는 중…",
+          "natural": 1.87,
+          "meaning": 0.97,
+          "style": 0.53,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "image.open",
+      "en": "View full image",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "전체 이미지 보기",
+          "natural": 1.9,
+          "meaning": 0.98,
+          "style": 0.6,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "json.truncated",
+      "en": "… truncated, {total} characters total",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "… 일부 생략, 전체 {total}자",
+          "natural": 1.59,
+          "meaning": 0.93,
+          "style": 0.58,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.accountStopped",
+      "en": "Task stopped",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "작업 중지됨",
+          "natural": 1.73,
+          "meaning": 0.96,
+          "style": 0.61,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.branch",
+      "en": "Branch into a new conversation",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "새 대화로 분기",
+          "natural": 1.33,
+          "meaning": 0.96,
+          "style": 0.67,
+          "pass": false
+        },
+        {
+          "ko": "새 대화로 나누기",
+          "natural": 1.52,
+          "meaning": 0.95,
+          "style": 0.73,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "message.branchUnavailable",
+      "en": "Available only on the last message of a completed turn",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "완료된 턴의 마지막 메시지에서만 사용할 수 있습니다",
+          "natural": 1.55,
+          "meaning": 0.96,
+          "style": 0.51,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.compaction",
+      "en": "Context compacted",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "컨텍스트 압축됨",
+          "natural": 1.74,
+          "meaning": 0.96,
+          "style": 0.76,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.compaction.completed",
+      "en": "Compacted {items} history items (~{tokens} tokens)",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "기록 {items}개 압축 완료(약 {tokens}토큰)",
+          "natural": 1.68,
+          "meaning": 0.95,
+          "style": 0.56,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.compaction.expand",
+      "en": "View compaction summary",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "압축 요약 보기",
+          "natural": 1.81,
+          "meaning": 0.97,
+          "style": 0.7,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.compaction.running",
+      "en": "Compacting context…",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "컨텍스트 압축 중…",
+          "natural": 1.85,
+          "meaning": 0.96,
+          "style": 0.5,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.compaction.unavailable",
+      "en": "Compaction summary unavailable",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "압축 요약을 사용할 수 없습니다",
+          "natural": 1.75,
+          "meaning": 0.97,
+          "style": 0.66,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.context.catalog.more",
+      "en": "… {count} more",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "… 외 {count}개",
+          "natural": 1.73,
+          "meaning": 0.92,
+          "style": 0.66,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.context.catalog.replaced",
+      "en": "Replacement catalog",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "대체 카탈로그",
+          "natural": 1.32,
+          "meaning": 0.96,
+          "style": 0.67,
+          "pass": false
+        },
+        {
+          "ko": "교체용 카탈로그",
+          "natural": 1.11,
+          "meaning": 0.94,
+          "style": 0.73,
+          "pass": false
+        },
+        {
+          "ko": "새로 교체할 카탈로그",
+          "natural": 1.36,
+          "meaning": 0.94,
+          "style": 0.74,
+          "pass": false
+        },
+        {
+          "ko": "대체할 카탈로그",
+          "natural": 1.42,
+          "meaning": 0.96,
+          "style": 0.82,
+          "pass": false
+        }
+      ],
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "대체할 카탈로그",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
+    },
+    {
+      "key": "message.context.instructions.added",
+      "en": "added",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "추가됨",
+          "natural": 1.76,
+          "meaning": 0.85,
+          "style": 0.72,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.context.instructions.loaded",
+      "en": "loaded",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "불러옴",
+          "natural": 1.35,
+          "meaning": 0.85,
+          "style": 0.71,
+          "pass": false
+        },
+        {
+          "ko": "불러오기 완료",
+          "natural": 1.7,
+          "meaning": 0.84,
+          "style": 0.74,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "message.context.instructions.removed",
+      "en": "removed",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "제거됨",
+          "natural": 1.8,
+          "meaning": 0.96,
+          "style": 0.7,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.context.instructions.updated",
+      "en": "updated",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "업데이트됨",
+          "natural": 1.78,
+          "meaning": 0.97,
+          "style": 0.69,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.context.recall.counts",
+      "en": "{retained} kept · {omitted} omitted",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{retained}개 유지 · {omitted}개 생략",
+          "natural": 1.51,
+          "meaning": 0.95,
+          "style": 0.54,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.context.recall.truncated",
+      "en": "truncated",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "일부 생략",
+          "natural": 1.79,
+          "meaning": 0.78,
+          "style": 0.68,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.context.relay.from",
+      "en": "From session {session}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "세션 {session}에서 전달",
+          "natural": 1.55,
+          "meaning": 0.95,
+          "style": 0.54,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.context.snapshot.supersedes",
+      "en": "Supersedes earlier snapshots",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "이전 스냅샷 대체",
+          "natural": 1.57,
+          "meaning": 0.89,
+          "style": 0.63,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.contextInjection",
+      "en": "Context injection",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "컨텍스트 주입",
+          "natural": 1.69,
+          "meaning": 0.96,
+          "style": 0.65,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.contextRecall",
+      "en": "Session recall",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "세션 회상",
+          "natural": 1.57,
+          "meaning": 0.97,
+          "style": 0.66,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.extraBlock",
+      "en": "Extra content block",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "추가 콘텐츠 블록",
+          "natural": 1.56,
+          "meaning": 0.96,
+          "style": 0.63,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.failure.accountSignInRequired",
+      "en": "Sign in to DeepSeek and ensure the request destination supports account authentication.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "DeepSeek에 로그인하고 요청 대상이 계정 인증을 지원하는지 확인하십시오.",
+          "natural": 1.23,
+          "meaning": 0.96,
+          "style": 0.89,
+          "pass": false
+        },
+        {
+          "ko": "DeepSeek에 로그인하십시오. 요청을 보내는 대상에서 계정 인증을 지원하는지도 확인하십시오.",
+          "natural": 1.17,
+          "meaning": 0.94,
+          "style": 0.94,
+          "pass": false
+        },
+        {
+          "ko": "DeepSeek 로그인이 필요합니다. 요청 대상 서비스가 계정 인증을 지원하는지 확인하십시오.",
+          "natural": 1.17,
+          "meaning": 0.9,
+          "style": 0.76,
+          "pass": false
+        },
+        {
+          "ko": "DeepSeek에 로그인한 다음, 요청을 받을 서비스에서 계정 인증을 사용할 수 있는지 확인하십시오.",
+          "natural": 1.09,
+          "meaning": 0.89,
+          "style": 0.84,
+          "pass": false
+        }
+      ],
+      "result": "unresolved"
+    },
+    {
+      "key": "message.failure.accountSignedOut",
+      "en": "Stopped because you signed out of DeepSeek.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "DeepSeek에서 로그아웃하여 중지되었습니다.",
+          "natural": 1.26,
+          "meaning": 0.96,
+          "style": 0.48,
+          "pass": false
+        },
+        {
+          "ko": "DeepSeek에서 로그아웃했으므로 작업을 중지했습니다.",
+          "natural": 1.56,
+          "meaning": 0.93,
+          "style": 0.76,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "message.failure.auth",
+      "en": "API key is invalid",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "API 키가 유효하지 않습니다",
+          "natural": 1.88,
+          "meaning": 0.97,
+          "style": 0.68,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.failure.quota",
+      "en": "Request quota exhausted.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "요청 할당량을 모두 소진했습니다.",
+          "natural": 1.74,
+          "meaning": 0.95,
+          "style": 0.69,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.maxTokens",
+      "en": "Output token limit reached",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "출력 토큰 한도 도달",
+          "natural": 1.69,
+          "meaning": 0.9,
+          "style": 0.69,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.maxTokens.hint",
+      "en": "The reply was cut off; earlier output is preserved in the conversation. Send \"continue\" to let the model resume.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "응답이 중간에 끊겼습니다. 이전 출력은 대화에 보존되어 있습니다. 모델이 이어서 응답하도록 \"계속\"을 보내십시오.",
+          "natural": 1.53,
+          "meaning": 0.94,
+          "style": 0.66,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.referenceSummary",
+      "en": "Referenced session · {labels}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "참조한 세션 · {labels}",
+          "natural": 1.41,
+          "meaning": 0.84,
+          "style": 0.66,
+          "pass": false
+        },
+        {
+          "ko": "참조 세션 · {labels}",
+          "natural": 1.56,
+          "meaning": 0.89,
+          "style": 0.67,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "message.retry.active",
+      "en": "Retrying model request",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "모델 요청 재시도 중",
+          "natural": 1.74,
+          "meaning": 0.97,
+          "style": 0.67,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.retry.cancelled",
+      "en": "Model request retry cancelled",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "모델 요청 재시도 취소됨",
+          "natural": 1.73,
+          "meaning": 0.97,
+          "style": 0.62,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.retry.delay",
+      "en": "Retry delay: ",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "재시도 지연: ",
+          "natural": 1.62,
+          "meaning": 0.86,
+          "style": 0.65,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.retry.failure",
+      "en": "Failure reason: ",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "실패 원인: ",
+          "natural": 1.84,
+          "meaning": 0.94,
+          "style": 0.7,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.retry.scheduled",
+      "en": "Waiting to retry model request",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "모델 요청 재시도 대기 중",
+          "natural": 1.61,
+          "meaning": 0.98,
+          "style": 0.69,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.retry.started",
+      "en": "Retried model request",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "모델 요청 재시도함",
+          "natural": 1.5,
+          "meaning": 0.94,
+          "style": 0.51,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.retry.status",
+      "en": "{label} ({retry}/{maximum}) · {seconds}s",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{label} ({retry}/{maximum}) · {seconds}초",
+          "natural": 1.48,
+          "meaning": 0.91,
+          "style": 0.59,
+          "pass": false
+        },
+        {
+          "ko": "{label} ({retry}/{maximum}) · {seconds} 초",
+          "natural": 1.36,
+          "meaning": 0.89,
+          "style": 0.53,
+          "pass": false
+        },
+        {
+          "ko": "{label} · {retry}/{maximum} · {seconds}초",
+          "natural": 1.22,
+          "meaning": 0.87,
+          "style": 0.57,
+          "pass": false
+        },
+        {
+          "ko": "{label} ({retry} / {maximum}) · {seconds}초",
+          "natural": 1.4,
+          "meaning": 0.9,
+          "style": 0.59,
+          "pass": false
+        }
+      ],
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "{label} ({retry}/{maximum}) · {seconds}초",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
+    },
+    {
+      "key": "message.stepProcess.code",
+      "en": "Running code",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "코드 실행 중",
+          "natural": 1.89,
+          "meaning": 0.95,
+          "style": 0.59,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.stepProcess.commands",
+      "en": "Running commands",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "명령 실행 중",
+          "natural": 1.82,
+          "meaning": 0.96,
+          "style": 0.62,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.stepProcess.done.code",
+      "en": "Ran code",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "코드 실행 완료",
+          "natural": 1.74,
+          "meaning": 0.93,
+          "style": 0.6,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.stepProcess.done.commands",
+      "en": "Ran commands",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "명령 실행 완료",
+          "natural": 1.79,
+          "meaning": 0.94,
+          "style": 0.56,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.stepProcess.done.edit",
+      "en": "Edited files",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "파일 편집 완료",
+          "natural": 1.85,
+          "meaning": 0.95,
+          "style": 0.55,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.stepProcess.done.plan",
+      "en": "Updated the plan",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "계획 업데이트 완료",
+          "natural": 1.76,
+          "meaning": 0.95,
+          "style": 0.57,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.stepProcess.done.questions",
+      "en": "Asked questions",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "질문 완료",
+          "natural": 1.58,
+          "meaning": 0.91,
+          "style": 0.64,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.stepProcess.done.read",
+      "en": "Read files",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "파일 읽기 완료",
+          "natural": 1.81,
+          "meaning": 0.95,
+          "style": 0.64,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.stepProcess.done.readImage",
+      "en": "Read images",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "이미지 읽기 완료",
+          "natural": 1.68,
+          "meaning": 0.95,
+          "style": 0.64,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.stepProcess.done.search",
+      "en": "Searched code",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "코드 검색 완료",
+          "natural": 1.74,
+          "meaning": 0.94,
+          "style": 0.62,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.stepProcess.done.subagents",
+      "en": "Coordinated subagents",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "서브에이전트 조율 완료",
+          "natural": 1.51,
+          "meaning": 0.95,
+          "style": 0.62,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.stepProcess.done.thinking",
+      "en": "Analysis completed",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "분석 완료",
+          "natural": 1.8,
+          "meaning": 0.95,
+          "style": 0.62,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.stepProcess.done.tools",
+      "en": "Called tools",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "도구 호출 완료",
+          "natural": 1.66,
+          "meaning": 0.92,
+          "style": 0.63,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.stepProcess.done.webFetch",
+      "en": "Visited web pages",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "웹 페이지 방문 완료",
+          "natural": 1.62,
+          "meaning": 0.95,
+          "style": 0.62,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.stepProcess.done.webSearch",
+      "en": "Searched the web",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "웹 검색 완료",
+          "natural": 1.75,
+          "meaning": 0.92,
+          "style": 0.7,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.stepProcess.done.write",
+      "en": "Wrote files",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "파일 작성 완료",
+          "natural": 1.79,
+          "meaning": 0.95,
+          "style": 0.59,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.stepProcess.edit",
+      "en": "Editing files",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "파일 편집 중",
+          "natural": 1.93,
+          "meaning": 0.97,
+          "style": 0.63,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.stepProcess.joinTwo",
+      "en": "{first} and {second}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{first} 및 {second}",
+          "natural": 1.26,
+          "meaning": 0.93,
+          "style": 0.58,
+          "pass": false
+        },
+        {
+          "ko": "{first}, 그리고 {second}",
+          "natural": 1.49,
+          "meaning": 0.92,
+          "style": 0.61,
+          "pass": false
+        },
+        {
+          "ko": "{first} 그리고 {second}",
+          "natural": 1.3,
+          "meaning": 0.94,
+          "style": 0.58,
+          "pass": false
+        },
+        {
+          "ko": "{first}와 {second}",
+          "natural": 1.57,
+          "meaning": 0.95,
+          "style": 0.74,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "message.stepProcess.more",
+      "en": "{title}, etc.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{title} 등",
+          "natural": 0.88,
+          "meaning": 0.75,
+          "style": 0.72,
+          "pass": false
+        },
+        {
+          "ko": "{title}, 그 외 작업",
+          "natural": 1.28,
+          "meaning": 0.83,
+          "style": 0.72,
+          "pass": false
+        },
+        {
+          "ko": "{title}, 기타",
+          "natural": 1.33,
+          "meaning": 0.89,
+          "style": 0.72,
+          "pass": false
+        },
+        {
+          "ko": "{title} 외",
+          "natural": 1.57,
+          "meaning": 0.81,
+          "style": 0.71,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "message.stepProcess.plan",
+      "en": "Updating the plan",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "계획 업데이트 중",
+          "natural": 1.88,
+          "meaning": 0.94,
+          "style": 0.57,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.stepProcess.prepare.code",
+      "en": "Preparing to run code",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "코드 실행 준비 중",
+          "natural": 1.83,
+          "meaning": 0.96,
+          "style": 0.52,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.stepProcess.prepare.commands",
+      "en": "Preparing to run commands",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "명령 실행 준비 중",
+          "natural": 1.74,
+          "meaning": 0.97,
+          "style": 0.49,
+          "pass": false
+        },
+        {
+          "ko": "명령 실행을 준비하고 있습니다",
+          "natural": 1.74,
+          "meaning": 0.96,
+          "style": 0.76,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "message.stepProcess.prepare.edit",
+      "en": "Preparing to edit files",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "파일 편집 준비 중",
+          "natural": 1.8,
+          "meaning": 0.96,
+          "style": 0.57,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.stepProcess.prepare.plan",
+      "en": "Preparing to update the plan",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "계획 업데이트 준비 중",
+          "natural": 1.65,
+          "meaning": 0.97,
+          "style": 0.48,
+          "pass": false
+        },
+        {
+          "ko": "계획 업데이트를 준비하고 있습니다",
+          "natural": 1.68,
+          "meaning": 0.97,
+          "style": 0.82,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "message.stepProcess.prepare.questions",
+      "en": "Preparing questions",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "질문 준비 중",
+          "natural": 1.66,
+          "meaning": 0.96,
+          "style": 0.6,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.stepProcess.prepare.read",
+      "en": "Preparing to read files",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "파일 읽기 준비 중",
+          "natural": 1.82,
+          "meaning": 0.96,
+          "style": 0.52,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.stepProcess.prepare.readImage",
+      "en": "Preparing to read images",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "이미지 읽기 준비 중",
+          "natural": 1.75,
+          "meaning": 0.97,
+          "style": 0.62,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.stepProcess.prepare.search",
+      "en": "Preparing to search code",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "코드 검색 준비 중",
+          "natural": 1.76,
+          "meaning": 0.96,
+          "style": 0.64,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.stepProcess.prepare.subagents",
+      "en": "Preparing to coordinate subagents",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "서브에이전트 조율 준비 중",
+          "natural": 1.48,
+          "meaning": 0.95,
+          "style": 0.56,
+          "pass": false
+        },
+        {
+          "ko": "서브에이전트 조율을 준비하고 있습니다",
+          "natural": 1.43,
+          "meaning": 0.96,
+          "style": 0.69,
+          "pass": false
+        },
+        {
+          "ko": "서브에이전트의 작업을 조율할 준비를 하고 있습니다",
+          "natural": 1.38,
+          "meaning": 0.96,
+          "style": 0.71,
+          "pass": false
+        },
+        {
+          "ko": "서브에이전트 조율 준비 단계",
+          "natural": 1.38,
+          "meaning": 0.95,
+          "style": 0.81,
+          "pass": false
+        }
+      ],
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "서브에이전트 조율 준비 단계",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
+    },
+    {
+      "key": "message.stepProcess.prepare.tools",
+      "en": "Preparing tool calls",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "도구 호출 준비 중",
+          "natural": 1.69,
+          "meaning": 0.96,
+          "style": 0.6,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.stepProcess.prepare.webFetch",
+      "en": "Preparing to visit web pages",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "웹 페이지 방문 준비 중",
+          "natural": 1.64,
+          "meaning": 0.96,
+          "style": 0.57,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.stepProcess.prepare.webSearch",
+      "en": "Preparing to search the web",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "웹 검색 준비 중",
+          "natural": 1.8,
+          "meaning": 0.96,
+          "style": 0.6,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.stepProcess.prepare.write",
+      "en": "Preparing to write files",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "파일 작성 준비 중",
+          "natural": 1.79,
+          "meaning": 0.96,
+          "style": 0.55,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.stepProcess.questions",
+      "en": "Waiting for your action",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "사용자 조치 대기 중",
+          "natural": 1.72,
+          "meaning": 0.93,
+          "style": 0.59,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.stepProcess.read",
+      "en": "Reading files",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "파일 읽는 중",
+          "natural": 1.81,
+          "meaning": 0.96,
+          "style": 0.53,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.stepProcess.readImage",
+      "en": "Reading images",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "이미지 읽는 중",
+          "natural": 1.79,
+          "meaning": 0.97,
+          "style": 0.54,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.stepProcess.search",
+      "en": "Searching code",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "코드 검색 중",
+          "natural": 1.84,
+          "meaning": 0.97,
+          "style": 0.51,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.stepProcess.subagents",
+      "en": "Coordinating subagents",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "서브에이전트 조율 중",
+          "natural": 1.6,
+          "meaning": 0.97,
+          "style": 0.52,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.stepProcess.thinking",
+      "en": "Analyzing the request",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "요청 분석 중",
+          "natural": 1.82,
+          "meaning": 0.97,
+          "style": 0.69,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.stepProcess.tools",
+      "en": "Calling tools",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "도구 호출 중",
+          "natural": 1.85,
+          "meaning": 0.96,
+          "style": 0.52,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.stepProcess.webFetch",
+      "en": "Visiting web pages",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "웹 페이지 방문 중",
+          "natural": 1.8,
+          "meaning": 0.97,
+          "style": 0.54,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.stepProcess.webSearch",
+      "en": "Searching the web",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "웹 검색 중",
+          "natural": 1.89,
+          "meaning": 0.96,
+          "style": 0.62,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.stepProcess.write",
+      "en": "Writing files",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "파일 작성 중",
+          "natural": 1.88,
+          "meaning": 0.96,
+          "style": 0.55,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.stopped",
+      "en": "Stopped",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "중지됨",
+          "natural": 1.81,
+          "meaning": 0.96,
+          "style": 0.62,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.systemPrompt",
+      "en": "System prompt",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "시스템 프롬프트",
+          "natural": 1.73,
+          "meaning": 0.97,
+          "style": 0.72,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.systemPromptUpdate",
+      "en": "System prompt update",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "시스템 프롬프트 업데이트",
+          "natural": 1.68,
+          "meaning": 0.96,
+          "style": 0.61,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.think",
+      "en": "Think",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "생각",
+          "natural": 1.47,
+          "meaning": 0.94,
+          "style": 0.73,
+          "pass": false
+        },
+        {
+          "ko": "생각하기",
+          "natural": 1.53,
+          "meaning": 0.95,
+          "style": 0.8,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "message.tokensPerSecond",
+      "en": "{tps} tok/s",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{tps}토큰/초",
+          "natural": 1.48,
+          "meaning": 0.9,
+          "style": 0.66,
+          "pass": false
+        },
+        {
+          "ko": "초당 {tps}토큰",
+          "natural": 1.53,
+          "meaning": 0.93,
+          "style": 0.68,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "message.toolAdded",
+      "en": "Tool added: {name}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "도구 추가됨: {name}",
+          "natural": 1.81,
+          "meaning": 0.97,
+          "style": 0.48,
+          "pass": false
+        },
+        {
+          "ko": "추가한 도구: {name}",
+          "natural": 1.74,
+          "meaning": 0.98,
+          "style": 0.59,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "message.toolRemoved",
+      "en": "Tool removed: {name}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "도구 제거됨: {name}",
+          "natural": 1.85,
+          "meaning": 0.97,
+          "style": 0.41,
+          "pass": false
+        },
+        {
+          "ko": "제거한 도구: {name}",
+          "natural": 1.77,
+          "meaning": 0.98,
+          "style": 0.55,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "message.toolsAdded",
+      "en": "Added: {names}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "추가됨: {names}",
+          "natural": 1.36,
+          "meaning": 0.9,
+          "style": 0.55,
+          "pass": false
+        },
+        {
+          "ko": "추가 항목: {names}",
+          "natural": 1.43,
+          "meaning": 0.89,
+          "style": 0.65,
+          "pass": false
+        },
+        {
+          "ko": "추가: {names}",
+          "natural": 1.61,
+          "meaning": 0.92,
+          "style": 0.78,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "message.toolsAddedCount",
+      "en": "{count} added",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{count}개 추가됨",
+          "natural": 1.74,
+          "meaning": 0.95,
+          "style": 0.58,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.toolsChanged",
+      "en": "{added} added, {removed} removed",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{added}개 추가됨, {removed}개 제거됨",
+          "natural": 1.74,
+          "meaning": 0.97,
+          "style": 0.39,
+          "pass": false
+        },
+        {
+          "ko": "추가 {added}개, 제거 {removed}개",
+          "natural": 1.67,
+          "meaning": 0.97,
+          "style": 0.56,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "message.toolsRemoved",
+      "en": "Removed: {names}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "제거됨: {names}",
+          "natural": 1.65,
+          "meaning": 0.96,
+          "style": 0.52,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.toolsRemovedCount",
+      "en": "{count} removed",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{count}개 제거됨",
+          "natural": 1.76,
+          "meaning": 0.97,
+          "style": 0.52,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.toolsUpdated",
+      "en": "Tools updated",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "도구 업데이트됨",
+          "natural": 1.63,
+          "meaning": 0.9,
+          "style": 0.6,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.trigger.agent",
+      "en": "Task message received",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "작업 메시지 수신",
+          "natural": 1.61,
+          "meaning": 0.96,
+          "style": 0.7,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.trigger.explanation",
+      "en": "This notification triggered this response.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "이 알림으로 인해 이 응답이 시작되었습니다.",
+          "natural": 1.32,
+          "meaning": 0.97,
+          "style": 0.52,
+          "pass": false
+        },
+        {
+          "ko": "이 알림을 받아 응답을 시작했습니다.",
+          "natural": 1.23,
+          "meaning": 0.92,
+          "style": 0.86,
+          "pass": false
+        },
+        {
+          "ko": "이 응답은 해당 알림에 의해 시작되었습니다.",
+          "natural": 1.51,
+          "meaning": 0.96,
+          "style": 0.46,
+          "pass": false
+        },
+        {
+          "ko": "이 알림이 응답을 시작하는 계기가 되었습니다.",
+          "natural": 1.36,
+          "meaning": 0.96,
+          "style": 0.81,
+          "pass": false
+        }
+      ],
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "이 알림이 응답을 시작하는 계기가 되었습니다.",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
+    },
+    {
+      "key": "message.trigger.github",
+      "en": "GitHub event received",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "GitHub 이벤트 수신",
+          "natural": 1.65,
+          "meaning": 0.96,
+          "style": 0.7,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.trigger.goal",
+      "en": "Continuing goal",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "목표 이어서 진행 중",
+          "natural": 1.23,
+          "meaning": 0.94,
+          "style": 0.51,
+          "pass": false
+        },
+        {
+          "ko": "목표 계속 수행",
+          "natural": 1.49,
+          "meaning": 0.96,
+          "style": 0.77,
+          "pass": false
+        },
+        {
+          "ko": "목표를 계속 수행하고 있습니다",
+          "natural": 1.28,
+          "meaning": 0.9,
+          "style": 0.55,
+          "pass": false
+        },
+        {
+          "ko": "목표 달성을 위해 계속 진행합니다",
+          "natural": 1.19,
+          "meaning": 0.7,
+          "style": 0.49,
+          "pass": false
+        }
+      ],
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "목표 계속 수행",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
+    },
+    {
+      "key": "message.trigger.job",
+      "en": "Background task updated",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "백그라운드 작업 업데이트됨",
+          "natural": 1.69,
+          "meaning": 0.95,
+          "style": 0.54,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.trigger.plugin",
+      "en": "Plugin status updated",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "플러그인 상태 업데이트됨",
+          "natural": 1.74,
+          "meaning": 0.97,
+          "style": 0.53,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.trigger.request",
+      "en": "Execution requested",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "실행 요청됨",
+          "natural": 1.45,
+          "meaning": 0.96,
+          "style": 0.61,
+          "pass": false
+        },
+        {
+          "ko": "실행 요청",
+          "natural": 1.5,
+          "meaning": 0.95,
+          "style": 0.75,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "message.trigger.schedule",
+      "en": "Automation task",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "자동화 작업",
+          "natural": 1.68,
+          "meaning": 0.97,
+          "style": 0.66,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.trigger.subagent",
+      "en": "Subtask status updated",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "하위 작업 상태 업데이트됨",
+          "natural": 1.74,
+          "meaning": 0.96,
+          "style": 0.52,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.trigger.team",
+      "en": "Team message received",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "팀 메시지 수신",
+          "natural": 1.71,
+          "meaning": 0.97,
+          "style": 0.5,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.trigger.webhook",
+      "en": "External event received",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "외부 이벤트 수신",
+          "natural": 1.67,
+          "meaning": 0.98,
+          "style": 0.57,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.turnError",
+      "en": "This turn failed",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "이 턴이 실패했습니다",
+          "natural": 1.48,
+          "meaning": 0.96,
+          "style": 0.72,
+          "pass": false
+        },
+        {
+          "ko": "이번 턴을 완료하지 못했습니다",
+          "natural": 1.29,
+          "meaning": 0.89,
+          "style": 0.58,
+          "pass": false
+        },
+        {
+          "ko": "이번 턴의 실행이 실패했습니다",
+          "natural": 1.6,
+          "meaning": 0.93,
+          "style": 0.53,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "message.turnProcess.failed",
+      "en": "Failed",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "실패",
+          "natural": 1.81,
+          "meaning": 0.96,
+          "style": 0.69,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.turnProcess.messages.one",
+      "en": "{count} message",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "메시지 {count}개",
+          "natural": 1.42,
+          "meaning": 0.61,
+          "style": 0.62,
+          "pass": false
+        },
+        {
+          "ko": "{count}개의 메시지",
+          "natural": 1.4,
+          "meaning": 0.42,
+          "style": 0.6,
+          "pass": false
+        },
+        {
+          "ko": "메시지 수: {count}",
+          "natural": 1.67,
+          "meaning": 0.64,
+          "style": 0.73,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "message.turnProcess.messages.other",
+      "en": "{count} messages",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "메시지 {count}개",
+          "natural": 1.49,
+          "meaning": 0.87,
+          "style": 0.54,
+          "pass": false
+        },
+        {
+          "ko": "{count}개의 메시지",
+          "natural": 1.55,
+          "meaning": 0.83,
+          "style": 0.55,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "message.turnProcess.subagents.one",
+      "en": "{count} subagent",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "서브에이전트 {count}개",
+          "natural": 1.42,
+          "meaning": 0.8,
+          "style": 0.58,
+          "pass": false
+        },
+        {
+          "ko": "{count}개의 서브에이전트",
+          "natural": 1.59,
+          "meaning": 0.77,
+          "style": 0.61,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "message.turnProcess.subagents.other",
+      "en": "{count} subagents",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "서브에이전트 {count}개",
+          "natural": 1.45,
+          "meaning": 0.87,
+          "style": 0.5,
+          "pass": false
+        },
+        {
+          "ko": "{count}개의 서브에이전트",
+          "natural": 1.63,
+          "meaning": 0.92,
+          "style": 0.48,
+          "pass": false
+        },
+        {
+          "ko": "서브에이전트 수: {count}",
+          "natural": 1.75,
+          "meaning": 0.89,
+          "style": 0.66,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "message.turnProcess.thoughtForAWhile",
+      "en": "Thought for a while",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "잠시 생각함",
+          "natural": 1.37,
+          "meaning": 0.92,
+          "style": 0.63,
+          "pass": false
+        },
+        {
+          "ko": "잠시 생각했습니다",
+          "natural": 1.45,
+          "meaning": 0.91,
+          "style": 0.45,
+          "pass": false
+        },
+        {
+          "ko": "잠시 동안 생각했습니다.",
+          "natural": 1.27,
+          "meaning": 0.9,
+          "style": 0.34,
+          "pass": false
+        },
+        {
+          "ko": "잠시 생각한 뒤 완료했습니다",
+          "natural": 1.16,
+          "meaning": 0.76,
+          "style": 0.56,
+          "pass": false
+        }
+      ],
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "잠시 생각함",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
+    },
+    {
+      "key": "message.turnProcess.took",
+      "en": "Completed in ",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "완료 · 소요 시간 ",
+          "natural": 0.86,
+          "meaning": 0.69,
+          "style": 0.61,
+          "pass": false
+        },
+        {
+          "ko": "완료까지 걸린 시간: ",
+          "natural": 1.42,
+          "meaning": 0.78,
+          "style": 0.57,
+          "pass": false
+        },
+        {
+          "ko": "완료 소요 시간: ",
+          "natural": 1.49,
+          "meaning": 0.74,
+          "style": 0.71,
+          "pass": false
+        },
+        {
+          "ko": "작업 완료까지: ",
+          "natural": 1.03,
+          "meaning": 0.67,
+          "style": 0.73,
+          "pass": false
+        }
+      ],
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "완료, 소요 시간 ",
+        "note": "조각·화면 역할을 넣어 판정 통과",
+        "judged": {
+          "scores": "1.8/0.97/0.66",
+          "joined": "완료, 소요 시간 2분 13초 ↔ Completed in 2m 13s"
+        }
+      }
+    },
+    {
+      "key": "message.turnProcess.toolCalls.one",
+      "en": "{count} tool call",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "도구 호출 {count}회",
+          "natural": 1.6,
+          "meaning": 0.85,
+          "style": 0.58,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.turnProcess.toolCalls.other",
+      "en": "{count} tool calls",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "도구 호출 {count}회",
+          "natural": 1.65,
+          "meaning": 0.87,
+          "style": 0.57,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.turnProcess.worked",
+      "en": "Completed",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "완료",
+          "natural": 1.91,
+          "meaning": 0.97,
+          "style": 0.67,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.turnUsage.cacheHit",
+      "en": "Cache hit",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "캐시 적중",
+          "natural": 1.84,
+          "meaning": 0.97,
+          "style": 0.74,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.turnUsage.cacheRead",
+      "en": "Cached input",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "캐시된 입력",
+          "natural": 1.59,
+          "meaning": 0.96,
+          "style": 0.64,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.turnUsage.cacheWrite",
+      "en": "Cache write",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "캐시 쓰기",
+          "natural": 1.76,
+          "meaning": 0.97,
+          "style": 0.65,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.turnUsage.consumed",
+      "en": "Usage {total}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "사용량 {total}",
+          "natural": 1.62,
+          "meaning": 0.92,
+          "style": 0.61,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.turnUsage.count",
+      "en": "{count} tok",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{count}토큰",
+          "natural": 1.57,
+          "meaning": 0.85,
+          "style": 0.73,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.turnUsage.input",
+      "en": "Uncached input",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "캐시되지 않은 입력",
+          "natural": 1.65,
+          "meaning": 0.97,
+          "style": 0.67,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.turnUsage.model",
+      "en": "Provider / model",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "프로바이더 / 모델",
+          "natural": 1.76,
+          "meaning": 0.97,
+          "style": 0.65,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.turnUsage.output",
+      "en": "Output",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "출력",
+          "natural": 1.96,
+          "meaning": 0.97,
+          "style": 0.66,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.turnUsage.reasoning",
+      "en": " ({tokens} reasoning)",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": " (추론 {tokens})",
+          "natural": 1.33,
+          "meaning": 0.93,
+          "style": 0.66,
+          "pass": false
+        },
+        {
+          "ko": " (추론에 {tokens} 사용)",
+          "natural": 1.32,
+          "meaning": 0.85,
+          "style": 0.57,
+          "pass": false
+        },
+        {
+          "ko": " (추론 토큰: {tokens})",
+          "natural": 1.26,
+          "meaning": 0.77,
+          "style": 0.72,
+          "pass": false
+        },
+        {
+          "ko": " (추론: {tokens})",
+          "natural": 1.16,
+          "meaning": 0.84,
+          "style": 0.75,
+          "pass": false
+        }
+      ],
+      "result": "unresolved"
+    },
+    {
+      "key": "message.turnUsage.title",
+      "en": "Turn usage",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "턴 사용량",
+          "natural": 1.69,
+          "meaning": 0.94,
+          "style": 0.62,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.unknownBlock",
+      "en": "Unknown content block",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "알 수 없는 콘텐츠 블록",
+          "natural": 1.71,
+          "meaning": 0.97,
+          "style": 0.63,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "message.unknownSurface",
+      "en": "Unknown surface event: {type}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "알 수 없는 화면 이벤트: {type}",
+          "natural": 1.36,
+          "meaning": 0.93,
+          "style": 0.53,
+          "pass": false
+        },
+        {
+          "ko": "알 수 없는 화면 이벤트 유형: {type}",
+          "natural": 1.1,
+          "meaning": 0.94,
+          "style": 0.57,
+          "pass": false
+        },
+        {
+          "ko": "알 수 없는 UI 이벤트: {type}",
+          "natural": 1.21,
+          "meaning": 0.91,
+          "style": 0.7,
+          "pass": false
+        },
+        {
+          "ko": "화면에 알 수 없는 이벤트가 있습니다: {type}",
+          "natural": 1.23,
+          "meaning": 0.93,
+          "style": 0.46,
+          "pass": false
+        }
+      ],
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "알 수 없는 화면 이벤트: {type}",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
+    },
+    {
+      "key": "row.failed",
+      "en": "Failed",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "실패",
+          "natural": 1.95,
+          "meaning": 0.96,
+          "style": 0.72,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "row.running",
+      "en": "Running",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "실행 중",
+          "natural": 1.92,
+          "meaning": 0.97,
+          "style": 0.68,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "settings.links.description",
+      "en": "Choose where to open web links",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "웹 링크를 열 위치를 선택하십시오",
+          "natural": 1.31,
+          "meaning": 0.96,
+          "style": 0.85,
+          "pass": false
+        },
+        {
+          "ko": "웹 링크를 어디에서 열지 선택하십시오",
+          "natural": 1.11,
+          "meaning": 0.94,
+          "style": 0.69,
+          "pass": false
+        },
+        {
+          "ko": "웹 링크를 여는 위치를 설정합니다",
+          "natural": 1.53,
+          "meaning": 0.95,
+          "style": 0.75,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "settings.links.newTab",
+      "en": "Default Browser",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "기본 브라우저",
+          "natural": 1.8,
+          "meaning": 0.96,
+          "style": 0.7,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "settings.links.sidebar",
+      "en": "In-App Sidebar",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "앱 내 사이드바",
+          "natural": 1.73,
+          "meaning": 0.96,
+          "style": 0.76,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "settings.links.title",
+      "en": "Open chat links in",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "대화 링크 열기 위치",
+          "natural": 1.55,
+          "meaning": 0.94,
+          "style": 0.62,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "settings.performance.compact",
+      "en": "Compact",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "간략",
+          "natural": 1.69,
+          "meaning": 0.93,
+          "style": 0.73,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "settings.performance.description",
+      "en": "Choose how much performance and usage information to show",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "성능 및 사용량 정보를 얼마나 자세히 표시할지 선택하십시오",
+          "natural": 1.6,
+          "meaning": 0.96,
+          "style": 0.82,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "settings.performance.detailed",
+      "en": "Detailed",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "상세",
+          "natural": 1.87,
+          "meaning": 0.93,
+          "style": 0.64,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "settings.performance.title",
+      "en": "Performance & usage",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "성능 및 사용량",
+          "natural": 1.74,
+          "meaning": 0.92,
+          "style": 0.55,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "settings.transcript.compact",
+      "en": "Compact",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "간략",
+          "natural": 1.53,
+          "meaning": 0.8,
+          "style": 0.69,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "settings.transcript.description",
+      "en": "Choose how much detail to show for tool calls",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "도구 호출 정보를 얼마나 자세히 표시할지 선택하십시오",
+          "natural": 1.77,
+          "meaning": 0.97,
+          "style": 0.92,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "settings.transcript.detailed",
+      "en": "Detailed",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "상세",
+          "natural": 1.91,
+          "meaning": 0.95,
+          "style": 0.51,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "settings.transcript.standard",
+      "en": "Standard",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "표준",
+          "natural": 1.71,
+          "meaning": 0.96,
+          "style": 0.57,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "settings.transcript.title",
+      "en": "Work details",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "작업 세부 정보",
+          "natural": 1.82,
+          "meaning": 0.97,
+          "style": 0.53,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "settings.transcript.verbose",
+      "en": "Verbose",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "매우 상세",
+          "natural": 1.63,
+          "meaning": 0.95,
+          "style": 0.37,
+          "pass": false
+        },
+        {
+          "ko": "전체 상세 정보",
+          "natural": 1.46,
+          "meaning": 0.83,
+          "style": 0.69,
+          "pass": false
+        },
+        {
+          "ko": "세부 정보 전체 표시",
+          "natural": 1.61,
+          "meaning": 0.74,
+          "style": 0.61,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "stats.cacheHit",
+      "en": "Cache hit {percent}%",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "캐시 적중 {percent}%",
+          "natural": 1.81,
+          "meaning": 0.93,
+          "style": 0.56,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "stats.counts",
+      "en": "{turns} turns {steps} steps",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{turns}턴 {steps}단계",
+          "natural": 1.64,
+          "meaning": 0.92,
+          "style": 0.58,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "stats.dialog.llmTime",
+      "en": "LLM time",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "LLM 소요 시간",
+          "natural": 1.65,
+          "meaning": 0.96,
+          "style": 0.59,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "stats.dialog.speed",
+      "en": "Tokens per second (TPS)",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "초당 토큰 수(TPS)",
+          "natural": 1.8,
+          "meaning": 0.95,
+          "style": 0.6,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "stats.dialog.title",
+      "en": "Session statistics",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "세션 통계",
+          "natural": 1.9,
+          "meaning": 0.97,
+          "style": 0.57,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "stats.dialog.toolTime",
+      "en": "Tool time",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "도구 소요 시간",
+          "natural": 1.8,
+          "meaning": 0.96,
+          "style": 0.59,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "stats.dialog.ttft",
+      "en": "Avg time to first token (TTFT)",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "첫 토큰까지 평균 소요 시간(TTFT)",
+          "natural": 1.64,
+          "meaning": 0.92,
+          "style": 0.62,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "stats.dialog.usageTitle",
+      "en": "Token usage",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "토큰 사용량",
+          "natural": 1.9,
+          "meaning": 0.96,
+          "style": 0.65,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "settings.collapse.completion",
+      "en": "On completion",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "완료 시",
+          "natural": 1.6,
+          "meaning": 0.93,
+          "style": 0.6,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "settings.collapse.description",
+      "en": "Choose when to automatically collapse work details",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "작업 세부 정보를 자동으로 접을 시점을 선택하십시오",
+          "natural": 1.59,
+          "meaning": 0.97,
+          "style": 0.83,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "settings.collapse.nextInput",
+      "en": "On next message",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "다음 메시지 시",
+          "natural": 1.72,
+          "meaning": 0.96,
+          "style": 0.68,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "settings.collapse.title",
+      "en": "When to Collapse Work Details",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "작업 세부 정보 접기 시점",
+          "natural": 1.63,
+          "meaning": 0.95,
+          "style": 0.64,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    }
+  ]
+}

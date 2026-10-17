@@ -1,0 +1,45 @@
+{
+  "namespace": "settings.sessionLog",
+  "date": "2026-10-17",
+  "engine": "jev",
+  "thresholds": { "natural": 1.5, "meaning": 0.6, "style": 0.5 },
+  "rows": [
+    {
+      "key": "description",
+      "en": "Help improve DeepSeek models and products.",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "DeepSeek 모델과 제품을 개선하는 데 도움이 됩니다.", "natural": 1.57, "meaning": 0.96, "style": 0.82, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "failed",
+      "en": "Could not save preference",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "설정을 저장하지 못했습니다.", "natural": 1.86, "meaning": 0.95, "style": 0.85, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "saved",
+      "en": "Preference saved",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "설정을 저장했습니다.", "natural": 1.84, "meaning": 0.97, "style": 0.9, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "title",
+      "en": "Upload Session Log when using the official model API",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "공식 모델 API 사용 시 세션 로그 업로드", "natural": 1.46, "meaning": 0.93, "style": 0.71, "pass": false },
+        { "ko": "공식 모델 API 사용 시 세션 로그를 업로드합니다", "natural": 1.58, "meaning": 0.96, "style": 0.94, "pass": true }
+      ],
+      "result": "fixed"
+    }
+  ]
+}

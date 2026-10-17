@@ -1,0 +1,35 @@
+{
+  "namespace": "sidebarCodePreview",
+  "date": "2026-10-17",
+  "engine": "jev",
+  "thresholds": { "natural": 1.5, "meaning": 0.6, "style": 0.5 },
+  "rows": [
+    {
+      "key": "copied",
+      "en": "Copied",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "복사됨", "natural": 1.81, "meaning": 0.95, "style": 0.56, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "copy",
+      "en": "Copy",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "복사", "natural": 1.95, "meaning": 0.95, "style": 0.67, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "title",
+      "en": "Code",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "코드", "natural": 1.92, "meaning": 0.96, "style": 0.7, "pass": true }
+      ],
+      "result": "pass"
+    }
+  ]
+}

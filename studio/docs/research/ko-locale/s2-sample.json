@@ -1,0 +1,22 @@
+[
+  ["conversation","queue.save","Save queued message","대기 메시지 저장"],
+  ["conversation","detail.trace.ancestors","Ancestor sessions","상위 세션"],
+  ["conversation","placeholder.steerQueue","Cmd/Ctrl+Enter steers all queued messages","Cmd/Ctrl+Enter를 누르면 대기 중인 메시지를 모두 지금 보냅니다"],
+  ["chat","stats.dialog.title","Session statistics","세션 통계"],
+  ["chat","message.toolsRemovedCount","{count} removed","{count}개 제거됨"],
+  ["chat","message.stepProcess.prepare.webSearch","Preparing to search the web","웹 검색 준비 중"],
+  ["common","markdown.truncatedCharacters","… truncated at {total} characters","… {total}자에서 잘림"],
+  ["workspace","toast.stoppedAndArchived","Session stopped and archived. You can ","세션을 중지하고 보관했습니다. "],
+  ["workspace","archive.confirm.jobs.one","{n} background job: {names}","백그라운드 작업 {n}개: {names}"],
+  ["trajectory","usage.sessionCumulative","Session cumulative","세션 누적"],
+  ["pluginManager","installBackgroundUnconfirmed","Installation status is unconfirmed. View the installation for details.","설치 상태를 확인하지 못했습니다. 자세한 내용은 설치 화면에서 확인하세요."],
+  ["pluginManager","installBackgroundApplying","Installation is being applied and cannot be cancelled. View installation progress.","설치를 적용하는 중이라 취소할 수 없습니다. 설치 진행 상황을 확인하세요."],
+  ["settings.models","welcomeTitle","Preview Notice","미리 보기 안내"],
+  ["settings.models","addCustom","Custom model API","사용자 지정 모델 API"],
+  ["subagent","duration.exactTitle","Total active duration: {duration}","총 활성 시간: {duration}"],
+  ["job","count.idle.one","{count} background job","백그라운드 작업 {count}개"],
+  ["schedule.manager","cron.time.everyNHours","Every {count} hours","{count}시간마다"],
+  ["shortcuts","review","I have reviewed the latest configuration","최신 설정을 확인했습니다"],
+  ["permission.access","preset.workspaceWrite","Workspace Write","워크스페이스 쓰기"],
+  ["goal","phase.active.disarmed","Inactive Goal","비활성 목표"]
+]

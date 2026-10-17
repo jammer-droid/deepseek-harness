@@ -1,0 +1,2071 @@
+{
+  "namespace": "workspace",
+  "date": "2026-10-17",
+  "engine": "jev",
+  "thresholds": {
+    "natural": 1.5,
+    "meaning": 0.6,
+    "style": 0.5
+  },
+  "rows": [
+    {
+      "key": "actions.archive",
+      "en": "Archive",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "보관",
+          "natural": 1.78,
+          "meaning": 0.91,
+          "style": 0.68,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "actions.newSession",
+      "en": "New session",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "새 세션",
+          "natural": 1.8,
+          "meaning": 0.98,
+          "style": 0.69,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "actions.newSession.aria",
+      "en": "New session in {name}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{name}에서 새 세션 시작",
+          "natural": 1.59,
+          "meaning": 0.97,
+          "style": 0.59,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "actions.pin",
+      "en": "Pin",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "고정",
+          "natural": 1.87,
+          "meaning": 0.97,
+          "style": 0.66,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "actions.session.aria",
+      "en": "Session actions for {name}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{name} 세션 작업",
+          "natural": 1.51,
+          "meaning": 0.97,
+          "style": 0.62,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "actions.unarchive",
+      "en": "Unarchive",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "보관 해제",
+          "natural": 1.78,
+          "meaning": 0.97,
+          "style": 0.65,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "actions.unpin",
+      "en": "Unpin",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "고정 해제",
+          "natural": 1.85,
+          "meaning": 0.97,
+          "style": 0.67,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "actions.workspace.aria",
+      "en": "Workspace actions for {name}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{name} 워크스페이스 작업",
+          "natural": 1.45,
+          "meaning": 0.98,
+          "style": 0.59,
+          "pass": false
+        },
+        {
+          "ko": "워크스페이스 “{name}”의 작업 메뉴",
+          "natural": 1.42,
+          "meaning": 0.81,
+          "style": 0.72,
+          "pass": false
+        },
+        {
+          "ko": "“{name}” 워크스페이스의 사용 가능한 작업",
+          "natural": 1.49,
+          "meaning": 0.92,
+          "style": 0.76,
+          "pass": false
+        },
+        {
+          "ko": "워크스페이스 작업: {name}",
+          "natural": 1.28,
+          "meaning": 0.9,
+          "style": 0.77,
+          "pass": false
+        }
+      ],
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "“{name}” 워크스페이스의 사용 가능한 작업",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
+    },
+    {
+      "key": "archive.confirm.action",
+      "en": "Stop and archive",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "중지 후 보관",
+          "natural": 1.7,
+          "meaning": 0.96,
+          "style": 0.65,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "archive.confirm.activity",
+      "en": "Work that will be stopped",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "중지할 작업",
+          "natural": 1.23,
+          "meaning": 0.92,
+          "style": 0.63,
+          "pass": false
+        },
+        {
+          "ko": "중지 예정 작업",
+          "natural": 1.22,
+          "meaning": 0.9,
+          "style": 0.7,
+          "pass": false
+        },
+        {
+          "ko": "중지 대상 작업",
+          "natural": 1.42,
+          "meaning": 0.94,
+          "style": 0.79,
+          "pass": false
+        },
+        {
+          "ko": "중지되는 작업 목록",
+          "natural": 1.05,
+          "meaning": 0.91,
+          "style": 0.73,
+          "pass": false
+        }
+      ],
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "중지 대상 작업",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
+    },
+    {
+      "key": "archive.confirm.desc",
+      "en": "“{title}” still has work in progress. Archiving stops it first; you can restore the session later from the “All conversations (show archived)” filter in the sidebar, and the stopped work will not resume on its own.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "“{title}”에 아직 진행 중인 작업이 있습니다. 보관하면 먼저 작업이 중지됩니다. 나중에 사이드바의 “모든 대화(보관된 대화 포함)” 필터에서 세션을 복원할 수 있으며, 중지된 작업은 자동으로 재개되지 않습니다.",
+          "natural": 1.47,
+          "meaning": 0.95,
+          "style": 0.73,
+          "pass": false
+        },
+        {
+          "ko": "“{title}”에서 아직 작업이 진행 중입니다. 보관하기 전에 이 작업을 중지합니다. 세션은 나중에 사이드바의 “모든 대화(보관된 대화 포함)” 필터에서 복원할 수 있습니다. 중지된 작업은 자동으로 다시 시작되지 않습니다.",
+          "natural": 1.39,
+          "meaning": 0.93,
+          "style": 0.87,
+          "pass": false
+        },
+        {
+          "ko": "“{title}”에는 진행 중인 작업이 남아 있습니다. 세션을 보관하면 먼저 해당 작업이 중지됩니다. 나중에 사이드바에서 “모든 대화(보관된 대화 포함)” 필터를 선택하여 세션을 복원할 수 있습니다. 중지한 작업은 저절로 재개되지 않습니다.",
+          "natural": 1.49,
+          "meaning": 0.95,
+          "style": 0.6,
+          "pass": false
+        },
+        {
+          "ko": "“{title}”의 작업이 아직 끝나지 않았습니다. 보관하면 진행 중인 작업부터 중지합니다. 이후 사이드바의 “모든 대화(보관된 대화 포함)” 필터에서 세션을 복원할 수 있습니다. 중지된 작업은 자동으로 재개하지 않습니다.",
+          "natural": 1.33,
+          "meaning": 0.93,
+          "style": 0.7,
+          "pass": false
+        }
+      ],
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "“{title}”에서 아직 작업이 진행 중입니다. 보관하기 전에 이 작업을 중지합니다. 세션은 나중에 사이드바의 “모든 대화(보관된 대화 포함)” 필터에서 복원할 수 있습니다. 중지된 작업은 자동으로 다시 시작되지 않습니다.",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
+    },
+    {
+      "key": "archive.confirm.jobs.one",
+      "en": "{n} background job: {names}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "백그라운드 작업 {n}개 — {names}",
+          "natural": 1.49,
+          "meaning": 0.82,
+          "style": 0.56,
+          "pass": false
+        },
+        {
+          "ko": "백그라운드 작업 {n}개: {names}",
+          "natural": 1.55,
+          "meaning": 0.84,
+          "style": 0.61,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "archive.confirm.jobs.other",
+      "en": "{n} background jobs: {names}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "백그라운드 작업 {n}개 — {names}",
+          "natural": 1.56,
+          "meaning": 0.89,
+          "style": 0.59,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "archive.confirm.other.one",
+      "en": "{n} other item of work ({kind})",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "기타 작업 {n}개({kind})",
+          "natural": 1.07,
+          "meaning": 0.85,
+          "style": 0.68,
+          "pass": false
+        },
+        {
+          "ko": "기타 작업: {n}개 ({kind})",
+          "natural": 1.24,
+          "meaning": 0.52,
+          "style": 0.57,
+          "pass": false
+        },
+        {
+          "ko": "그 밖의 작업 {n}개 ({kind})",
+          "natural": 1.09,
+          "meaning": 0.76,
+          "style": 0.67,
+          "pass": false
+        },
+        {
+          "ko": "기타 작업 항목 {n}개 ({kind})",
+          "natural": 1.07,
+          "meaning": 0.66,
+          "style": 0.69,
+          "pass": false
+        }
+      ],
+      "result": "unresolved"
+    },
+    {
+      "key": "archive.confirm.other.other",
+      "en": "{n} other items of work ({kind})",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "기타 작업 {n}개({kind})",
+          "natural": 1.18,
+          "meaning": 0.89,
+          "style": 0.55,
+          "pass": false
+        },
+        {
+          "ko": "기타 작업: {n}개 ({kind})",
+          "natural": 1.37,
+          "meaning": 0.87,
+          "style": 0.59,
+          "pass": false
+        },
+        {
+          "ko": "그 밖의 작업 {n}개 ({kind})",
+          "natural": 1.28,
+          "meaning": 0.92,
+          "style": 0.63,
+          "pass": false
+        },
+        {
+          "ko": "기타 작업 항목 {n}개 ({kind})",
+          "natural": 1.33,
+          "meaning": 0.9,
+          "style": 0.66,
+          "pass": false
+        }
+      ],
+      "result": "unresolved"
+    },
+    {
+      "key": "archive.confirm.pending",
+      "en": "Stopping and archiving…",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "중지 후 보관 중…",
+          "natural": 1.79,
+          "meaning": 0.95,
+          "style": 0.57,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "archive.confirm.schedules.one",
+      "en": "{n} scheduled reminder: {names}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "예약 알림 {n}개 — {names}",
+          "natural": 1.6,
+          "meaning": 0.94,
+          "style": 0.61,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "archive.confirm.schedules.other",
+      "en": "{n} scheduled reminders: {names}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "예약 알림 {n}개 — {names}",
+          "natural": 1.64,
+          "meaning": 0.95,
+          "style": 0.52,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "archive.confirm.subagents.one",
+      "en": "{n} running subagent: {names}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "실행 중인 서브에이전트 {n}개 — {names}",
+          "natural": 1.57,
+          "meaning": 0.96,
+          "style": 0.61,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "archive.confirm.subagents.other",
+      "en": "{n} running subagents: {names}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "실행 중인 서브에이전트 {n}개 — {names}",
+          "natural": 1.67,
+          "meaning": 0.96,
+          "style": 0.64,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "archive.confirm.title",
+      "en": "Stop and archive this session?",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "이 세션 중지 후 보관",
+          "natural": 1.45,
+          "meaning": 0.91,
+          "style": 0.5,
+          "pass": false
+        },
+        {
+          "ko": "이 세션을 중지하고 보관하시겠습니까?",
+          "natural": 1.78,
+          "meaning": 0.94,
+          "style": 0.7,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "archive.confirm.turn",
+      "en": "The turn in progress",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "진행 중인 턴",
+          "natural": 1.33,
+          "meaning": 0.89,
+          "style": 0.75,
+          "pass": false
+        },
+        {
+          "ko": "현재 진행 중인 턴",
+          "natural": 1.59,
+          "meaning": 0.94,
+          "style": 0.75,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "conflict.named",
+      "en": "A workspace named “{name}” already exists.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "“{name}” 워크스페이스가 이미 있습니다.",
+          "natural": 1.84,
+          "meaning": 0.97,
+          "style": 0.54,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "defaultWorkspace.failed",
+      "en": "Unable to create default workspace. Use Choose workspace to select a folder.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "기본 워크스페이스를 만들 수 없습니다. 워크스페이스 선택에서 폴더를 선택하십시오.",
+          "natural": 1.19,
+          "meaning": 0.93,
+          "style": 0.68,
+          "pass": false
+        },
+        {
+          "ko": "기본 워크스페이스를 생성하지 못했습니다. “워크스페이스 선택”으로 폴더를 지정하십시오.",
+          "natural": 1.3,
+          "meaning": 0.94,
+          "style": 0.74,
+          "pass": false
+        },
+        {
+          "ko": "기본 워크스페이스 생성에 실패했습니다. “워크스페이스 선택”을 눌러 폴더를 선택하십시오.",
+          "natural": 1.5,
+          "meaning": 0.94,
+          "style": 0.7,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "delete.desc",
+      "en": "This removes “{name}” from the workspace list. The folder and session logs will be kept. Its sessions will appear under Ungrouped.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "워크스페이스 목록에서 “{name}”을 제거합니다. 폴더와 세션 로그는 유지됩니다. 해당 세션은 미분류 항목에 표시됩니다.",
+          "natural": 1.51,
+          "meaning": 0.95,
+          "style": 0.73,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "delete.pending",
+      "en": "Deleting workspace…",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "워크스페이스 삭제 중…",
+          "natural": 1.87,
+          "meaning": 0.96,
+          "style": 0.51,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "delete.workspace",
+      "en": "Delete workspace",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "워크스페이스 삭제",
+          "natural": 1.93,
+          "meaning": 0.97,
+          "style": 0.76,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "empty.noMatches",
+      "en": "No matches",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "일치하는 항목 없음",
+          "natural": 1.87,
+          "meaning": 0.97,
+          "style": 0.7,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "empty.none",
+      "en": "No sessions yet",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "아직 세션 없음",
+          "natural": 1.78,
+          "meaning": 0.97,
+          "style": 0.75,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "empty.noneArchived",
+      "en": "No archived sessions yet",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "아직 보관된 세션 없음",
+          "natural": 1.74,
+          "meaning": 0.97,
+          "style": 0.67,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "empty.viewOthers",
+      "en": "View other sessions",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "다른 세션 보기",
+          "natural": 1.74,
+          "meaning": 0.96,
+          "style": 0.53,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "field.sessionName",
+      "en": "Session name",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "세션 이름",
+          "natural": 1.94,
+          "meaning": 0.98,
+          "style": 0.71,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "field.workspaceName",
+      "en": "Workspace name",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "워크스페이스 이름",
+          "natural": 1.9,
+          "meaning": 0.96,
+          "style": 0.67,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "filterBy.label",
+      "en": "Filter sessions",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "세션 필터",
+          "natural": 1.81,
+          "meaning": 0.96,
+          "style": 0.75,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "folderError.retry",
+      "en": "Choose again",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "다시 선택",
+          "natural": 1.63,
+          "meaning": 0.94,
+          "style": 0.6,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "folderError.title",
+      "en": "Couldn’t open folder",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "폴더 열기 실패",
+          "natural": 1.72,
+          "meaning": 0.96,
+          "style": 0.61,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "group.ungrouped",
+      "en": "Ungrouped",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "미분류",
+          "natural": 1.85,
+          "meaning": 0.96,
+          "style": 0.73,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "groupBy.flat",
+      "en": "In one list",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "단일 목록",
+          "natural": 1.08,
+          "meaning": 0.88,
+          "style": 0.68,
+          "pass": false
+        },
+        {
+          "ko": "하나의 목록으로 표시",
+          "natural": 1.59,
+          "meaning": 0.96,
+          "style": 0.65,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "groupBy.label",
+      "en": "Group by",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "그룹 기준",
+          "natural": 1.73,
+          "meaning": 0.94,
+          "style": 0.72,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "groupBy.workspace",
+      "en": "WorkSpace",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "워크스페이스",
+          "natural": 1.17,
+          "meaning": 0.87,
+          "style": 0.76,
+          "pass": false
+        }
+      ],
+      "result": "approved",
+      "approval": {
+        "by": "user",
+        "date": "2026-10-17",
+        "note": "판정 미통과 문구를 사용자가 그대로 승인(단위·제품 이름)",
+        "ko": "워크스페이스"
+      }
+    },
+    {
+      "key": "groupBy.workspaceTree",
+      "en": "Workspace Tree",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "워크스페이스 트리",
+          "natural": 1.8,
+          "meaning": 0.97,
+          "style": 0.67,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "hover.copied",
+      "en": "Copied",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "복사됨",
+          "natural": 1.86,
+          "meaning": 0.97,
+          "style": 0.65,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "hover.created",
+      "en": "Created {time}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "생성: {time}",
+          "natural": 1.57,
+          "meaning": 0.94,
+          "style": 0.59,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "menu.addWorkspace",
+      "en": "Add workspace…",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "워크스페이스 추가…",
+          "natural": 1.81,
+          "meaning": 0.96,
+          "style": 0.61,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "menu.archiveSession",
+      "en": "Archive session",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "세션 보관",
+          "natural": 1.69,
+          "meaning": 0.97,
+          "style": 0.66,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "menu.fork",
+      "en": "Fork session",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "세션 포크",
+          "natural": 1.71,
+          "meaning": 0.96,
+          "style": 0.72,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "menu.pinSession",
+      "en": "Pin session",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "세션 고정",
+          "natural": 1.71,
+          "meaning": 0.97,
+          "style": 0.66,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "menu.unarchiveSession",
+      "en": "Unarchive session",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "세션 보관 해제",
+          "natural": 1.67,
+          "meaning": 0.97,
+          "style": 0.62,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "menu.unpinSession",
+      "en": "Unpin session",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "세션 고정 해제",
+          "natural": 1.75,
+          "meaning": 0.97,
+          "style": 0.61,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "orderBy.label",
+      "en": "Order by",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "정렬 기준",
+          "natural": 1.68,
+          "meaning": 0.94,
+          "style": 0.71,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "orderBy.manual",
+      "en": "Manual",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "수동",
+          "natural": 1.87,
+          "meaning": 0.97,
+          "style": 0.72,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "orderBy.updated",
+      "en": "Last updated",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "최근 수정",
+          "natural": 1.86,
+          "meaning": 0.94,
+          "style": 0.58,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "picker.loading",
+      "en": "Loading workspaces…",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "워크스페이스 불러오는 중…",
+          "natural": 1.91,
+          "meaning": 0.97,
+          "style": 0.44,
+          "pass": false
+        },
+        {
+          "ko": "워크스페이스를 불러오고 있습니다…",
+          "natural": 1.85,
+          "meaning": 0.97,
+          "style": 0.5,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "rename",
+      "en": "Rename",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "이름 변경",
+          "natural": 1.93,
+          "meaning": 0.97,
+          "style": 0.73,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "rename.session.title",
+      "en": "Rename session",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "세션 이름 변경",
+          "natural": 1.91,
+          "meaning": 0.98,
+          "style": 0.66,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "rename.workspace.title",
+      "en": "Rename workspace",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "워크스페이스 이름 변경",
+          "natural": 1.85,
+          "meaning": 0.98,
+          "style": 0.66,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "row.archived",
+      "en": "Archived",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "보관됨",
+          "natural": 1.82,
+          "meaning": 0.97,
+          "style": 0.62,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "row.pinned",
+      "en": "Pinned",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "고정됨",
+          "natural": 1.84,
+          "meaning": 0.96,
+          "style": 0.61,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "search.clear",
+      "en": "Clear search",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "검색 지우기",
+          "natural": 1.82,
+          "meaning": 0.96,
+          "style": 0.7,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "search.hasMore",
+      "en": "Showing the first {n} results. Narrow your search.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "처음 {n}개의 결과를 표시합니다. 검색 범위를 좁히십시오.",
+          "natural": 1.46,
+          "meaning": 0.95,
+          "style": 0.49,
+          "pass": false
+        },
+        {
+          "ko": "검색 결과 중 처음 {n}개만 표시됩니다. 검색 조건을 구체적으로 지정하십시오.",
+          "natural": 1.68,
+          "meaning": 0.94,
+          "style": 0.79,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "search.noMatches",
+      "en": "No matching sessions",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "일치하는 세션 없음",
+          "natural": 1.78,
+          "meaning": 0.97,
+          "style": 0.66,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "search.pending",
+      "en": "Searching session history…",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "세션 기록 검색 중…",
+          "natural": 1.8,
+          "meaning": 0.97,
+          "style": 0.37,
+          "pass": false
+        },
+        {
+          "ko": "세션 기록을 검색하고 있습니다…",
+          "natural": 1.75,
+          "meaning": 0.98,
+          "style": 0.46,
+          "pass": false
+        },
+        {
+          "ko": "세션 기록을 검색 중입니다.",
+          "natural": 1.8,
+          "meaning": 0.97,
+          "style": 0.49,
+          "pass": false
+        },
+        {
+          "ko": "세션 기록 검색을 진행하고 있습니다…",
+          "natural": 1.6,
+          "meaning": 0.97,
+          "style": 0.69,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "search.placeholder",
+      "en": "Search session names",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "세션 이름 검색",
+          "natural": 1.73,
+          "meaning": 0.96,
+          "style": 0.67,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "search.results.aria",
+      "en": "Search results",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "검색 결과",
+          "natural": 1.94,
+          "meaning": 0.97,
+          "style": 0.66,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "search.sessions.aria",
+      "en": "Search sessions",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "세션 검색",
+          "natural": 1.82,
+          "meaning": 0.96,
+          "style": 0.63,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "section.sessions",
+      "en": "Sessions",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "세션",
+          "natural": 1.9,
+          "meaning": 0.87,
+          "style": 0.71,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "section.workspaces",
+      "en": "Workspaces",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "워크스페이스",
+          "natural": 1.89,
+          "meaning": 0.97,
+          "style": 0.65,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "session.new",
+      "en": "New Session",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "새 세션",
+          "natural": 1.93,
+          "meaning": 0.97,
+          "style": 0.71,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "session.untitled",
+      "en": "Untitled",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "제목 없음",
+          "natural": 1.9,
+          "meaning": 0.97,
+          "style": 0.62,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "sessions.collapse",
+      "en": "Show less",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "접기",
+          "natural": 1.61,
+          "meaning": 0.76,
+          "style": 0.6,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "sessions.count.one",
+      "en": "{n} session",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "세션 {n}개",
+          "natural": 1.16,
+          "meaning": 0.3,
+          "style": 0.57,
+          "pass": false
+        },
+        {
+          "ko": "{n}개의 세션",
+          "natural": 1.65,
+          "meaning": 0.85,
+          "style": 0.57,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "sessions.count.other",
+      "en": "{n} sessions",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "세션 {n}개",
+          "natural": 1.33,
+          "meaning": 0.89,
+          "style": 0.52,
+          "pass": false
+        },
+        {
+          "ko": "{n}개의 세션",
+          "natural": 1.69,
+          "meaning": 0.93,
+          "style": 0.54,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "sessions.expand",
+      "en": "Show {n} more sessions",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "세션 {n}개 더 보기",
+          "natural": 1.77,
+          "meaning": 0.97,
+          "style": 0.48,
+          "pass": false
+        },
+        {
+          "ko": "추가 세션 {n}개 표시",
+          "natural": 1.79,
+          "meaning": 0.97,
+          "style": 0.51,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "shortcut.directoryBusy",
+      "en": "Selecting or adding a workspace",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "워크스페이스 선택 또는 추가 중",
+          "natural": 1.15,
+          "meaning": 0.96,
+          "style": 0.63,
+          "pass": false
+        },
+        {
+          "ko": "워크스페이스를 선택하거나 추가하고 있습니다.",
+          "natural": 1.24,
+          "meaning": 0.96,
+          "style": 0.64,
+          "pass": false
+        },
+        {
+          "ko": "워크스페이스 선택 또는 추가 작업이 진행 중입니다.",
+          "natural": 1.38,
+          "meaning": 0.95,
+          "style": 0.77,
+          "pass": false
+        },
+        {
+          "ko": "워크스페이스를 선택하거나 추가하는 중입니다.",
+          "natural": 1.37,
+          "meaning": 0.97,
+          "style": 0.58,
+          "pass": false
+        }
+      ],
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "워크스페이스 선택 또는 추가 작업이 진행 중입니다.",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
+    },
+    {
+      "key": "shortcut.forkFailed",
+      "en": "Could not fork the session. Try again.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "세션을 포크하지 못했습니다. 다시 시도하십시오.",
+          "natural": 1.64,
+          "meaning": 0.96,
+          "style": 0.81,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "shortcut.noCompletedTurn",
+      "en": "This session has no completed turn",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "이 세션에는 완료된 턴이 없습니다.",
+          "natural": 1.38,
+          "meaning": 0.96,
+          "style": 0.61,
+          "pass": false
+        },
+        {
+          "ko": "이 세션에서 완료된 턴은 없습니다.",
+          "natural": 1.5,
+          "meaning": 0.96,
+          "style": 0.7,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "shortcut.noPicker",
+      "en": "Directory picker unavailable",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "디렉터리 선택기를 사용할 수 없습니다.",
+          "natural": 1.61,
+          "meaning": 0.97,
+          "style": 0.58,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "shortcut.noSession",
+      "en": "Select a session first",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "먼저 세션을 선택하십시오.",
+          "natural": 1.9,
+          "meaning": 0.98,
+          "style": 0.73,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "status.compact.answer",
+      "en": "Answer",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "답변",
+          "natural": 1.78,
+          "meaning": 0.97,
+          "style": 0.73,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "status.compact.approval",
+      "en": "Approval",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "승인",
+          "natural": 1.4,
+          "meaning": 0.87,
+          "style": 0.67,
+          "pass": false
+        }
+      ],
+      "result": "approved",
+      "approval": {
+        "by": "user",
+        "date": "2026-10-17",
+        "note": "판정 미통과 문구를 사용자가 그대로 승인(단위·제품 이름)",
+        "ko": "승인"
+      }
+    },
+    {
+      "key": "status.compact.planReview",
+      "en": "Plan review",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "계획 검토",
+          "natural": 1.86,
+          "meaning": 0.96,
+          "style": 0.66,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "status.completed",
+      "en": "Completed",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "완료",
+          "natural": 1.96,
+          "meaning": 0.97,
+          "style": 0.64,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "status.idle",
+      "en": "Idle",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "대기",
+          "natural": 1.81,
+          "meaning": 0.94,
+          "style": 0.69,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "status.planReview",
+      "en": "Plan awaiting review",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "계획 검토 대기",
+          "natural": 1.39,
+          "meaning": 0.92,
+          "style": 0.6,
+          "pass": false
+        },
+        {
+          "ko": "검토를 기다리는 계획",
+          "natural": 1.64,
+          "meaning": 0.96,
+          "style": 0.65,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "status.running",
+      "en": "Running",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "실행 중",
+          "natural": 1.94,
+          "meaning": 0.96,
+          "style": 0.56,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "status.subagentsRunning.one",
+      "en": "{n} subagent running",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "서브에이전트 {n}개 실행 중",
+          "natural": 1.29,
+          "meaning": 0.66,
+          "style": 0.55,
+          "pass": false
+        },
+        {
+          "ko": "서브에이전트 {n}개가 실행 중입니다.",
+          "natural": 1.61,
+          "meaning": 0.93,
+          "style": 0.68,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "status.subagentsRunning.other",
+      "en": "{n} subagents running",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "서브에이전트 {n}개 실행 중",
+          "natural": 1.52,
+          "meaning": 0.9,
+          "style": 0.55,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "status.waitingAnswer",
+      "en": "Waiting for answer",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "답변 대기",
+          "natural": 1.77,
+          "meaning": 0.96,
+          "style": 0.57,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "status.waitingApproval",
+      "en": "Waiting for approval",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "승인 대기",
+          "natural": 1.9,
+          "meaning": 0.97,
+          "style": 0.58,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "time.ago",
+      "en": "{t} ago",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{t} 전",
+          "natural": 1.81,
+          "meaning": 0.92,
+          "style": 0.56,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "time.days",
+      "en": "{n}d",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{n}일",
+          "natural": 1.1,
+          "meaning": 0.29,
+          "style": 0.6,
+          "pass": false
+        }
+      ],
+      "result": "approved",
+      "approval": {
+        "by": "user",
+        "date": "2026-10-17",
+        "note": "판정 미통과 문구를 사용자가 그대로 승인(단위·제품 이름)",
+        "ko": "{n}일"
+      }
+    },
+    {
+      "key": "time.hours",
+      "en": "{n}h",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{n}시간",
+          "natural": 1.75,
+          "meaning": 0.89,
+          "style": 0.61,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "time.minutes",
+      "en": "{n}min",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{n}분",
+          "natural": 1.85,
+          "meaning": 0.91,
+          "style": 0.61,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "time.months",
+      "en": "{n}mo",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{n}개월",
+          "natural": 1.76,
+          "meaning": 0.92,
+          "style": 0.63,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "time.now",
+      "en": "now",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "지금",
+          "natural": 1.96,
+          "meaning": 0.97,
+          "style": 0.72,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "time.years",
+      "en": "{n}y",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{n}년",
+          "natural": 1.71,
+          "meaning": 0.89,
+          "style": 0.63,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "toast.archived",
+      "en": "Session archived. You can ",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "세션을 보관했습니다. 가능한 작업: ",
+          "natural": 1.24,
+          "meaning": 0.7,
+          "style": 0.75,
+          "pass": false
+        },
+        {
+          "ko": "세션이 보관되었습니다. 다음 작업을 할 수 있습니다: ",
+          "natural": 1.54,
+          "meaning": 0.68,
+          "style": 0.77,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "toast.archivedFilter",
+      "en": "filter archived sessions",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "보관된 세션 필터링",
+          "natural": 1.64,
+          "meaning": 0.89,
+          "style": 0.66,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "toast.archivedNotOpenable",
+      "en": "Archived sessions cannot be opened. Unarchive it to view.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "보관된 세션은 열 수 없습니다. 보려면 보관을 해제하십시오.",
+          "natural": 1.58,
+          "meaning": 0.95,
+          "style": 0.81,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "toast.archivedOr",
+      "en": " or ",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": " 또는 ",
+          "natural": 1.45,
+          "meaning": 0.95,
+          "style": 0.7,
+          "pass": false
+        },
+        {
+          "ko": " 아니면 ",
+          "natural": 1.42,
+          "meaning": 0.95,
+          "style": 0.7,
+          "pass": false
+        },
+        {
+          "ko": " 혹은 ",
+          "natural": 1.27,
+          "meaning": 0.97,
+          "style": 0.75,
+          "pass": false
+        },
+        {
+          "ko": " 또는 ",
+          "natural": 1.5,
+          "meaning": 0.97,
+          "style": 0.7,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "toast.archivedUndo",
+      "en": "undo",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "실행 취소",
+          "natural": 1.89,
+          "meaning": 0.97,
+          "style": 0.79,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "toast.createFailed",
+      "en": "New session failed: {message}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "새 세션 생성 실패: {message}",
+          "natural": 1.68,
+          "meaning": 0.96,
+          "style": 0.52,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "toast.pinFailed",
+      "en": "Pin failed. Try again later.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "고정하지 못했습니다. 나중에 다시 시도하십시오.",
+          "natural": 1.7,
+          "meaning": 0.94,
+          "style": 0.83,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "toast.stoppedAndArchived",
+      "en": "Session stopped and archived. You can ",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "세션을 중지하고 보관했습니다. 가능한 작업: ",
+          "natural": 1.14,
+          "meaning": 0.6,
+          "style": 0.8,
+          "pass": false
+        },
+        {
+          "ko": "세션이 중지되고 보관되었습니다. 다음 작업을 할 수 있습니다: ",
+          "natural": 1.54,
+          "meaning": 0.95,
+          "style": 0.74,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "toast.unpinFailed",
+      "en": "Unpin failed. Try again later.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "고정을 해제하지 못했습니다. 나중에 다시 시도하십시오.",
+          "natural": 1.63,
+          "meaning": 0.97,
+          "style": 0.67,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "viewOptions.hideArchived",
+      "en": "Hide archived",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "보관된 대화 숨기기",
+          "natural": 1.74,
+          "meaning": 0.95,
+          "style": 0.67,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "viewOptions.label",
+      "en": "View options",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "보기 옵션",
+          "natural": 1.86,
+          "meaning": 0.97,
+          "style": 0.74,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "viewOptions.onlyArchived",
+      "en": "Archived only",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "보관된 대화만",
+          "natural": 1.79,
+          "meaning": 0.95,
+          "style": 0.73,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "viewOptions.showArchived",
+      "en": "All conversations (show archived)",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "모든 대화(보관된 대화 포함)",
+          "natural": 1.68,
+          "meaning": 0.96,
+          "style": 0.61,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "workspace.add",
+      "en": "Add workspace",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "워크스페이스 추가",
+          "natural": 1.88,
+          "meaning": 0.98,
+          "style": 0.79,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "draft.initializationFailed",
+      "en": "Could not fill the draft. Please try again shortly.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "초안을 채우지 못했습니다. 잠시 후 다시 시도하십시오.",
+          "natural": 1.52,
+          "meaning": 0.89,
+          "style": 0.72,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "draft.workspaceRequired",
+      "en": "Choose a workspace first.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "먼저 워크스페이스를 선택하십시오.",
+          "natural": 1.9,
+          "meaning": 0.98,
+          "style": 0.8,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "toast.forkRequiresOpen",
+      "en": "Open the original session to complete migration before creating a branch.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "분기를 만들기 전에 원본 세션을 열어 마이그레이션을 완료하십시오.",
+          "natural": 1.41,
+          "meaning": 0.97,
+          "style": 0.69,
+          "pass": false
+        },
+        {
+          "ko": "먼저 원본 세션을 열어 마이그레이션을 마친 다음 분기를 생성하십시오.",
+          "natural": 1.31,
+          "meaning": 0.95,
+          "style": 0.8,
+          "pass": false
+        },
+        {
+          "ko": "분기를 생성하려면 원본 세션을 먼저 열고 마이그레이션을 완료해야 합니다.",
+          "natural": 1.57,
+          "meaning": 0.97,
+          "style": 0.42,
+          "pass": false
+        },
+        {
+          "ko": "원본 세션을 열어 마이그레이션을 완료한 후에 분기를 만들어 주십시오.",
+          "natural": 1.19,
+          "meaning": 0.95,
+          "style": 0.7,
+          "pass": false
+        }
+      ],
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "분기를 만들기 전에 원본 세션을 열어 마이그레이션을 완료하십시오.",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
+    },
+    {
+      "key": "toast.openForkSource",
+      "en": "Open original session",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "원본 세션 열기",
+          "natural": 1.79,
+          "meaning": 0.96,
+          "style": 0.55,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    }
+  ]
+}

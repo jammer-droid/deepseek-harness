@@ -1,0 +1,117 @@
+{
+  "namespace": "settings.permission",
+  "date": "2026-10-17",
+  "engine": "jev",
+  "thresholds": { "natural": 1.5, "meaning": 0.6, "style": 0.5 },
+  "rows": [
+    {
+      "key": "confirm.acknowledge",
+      "en": "I understand the risks and want to continue",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "위험을 이해했으며 계속하겠습니다", "natural": 1.66, "meaning": 0.96, "style": 0.77, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "confirm.cancel",
+      "en": "Cancel",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "취소", "natural": 1.99, "meaning": 0.98, "style": 0.68, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "confirm.description",
+      "en": "Full access lets new sessions reduce confirmation steps and perform more actions directly, including sensitive operations, file changes, or external commands. Only use it when you trust subsequent tasks.",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "전체 접근을 허용하면 새 세션에서 확인 단계를 줄이고 민감한 작업, 파일 변경, 외부 명령을 포함한 더 많은 작업을 직접 수행할 수 있습니다. 이후 작업을 신뢰하는 경우에만 사용하십시오.", "natural": 1.69, "meaning": 0.95, "style": 0.91, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "confirm.enable",
+      "en": "Enable Full access",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "전체 접근 활성화", "natural": 1.83, "meaning": 0.97, "style": 0.6, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "confirm.title",
+      "en": "Enable Full access?",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "전체 접근을 활성화할까요?", "natural": 1.78, "meaning": 0.97, "style": 0.25, "pass": false },
+        { "ko": "전체 접근을 활성화하시겠습니까?", "natural": 1.68, "meaning": 0.95, "style": 0.78, "pass": true }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "description",
+      "en": "Choose the default permission mode for new sessions",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "새 세션의 기본 권한 모드를 선택하십시오.", "natural": 1.73, "meaning": 0.97, "style": 0.91, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "loading",
+      "en": "Loading",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "불러오는 중", "natural": 1.93, "meaning": 0.97, "style": 0.59, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "preset.fullAccess",
+      "en": "Full access",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "전체 접근", "natural": 1.92, "meaning": 0.97, "style": 0.66, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "preset.readOnly",
+      "en": "Read Only",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "읽기 전용", "natural": 1.93, "meaning": 0.97, "style": 0.65, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "preset.workspaceWrite",
+      "en": "Workspace Write",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "워크스페이스 쓰기", "natural": 1.66, "meaning": 0.96, "style": 0.58, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "title",
+      "en": "Permission",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "권한", "natural": 1.96, "meaning": 0.97, "style": 0.67, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "unavailable",
+      "en": "Unavailable",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "사용할 수 없음", "natural": 1.82, "meaning": 0.97, "style": 0.63, "pass": true }
+      ],
+      "result": "pass"
+    }
+  ]
+}

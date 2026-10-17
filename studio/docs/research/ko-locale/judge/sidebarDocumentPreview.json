@@ -1,0 +1,502 @@
+{
+  "namespace": "sidebarDocumentPreview",
+  "date": "2026-10-17",
+  "engine": "jev",
+  "thresholds": {
+    "natural": 1.5,
+    "meaning": 0.6,
+    "style": 0.5
+  },
+  "rows": [
+    {
+      "key": "autoRefresh",
+      "en": "Auto refresh",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "자동 새로 고침",
+          "natural": 1.91,
+          "meaning": 0.98,
+          "style": 0.58,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "autoRefresh.disable",
+      "en": "Disable auto refresh",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "자동 새로 고침을 끕니다",
+          "natural": 1.63,
+          "meaning": 0.97,
+          "style": 0.93,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "autoRefresh.enable",
+      "en": "Enable auto refresh",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "자동 새로 고침을 켭니다",
+          "natural": 1.83,
+          "meaning": 0.98,
+          "style": 0.65,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "changed",
+      "en": "The file has changed, showing the previous content.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "파일이 변경되어 이전 내용을 표시합니다.",
+          "natural": 1.53,
+          "meaning": 0.94,
+          "style": 0.85,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "error.notFound",
+      "en": "File not found. It may have been moved or deleted.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "파일을 찾을 수 없습니다. 이동되었거나 삭제되었을 수 있습니다.",
+          "natural": 1.9,
+          "meaning": 0.97,
+          "style": 0.58,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "error.notRegularFile",
+      "en": "Not a regular file, nothing to display.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "일반 파일이 아니라 표시할 내용이 없습니다.",
+          "natural": 1.73,
+          "meaning": 0.97,
+          "style": 0.52,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "error.notText",
+      "en": "Preview is not available for this file type yet.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "이 파일 형식은 아직 미리보기를 지원하지 않습니다.",
+          "natural": 1.87,
+          "meaning": 0.98,
+          "style": 0.87,
+          "pass": true
+        },
+        {
+          "ko": "이 파일 형식은 아직 미리 보기를 지원하지 않습니다.",
+          "natural": 1.84,
+          "meaning": 0.97,
+          "style": 0.84,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "error.tooLarge",
+      "en": "This page exceeds the {limit} limit and cannot be read.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "이 페이지는 {limit} 제한을 초과하여 읽을 수 없습니다.",
+          "natural": 1.36,
+          "meaning": 0.93,
+          "style": 0.49,
+          "pass": false
+        },
+        {
+          "ko": "이 페이지는 {limit} 제한을 넘어 읽을 수 없습니다.",
+          "natural": 1.36,
+          "meaning": 0.92,
+          "style": 0.5,
+          "pass": false
+        },
+        {
+          "ko": "이 페이지는 {limit} 제한을 초과했습니다. 읽을 수 없습니다.",
+          "natural": 1.21,
+          "meaning": 0.91,
+          "style": 0.74,
+          "pass": false
+        },
+        {
+          "ko": "이 페이지는 표시할 수 있는 {limit} 한도를 초과합니다.",
+          "natural": 1.35,
+          "meaning": 0.67,
+          "style": 0.61,
+          "pass": false
+        }
+      ],
+      "result": "unresolved"
+    },
+    {
+      "key": "error.unavailable",
+      "en": "Read failed: {message}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "읽기에 실패했습니다: {message}",
+          "natural": 1.84,
+          "meaning": 0.95,
+          "style": 0.89,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "loadMore",
+      "en": "Load more",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "더 불러오기",
+          "natural": 1.75,
+          "meaning": 0.96,
+          "style": 0.49,
+          "pass": false
+        },
+        {
+          "ko": "더 불러오십시오",
+          "natural": 1.03,
+          "meaning": 0.94,
+          "style": 0.88,
+          "pass": false
+        },
+        {
+          "ko": "더 보기",
+          "natural": 1.93,
+          "meaning": 0.97,
+          "style": 0.73,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "loading",
+      "en": "Rendering document...",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "문서를 렌더링하고 있습니다...",
+          "natural": 1.84,
+          "meaning": 0.98,
+          "style": 0.67,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "openWith",
+      "en": "Open with",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "다음으로 열기",
+          "natural": 1.65,
+          "meaning": 0.87,
+          "style": 0.5,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "reload",
+      "en": "Read the file again",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "파일 다시 읽기",
+          "natural": 1.71,
+          "meaning": 0.97,
+          "style": 0.31,
+          "pass": false
+        },
+        {
+          "ko": "파일을 다시 읽습니다",
+          "natural": 1.05,
+          "meaning": 0.91,
+          "style": 0.93,
+          "pass": false
+        },
+        {
+          "ko": "파일을 다시 읽으십시오",
+          "natural": 1.23,
+          "meaning": 0.97,
+          "style": 0.92,
+          "pass": false
+        },
+        {
+          "ko": "파일을 다시 불러옵니다",
+          "natural": 1.54,
+          "meaning": 0.9,
+          "style": 0.68,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "reloadNow",
+      "en": "Reload",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "새로 고침",
+          "natural": 1.89,
+          "meaning": 0.93,
+          "style": 0.63,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "rendererUnavailable",
+      "en": "The {name} preview is unavailable.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{name} 미리보기를 사용할 수 없습니다.",
+          "natural": 1.75,
+          "meaning": 0.96,
+          "style": 0.41,
+          "pass": false
+        },
+        {
+          "ko": "{name} 미리보기를 표시할 수 없습니다.",
+          "natural": 1.3,
+          "meaning": 0.92,
+          "style": 0.66,
+          "pass": false
+        },
+        {
+          "ko": "{name} 미리보기를 열 수 없습니다.",
+          "natural": 1.36,
+          "meaning": 0.88,
+          "style": 0.45,
+          "pass": false
+        },
+        {
+          "ko": "{name} 미리보기가 지원되지 않습니다.",
+          "natural": 1.47,
+          "meaning": 0.69,
+          "style": 0.59,
+          "pass": false
+        },
+        {
+          "ko": "{name} 미리 보기를 사용할 수 없습니다.",
+          "natural": 1.47,
+          "meaning": 0.95,
+          "style": 0.57,
+          "pass": false
+        }
+      ],
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "{name} 미리보기를 사용할 수 없습니다.",
+        "note": "문체 점수만 미달(짧은 라벨), 용어 치환 전 문구 유지"
+      }
+    },
+    {
+      "key": "resourceUnavailable",
+      "en": "The file resource service is unavailable.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "파일 리소스 서비스를 사용할 수 없습니다.",
+          "natural": 1.57,
+          "meaning": 0.98,
+          "style": 0.5,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "retry",
+      "en": "Retry",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "다시 시도하십시오",
+          "natural": 1.67,
+          "meaning": 0.97,
+          "style": 0.87,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "unsupportedFile",
+      "en": "Preview is not available for this file type yet.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "이 파일 형식은 아직 미리보기를 지원하지 않습니다.",
+          "natural": 1.87,
+          "meaning": 0.98,
+          "style": 0.84,
+          "pass": true
+        },
+        {
+          "ko": "이 파일 형식은 아직 미리 보기를 지원하지 않습니다.",
+          "natural": 1.88,
+          "meaning": 0.97,
+          "style": 0.8,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "viewer.text",
+      "en": "Plain text",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "일반 텍스트",
+          "natural": 1.91,
+          "meaning": 0.99,
+          "style": 0.68,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "wrap.aria",
+      "en": "Line wrap",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "줄 바꿈",
+          "natural": 1.74,
+          "meaning": 0.94,
+          "style": 0.63,
+          "pass": true
+        },
+        {
+          "ko": "줄바꿈",
+          "natural": 1.8,
+          "meaning": 0.96,
+          "style": 0.8,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "wrap.disable",
+      "en": "Turn off line wrap",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "줄 바꿈을 끕니다",
+          "natural": 1.77,
+          "meaning": 0.97,
+          "style": 0.35,
+          "pass": false
+        },
+        {
+          "ko": "줄 바꿈을 사용하지 않습니다",
+          "natural": 1.04,
+          "meaning": 0.92,
+          "style": 0.7,
+          "pass": false
+        },
+        {
+          "ko": "줄 바꿈 해제",
+          "natural": 1.68,
+          "meaning": 0.95,
+          "style": 0.64,
+          "pass": true
+        },
+        {
+          "ko": "줄바꿈 해제",
+          "natural": 1.69,
+          "meaning": 0.95,
+          "style": 0.57,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "wrap.enable",
+      "en": "Turn on line wrap",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "줄 바꿈을 켭니다",
+          "natural": 1.71,
+          "meaning": 0.98,
+          "style": 0.39,
+          "pass": false
+        },
+        {
+          "ko": "줄 바꿈을 사용합니다",
+          "natural": 1.15,
+          "meaning": 0.93,
+          "style": 0.64,
+          "pass": false
+        },
+        {
+          "ko": "줄 바꿈 적용",
+          "natural": 1.48,
+          "meaning": 0.95,
+          "style": 0.51,
+          "pass": false
+        },
+        {
+          "ko": "줄 바꿈 사용",
+          "natural": 1.72,
+          "meaning": 0.95,
+          "style": 0.74,
+          "pass": true
+        },
+        {
+          "ko": "줄바꿈 사용",
+          "natural": 1.71,
+          "meaning": 0.97,
+          "style": 0.59,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    }
+  ]
+}

@@ -1,0 +1,116 @@
+{
+  "namespace": "goal",
+  "date": "2026-10-17",
+  "engine": "jev",
+  "thresholds": { "natural": 1.5, "meaning": 0.6, "style": 0.5 },
+  "rows": [
+    {
+      "key": "action.cancel",
+      "en": "Cancel edit",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "편집 취소", "natural": 1.9, "meaning": 0.97, "style": 0.62, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "action.clear",
+      "en": "Clear goal",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "목표 지우기", "natural": 1.64, "meaning": 0.96, "style": 0.52, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "action.edit",
+      "en": "Edit goal",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "목표 편집", "natural": 1.93, "meaning": 0.98, "style": 0.56, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "action.pause",
+      "en": "Pause goal",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "목표 일시 중지", "natural": 1.8, "meaning": 0.97, "style": 0.56, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "action.resume",
+      "en": "Resume goal",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "목표 재개", "natural": 1.87, "meaning": 0.97, "style": 0.61, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "action.save",
+      "en": "Save goal",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "목표 저장", "natural": 1.93, "meaning": 0.97, "style": 0.51, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "commandInput.aria",
+      "en": "Command input",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "명령 입력", "natural": 1.7, "meaning": 0.96, "style": 0.53, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "objective.aria",
+      "en": "Goal objective",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "목표 내용", "natural": 1.64, "meaning": 0.94, "style": 0.57, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "phase.active",
+      "en": "Ongoing Goal",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "진행 중인 목표", "natural": 1.84, "meaning": 0.95, "style": 0.58, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "phase.active.disarmed",
+      "en": "Inactive Goal",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "비활성 목표", "natural": 1.71, "meaning": 0.95, "style": 0.55, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "phase.blocked",
+      "en": "Blocked Goal",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "차단된 목표", "natural": 1.59, "meaning": 0.95, "style": 0.54, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "phase.paused",
+      "en": "Paused Goal",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "일시 중지된 목표", "natural": 1.78, "meaning": 0.97, "style": 0.51, "pass": true }
+      ],
+      "result": "pass"
+    }
+  ]
+}

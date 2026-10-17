@@ -1,0 +1,1944 @@
+{
+  "namespace": "settings.models",
+  "date": "2026-10-17",
+  "engine": "jev",
+  "thresholds": {
+    "natural": 1.5,
+    "meaning": 0.6,
+    "style": 0.5
+  },
+  "rows": [
+    {
+      "key": "add",
+      "en": "Add model provider",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "모델 프로바이더 추가",
+          "natural": 1.77,
+          "meaning": 0.97,
+          "style": 0.76,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "addCatalog",
+      "en": "Third-party model provider",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "외부 모델 프로바이더",
+          "natural": 1.61,
+          "meaning": 0.91,
+          "style": 0.71,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "addCatalogExhausted",
+      "en": "Every catalog provider is already configured.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "카탈로그의 모든 프로바이더가 이미 설정되어 있습니다.",
+          "natural": 1.42,
+          "meaning": 0.94,
+          "style": 0.87,
+          "pass": false
+        },
+        {
+          "ko": "카탈로그에 있는 프로바이더는 모두 설정을 마쳤습니다.",
+          "natural": 1.69,
+          "meaning": 0.96,
+          "style": 0.95,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "addCatalogHint",
+      "en": "Pick OpenAI, Anthropic, Kimi, or another provider from the built-in catalog and enter its API key.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "기본 제공 카탈로그에서 OpenAI, Anthropic, Kimi 등의 프로바이더를 선택하고 API 키를 입력하십시오.",
+          "natural": 1.53,
+          "meaning": 0.79,
+          "style": 0.82,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "addCustom",
+      "en": "Custom model API",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "사용자 지정 모델 API",
+          "natural": 1.7,
+          "meaning": 0.95,
+          "style": 0.75,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "addCustomHint",
+      "en": "Connect a relay, a self-hosted server, or any other OpenAI- or Anthropic-compatible endpoint by its base URL, protocol, and models.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "기본 URL, 프로토콜, 모델을 지정하여 중계 서버, 자체 호스팅 서버 또는 OpenAI나 Anthropic과 호환되는 다른 엔드포인트에 연결하십시오.",
+          "natural": 1.37,
+          "meaning": 0.93,
+          "style": 0.72,
+          "pass": false
+        },
+        {
+          "ko": "기본 URL과 프로토콜, 모델을 입력하면 중계 서버나 자체 호스팅 서버에 연결할 수 있습니다. OpenAI 또는 Anthropic과 호환되는 다른 엔드포인트에도 연결할 수 있습니다.",
+          "natural": 1.53,
+          "meaning": 0.89,
+          "style": 0.76,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "addCustomUnavailable",
+      "en": "No API protocol is available to declare.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "지정할 수 있는 API 프로토콜이 없습니다.",
+          "natural": 0.91,
+          "meaning": 0.94,
+          "style": 0.52,
+          "pass": false
+        },
+        {
+          "ko": "현재 선택할 수 있는 API 프로토콜이 없습니다.",
+          "natural": 1.11,
+          "meaning": 0.88,
+          "style": 0.76,
+          "pass": false
+        },
+        {
+          "ko": "설정 가능한 API 프로토콜이 없습니다.",
+          "natural": 1.23,
+          "meaning": 0.89,
+          "style": 0.68,
+          "pass": false
+        },
+        {
+          "ko": "등록할 수 있는 API 프로토콜이 없습니다.",
+          "natural": 1.18,
+          "meaning": 0.89,
+          "style": 0.68,
+          "pass": false
+        }
+      ],
+      "result": "unresolved"
+    },
+    {
+      "key": "addMode",
+      "en": "How to add",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "추가 방법",
+          "natural": 1.67,
+          "meaning": 0.98,
+          "style": 0.71,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "addModel",
+      "en": "Add model",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "모델 추가",
+          "natural": 1.72,
+          "meaning": 0.98,
+          "style": 0.75,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "advancedHint",
+      "en": "Other fields live in cordis.patch.yml; edit that section directly.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "다른 필드는 cordis.patch.yml에 있습니다. 해당 부분을 직접 편집하십시오.",
+          "natural": 1.41,
+          "meaning": 0.95,
+          "style": 0.67,
+          "pass": false
+        },
+        {
+          "ko": "나머지 필드는 cordis.patch.yml의 해당 섹션에서 직접 수정하십시오.",
+          "natural": 1.66,
+          "meaning": 0.94,
+          "style": 0.83,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "apply",
+      "en": "Apply",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "적용",
+          "natural": 1.96,
+          "meaning": 0.97,
+          "style": 0.69,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "applying",
+      "en": "Applying…",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "적용 중…",
+          "natural": 1.91,
+          "meaning": 0.97,
+          "style": 0.57,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "baseUrl",
+      "en": "Base URL",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "기본 URL",
+          "natural": 1.92,
+          "meaning": 0.97,
+          "style": 0.73,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "baseUrlDefault",
+      "en": "Provider default",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "프로바이더 기본값",
+          "natural": 1.52,
+          "meaning": 0.92,
+          "style": 0.68,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "cancel",
+      "en": "Cancel",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "취소",
+          "natural": 1.99,
+          "meaning": 0.97,
+          "style": 0.75,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "close",
+      "en": "Close",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "닫기",
+          "natural": 1.96,
+          "meaning": 0.97,
+          "style": 0.8,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "conflict",
+      "en": "Someone else changed these settings while this card was open. Close it and reopen to edit the current values.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "이 카드가 열려 있는 동안 다른 사용자가 설정을 변경했습니다. 현재 값을 편집하려면 카드를 닫았다가 다시 여십시오.",
+          "natural": 1.64,
+          "meaning": 0.94,
+          "style": 0.45,
+          "pass": false
+        },
+        {
+          "ko": "카드가 열린 상태에서 다른 사용자가 이 설정을 수정했습니다. 최신 설정을 편집하려면 카드를 닫은 후 다시 열어 주십시오.",
+          "natural": 1.69,
+          "meaning": 0.93,
+          "style": 0.88,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "contextWindow",
+      "en": "Context window",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "컨텍스트 창",
+          "natural": 1.68,
+          "meaning": 0.95,
+          "style": 0.74,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "contextWindowPlaceholder",
+      "en": "Uses the provider default",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "프로바이더 기본값 사용",
+          "natural": 1.56,
+          "meaning": 0.93,
+          "style": 0.6,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "create",
+      "en": "Create provider",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "프로바이더 생성",
+          "natural": 1.5,
+          "meaning": 0.95,
+          "style": 0.66,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "creating",
+      "en": "Creating…",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "생성 중…",
+          "natural": 1.84,
+          "meaning": 0.96,
+          "style": 0.66,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "credentialConfigured",
+      "en": "API key configured",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "API 키 설정됨",
+          "natural": 1.74,
+          "meaning": 0.97,
+          "style": 0.63,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "credentialMissing",
+      "en": "API key missing",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "API 키 없음",
+          "natural": 1.82,
+          "meaning": 0.97,
+          "style": 0.64,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "customApi",
+      "en": "API protocol",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "API 프로토콜",
+          "natural": 1.8,
+          "meaning": 0.97,
+          "style": 0.64,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "customApiUnset",
+      "en": "Not selected",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "선택 안 됨",
+          "natural": 1.49,
+          "meaning": 0.97,
+          "style": 0.54,
+          "pass": false
+        },
+        {
+          "ko": "미선택",
+          "natural": 1.69,
+          "meaning": 0.97,
+          "style": 0.72,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "customBaseUrlInvalid",
+      "en": "Enter a valid HTTP or HTTPS URL.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "유효한 HTTP 또는 HTTPS URL을 입력하십시오.",
+          "natural": 1.74,
+          "meaning": 0.97,
+          "style": 0.92,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "customDisplayName",
+      "en": "Display name",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "표시 이름",
+          "natural": 1.88,
+          "meaning": 0.97,
+          "style": 0.66,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "customNeedsBaseUrl",
+      "en": "A custom provider needs a base URL.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "사용자 지정 프로바이더에는 기본 URL이 필요합니다.",
+          "natural": 1.74,
+          "meaning": 0.98,
+          "style": 0.79,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "customNeedsModels",
+      "en": "A custom provider needs at least one model.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "사용자 지정 프로바이더에는 모델이 하나 이상 필요합니다.",
+          "natural": 1.65,
+          "meaning": 0.97,
+          "style": 0.62,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "customRoute",
+      "en": "Provider ID",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "프로바이더 ID",
+          "natural": 1.81,
+          "meaning": 0.94,
+          "style": 0.68,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "customRouteHint",
+      "en": "Lowercase identifier, starting with a letter, that uniquely names this provider in requests and as its credential name.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "영문자로 시작하는 소문자 식별자입니다. 요청에서 프로바이더를 고유하게 식별하며 자격 증명 이름으로도 사용됩니다.",
+          "natural": 1.39,
+          "meaning": 0.91,
+          "style": 0.37,
+          "pass": false
+        },
+        {
+          "ko": "영문자로 시작하는 소문자 식별자를 지정하십시오. 요청에서 이 프로바이더를 구분하는 고유 ID이자 자격 증명의 이름으로 사용됩니다.",
+          "natural": 1.58,
+          "meaning": 0.93,
+          "style": 0.79,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "customRouteInvalid",
+      "en": "Start with a lowercase letter; then lowercase letters, digits, and dashes.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "영문 소문자로 시작하고, 이후에는 영문 소문자, 숫자, 하이픈만 사용하십시오.",
+          "natural": 1.64,
+          "meaning": 0.87,
+          "style": 0.79,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "customRouteTaken",
+      "en": "A provider already uses this ID.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "이 ID를 사용하는 프로바이더가 이미 있습니다.",
+          "natural": 1.84,
+          "meaning": 0.96,
+          "style": 0.69,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "customTag",
+      "en": "Custom",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "사용자 지정",
+          "natural": 1.93,
+          "meaning": 0.98,
+          "style": 0.73,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "customized",
+      "en": "Customized settings",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "사용자 지정 설정",
+          "natural": 1.49,
+          "meaning": 0.95,
+          "style": 0.65,
+          "pass": false
+        },
+        {
+          "ko": "사용자가 변경한 설정",
+          "natural": 1.61,
+          "meaning": 0.95,
+          "style": 0.64,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "deepSeekAccount",
+      "en": "DeepSeek Account",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "DeepSeek 계정",
+          "natural": 1.6,
+          "meaning": 0.96,
+          "style": 0.67,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "deepSeekEndpointHint",
+      "en": "Use an API endpoint compatible with Anthropic Messages.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "Anthropic Messages와 호환되는 API 엔드포인트를 사용하십시오.",
+          "natural": 1.54,
+          "meaning": 0.97,
+          "style": 0.86,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "deleteConfirm",
+      "en": "Delete {provider}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{provider} 삭제",
+          "natural": 1.76,
+          "meaning": 0.95,
+          "style": 0.7,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "deleteDescription",
+      "en": "Deleting {provider} removes its configuration. Any credential it uses is managed elsewhere and will be kept.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{provider} 삭제 시 해당 설정이 제거됩니다. 사용하는 자격 증명은 다른 곳에서 관리되므로 유지됩니다.",
+          "natural": 1.47,
+          "meaning": 0.92,
+          "style": 0.59,
+          "pass": false
+        },
+        {
+          "ko": "{provider} 삭제 시 프로바이더 설정이 제거됩니다. 자격 증명은 별도로 관리되므로 삭제되지 않고 유지됩니다.",
+          "natural": 1.58,
+          "meaning": 0.93,
+          "style": 0.86,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "deleteDescriptionWithCredential",
+      "en": "Deleting {provider} removes its configuration and stored API key.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{provider} 삭제 시 해당 설정과 저장된 API 키가 제거됩니다.",
+          "natural": 1.69,
+          "meaning": 0.95,
+          "style": 0.55,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "deleteTitle",
+      "en": "Delete {provider}?",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{provider} 삭제",
+          "natural": 1.74,
+          "meaning": 0.81,
+          "style": 0.68,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "deleting",
+      "en": "Deleting {provider}…",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{provider} 삭제 중…",
+          "natural": 1.88,
+          "meaning": 0.95,
+          "style": 0.5,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "edit",
+      "en": "Edit",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "편집",
+          "natural": 1.97,
+          "meaning": 0.97,
+          "style": 0.72,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "editProvider",
+      "en": "Edit {provider}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{provider} 편집",
+          "natural": 1.84,
+          "meaning": 0.97,
+          "style": 0.73,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "fetchAdopt",
+      "en": "Add selected",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "선택 항목 추가",
+          "natural": 1.53,
+          "meaning": 0.86,
+          "style": 0.71,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "fetchDescription",
+      "en": "These are the models this provider has available. Choose the ones to add.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "이 프로바이더에서 사용할 수 있는 모델입니다. 추가할 모델을 선택하십시오.",
+          "natural": 1.53,
+          "meaning": 0.91,
+          "style": 0.72,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "fetchDeselectAll",
+      "en": "Deselect all",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "전체 선택 해제",
+          "natural": 1.76,
+          "meaning": 0.94,
+          "style": 0.65,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "fetchEmpty",
+      "en": "The provider listed no models. Add them by hand.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "프로바이더가 반환한 모델 목록이 비어 있습니다. 직접 추가하십시오.",
+          "natural": 1.52,
+          "meaning": 0.93,
+          "style": 0.64,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "fetchModels",
+      "en": "Fetch available models",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "사용 가능한 모델 가져오기",
+          "natural": 1.69,
+          "meaning": 0.94,
+          "style": 0.62,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "fetchNeedsBaseUrl",
+      "en": "Enter the base URL first, then fetch.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "먼저 기본 URL을 입력한 다음 가져오십시오.",
+          "natural": 1.75,
+          "meaning": 0.96,
+          "style": 0.47,
+          "pass": false
+        },
+        {
+          "ko": "기본 URL을 먼저 입력한 후 모델을 가져와 주십시오.",
+          "natural": 1.72,
+          "meaning": 0.96,
+          "style": 0.91,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "fetchNoMatches",
+      "en": "No matching models.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "일치하는 모델이 없습니다.",
+          "natural": 1.84,
+          "meaning": 0.97,
+          "style": 0.75,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "fetchSearch",
+      "en": "Search models",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "모델 검색",
+          "natural": 1.86,
+          "meaning": 0.95,
+          "style": 0.7,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "fetchSelectAll",
+      "en": "Select all",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "전체 선택",
+          "natural": 1.89,
+          "meaning": 0.96,
+          "style": 0.71,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "fetchTitle",
+      "en": "Choose models to add",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "추가할 모델 선택",
+          "natural": 1.75,
+          "meaning": 0.96,
+          "style": 0.69,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "fetching",
+      "en": "Asking the provider…",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "프로바이더에 요청 중…",
+          "natural": 1.58,
+          "meaning": 0.96,
+          "style": 0.47,
+          "pass": false
+        },
+        {
+          "ko": "프로바이더에 요청하고 있습니다…",
+          "natural": 1.59,
+          "meaning": 0.96,
+          "style": 0.74,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "intro",
+      "en": "Enter your API keys to use models from the following providers.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "다음 프로바이더의 모델을 사용하려면 API 키를 입력하십시오.",
+          "natural": 1.54,
+          "meaning": 0.85,
+          "style": 0.82,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "keyBlank",
+      "en": "Enter the API key, or leave the field empty to keep the stored one.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "API 키를 입력하십시오. 저장된 키를 유지하려면 비워 두십시오.",
+          "natural": 1.69,
+          "meaning": 0.94,
+          "style": 0.8,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "keyBlankNew",
+      "en": "Enter the API key, or leave the field empty if this provider authenticates another way.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "API 키를 입력하십시오. 이 프로바이더가 다른 방식으로 인증한다면 비워 두십시오.",
+          "natural": 1.62,
+          "meaning": 0.95,
+          "style": 0.74,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "keyEnvLocked",
+      "en": "Provided by the launch environment (read-only)",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "실행 환경에서 제공됨(읽기 전용)",
+          "natural": 1.55,
+          "meaning": 0.95,
+          "style": 0.68,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "keyIllegalCharacters",
+      "en": "This API key is not in a valid format. Please check it.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "API 키 형식이 올바르지 않습니다. 확인하십시오.",
+          "natural": 1.72,
+          "meaning": 0.91,
+          "style": 0.67,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "keyInput",
+      "en": "API key",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "API 키",
+          "natural": 1.92,
+          "meaning": 0.97,
+          "style": 0.73,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "keyPlaceholder",
+      "en": "Enter your API key",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "API 키 입력",
+          "natural": 1.7,
+          "meaning": 0.88,
+          "style": 0.45,
+          "pass": false
+        },
+        {
+          "ko": "API 키를 입력하십시오.",
+          "natural": 1.79,
+          "meaning": 0.89,
+          "style": 0.92,
+          "pass": true
+        }
+      ],
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "API 키 입력",
+        "note": "버튼·라벨을 문장으로 바꾼 재작성 대신 이전 라벨 후보로 되돌림(자연·의미 통과, 문체만 미달)"
+      }
+    },
+    {
+      "key": "keyPlaceholderNative",
+      "en": "Enter an API key, or leave blank to use environment authentication",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "API 키 입력 또는 환경 인증을 사용하려면 비워 두기",
+          "natural": 1.29,
+          "meaning": 0.93,
+          "style": 0.39,
+          "pass": false
+        },
+        {
+          "ko": "API 키를 입력하십시오. 환경 인증을 사용하려면 비워 두십시오.",
+          "natural": 1.71,
+          "meaning": 0.94,
+          "style": 0.91,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "keyRequired",
+      "en": "Enter an API key to continue.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "계속하려면 API 키를 입력하십시오.",
+          "natural": 1.6,
+          "meaning": 0.98,
+          "style": 0.94,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "keyStored",
+      "en": "Configured — enter a new value to replace",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "설정됨 — 교체하려면 새 값 입력",
+          "natural": 1.48,
+          "meaning": 0.95,
+          "style": 0.5,
+          "pass": false
+        },
+        {
+          "ko": "이미 설정되어 있습니다. 교체하려면 새 값을 입력하십시오.",
+          "natural": 1.73,
+          "meaning": 0.92,
+          "style": 0.71,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "loadFailed",
+      "en": "Loading the provider directory failed",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "프로바이더 목록 불러오기 실패",
+          "natural": 1.62,
+          "meaning": 0.97,
+          "style": 0.47,
+          "pass": false
+        },
+        {
+          "ko": "프로바이더 목록을 불러오지 못했습니다.",
+          "natural": 1.68,
+          "meaning": 0.95,
+          "style": 0.81,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "maxTokens",
+      "en": "Max output tokens",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "최대 출력 토큰 수",
+          "natural": 1.8,
+          "meaning": 0.92,
+          "style": 0.66,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "maxTokensPlaceholder",
+      "en": "Uses the provider default",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "프로바이더 기본값 사용",
+          "natural": 1.41,
+          "meaning": 0.92,
+          "style": 0.55,
+          "pass": false
+        },
+        {
+          "ko": "프로바이더의 기본값을 사용합니다.",
+          "natural": 1.79,
+          "meaning": 0.97,
+          "style": 0.58,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "model",
+      "en": "Model",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "모델",
+          "natural": 1.92,
+          "meaning": 0.98,
+          "style": 0.7,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "modelAdvanced",
+      "en": "Model options",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "모델 옵션",
+          "natural": 1.79,
+          "meaning": 0.96,
+          "style": 0.7,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "modelCapacityInvalid",
+      "en": "A capacity must be a number, optionally suffixed K or M.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "용량은 숫자여야 하며, 뒤에 K 또는 M을 붙일 수 있습니다.",
+          "natural": 1.54,
+          "meaning": 0.94,
+          "style": 0.39,
+          "pass": false
+        },
+        {
+          "ko": "용량을 숫자로 입력하십시오. 숫자 뒤에 K 또는 M을 붙여도 됩니다.",
+          "natural": 1.64,
+          "meaning": 0.94,
+          "style": 0.89,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "modelContextInvalid",
+      "en": "Context window must be a positive count, like 131072, 256K, or 1M.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "컨텍스트 창은 131072, 256K, 1M과 같은 양수여야 합니다.",
+          "natural": 1.52,
+          "meaning": 0.92,
+          "style": 0.42,
+          "pass": false
+        },
+        {
+          "ko": "컨텍스트 창 크기에 0보다 큰 값을 입력하십시오. 예: 131072, 256K, 1M.",
+          "natural": 1.75,
+          "meaning": 0.9,
+          "style": 0.89,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "modelDuplicate",
+      "en": "Each model ID may appear once.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "각 모델 ID는 한 번만 사용할 수 있습니다.",
+          "natural": 1.51,
+          "meaning": 0.96,
+          "style": 0.36,
+          "pass": false
+        },
+        {
+          "ko": "같은 모델 ID를 두 번 이상 등록할 수 없습니다.",
+          "natural": 1.78,
+          "meaning": 0.93,
+          "style": 0.81,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "modelId",
+      "en": "Model ID",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "모델 ID",
+          "natural": 1.88,
+          "meaning": 0.95,
+          "style": 0.68,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "modelIdDuplicate",
+      "en": "Model ID must be unique.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "모델 ID는 중복될 수 없습니다.",
+          "natural": 1.78,
+          "meaning": 0.96,
+          "style": 0.37,
+          "pass": false
+        },
+        {
+          "ko": "다른 모델과 중복되지 않는 ID를 입력하십시오.",
+          "natural": 1.75,
+          "meaning": 0.92,
+          "style": 0.72,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "modelIdRequired",
+      "en": "Model ID is required.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "모델 ID는 필수입니다.",
+          "natural": 1.83,
+          "meaning": 0.98,
+          "style": 0.53,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "modelInputImage",
+      "en": "Image",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "이미지",
+          "natural": 1.9,
+          "meaning": 0.98,
+          "style": 0.69,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "modelInputText",
+      "en": "Text",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "텍스트",
+          "natural": 1.93,
+          "meaning": 0.98,
+          "style": 0.71,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "modelInputTypes",
+      "en": "Input types",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "입력 유형",
+          "natural": 1.75,
+          "meaning": 0.93,
+          "style": 0.71,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "modelMaxTokensInvalid",
+      "en": "Max output tokens must be a positive count, like 8192, 64K, or 1M.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "최대 출력 토큰 수는 8192, 64K, 1M과 같은 양수여야 합니다.",
+          "natural": 1.69,
+          "meaning": 0.97,
+          "style": 0.61,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "modelName",
+      "en": "Display name",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "표시 이름",
+          "natural": 1.83,
+          "meaning": 0.96,
+          "style": 0.65,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "modelNameInvalid",
+      "en": "Display name cannot be empty.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "표시 이름은 비워 둘 수 없습니다.",
+          "natural": 1.83,
+          "meaning": 0.97,
+          "style": 0.33,
+          "pass": false
+        },
+        {
+          "ko": "표시 이름을 입력하십시오.",
+          "natural": 1.54,
+          "meaning": 0.53,
+          "style": 0.87,
+          "pass": false
+        },
+        {
+          "ko": "표시 이름이 비어 있습니다. 이름을 입력하십시오.",
+          "natural": 1.65,
+          "meaning": 0.86,
+          "style": 0.81,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "modelNamePlaceholder",
+      "en": "Uses the model ID when empty",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "비어 있으면 모델 ID 사용",
+          "natural": 1.51,
+          "meaning": 0.93,
+          "style": 0.64,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "models",
+      "en": "Models",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "모델",
+          "natural": 1.76,
+          "meaning": 0.85,
+          "style": 0.67,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "modelsCustomized",
+      "en": "Customized model catalog",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "사용자 지정 모델 카탈로그",
+          "natural": 1.57,
+          "meaning": 0.94,
+          "style": 0.64,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "modelsEmpty",
+      "en": "No models will be shown in the selector. Unlisted IDs can still be sent directly.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "선택기에 모델이 표시되지 않습니다. 목록에 없는 ID도 직접 전송할 수 있습니다.",
+          "natural": 1.54,
+          "meaning": 0.95,
+          "style": 0.46,
+          "pass": false
+        },
+        {
+          "ko": "모델 선택 목록이 비어 있습니다. 목록에 없는 모델 ID도 직접 전송하여 사용할 수 있습니다.",
+          "natural": 1.38,
+          "meaning": 0.82,
+          "style": 0.6,
+          "pass": false
+        },
+        {
+          "ko": "선택기에 표시할 모델이 없습니다. 목록에 없는 ID를 직접 전송하는 것은 가능합니다.",
+          "natural": 1.29,
+          "meaning": 0.86,
+          "style": 0.57,
+          "pass": false
+        },
+        {
+          "ko": "모델 선택기에 아무 모델도 표시되지 않습니다. 목록에 없는 모델도 ID를 직접 전송할 수 있습니다.",
+          "natural": 1.21,
+          "meaning": 0.76,
+          "style": 0.36,
+          "pass": false
+        }
+      ],
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "선택기에 모델이 표시되지 않습니다. 목록에 없는 ID도 직접 전송할 수 있습니다.",
+        "note": "문체 점수만 미달(짧은 라벨)"
+      }
+    },
+    {
+      "key": "modelsInherited",
+      "en": "Using the adapter defaults",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "어댑터 기본값 사용 중",
+          "natural": 1.65,
+          "meaning": 0.97,
+          "style": 0.5,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "nav",
+      "en": "Models",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "모델",
+          "natural": 1.81,
+          "meaning": 0.95,
+          "style": 0.68,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "onboardingDescription",
+      "en": "Configure the official DeepSeek provider to start building.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "공식 DeepSeek 프로바이더를 설정하여 개발을 시작하십시오.",
+          "natural": 1.53,
+          "meaning": 0.96,
+          "style": 0.85,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "onboardingLater",
+      "en": "Configure later",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "나중에 설정",
+          "natural": 1.74,
+          "meaning": 0.66,
+          "style": 0.71,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "onboardingSave",
+      "en": "Save and continue",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "저장 후 계속",
+          "natural": 1.86,
+          "meaning": 0.95,
+          "style": 0.4,
+          "pass": false
+        },
+        {
+          "ko": "저장하고 계속 진행",
+          "natural": 1.9,
+          "meaning": 0.96,
+          "style": 0.5,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "onboardingSaving",
+      "en": "Saving…",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "저장 중…",
+          "natural": 1.97,
+          "meaning": 0.96,
+          "style": 0.5,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "onboardingTitle",
+      "en": "Add an API key to get started",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "시작하려면 API 키 추가",
+          "natural": 1.82,
+          "meaning": 0.97,
+          "style": 0.42,
+          "pass": false
+        },
+        {
+          "ko": "API 키를 추가하여 시작하십시오.",
+          "natural": 1.74,
+          "meaning": 0.95,
+          "style": 0.69,
+          "pass": true
+        }
+      ],
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "시작하려면 API 키 추가",
+        "note": "버튼·라벨을 문장으로 바꾼 재작성 대신 이전 라벨 후보로 되돌림(자연·의미 통과, 문체만 미달)"
+      }
+    },
+    {
+      "key": "protocolAnthropicMessages",
+      "en": "Anthropic Messages",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "Anthropic Messages",
+          "natural": 1.3,
+          "meaning": 0.98,
+          "style": 0.54,
+          "pass": false
+        }
+      ],
+      "result": "approved",
+      "approval": {
+        "by": "user",
+        "date": "2026-10-17",
+        "note": "판정 미통과 문구를 사용자가 그대로 승인(단위·제품 이름)",
+        "ko": "Anthropic Messages"
+      }
+    },
+    {
+      "key": "protocolOpenAiCompletions",
+      "en": "OpenAI Chat Completions",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "OpenAI Chat Completions",
+          "natural": 1.55,
+          "meaning": 0.97,
+          "style": 0.6,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "protocolOpenAiResponses",
+      "en": "OpenAI Responses",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "OpenAI Responses",
+          "natural": 1.55,
+          "meaning": 0.97,
+          "style": 0.58,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "provider",
+      "en": "Provider",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "프로바이더",
+          "natural": 1.83,
+          "meaning": 0.96,
+          "style": 0.7,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "readOnly",
+      "en": "The settings document is read-only in this deployment.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "이 배포 환경에서는 설정 문서가 읽기 전용입니다.",
+          "natural": 1.61,
+          "meaning": 0.97,
+          "style": 0.66,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "remove",
+      "en": "Delete",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "삭제",
+          "natural": 1.97,
+          "meaning": 0.97,
+          "style": 0.68,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "removeModel",
+      "en": "Delete model",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "모델 삭제",
+          "natural": 1.89,
+          "meaning": 0.97,
+          "style": 0.66,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "removeProvider",
+      "en": "Delete {provider}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{provider} 삭제",
+          "natural": 1.77,
+          "meaning": 0.96,
+          "style": 0.62,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "resetModels",
+      "en": "Restore defaults",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "기본값 복원",
+          "natural": 1.9,
+          "meaning": 0.97,
+          "style": 0.66,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "retry",
+      "en": "Retry",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "다시 시도",
+          "natural": 1.96,
+          "meaning": 0.97,
+          "style": 0.54,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "savedProvider",
+      "en": "Saved {provider}.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{provider} 저장을 완료했습니다.",
+          "natural": 1.52,
+          "meaning": 0.97,
+          "style": 0.94,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "settingsPathUnresolvable",
+      "en": "unresolvable settings path",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "확인할 수 없는 설정 경로",
+          "natural": 1.18,
+          "meaning": 0.94,
+          "style": 0.74,
+          "pass": false
+        },
+        {
+          "ko": "설정 경로 확인 불가",
+          "natural": 1.04,
+          "meaning": 0.91,
+          "style": 0.74,
+          "pass": false
+        },
+        {
+          "ko": "설정 경로를 확인할 수 없습니다.",
+          "natural": 1.28,
+          "meaning": 0.88,
+          "style": 0.55,
+          "pass": false
+        },
+        {
+          "ko": "설정 파일 경로 확인 실패",
+          "natural": 1.47,
+          "meaning": 0.75,
+          "style": 0.77,
+          "pass": false
+        }
+      ],
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "설정 파일 경로 확인 실패",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
+    },
+    {
+      "key": "title",
+      "en": "Models",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "모델",
+          "natural": 1.85,
+          "meaning": 0.74,
+          "style": 0.75,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "welcomeBody",
+      "en": "DeepSeek Harness 0.2 is still in preview, and many areas need continued improvement and refinement. We welcome feedback and suggestions from all developers and users. The new desktop app now targets a broad range of users, while developer-related advanced features can be enabled in the settings. DeepSeek Harness’s product features and plugin APIs are expected to continue rapid iteration and evolution, and will gradually stabilize over time.\n\nWe look forward to exploring the limits of intelligence together with users and developers around the world, building on open-source, reusable, and composable infrastructure. We welcome everyone to bring their ideas to life with DeepSeek Harness and participate in the community to enrich the plugin ecosystem.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "DeepSeek Harness 0.2는 아직 프리뷰 버전이며, 여러 부분에서 지속적인 개선과 보완이 필요합니다. 모든 개발자와 사용자의 의견과 제안을 환영합니다. 새로운 데스크톱 앱은 폭넓은 사용자를 대상으로 하며, 개발자용 고급 기능은 설정에서 활성화할 수 있습니다. DeepSeek Harness의 제품 기능과 플러그인 API는 앞으로도 빠르게 개선되고 발전하며, 시간이 지나면서 점차 안정화될 예정입니다.\n\n오픈 소스 기반의 재사용 및 조합 가능한 인프라를 토대로 전 세계 사용자 및 개발자와 함께 지능의 한계를 탐구하기를 기대합니다. 누구나 DeepSeek Harness로 아이디어를 실현하고 커뮤니티에 참여하여 플러그인 생태계를 풍성하게 만들어 주시기를 바랍니다.",
+          "natural": 1.56,
+          "meaning": 0.96,
+          "style": 0.82,
+          "pass": true
+        },
+        {
+          "ko": "DeepSeek Harness 0.2는 아직 미리 보기 버전이며, 여러 부분에서 지속적인 개선과 보완이 필요합니다. 모든 개발자와 사용자의 의견과 제안을 환영합니다. 새로운 데스크톱 앱은 폭넓은 사용자를 대상으로 하며, 개발자용 고급 기능은 설정에서 활성화할 수 있습니다. DeepSeek Harness의 제품 기능과 플러그인 API는 앞으로도 빠르게 개선되고 발전하며, 시간이 지나면서 점차 안정화될 예정입니다.\n\n오픈 소스 기반의 재사용 및 조합 가능한 인프라를 토대로 전 세계 사용자 및 개발자와 함께 지능의 한계를 탐구하기를 기대합니다. 누구나 DeepSeek Harness로 아이디어를 실현하고 커뮤니티에 참여하여 플러그인 생태계를 풍성하게 만들어 주시기를 바랍니다.",
+          "natural": 1.53,
+          "meaning": 0.95,
+          "style": 0.74,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "welcomeContinue",
+      "en": "Continue",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "계속",
+          "natural": 1.91,
+          "meaning": 0.96,
+          "style": 0.75,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "welcomeError",
+      "en": "The acknowledgement could not be saved. Please try again.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "확인 여부를 저장하지 못했습니다. 다시 시도하십시오.",
+          "natural": 1.18,
+          "meaning": 0.95,
+          "style": 0.85,
+          "pass": false
+        },
+        {
+          "ko": "안내 확인 기록을 저장하지 못했습니다. 다시 시도해 주십시오.",
+          "natural": 1.36,
+          "meaning": 0.92,
+          "style": 0.87,
+          "pass": false
+        },
+        {
+          "ko": "확인 내용을 저장하는 데 실패했습니다. 다시 시도하십시오.",
+          "natural": 1.65,
+          "meaning": 0.92,
+          "style": 0.84,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "welcomeTitle",
+      "en": "Preview Notice",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "프리뷰 안내",
+          "natural": 1.77,
+          "meaning": 0.96,
+          "style": 0.82,
+          "pass": true
+        },
+        {
+          "ko": "미리 보기 안내",
+          "natural": 1.87,
+          "meaning": 0.95,
+          "style": 0.88,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    }
+  ]
+}

@@ -1,0 +1,3482 @@
+{
+  "namespace": "trajectory",
+  "date": "2026-10-17",
+  "engine": "jev",
+  "thresholds": {
+    "natural": 1.5,
+    "meaning": 0.6,
+    "style": 0.5
+  },
+  "rows": [
+    {
+      "key": "attachment.imageName",
+      "en": "Image {index}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "이미지 {index}",
+          "natural": 1.71,
+          "meaning": 0.94,
+          "style": 0.63,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "attachment.list",
+      "en": "Attachments",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "첨부 파일",
+          "natural": 1.78,
+          "meaning": 0.89,
+          "style": 0.6,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "block.label",
+      "en": "Block #{index} {type}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "블록 #{index} {type}",
+          "natural": 1.63,
+          "meaning": 0.95,
+          "style": 0.56,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "block.openSummary",
+      "en": "Open Block #{index} tool call summary",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "블록 #{index} 도구 호출 요약 열기",
+          "natural": 1.37,
+          "meaning": 0.95,
+          "style": 0.53,
+          "pass": false
+        },
+        {
+          "ko": "블록 #{index}의 도구 호출 요약을 여십시오",
+          "natural": 1.05,
+          "meaning": 0.9,
+          "style": 0.84,
+          "pass": false
+        },
+        {
+          "ko": "블록 #{index}: 도구 호출 요약 보기",
+          "natural": 1.5,
+          "meaning": 0.89,
+          "style": 0.61,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "block.openSummaryTitle",
+      "en": "Open tool call summary",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "도구 호출 요약 열기",
+          "natural": 1.77,
+          "meaning": 0.96,
+          "style": 0.66,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "code.copyOutput",
+      "en": "Copy output",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "출력 복사",
+          "natural": 1.95,
+          "meaning": 0.96,
+          "style": 0.65,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "code.copySource",
+      "en": "Copy code",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "코드 복사",
+          "natural": 1.97,
+          "meaning": 0.97,
+          "style": 0.63,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "code.originalJson",
+      "en": "Original JSON",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "원본 JSON",
+          "natural": 1.85,
+          "meaning": 0.95,
+          "style": 0.63,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "code.output",
+      "en": "Output",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "출력",
+          "natural": 1.94,
+          "meaning": 0.95,
+          "style": 0.65,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "code.running",
+      "en": "Running…",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "실행 중…",
+          "natural": 1.94,
+          "meaning": 0.95,
+          "style": 0.55,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "code.source",
+      "en": "Code",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "코드",
+          "natural": 1.97,
+          "meaning": 0.97,
+          "style": 0.69,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "column.input",
+      "en": "Input",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "입력",
+          "natural": 1.95,
+          "meaning": 0.97,
+          "style": 0.6,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "column.model",
+      "en": "Model",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "모델",
+          "natural": 1.86,
+          "meaning": 0.94,
+          "style": 0.7,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "column.output",
+      "en": "Output",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "출력",
+          "natural": 1.92,
+          "meaning": 0.94,
+          "style": 0.61,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "column.think",
+      "en": "Think",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "생각",
+          "natural": 1.34,
+          "meaning": 0.94,
+          "style": 0.69,
+          "pass": false
+        },
+        {
+          "ko": "사고",
+          "natural": 1.28,
+          "meaning": 0.92,
+          "style": 0.75,
+          "pass": false
+        },
+        {
+          "ko": "생각 과정",
+          "natural": 1.47,
+          "meaning": 0.89,
+          "style": 0.84,
+          "pass": false
+        },
+        {
+          "ko": "사고 과정",
+          "natural": 1.37,
+          "meaning": 0.82,
+          "style": 0.73,
+          "pass": false
+        }
+      ],
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "생각 과정",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
+    },
+    {
+      "key": "column.time",
+      "en": "Time",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "시간",
+          "natural": 1.75,
+          "meaning": 0.94,
+          "style": 0.66,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "column.tools",
+      "en": "Tools",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "도구",
+          "natural": 1.87,
+          "meaning": 0.96,
+          "style": 0.7,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "details.assistantMessage",
+      "en": "Assistant Message",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "어시스턴트 메시지",
+          "natural": 1.55,
+          "meaning": 0.97,
+          "style": 0.63,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "details.close",
+      "en": "Close details",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "상세 정보 닫기",
+          "natural": 1.85,
+          "meaning": 0.97,
+          "style": 0.66,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "details.compacted",
+      "en": "Compacted",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "압축됨",
+          "natural": 1.32,
+          "meaning": 0.95,
+          "style": 0.67,
+          "pass": false
+        },
+        {
+          "ko": "압축 완료",
+          "natural": 1.75,
+          "meaning": 0.95,
+          "style": 0.62,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "details.error",
+      "en": "Error",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "오류",
+          "natural": 1.92,
+          "meaning": 0.96,
+          "style": 0.76,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "details.event",
+      "en": "Event details",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "이벤트 상세 정보",
+          "natural": 1.81,
+          "meaning": 0.98,
+          "style": 0.66,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "details.failure.auth",
+      "en": "API key is invalid",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "API 키가 유효하지 않습니다",
+          "natural": 1.95,
+          "meaning": 0.97,
+          "style": 0.69,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "details.hierarchy",
+      "en": "Hierarchy",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "계층 구조",
+          "natural": 1.79,
+          "meaning": 0.97,
+          "style": 0.67,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "details.model",
+      "en": "Model",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "모델",
+          "natural": 1.74,
+          "meaning": 0.95,
+          "style": 0.71,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "details.provider",
+      "en": "Provider",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "프로바이더",
+          "natural": 1.61,
+          "meaning": 0.94,
+          "style": 0.67,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "details.purpose",
+      "en": "Purpose",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "목적",
+          "natural": 1.8,
+          "meaning": 0.97,
+          "style": 0.63,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "details.resize",
+      "en": "Resize event details",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "이벤트 상세 정보 크기 조절",
+          "natural": 1.35,
+          "meaning": 0.94,
+          "style": 0.5,
+          "pass": false
+        },
+        {
+          "ko": "이벤트 상세 정보 창 크기 조절",
+          "natural": 1.46,
+          "meaning": 0.87,
+          "style": 0.56,
+          "pass": false
+        },
+        {
+          "ko": "이벤트 상세 정보의 크기를 조절하십시오",
+          "natural": 1.36,
+          "meaning": 0.9,
+          "style": 0.77,
+          "pass": false
+        },
+        {
+          "ko": "이벤트 상세 정보 표시 영역 크기 조정",
+          "natural": 1.38,
+          "meaning": 0.85,
+          "style": 0.72,
+          "pass": false
+        }
+      ],
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "이벤트 상세 정보의 크기를 조절하십시오",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
+    },
+    {
+      "key": "details.resizeTitle",
+      "en": "Drag to resize. Double-click to reset.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "드래그하여 크기를 조절하십시오. 두 번 클릭하면 초기화됩니다.",
+          "natural": 1.82,
+          "meaning": 0.96,
+          "style": 0.81,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "details.result",
+      "en": "Result",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "결과",
+          "natural": 1.92,
+          "meaning": 0.97,
+          "style": 0.67,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "details.retry",
+      "en": "Retry",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "재시도",
+          "natural": 1.96,
+          "meaning": 0.96,
+          "style": 0.75,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "details.retryDelay",
+      "en": "Retry delay",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "재시도 대기 시간",
+          "natural": 1.83,
+          "meaning": 0.95,
+          "style": 0.72,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "details.scheduled",
+      "en": "Scheduled",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "예약됨",
+          "natural": 1.75,
+          "meaning": 0.93,
+          "style": 0.63,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "details.source",
+      "en": "Source",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "출처",
+          "natural": 1.9,
+          "meaning": 0.95,
+          "style": 0.64,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "details.status",
+      "en": "Status",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "상태",
+          "natural": 1.98,
+          "meaning": 0.96,
+          "style": 0.65,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "details.subtoolCalls",
+      "en": "Subtool calls",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "하위 도구 호출",
+          "natural": 1.53,
+          "meaning": 0.87,
+          "style": 0.67,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "details.toolCall",
+      "en": "Tool Call",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "도구 호출",
+          "natural": 1.57,
+          "meaning": 0.45,
+          "style": 0.66,
+          "pass": false
+        },
+        {
+          "ko": "도구 호출 내역",
+          "natural": 1.61,
+          "meaning": 0.76,
+          "style": 0.66,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "details.toolCalls",
+      "en": "Tool calls",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "도구 호출",
+          "natural": 1.63,
+          "meaning": 0.62,
+          "style": 0.68,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "group.compaction",
+      "en": "Compaction {seq}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "압축 {seq}",
+          "natural": 1.23,
+          "meaning": 0.89,
+          "style": 0.67,
+          "pass": false
+        },
+        {
+          "ko": "컨텍스트 압축 {seq}",
+          "natural": 1.44,
+          "meaning": 0.85,
+          "style": 0.57,
+          "pass": false
+        },
+        {
+          "ko": "{seq}번째 압축",
+          "natural": 1.3,
+          "meaning": 0.9,
+          "style": 0.7,
+          "pass": false
+        },
+        {
+          "ko": "압축 작업 {seq}",
+          "natural": 1.59,
+          "meaning": 0.83,
+          "style": 0.63,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "group.message",
+      "en": "Message",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "메시지",
+          "natural": 1.94,
+          "meaning": 0.96,
+          "style": 0.73,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "group.step",
+      "en": "Step {step}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "단계 {step}",
+          "natural": 1.77,
+          "meaning": 0.96,
+          "style": 0.72,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "history.clickToLoadEarlier",
+      "en": "Click to load earlier history",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "클릭하여 이전 기록을 불러오십시오",
+          "natural": 1.23,
+          "meaning": 0.95,
+          "style": 0.89,
+          "pass": false
+        },
+        {
+          "ko": "이전 기록을 불러오려면 클릭하십시오",
+          "natural": 1.67,
+          "meaning": 0.96,
+          "style": 0.91,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "history.loadEarlier",
+      "en": "Load earlier history",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "이전 기록 불러오기",
+          "natural": 1.65,
+          "meaning": 0.96,
+          "style": 0.66,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "history.loadingEarlier",
+      "en": "Loading earlier history…",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "이전 기록 불러오는 중…",
+          "natural": 1.65,
+          "meaning": 0.96,
+          "style": 0.39,
+          "pass": false
+        },
+        {
+          "ko": "이전 기록을 불러오고 있습니다…",
+          "natural": 1.79,
+          "meaning": 0.96,
+          "style": 0.81,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "history.loadingEarlierAria",
+      "en": "Loading earlier history…",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "이전 기록 불러오는 중…",
+          "natural": 1.66,
+          "meaning": 0.97,
+          "style": 0.45,
+          "pass": false
+        },
+        {
+          "ko": "이전 기록을 불러오고 있습니다…",
+          "natural": 1.78,
+          "meaning": 0.96,
+          "style": 0.8,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "history.loadingTrajectory",
+      "en": "Loading trajectory…",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "Trajectory 불러오는 중…",
+          "natural": 0.89,
+          "meaning": 0.95,
+          "style": 0.59,
+          "pass": false
+        },
+        {
+          "ko": "Trajectory를 불러오고 있습니다…",
+          "natural": 0.84,
+          "meaning": 0.93,
+          "style": 0.87,
+          "pass": false
+        },
+        {
+          "ko": "Trajectory 로딩 중…",
+          "natural": 1.58,
+          "meaning": 0.95,
+          "style": 0.55,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "kind.assistant",
+      "en": "ASSISTANT",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "어시스턴트",
+          "natural": 1.72,
+          "meaning": 0.9,
+          "style": 0.76,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "kind.compacted",
+      "en": "COMPACTED",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "압축됨",
+          "natural": 1.32,
+          "meaning": 0.95,
+          "style": 0.65,
+          "pass": false
+        },
+        {
+          "ko": "압축 완료",
+          "natural": 1.76,
+          "meaning": 0.88,
+          "style": 0.59,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "kind.context",
+      "en": "CONTEXT",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "컨텍스트",
+          "natural": 1.67,
+          "meaning": 0.96,
+          "style": 0.69,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "kind.message",
+      "en": "Message",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "메시지",
+          "natural": 1.7,
+          "meaning": 0.96,
+          "style": 0.7,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "kind.sub",
+      "en": "Sub",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "하위 항목",
+          "natural": 1.06,
+          "meaning": 0.77,
+          "style": 0.72,
+          "pass": false
+        },
+        {
+          "ko": "하위",
+          "natural": 0.95,
+          "meaning": 0.86,
+          "style": 0.72,
+          "pass": false
+        },
+        {
+          "ko": "하위 작업",
+          "natural": 1.17,
+          "meaning": 0.69,
+          "style": 0.76,
+          "pass": false
+        },
+        {
+          "ko": "하위 요소",
+          "natural": 1.17,
+          "meaning": 0.78,
+          "style": 0.7,
+          "pass": false
+        }
+      ],
+      "result": "unresolved"
+    },
+    {
+      "key": "kind.subtool",
+      "en": "SUBTOOL",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "하위 도구",
+          "natural": 1.18,
+          "meaning": 0.9,
+          "style": 0.69,
+          "pass": false
+        },
+        {
+          "ko": "하위 도구 항목",
+          "natural": 1.22,
+          "meaning": 0.88,
+          "style": 0.61,
+          "pass": false
+        },
+        {
+          "ko": "하위 호출 도구",
+          "natural": 1.27,
+          "meaning": 0.81,
+          "style": 0.66,
+          "pass": false
+        },
+        {
+          "ko": "서브 도구",
+          "natural": 1.56,
+          "meaning": 0.88,
+          "style": 0.66,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "kind.system",
+      "en": "SYSTEM",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "시스템",
+          "natural": 1.82,
+          "meaning": 0.96,
+          "style": 0.7,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "kind.tool",
+      "en": "TOOL",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "도구",
+          "natural": 1.87,
+          "meaning": 0.97,
+          "style": 0.68,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "kind.user",
+      "en": "USER",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "사용자",
+          "natural": 1.78,
+          "meaning": 0.97,
+          "style": 0.72,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "layout.compacted",
+      "en": "Context compacted",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "컨텍스트 압축됨",
+          "natural": 1.46,
+          "meaning": 0.97,
+          "style": 0.6,
+          "pass": false
+        },
+        {
+          "ko": "컨텍스트 압축 완료",
+          "natural": 1.76,
+          "meaning": 0.96,
+          "style": 0.49,
+          "pass": false
+        },
+        {
+          "ko": "컨텍스트가 압축되었습니다",
+          "natural": 1.73,
+          "meaning": 0.96,
+          "style": 0.5,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "layout.compacting",
+      "en": "Compacting context…",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "컨텍스트 압축 중…",
+          "natural": 1.68,
+          "meaning": 0.97,
+          "style": 0.43,
+          "pass": false
+        },
+        {
+          "ko": "컨텍스트를 압축하고 있습니다…",
+          "natural": 1.76,
+          "meaning": 0.96,
+          "style": 0.79,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "layout.compactionFailed",
+      "en": "Compaction failed",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "압축 실패",
+          "natural": 1.84,
+          "meaning": 0.96,
+          "style": 0.68,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "layout.compactionInterrupted",
+      "en": "Compaction was interrupted before completion.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "압축이 완료되기 전에 중단되었습니다.",
+          "natural": 1.48,
+          "meaning": 0.97,
+          "style": 0.54,
+          "pass": false
+        },
+        {
+          "ko": "압축 작업이 완료되기 전에 중단되었습니다.",
+          "natural": 1.64,
+          "meaning": 0.97,
+          "style": 0.5,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "layout.fileAttachments",
+      "en": "Files ×{count}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "파일 ×{count}",
+          "natural": 1.49,
+          "meaning": 0.91,
+          "style": 0.73,
+          "pass": false
+        },
+        {
+          "ko": "파일 {count}개",
+          "natural": 1.4,
+          "meaning": 0.81,
+          "style": 0.56,
+          "pass": false
+        },
+        {
+          "ko": "파일 수: {count}개",
+          "natural": 1.45,
+          "meaning": 0.86,
+          "style": 0.61,
+          "pass": false
+        },
+        {
+          "ko": "파일 총 {count}개",
+          "natural": 1.51,
+          "meaning": 0.85,
+          "style": 0.65,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "layout.imageCount",
+      "en": "Images ×{count}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "이미지 ×{count}",
+          "natural": 1.38,
+          "meaning": 0.95,
+          "style": 0.64,
+          "pass": false
+        },
+        {
+          "ko": "이미지 {count}개",
+          "natural": 1.56,
+          "meaning": 0.91,
+          "style": 0.56,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "layout.initialSystemPrompt",
+      "en": "Initial System Prompt",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "초기 시스템 프롬프트",
+          "natural": 1.7,
+          "meaning": 0.97,
+          "style": 0.67,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "layout.systemPromptAndToolsUpdated",
+      "en": "System Prompt and Tools Updated",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "시스템 프롬프트 및 도구 업데이트됨",
+          "natural": 1.75,
+          "meaning": 0.96,
+          "style": 0.48,
+          "pass": false
+        },
+        {
+          "ko": "시스템 프롬프트 및 도구 업데이트 완료",
+          "natural": 1.62,
+          "meaning": 0.96,
+          "style": 0.54,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "layout.systemPromptUpdated",
+      "en": "System Prompt Updated",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "시스템 프롬프트 업데이트됨",
+          "natural": 1.82,
+          "meaning": 0.97,
+          "style": 0.52,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "layout.toolAdded",
+      "en": "Tool added: {name}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "추가된 도구: {name}",
+          "natural": 1.81,
+          "meaning": 0.97,
+          "style": 0.58,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "layout.toolCallOnly",
+      "en": "Tool call only",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "도구 호출만 있음",
+          "natural": 1.48,
+          "meaning": 0.96,
+          "style": 0.68,
+          "pass": false
+        },
+        {
+          "ko": "도구 호출만 포함",
+          "natural": 1.53,
+          "meaning": 0.95,
+          "style": 0.65,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "layout.toolRemoved",
+      "en": "Tool removed: {name}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "제거된 도구: {name}",
+          "natural": 1.81,
+          "meaning": 0.97,
+          "style": 0.47,
+          "pass": false
+        },
+        {
+          "ko": "도구 제거: {name}",
+          "natural": 1.64,
+          "meaning": 0.97,
+          "style": 0.66,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "layout.toolUpdateNotice",
+      "en": "Tools updated",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "도구 업데이트됨",
+          "natural": 1.74,
+          "meaning": 0.92,
+          "style": 0.5,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "layout.toolsAdded",
+      "en": "Added: {names}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "추가됨: {names}",
+          "natural": 1.42,
+          "meaning": 0.94,
+          "style": 0.64,
+          "pass": false
+        },
+        {
+          "ko": "추가: {names}",
+          "natural": 1.59,
+          "meaning": 0.95,
+          "style": 0.69,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "layout.toolsAddedCount",
+      "en": "{count} added",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{count}개 추가됨",
+          "natural": 1.7,
+          "meaning": 0.92,
+          "style": 0.56,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "layout.toolsChanged",
+      "en": "{added} added, {removed} removed",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{added}개 추가됨, {removed}개 제거됨",
+          "natural": 1.76,
+          "meaning": 0.97,
+          "style": 0.38,
+          "pass": false
+        },
+        {
+          "ko": "{added}개 추가, {removed}개 제거",
+          "natural": 1.75,
+          "meaning": 0.96,
+          "style": 0.6,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "layout.toolsRemoved",
+      "en": "Removed: {names}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "제거됨: {names}",
+          "natural": 1.73,
+          "meaning": 0.96,
+          "style": 0.45,
+          "pass": false
+        },
+        {
+          "ko": "제거: {names}",
+          "natural": 1.75,
+          "meaning": 0.97,
+          "style": 0.62,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "layout.toolsRemovedCount",
+      "en": "{count} removed",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{count}개 제거됨",
+          "natural": 1.74,
+          "meaning": 0.95,
+          "style": 0.48,
+          "pass": false
+        },
+        {
+          "ko": "{count}개 제거",
+          "natural": 1.77,
+          "meaning": 0.96,
+          "style": 0.65,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "layout.toolsUpdated",
+      "en": "Tools Updated",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "도구 업데이트됨",
+          "natural": 1.79,
+          "meaning": 0.92,
+          "style": 0.56,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "options.json",
+      "en": "Request options JSON",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "요청 옵션 JSON",
+          "natural": 1.42,
+          "meaning": 0.95,
+          "style": 0.63,
+          "pass": false
+        },
+        {
+          "ko": "요청 옵션(JSON)",
+          "natural": 1.59,
+          "meaning": 0.95,
+          "style": 0.7,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "options.notRecorded",
+      "en": "Options not recorded",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "옵션이 기록되지 않음",
+          "natural": 1.66,
+          "meaning": 0.97,
+          "style": 0.59,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "record.namedParametersJson",
+      "en": "{name} parameters JSON",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{name} 매개변수 JSON",
+          "natural": 1.45,
+          "meaning": 0.94,
+          "style": 0.56,
+          "pass": false
+        },
+        {
+          "ko": "{name}의 매개변수(JSON)",
+          "natural": 1.51,
+          "meaning": 0.96,
+          "style": 0.64,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "record.noContent",
+      "en": "No content",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "내용 없음",
+          "natural": 1.89,
+          "meaning": 0.97,
+          "style": 0.62,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "record.noOutput",
+      "en": "No output",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "출력 없음",
+          "natural": 1.78,
+          "meaning": 0.97,
+          "style": 0.62,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "record.noPayload",
+      "en": "No payload captured",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "수집된 페이로드 없음",
+          "natural": 1.56,
+          "meaning": 0.96,
+          "style": 0.64,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "record.noResult",
+      "en": "No result captured",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "수집된 결과 없음",
+          "natural": 1.44,
+          "meaning": 0.96,
+          "style": 0.7,
+          "pass": false
+        },
+        {
+          "ko": "기록된 결과 없음",
+          "natural": 1.56,
+          "meaning": 0.97,
+          "style": 0.66,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "record.outputJson",
+      "en": "Result JSON",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "결과 JSON",
+          "natural": 1.6,
+          "meaning": 0.95,
+          "style": 0.71,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "record.parameters",
+      "en": "Parameters",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "매개변수",
+          "natural": 1.88,
+          "meaning": 0.96,
+          "style": 0.68,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "record.parametersJson",
+      "en": "parameters JSON",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "매개변수 JSON",
+          "natural": 1.38,
+          "meaning": 0.95,
+          "style": 0.67,
+          "pass": false
+        },
+        {
+          "ko": "매개변수(JSON)",
+          "natural": 1.67,
+          "meaning": 0.96,
+          "style": 0.68,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "record.payloadJson",
+      "en": "Payload JSON",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "페이로드 JSON",
+          "natural": 1.71,
+          "meaning": 0.96,
+          "style": 0.63,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "record.resultJson",
+      "en": "Result JSON",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "결과 JSON",
+          "natural": 1.8,
+          "meaning": 0.96,
+          "style": 0.57,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "record.schemaUnavailable",
+      "en": "Schema unavailable",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "스키마를 사용할 수 없음",
+          "natural": 1.57,
+          "meaning": 0.96,
+          "style": 0.6,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "record.systemPrompt",
+      "en": "System Prompt",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "시스템 프롬프트",
+          "natural": 1.88,
+          "meaning": 0.97,
+          "style": 0.66,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "record.systemPromptMissing",
+      "en": "No system prompt in this request",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "이 요청에 시스템 프롬프트 없음",
+          "natural": 1.63,
+          "meaning": 0.98,
+          "style": 0.54,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "record.thinking",
+      "en": "Thinking",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "생각",
+          "natural": 1.63,
+          "meaning": 0.95,
+          "style": 0.74,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "record.toolCallOnly",
+      "en": "(tool call only)",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "(도구 호출만 있음)",
+          "natural": 1.63,
+          "meaning": 0.94,
+          "style": 0.68,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "record.tools",
+      "en": "Tools",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "도구",
+          "natural": 1.77,
+          "meaning": 0.96,
+          "style": 0.68,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "record.toolsMissing",
+      "en": "No tools in this request",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "이 요청에 도구 없음",
+          "natural": 1.72,
+          "meaning": 0.98,
+          "style": 0.65,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "record.wrapLines",
+      "en": "Wrap lines",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "자동 줄 바꿈",
+          "natural": 1.64,
+          "meaning": 0.92,
+          "style": 0.66,
+          "pass": true
+        },
+        {
+          "ko": "자동 줄바꿈",
+          "natural": 1.88,
+          "meaning": 0.95,
+          "style": 0.63,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "request.collapsedAssistant",
+      "en": "assistant",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "어시스턴트",
+          "natural": 1.5,
+          "meaning": 0.96,
+          "style": 0.78,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "request.collapsedSummary",
+      "en": "Collapsed {kind} summary, {summary}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "접힌 {kind} 요약, {summary}",
+          "natural": 1.05,
+          "meaning": 0.94,
+          "style": 0.52,
+          "pass": false
+        },
+        {
+          "ko": "{kind} 요약 접힘, {summary}",
+          "natural": 1.12,
+          "meaning": 0.88,
+          "style": 0.57,
+          "pass": false
+        },
+        {
+          "ko": "접혀 있는 {kind} 요약: {summary}",
+          "natural": 1.31,
+          "meaning": 0.82,
+          "style": 0.53,
+          "pass": false
+        },
+        {
+          "ko": "{kind} 요약(접힘), {summary}",
+          "natural": 1.09,
+          "meaning": 0.87,
+          "style": 0.57,
+          "pass": false
+        }
+      ],
+      "result": "unresolved"
+    },
+    {
+      "key": "request.collapsedTurn",
+      "en": "turn",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "턴",
+          "natural": 1.61,
+          "meaning": 0.92,
+          "style": 0.69,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "request.compaction",
+      "en": "Compaction · {section}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "압축 · {section}",
+          "natural": 1.33,
+          "meaning": 0.87,
+          "style": 0.62,
+          "pass": false
+        },
+        {
+          "ko": "컨텍스트 압축 · {section}",
+          "natural": 1.31,
+          "meaning": 0.84,
+          "style": 0.67,
+          "pass": false
+        },
+        {
+          "ko": "압축 작업 · {section}",
+          "natural": 1.52,
+          "meaning": 0.91,
+          "style": 0.65,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "request.compactionPurpose",
+      "en": "Compaction",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "압축",
+          "natural": 1.65,
+          "meaning": 0.97,
+          "style": 0.73,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "request.label",
+      "en": "Request #{request}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "요청 #{request}",
+          "natural": 1.6,
+          "meaning": 0.93,
+          "style": 0.65,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "request.labelCompaction",
+      "en": "Request #{request} · Compaction",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "요청 #{request} · 압축",
+          "natural": 1.28,
+          "meaning": 0.94,
+          "style": 0.67,
+          "pass": false
+        },
+        {
+          "ko": "요청 #{request} · 컨텍스트 압축",
+          "natural": 1.52,
+          "meaning": 0.93,
+          "style": 0.65,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "request.noContent",
+      "en": "no content",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "내용 없음",
+          "natural": 1.81,
+          "meaning": 0.97,
+          "style": 0.71,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "request.retryProgress",
+      "en": "{retry} of {maximum}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{maximum}회 중 {retry}회",
+          "natural": 1.47,
+          "meaning": 0.81,
+          "style": 0.55,
+          "pass": false
+        },
+        {
+          "ko": "전체 {maximum}회 중 {retry}회",
+          "natural": 1.5,
+          "meaning": 0.82,
+          "style": 0.6,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "request.rowAriaCompaction",
+      "en": "Request {request}, compaction",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "요청 {request}, 압축",
+          "natural": 1.09,
+          "meaning": 0.96,
+          "style": 0.58,
+          "pass": false
+        },
+        {
+          "ko": "요청 {request}, 컨텍스트 압축",
+          "natural": 1.3,
+          "meaning": 0.91,
+          "style": 0.7,
+          "pass": false
+        },
+        {
+          "ko": "{request}번 요청, 압축 작업",
+          "natural": 1.03,
+          "meaning": 0.91,
+          "style": 0.54,
+          "pass": false
+        },
+        {
+          "ko": "요청 {request}: 압축",
+          "natural": 1.07,
+          "meaning": 0.8,
+          "style": 0.6,
+          "pass": false
+        }
+      ],
+      "result": "unresolved"
+    },
+    {
+      "key": "request.rowPrefix",
+      "en": "Request {request}, ",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "요청 {request}, ",
+          "natural": 0.48,
+          "meaning": 0.94,
+          "style": 0.55,
+          "pass": false
+        },
+        {
+          "ko": "{request}번 요청, ",
+          "natural": 0.79,
+          "meaning": 0.84,
+          "style": 0.64,
+          "pass": false
+        },
+        {
+          "ko": "요청 번호 {request}, ",
+          "natural": 1.08,
+          "meaning": 0.91,
+          "style": 0.63,
+          "pass": false
+        },
+        {
+          "ko": "요청 {request}번, ",
+          "natural": 0.66,
+          "meaning": 0.85,
+          "style": 0.56,
+          "pass": false
+        }
+      ],
+      "result": "unresolved"
+    },
+    {
+      "key": "section.betweenTurns",
+      "en": "Between turns",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "턴 사이",
+          "natural": 1.25,
+          "meaning": 0.94,
+          "style": 0.65,
+          "pass": false
+        },
+        {
+          "ko": "턴 간 구간",
+          "natural": 1.47,
+          "meaning": 0.94,
+          "style": 0.74,
+          "pass": false
+        },
+        {
+          "ko": "턴과 턴 사이",
+          "natural": 1.26,
+          "meaning": 0.93,
+          "style": 0.68,
+          "pass": false
+        },
+        {
+          "ko": "턴 사이 구간",
+          "natural": 1.19,
+          "meaning": 0.93,
+          "style": 0.75,
+          "pass": false
+        }
+      ],
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "턴 간 구간",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
+    },
+    {
+      "key": "source.goal",
+      "en": "Goal",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "목표",
+          "natural": 1.94,
+          "meaning": 0.98,
+          "style": 0.7,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "source.goalRound",
+      "en": "Goal · Round {round}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "목표 · 라운드 {round}",
+          "natural": 1.76,
+          "meaning": 0.97,
+          "style": 0.65,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "source.messageJson",
+      "en": "Message source JSON",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "메시지 출처 JSON",
+          "natural": 1.62,
+          "meaning": 0.96,
+          "style": 0.63,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "source.notRecorded",
+      "en": "Source not recorded",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "출처가 기록되지 않음",
+          "natural": 1.73,
+          "meaning": 0.97,
+          "style": 0.64,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "source.plugin",
+      "en": "Plugin",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "플러그인",
+          "natural": 1.88,
+          "meaning": 0.97,
+          "style": 0.69,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "source.pluginNamed",
+      "en": "Plugin · {plugin}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "플러그인 · {plugin}",
+          "natural": 1.79,
+          "meaning": 0.96,
+          "style": 0.6,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "source.unknown",
+      "en": "Unknown",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "알 수 없음",
+          "natural": 1.96,
+          "meaning": 0.97,
+          "style": 0.65,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "source.user",
+      "en": "User",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "사용자",
+          "natural": 1.97,
+          "meaning": 0.98,
+          "style": 0.63,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "status.completed",
+      "en": "Completed",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "완료",
+          "natural": 1.96,
+          "meaning": 0.96,
+          "style": 0.63,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "status.failed",
+      "en": "Failed",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "실패",
+          "natural": 1.95,
+          "meaning": 0.96,
+          "style": 0.62,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "status.pending",
+      "en": "Pending",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "대기 중",
+          "natural": 1.94,
+          "meaning": 0.96,
+          "style": 0.64,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "summary.steps.one",
+      "en": "{count} step",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{count}단계",
+          "natural": 1.37,
+          "meaning": 0.57,
+          "style": 0.62,
+          "pass": false
+        },
+        {
+          "ko": "단계 {count}개",
+          "natural": 1.3,
+          "meaning": 0.38,
+          "style": 0.72,
+          "pass": false
+        },
+        {
+          "ko": "{count}개 단계",
+          "natural": 1.6,
+          "meaning": 0.77,
+          "style": 0.62,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "summary.steps.other",
+      "en": "{count} steps",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{count}단계",
+          "natural": 1.38,
+          "meaning": 0.59,
+          "style": 0.63,
+          "pass": false
+        },
+        {
+          "ko": "단계 {count}개",
+          "natural": 1.56,
+          "meaning": 0.83,
+          "style": 0.68,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "summary.toolCalls.one",
+      "en": "{count} tool call",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "도구 호출 {count}회",
+          "natural": 1.46,
+          "meaning": 0.74,
+          "style": 0.58,
+          "pass": false
+        },
+        {
+          "ko": "{count}회의 도구 호출",
+          "natural": 1.59,
+          "meaning": 0.85,
+          "style": 0.61,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "summary.toolCalls.other",
+      "en": "{count} tool calls",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "도구 호출 {count}회",
+          "natural": 1.76,
+          "meaning": 0.96,
+          "style": 0.54,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "tab.diff",
+      "en": "Diff",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "변경 사항",
+          "natural": 1.83,
+          "meaning": 0.88,
+          "style": 0.71,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "tab.options",
+      "en": "Options",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "옵션",
+          "natural": 1.91,
+          "meaning": 0.95,
+          "style": 0.67,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "tab.payload",
+      "en": "Payload",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "페이로드",
+          "natural": 1.71,
+          "meaning": 0.93,
+          "style": 0.68,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "tab.preview",
+      "en": "Preview",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "미리 보기",
+          "natural": 1.97,
+          "meaning": 0.96,
+          "style": 0.67,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "tab.raw",
+      "en": "Raw",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "원본",
+          "natural": 1.68,
+          "meaning": 0.81,
+          "style": 0.73,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "tab.rawOutput",
+      "en": "Raw Output",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "원본 출력",
+          "natural": 1.64,
+          "meaning": 0.92,
+          "style": 0.63,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "tab.result",
+      "en": "Result",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "결과",
+          "natural": 1.96,
+          "meaning": 0.93,
+          "style": 0.64,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "tab.schema",
+      "en": "Schema",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "스키마",
+          "natural": 1.89,
+          "meaning": 0.95,
+          "style": 0.63,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "tab.source",
+      "en": "Source",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "출처",
+          "natural": 1.9,
+          "meaning": 0.93,
+          "style": 0.68,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "tab.summary",
+      "en": "Summary",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "요약",
+          "natural": 1.94,
+          "meaning": 0.95,
+          "style": 0.69,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "tab.systemPrompt",
+      "en": "System Prompt",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "시스템 프롬프트",
+          "natural": 1.84,
+          "meaning": 0.97,
+          "style": 0.7,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "tab.timing",
+      "en": "Timing",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "시간 측정",
+          "natural": 1.64,
+          "meaning": 0.91,
+          "style": 0.69,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "tab.tools",
+      "en": "Tools",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "도구",
+          "natural": 1.94,
+          "meaning": 0.92,
+          "style": 0.69,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "tab.usage",
+      "en": "Usage",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "사용량",
+          "natural": 1.85,
+          "meaning": 0.9,
+          "style": 0.7,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "timeline.aria",
+      "en": "Trajectory timeline",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "Trajectory 타임라인",
+          "natural": 1.03,
+          "meaning": 0.92,
+          "style": 0.65,
+          "pass": false
+        },
+        {
+          "ko": "Trajectory의 타임라인",
+          "natural": 1.11,
+          "meaning": 0.96,
+          "style": 0.7,
+          "pass": false
+        },
+        {
+          "ko": "Trajectory 시간 표시줄",
+          "natural": 1.6,
+          "meaning": 0.97,
+          "style": 0.75,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "timeline.noTimingData",
+      "en": "No timing data",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "시간 측정 데이터 없음",
+          "natural": 1.84,
+          "meaning": 0.97,
+          "style": 0.67,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "timeline.overviewAria",
+      "en": "Timeline overview; drag horizontally to focus events",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "타임라인 개요; 가로로 드래그하여 이벤트에 초점을 맞추십시오",
+          "natural": 1.52,
+          "meaning": 0.94,
+          "style": 0.63,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "timeline.started",
+      "en": "Started {time}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "시작 {time}",
+          "natural": 1.67,
+          "meaning": 0.95,
+          "style": 0.65,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "timeline.total",
+      "en": "Total {duration}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "총 {duration}",
+          "natural": 1.57,
+          "meaning": 0.94,
+          "style": 0.63,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "timeline.ttftDecoding",
+      "en": "TTFT {ttft} · Decoding {decoding}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "TTFT {ttft} · 디코딩 {decoding}",
+          "natural": 1.42,
+          "meaning": 0.93,
+          "style": 0.6,
+          "pass": false
+        },
+        {
+          "ko": "TTFT: {ttft} · 디코딩: {decoding}",
+          "natural": 1.34,
+          "meaning": 0.95,
+          "style": 0.61,
+          "pass": false
+        },
+        {
+          "ko": "TTFT {ttft} · 디코딩 시간 {decoding}",
+          "natural": 1.4,
+          "meaning": 0.94,
+          "style": 0.63,
+          "pass": false
+        },
+        {
+          "ko": "TTFT: {ttft} · 디코딩 시간: {decoding}",
+          "natural": 1.37,
+          "meaning": 0.92,
+          "style": 0.58,
+          "pass": false
+        }
+      ],
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "TTFT {ttft} · 디코딩 시간 {decoding}",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
+    },
+    {
+      "key": "timing.duration",
+      "en": "Duration",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "소요 시간",
+          "natural": 1.88,
+          "meaning": 0.95,
+          "style": 0.6,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "timing.durationTooShort",
+      "en": "Duration too short",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "소요 시간이 너무 짧음",
+          "natural": 1.81,
+          "meaning": 0.95,
+          "style": 0.59,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "timing.firstTokenUnavailable",
+      "en": "First token unavailable",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "첫 토큰 정보 없음",
+          "natural": 1.56,
+          "meaning": 0.96,
+          "style": 0.58,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "timing.generation",
+      "en": "Generation",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "생성",
+          "natural": 1.57,
+          "meaning": 0.96,
+          "style": 0.68,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "timing.notAvailable",
+      "en": "Not available",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "사용할 수 없음",
+          "natural": 1.85,
+          "meaning": 0.97,
+          "style": 0.54,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "timing.notRecorded",
+      "en": "Not recorded",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "기록되지 않음",
+          "natural": 1.79,
+          "meaning": 0.97,
+          "style": 0.54,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "timing.outputTokensUnavailable",
+      "en": "Output tokens unavailable",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "출력 토큰 정보 없음",
+          "natural": 1.59,
+          "meaning": 0.96,
+          "style": 0.5,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "timing.request",
+      "en": "Request Timing",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "요청 시간 측정",
+          "natural": 1.47,
+          "meaning": 0.96,
+          "style": 0.63,
+          "pass": false
+        },
+        {
+          "ko": "요청 소요 시간",
+          "natural": 1.66,
+          "meaning": 0.87,
+          "style": 0.68,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "timing.sessionTimestamps",
+      "en": "Session timestamps",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "세션 타임스탬프",
+          "natural": 1.75,
+          "meaning": 0.95,
+          "style": 0.62,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "timing.sessionTimestampsRunning",
+      "en": "Session timestamps (running)",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "세션 타임스탬프 (실행 중)",
+          "natural": 1.5,
+          "meaning": 0.96,
+          "style": 0.6,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "timing.showLocalTime",
+      "en": "Show local time",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "현지 시간 표시",
+          "natural": 1.77,
+          "meaning": 0.96,
+          "style": 0.59,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "timing.showUnixTimestamp",
+      "en": "Show Unix timestamp",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "Unix 타임스탬프 표시",
+          "natural": 1.7,
+          "meaning": 0.96,
+          "style": 0.63,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "timing.source",
+      "en": "Timing source",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "시간 측정 출처",
+          "natural": 1.77,
+          "meaning": 0.97,
+          "style": 0.65,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "timing.started",
+      "en": "Started",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "시작",
+          "natural": 1.72,
+          "meaning": 0.93,
+          "style": 0.65,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "timing.stepStartUnavailable",
+      "en": "Step start unavailable",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "단계 시작 정보 없음",
+          "natural": 1.47,
+          "meaning": 0.96,
+          "style": 0.58,
+          "pass": false
+        },
+        {
+          "ko": "단계 시작 시각을 확인할 수 없음",
+          "natural": 1.43,
+          "meaning": 0.91,
+          "style": 0.48,
+          "pass": false
+        },
+        {
+          "ko": "단계 시작 시각을 확인할 수 없습니다",
+          "natural": 1.45,
+          "meaning": 0.95,
+          "style": 0.53,
+          "pass": false
+        },
+        {
+          "ko": "단계 시작 시간 정보가 없습니다",
+          "natural": 1.43,
+          "meaning": 0.92,
+          "style": 0.62,
+          "pass": false
+        }
+      ],
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "단계 시작 정보 없음",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
+    },
+    {
+      "key": "timing.throughput",
+      "en": "Throughput",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "처리량",
+          "natural": 1.88,
+          "meaning": 0.96,
+          "style": 0.6,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "timing.totalDuration",
+      "en": "Total duration",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "총 소요 시간",
+          "natural": 1.86,
+          "meaning": 0.97,
+          "style": 0.62,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "timing.usageUnavailable",
+      "en": "Usage unavailable",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "사용량 정보 없음",
+          "natural": 1.73,
+          "meaning": 0.96,
+          "style": 0.62,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "toolbar.actualTime",
+      "en": "Actual time",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "실제 시간",
+          "natural": 1.73,
+          "meaning": 0.96,
+          "style": 0.55,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "toolbar.aria",
+      "en": "Trajectory toolbar",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "Trajectory 도구 모음",
+          "natural": 1.25,
+          "meaning": 0.97,
+          "style": 0.59,
+          "pass": false
+        },
+        {
+          "ko": "Trajectory의 도구 모음",
+          "natural": 1.02,
+          "meaning": 0.96,
+          "style": 0.67,
+          "pass": false
+        },
+        {
+          "ko": "Trajectory 도구 모음 영역",
+          "natural": 1.45,
+          "meaning": 0.96,
+          "style": 0.71,
+          "pass": false
+        },
+        {
+          "ko": "Trajectory 도구막대",
+          "natural": 1.22,
+          "meaning": 0.94,
+          "style": 0.7,
+          "pass": false
+        }
+      ],
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "Trajectory 도구 모음 영역",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
+    },
+    {
+      "key": "toolbar.calls",
+      "en": "Calls",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "호출",
+          "natural": 1.66,
+          "meaning": 0.86,
+          "style": 0.59,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "toolbar.collapseCalls",
+      "en": "Collapse calls",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "호출 접기",
+          "natural": 1.76,
+          "meaning": 0.95,
+          "style": 0.53,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "toolbar.collapseTurns",
+      "en": "Collapse turns",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "턴 접기",
+          "natural": 1.68,
+          "meaning": 0.96,
+          "style": 0.64,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "toolbar.duration",
+      "en": "Duration",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "소요 시간",
+          "natural": 1.89,
+          "meaning": 0.95,
+          "style": 0.62,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "toolbar.expandCalls",
+      "en": "Expand calls",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "호출 펼치기",
+          "natural": 1.86,
+          "meaning": 0.96,
+          "style": 0.49,
+          "pass": false
+        },
+        {
+          "ko": "호출 내역 펼치기",
+          "natural": 1.81,
+          "meaning": 0.96,
+          "style": 0.6,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "toolbar.expandTurns",
+      "en": "Expand turns",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "턴 펼치기",
+          "natural": 1.85,
+          "meaning": 0.96,
+          "style": 0.53,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "toolbar.search",
+      "en": "Search trajectory",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "Trajectory 검색",
+          "natural": 1.35,
+          "meaning": 0.95,
+          "style": 0.58,
+          "pass": false
+        },
+        {
+          "ko": "Trajectory 내 검색",
+          "natural": 1.47,
+          "meaning": 0.96,
+          "style": 0.68,
+          "pass": false
+        },
+        {
+          "ko": "Trajectory에서 검색",
+          "natural": 1.53,
+          "meaning": 0.96,
+          "style": 0.72,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "toolbar.searchPlaceholder",
+      "en": "Search",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "검색",
+          "natural": 1.94,
+          "meaning": 0.98,
+          "style": 0.63,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "toolbar.turns",
+      "en": "Turns",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "턴",
+          "natural": 1.82,
+          "meaning": 0.95,
+          "style": 0.63,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "toolbar.useActualDuration",
+      "en": "Use actual duration",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "실제 소요 시간 사용",
+          "natural": 1.55,
+          "meaning": 0.95,
+          "style": 0.48,
+          "pass": false
+        },
+        {
+          "ko": "실제 소요 시간 적용",
+          "natural": 1.67,
+          "meaning": 0.94,
+          "style": 0.54,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "toolbar.useEqualWidth",
+      "en": "Use equal-width operations",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "작업 너비 동일하게 표시",
+          "natural": 1.23,
+          "meaning": 0.92,
+          "style": 0.43,
+          "pass": false
+        },
+        {
+          "ko": "동일한 작업 너비 사용",
+          "natural": 1.16,
+          "meaning": 0.93,
+          "style": 0.59,
+          "pass": false
+        },
+        {
+          "ko": "작업을 같은 너비로 표시",
+          "natural": 1.22,
+          "meaning": 0.82,
+          "style": 0.47,
+          "pass": false
+        },
+        {
+          "ko": "각 작업을 동일한 너비로 표시합니다",
+          "natural": 1.15,
+          "meaning": 0.89,
+          "style": 0.71,
+          "pass": false
+        }
+      ],
+      "result": "unresolved"
+    },
+    {
+      "key": "turn.label",
+      "en": "Turn {turn}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{turn}번째 턴",
+          "natural": 1.78,
+          "meaning": 0.95,
+          "style": 0.56,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "unit.tokens",
+      "en": "{value} tok",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{value}토큰",
+          "natural": 1.54,
+          "meaning": 0.91,
+          "style": 0.54,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "unit.tokensPerSecond",
+      "en": "{value} tok/s",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{value}토큰/초",
+          "natural": 1.49,
+          "meaning": 0.92,
+          "style": 0.51,
+          "pass": false
+        },
+        {
+          "ko": "초당 {value}토큰",
+          "natural": 1.56,
+          "meaning": 0.89,
+          "style": 0.64,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "usage.cacheCreated",
+      "en": "Cache created",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "캐시 생성됨",
+          "natural": 1.65,
+          "meaning": 0.95,
+          "style": 0.56,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "usage.cached",
+      "en": "Cached",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "캐시됨",
+          "natural": 1.5,
+          "meaning": 0.95,
+          "style": 0.58,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "usage.content",
+      "en": "Content",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "내용",
+          "natural": 1.84,
+          "meaning": 0.96,
+          "style": 0.61,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "usage.input",
+      "en": "Input",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "입력",
+          "natural": 1.89,
+          "meaning": 0.96,
+          "style": 0.66,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "usage.notReported",
+      "en": "Usage not reported",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "사용량이 보고되지 않음",
+          "natural": 1.42,
+          "meaning": 0.97,
+          "style": 0.54,
+          "pass": false
+        },
+        {
+          "ko": "보고된 사용량 없음",
+          "natural": 1.72,
+          "meaning": 0.96,
+          "style": 0.69,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "usage.other",
+      "en": "Other",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "기타",
+          "natural": 1.73,
+          "meaning": 0.91,
+          "style": 0.76,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "usage.output",
+      "en": "Output",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "출력",
+          "natural": 1.93,
+          "meaning": 0.94,
+          "style": 0.73,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "usage.reasoning",
+      "en": "Reasoning",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "추론",
+          "natural": 1.86,
+          "meaning": 0.94,
+          "style": 0.7,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "usage.sessionCumulative",
+      "en": "Session cumulative",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "세션 총계",
+          "natural": 1.15,
+          "meaning": 0.64,
+          "style": 0.69,
+          "pass": false
+        },
+        {
+          "ko": "세션 누적 사용량",
+          "natural": 1.37,
+          "meaning": 0.84,
+          "style": 0.59,
+          "pass": false
+        },
+        {
+          "ko": "세션 전체 누적량",
+          "natural": 1.22,
+          "meaning": 0.74,
+          "style": 0.71,
+          "pass": false
+        },
+        {
+          "ko": "세션 누적 합계",
+          "natural": 1.22,
+          "meaning": 0.73,
+          "style": 0.72,
+          "pass": false
+        }
+      ],
+      "result": "approved",
+      "approval": {
+        "by": "agent-review",
+        "date": "2026-10-17",
+        "ko": "세션 누적 사용량",
+        "note": "자연스러움 1.35–1.5, 검토 후 채택"
+      }
+    },
+    {
+      "key": "usage.thisRequest",
+      "en": "This request",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "이 요청",
+          "natural": 1.66,
+          "meaning": 0.91,
+          "style": 0.69,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "usage.tokens",
+      "en": "Tokens",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "토큰",
+          "natural": 1.68,
+          "meaning": 0.89,
+          "style": 0.77,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "details.lastAttemptError",
+      "en": "Last attempt error",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "마지막 시도 오류",
+          "natural": 1.62,
+          "meaning": 0.9,
+          "style": 0.67,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    }
+  ]
+}
