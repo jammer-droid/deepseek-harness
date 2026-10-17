@@ -2931,7 +2931,12 @@
           "pass": false
         }
       ],
-      "result": "pending"
+      "result": "approved",
+      "approval": {
+        "by": "user",
+        "date": "2026-10-17",
+        "note": "판정 미통과 문구를 사용자가 그대로 승인(단위·제품 이름)"
+      }
     },
     {
       "key": "timing.unit.minute",
@@ -3118,7 +3123,12 @@
           "pass": false
         }
       ],
-      "result": "pending"
+      "result": "approved",
+      "approval": {
+        "by": "user",
+        "date": "2026-10-17",
+        "note": "판정 미통과 문구를 사용자가 그대로 승인(단위·제품 이름)"
+      }
     },
     {
       "key": "unit.hour.one",
@@ -3178,7 +3188,12 @@
           "pass": false
         }
       ],
-      "result": "pending"
+      "result": "approved",
+      "approval": {
+        "by": "user",
+        "date": "2026-10-17",
+        "note": "판정 미통과 문구를 사용자가 그대로 승인(단위·제품 이름)"
+      }
     },
     {
       "key": "unit.second.one",
