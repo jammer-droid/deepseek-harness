@@ -197,3 +197,16 @@
 | settings.subagent | 용어 | Reasoning effort | 추론 수준 | — | 번역자 제안 |
 | settings.subagent | 용어 | Main Agent | 메인 에이전트 | — | 번역자 제안 |
 | settings.subagent | 용어 | Parent agent | 부모 에이전트 | — | 번역자 제안 |
+| workspace | actions.workspace.aria | Workspace actions for {name} | “{name}” 워크스페이스의 사용 가능한 작업 | 1.49/0.92/0.76 | 4회 미통과 |
+| workspace | archive.confirm.activity | Work that will be stopped | 중지 대상 작업 | 1.42/0.94/0.79 | 4회 미통과 |
+| workspace | archive.confirm.desc | “{title}” still has work in progress. Archiving stops it first; you can restore the session later from the “All conversations (show archived)” filter in the sidebar, and the stopped work will not resume on its own. | “{title}”에서 아직 작업이 진행 중입니다. 보관하기 전에 이 작업을 중지합니다. 세션은 나중에 사이드바의 “모든 대화(보관된 대화 포함)” 필터에서 복원할 수 있습니다. 중지된 작업은 자동으로 다시 시작되지 않습니다. | 1.39/0.93/0.87 | 4회 미통과 |
+| workspace | archive.confirm.other.one | {n} other item of work ({kind}) | 기타 작업 {n}개({kind}) | 1.07/0.85/0.68 | 4회 미통과 |
+| workspace | archive.confirm.other.other | {n} other items of work ({kind}) | 기타 작업 항목 {n}개 ({kind}) | 1.33/0.9/0.66 | 4회 미통과 |
+| workspace | shortcut.directoryBusy | Selecting or adding a workspace | 워크스페이스 선택 또는 추가 작업이 진행 중입니다. | 1.38/0.95/0.77 | 4회 미통과 |
+| workspace | toast.forkRequiresOpen | Open the original session to complete migration before creating a branch. | 분기를 만들기 전에 원본 세션을 열어 마이그레이션을 완료하십시오. | 1.41/0.97/0.69 | 4회 미통과 |
+| workspace | 용어 | Ungrouped | 미분류 | — | 번역자 제안 |
+| workspace | 용어 | Workspace Tree | 워크스페이스 트리 | — | 번역자 제안 |
+| workspace | 용어 | Scheduled reminder | 예약 알림 | — | 번역자 제안 |
+| workspace | 용어 | Directory picker | 디렉터리 선택기 | — | 번역자 제안 |
+| workspace | 용어 | Migration | 마이그레이션 | — | 번역자 제안 |
+| workspace | 용어 | Branch | 분기 | — | 번역자 제안 |

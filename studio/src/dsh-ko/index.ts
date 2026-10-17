@@ -51,6 +51,7 @@ import skill from './skill.ts';
 import slashMenu from './slash.menu.ts';
 import trajectory from './trajectory.ts';
 import workflowRun from './workflowRun.ts';
+import workspace from './workspace.ts';
 
 export const dshKo: DshKoDictionaries = {
   'agent-team': agentTeam,
@@ -101,4 +102,5 @@ export const dshKo: DshKoDictionaries = {
   'slash.menu': slashMenu,
   trajectory: trajectory,
   workflowRun: workflowRun,
+  workspace: workspace,
 };
