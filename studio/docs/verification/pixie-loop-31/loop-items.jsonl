@@ -1,0 +1,5 @@
+{"id":"save","input":"Save {name}"}
+{"id":"open","input":"Open the session"}
+{"id":"retry","input":"Do not retry when the server returns 4xx."}
+{"id":"delete","input":"Delete {count} files?"}
+{"id":"close","input":"Close"}

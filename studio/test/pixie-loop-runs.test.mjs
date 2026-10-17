@@ -40,7 +40,7 @@ test('loop runs show status, counts, checks, and per-item attempts with feedback
   assert.match(text, /compiled by Pixie from the criteria/); assert.match(text, /Passes when: ≥ 0.7/);
   assert.match(text, /work\/done.jsonl/); assert.match(text, /Pixie 120\/40 · judge 30\/6 tokens/);
   await act(async () => button(host, 'k2').click());
-  assert.match(host.textContent, /Attempt 2/); assert.match(host.textContent, /regex: output does not match/);
+  assert.match(host.textContent, /2 attempt\(s\)/); assert.match(host.textContent, /Attempt 2/); assert.match(host.textContent, /Did not pass/); assert.match(host.textContent, /regex: output does not match/);
   assert.match(host.textContent, /ok 0.31/); assert.match(host.textContent, /Pixie feedback \(a guess, not the verdict\)/);
   await close();
 });

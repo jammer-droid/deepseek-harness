@@ -1,0 +1,5 @@
+{"id":"retry","status":"passed","output":"서버가 4xx를 반환하면 다시 시도하지 마세요.","attempts":1}
+{"id":"save","status":"passed","output":"{name} 저장","attempts":1}
+{"id":"delete","status":"passed","output":"{count}개 파일을 삭제할까요?","attempts":1}
+{"id":"close","status":"passed","output":"닫기","attempts":1}
+{"id":"open","status":"passed","output":"세션 열기","attempts":2}

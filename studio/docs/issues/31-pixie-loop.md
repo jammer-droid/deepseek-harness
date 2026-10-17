@@ -19,7 +19,37 @@ status: ready
 
 ## 현재 진행 상황
 
-`ready`. 첫 단계는 S1. 1차 범위의 결정(O1 코드 검사, O2 interpret 입력)을 D11·D12로 확정했다. 남은 [열린 항목](#열린-항목)은 시작을 막지 않는다.
+1차(S1–S7) 구현과 실동작 검증을 마쳤다. S8은 Studio 쪽 검증만 했고, #30 번역 스킬 비교는 사용자 승인이 필요해 남겼다. 2차·3차는 시작하지 않았다.
+
+| 단계 | 상태 | 커밋 |
+| --- | --- | --- |
+| S1 공개 API 확인 | 완료 (아래) | — |
+| S2 루프 계약과 검증 | 완료 | `f22e14b34b` |
+| S3 compile과 calibration | 완료 | `f22e14b34b` |
+| S4 루프 엔진 | 완료 | `f22e14b34b` |
+| S5 도구 `pixie_loop` | 완료, 실세션 확인 | `f22e14b34b` |
+| S6 실행 기록과 Pixie 탭 › 루프 | 완료, Web 확인 | `f22e14b34b` |
+| S7 가이드와 스킬 | 완료, 에이전트가 스킬을 읽고 명세 작성 | `1d7dfadc92` |
+| S8 1차 검증 | Studio 검증 완료. #30 스킬 비교 미실행 | 이 커밋 |
+
+### S1 결과
+
+`dsh-v0.2.0-rc.2`와 `dsh-v0.2.1-alpha.2` 태그 소스에서 확인했다.
+
+| API | 결과 |
+| --- | --- |
+| `jobs` `start`·`wait`·`kill`·`get`·`read`, `JobOutcome.result`, `JobHandle.append`·`updateProgress` | 두 버전에 같음. `result`는 정산 뒤 첫 `job_output`에 한 번 전달된다 |
+| `tools.execute`(`parent`·`rootCallId`·`agent`), `ToolExecutionSuccess.value` | 두 버전에 같음. 항목 파일은 `read` 결과의 `lines`·`totalLines`로, 결과는 `write`로 쓴다 |
+| `llm.stream` | 기존 Pixie·판정에서 쓰는 것과 같다 |
+| `credentials` | #27에서 확인함 |
+
+`pixie_loop`은 `tools`만 주입받고 `jobs`·`llm`·`credentials`는 호출 때 `ctx.get`으로 읽는다. 기록은 `<profile>/studio-data/pixie/loops/`에 도구 플러그인이 쓰고 Studio Remote `loopRuns`가 읽는다. 실행 중인 기록은 30초마다 다시 쓰며(heartbeat), 90초 넘게 갱신이 없으면 중단된 것으로 표시한다.
+
+### 검증 기록
+
+- **로컬:** `npm run typecheck`, `npm test`(빌드 포함) 658/658 통과, `git diff --check` 통과. 새 테스트는 `test/pixie-loop.test.mjs`(계약·코드 검사·엔진, 가짜 모델), `test/pixie-loop-tool.test.mjs`(실제 DSH `ToolRuntime`), `test/pixie-loop-runs.test.mjs`(화면·저장소), `test/pixie-loop-guide.test.mjs`(가이드 예시 명세를 추출해 검증하고 엔진으로 실행).
+- **독립 설치·실세션:** 수정하지 않은 DSH `0.2.0-rc.2`에 pack한 `@matamt-dbg/dsh-studio@0.5.0`을 격리 프로필 `loop-e2e`로 설치했다. Studio Master 세션에서 foreground 5/5 통과(재시도 1건 포함)와 background job 정산을 확인했다. 세션 로그에 항목별 시도와 피드백이 없음을 확인했다. 기록: [#31 검증](../verification/pixie-loop-31/README.md).
+- **미검증:** background `job_kill`, 상한 도달·calibration 거부·엔진 오류의 실모델 재현, `0.2.1-alpha.2`, #30 스킬과의 비교.
 
 ## 범위
 

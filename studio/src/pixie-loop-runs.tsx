@@ -42,10 +42,10 @@ function RunDetail({ run, locale, onBack }: { run: LoopRun; locale: string; onBa
       <ul className="studio-loop-items">{run.items.map(item => <li key={item.id} data-loop-item={item.id}>
         <button type="button" className="studio-loop-item" aria-expanded={openItem === item.id} onClick={() => setOpenItem(current => current === item.id ? undefined : item.id)}>
           <span className="studio-card-head"><strong>{item.id}</strong><Badge tone={itemTone(item.status)}>{t(itemKey[item.status])}</Badge></span>
-          <span className="studio-card-meta">{item.attempts.length ? t('attempt', { n: item.attempts.length }) : ''}{item.error ? ` · ${item.error}` : ''}</span>
+          <span className="studio-card-meta">{item.attempts.length ? t('attempts', { n: item.attempts.length }) : ''}{item.error ? ` · ${item.error}` : ''}</span>
         </button>
         {openItem === item.id && <ol className="studio-loop-attempts">{item.attempts.map((attempt, index) => <li key={index} className="studio-loop-attempt">
-          <SectionHead title={t('attempt', { n: index + 1 })} actions={<Badge tone={attempt.passed ? 'success' : 'warning'}>{t(attempt.passed ? 'passed' : 'escalated')}</Badge>} />
+          <SectionHead title={t('attempt', { n: index + 1 })} actions={<Badge tone={attempt.passed ? 'success' : 'warning'}>{t(attempt.passed ? 'passed' : 'attemptFailed')}</Badge>} />
           <p className="studio-pixie-answer studio-gate-text">{attempt.output}</p>
           {attempt.codeFailures.length > 0 && <dl className="studio-gate-facts"><dt>{t('codeFailures')}</dt><dd>{attempt.codeFailures.map(failure => `${failure.check}: ${failure.message}`).join(' · ')}</dd></dl>}
           {attempt.answers && <dl className="studio-gate-facts"><dt>{t('answers')}</dt><dd>{Object.entries(attempt.answers).map(([id, answer]) => `${id} ${answerText(answer)}`).join(' · ')}</dd></dl>}

@@ -16,7 +16,7 @@ description: "Studio 이슈별 구현 명세의 색인."
 - [#25 Pixie — 주요 컨텍스트와 분리된 보조 모델](25-pixie.md): `/pixie`·Pixie 탭으로 따로 묻기, 스레드 카드 목록·상세 탭, 프리셋과 같은 틀의 설정 화면, Judge 엔진 분리와 LLM 판정 시험. 사용자 기능 확인 후 마무리(제한 포함): alpha.2 설치 검증·사용자 앱 배포는 미완료, 배포는 후속 작업 이후 진행.
 - [#26 Pixie Gate — 작업 중심 런타임 게이트](26-pixie-gate.md): 정해진 순간(입력·에이전트 메시지·도구 전후·답변 끝)에 Pixie가 읽고 판단·가공한 결과를 보내는 프리셋 단위 게이트. 훅 스크립트와 `pixie ask/judge` 헬퍼 포함. 작업 완료(R1–R5, 판정 기능은 별도 기능으로 분리). 실모델 검증은 [R5 기록](../verification/pixie-gate-r5/README.md), 남은 미검증은 명세 참조. [GitHub #26](https://github.com/jammer-droid/deepseek-harness/issues/26) 닫음.
 - [#27 Jev 결정 엔진 — Pixie Gate 판정 헬퍼와 스크립트 직접 결론](27-jev-decision-engine.md): 훅 스크립트의 `pixie judge`에 Jev 엔진·bool/select/score 형식을 추가하고, exit 11로 Pixie 없이 게이트 결론을 낸다. 키는 DSH credentials, Pixie 출력은 Markdown 표시. S1–S7 완료. Jev 실호출과 실세션 Jev 판정 게이트(exit 11) 확인. [GitHub #27](https://github.com/jammer-droid/deepseek-harness/issues/27).
-- [#31 Pixie Loop — 메인 컨텍스트 밖의 Pixie·Jev 반복 작업](31-pixie-loop.md): 선언형 루프 명세를 받아 항목마다 작업·판정·해석·재시도를 돌리는 공용 엔진과 도구 `pixie_loop`. 이후 게이트 판정 방식과 훅 헬퍼 `pixie loop`도 같은 엔진을 쓴다. 기능마다 작성 가이드와 에이전트 스킬을 함께 제공한다. `ready`, 첫 단계 S1. [GitHub #31](https://github.com/jammer-droid/deepseek-harness/issues/31).
+- [#31 Pixie Loop — 메인 컨텍스트 밖의 Pixie·Jev 반복 작업](31-pixie-loop.md): 선언형 루프 명세를 받아 항목마다 작업·판정·해석·재시도를 돌리는 공용 엔진과 도구 `pixie_loop`. 이후 게이트 판정 방식과 훅 헬퍼 `pixie loop`도 같은 엔진을 쓴다. 기능마다 작성 가이드와 에이전트 스킬을 함께 제공한다. 1차(S1–S7) 완료, rc.2 독립 설치·실세션 확인. 2차·3차와 #30 스킬 비교는 남음. [GitHub #31](https://github.com/jammer-droid/deepseek-harness/issues/31).
 
 ## 편의 기능
 
