@@ -11,8 +11,6 @@ export interface StudioCommandSpec {
   id: string;
   /** Desktop macOS default; omitted means unbound everywhere. */
   defaultMac?: { code: string; modifiers: ('primary' | 'shift' | 'alt' | 'control')[] };
-  /** Reference keys from other harnesses, shown on the SettingsX page only. */
-  reference: string;
   /** For `goto`: 1-based sidebar position. */
   position?: number;
 }
@@ -20,11 +18,11 @@ export interface StudioCommandSpec {
 const prefix = 'studio.settingsx';
 /** Every command in display order. Ids are stable: saved DSH bindings refer to them. */
 export const STUDIO_COMMANDS: readonly StudioCommandSpec[] = [
-  { key: 'previous', id: 'studio.session-cycle.previous', defaultMac: { code: 'BracketLeft', modifiers: ['primary', 'shift'] }, reference: 'Codex ⌘⇧[ · Cursor ⌘[' },
-  { key: 'next', id: 'studio.session-cycle.next', defaultMac: { code: 'BracketRight', modifiers: ['primary', 'shift'] }, reference: 'Codex ⌘⇧] · Cursor ⌘]' },
-  ...Array.from({ length: 9 }, (_, index) => ({ key: 'goto' as const, id: `${prefix}.session-${index + 1}`, position: index + 1, reference: `Codex ⌘${index + 1}` })),
-  { key: 'copyCwd', id: `${prefix}.copy-cwd`, reference: 'Codex ⌘⇧C' },
-  { key: 'fullscreen', id: `${prefix}.fullscreen`, reference: 'Codex ⌃⌘F' },
+  { key: 'previous', id: 'studio.session-cycle.previous', defaultMac: { code: 'BracketLeft', modifiers: ['primary', 'shift'] } },
+  { key: 'next', id: 'studio.session-cycle.next', defaultMac: { code: 'BracketRight', modifiers: ['primary', 'shift'] } },
+  ...Array.from({ length: 9 }, (_, index) => ({ key: 'goto' as const, id: `${prefix}.session-${index + 1}`, position: index + 1 })),
+  { key: 'copyCwd', id: `${prefix}.copy-cwd` },
+  { key: 'fullscreen', id: `${prefix}.fullscreen` },
 ];
 
 /** The slice of Client services session navigation reads. */

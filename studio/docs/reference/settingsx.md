@@ -9,12 +9,12 @@ SettingsX는 DSH 기본 설정을 확장하는 Studio 서비스다. 배포판의
 
 ## 단축키
 
-Studio는 DSH에 없는 명령만 DSH 단축키 서비스에 등록한다. 키 지정·충돌 검사·기본값 복원은 DSH 설정 → 단축키가 맡고, SettingsX 페이지는 명령 목록·현재 키·기본 키·다른 하네스의 참고 키를 보여 주며 명령별로 켜고 끈다. 끈 명령은 DSH 단축키 목록에서도 빠진다. 켜기·끄기는 이 브라우저(`localStorage`의 `studio.settingsx.disabledCommands.v1`)에만 저장된다.
+Studio는 DSH에 없는 명령만 DSH 단축키 서비스에 등록한다. 키 지정·충돌 검사·기본값 복원은 DSH 설정 → 단축키가 맡고, SettingsX 페이지는 명령 목록·현재 키·기본 키를 보여 주며 명령별로 켜고 끈다. 끈 명령은 DSH 단축키 목록에서도 빠진다. 켜기·끄기는 이 브라우저(`localStorage`의 `studio.settingsx.disabledCommands.v1`)에만 저장된다.
 
 | 명령 ID | 동작 | 기본 키 |
 | --- | --- | --- |
 | `studio.session-cycle.previous` / `.next` | 사이드바 순서의 이전/다음 세션. 끝에서 반대쪽으로 순환 | macOS 데스크톱 ⌘⇧[ / ⌘⇧] |
-| `studio.settingsx.session-1` … `-9` | 사이드바 n번째 세션 | 없음 |
+| `studio.settingsx.session-1` … `-9` | 사이드바 n번 세션 | 없음 |
 | `studio.settingsx.copy-cwd` | 현재 세션의 작업 폴더 경로 복사 | 없음 |
 | `studio.settingsx.fullscreen` | 브라우저 전체 화면 전환(`requestFullscreen`) | 없음 |
 

@@ -279,7 +279,7 @@ Installing Studio adds **한국어** (Korean) to DSH's language list. Choose it 
 
 ![SettingsX Shortcuts page](images/en/settingsx-shortcuts.png)
 
-**DSH Studio → SettingsX → Shortcuts** lists keyboard commands that Studio adds to DSH's shortcut catalog. Commands DSH already has are not repeated. Assign or change keys in DSH **Settings → Shortcuts** (**Open DSH shortcut settings** on the page); turn a command off here to remove it from DSH's list too.
+**DSH Studio → SettingsX → Shortcuts** lists keyboard commands that Studio adds to DSH's shortcut catalog. Commands DSH already has are not repeated. Assign or change keys in DSH **Settings → General → Keyboard shortcuts**; turn a command off here to remove it from DSH's list too.
 
 | Command | What it does | Default key |
 |---|---|---|

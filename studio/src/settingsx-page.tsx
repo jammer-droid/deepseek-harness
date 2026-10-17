@@ -4,7 +4,7 @@
 import React from 'react';
 import { ProviderAccounts } from './settingsx-accounts.tsx';
 import { DetailLayout } from './detail-layout.tsx';
-import { Badge, Button, Note, Notice, PageHead, SettingsRow, Toggle } from './ui.tsx';
+import { Badge, Button, Notice, PageHead, SettingsRow, Toggle } from './ui.tsx';
 import { protocolEndpoint, type ProviderAuthState, type ProviderDefinition, type ProviderEntry, type ProviderIssue, type ProviderList } from './provider-contract.ts';
 import { STUDIO_COMMANDS, type StudioCommandSpec } from './settingsx-commands.ts';
 import { settingsxText, type SettingsXKey } from './settingsx-locale.ts';
@@ -14,10 +14,6 @@ export interface CommandRowState { id: string; enabled: boolean; keys: readonly 
 export interface SettingsXShortcuts {
   /** Current state per command id. */
   rows: readonly CommandRowState[];
-  /** Keys of DSH's "open shortcuts" command, when bound. */
-  openKeys: readonly string[] | null;
-  /** Whether DSH reports a desktop runtime (default keys apply there). */
-  desktop: boolean;
   setEnabled(id: string, enabled: boolean): void;
 }
 export interface SettingsXProviderActions {
@@ -46,7 +42,6 @@ function ShortcutsPage({ locale, shortcuts }: { locale: string; shortcuts: Setti
   const state = new Map(shortcuts.rows.map(row => [row.id, row]));
   return <div className="studio-page-stack">
     <PageHead title={t('pageShortcuts')} description={t('pageShortcutsDescription')} />
-    <Note>{t('openShortcutsHint')}{shortcuts.openKeys?.length ? ` ${t('openShortcuts')}: ${keysText(shortcuts.openKeys)}` : ''}</Note>
     <section className="studio-settings-card" aria-label={t('pageShortcuts')}>
       {STUDIO_COMMANDS.map(spec => {
         const row = state.get(spec.id) ?? { id: spec.id, enabled: true, keys: null };
@@ -55,14 +50,11 @@ function ShortcutsPage({ locale, shortcuts }: { locale: string; shortcuts: Setti
         const details = [
           `${t('keyAssigned')}: ${row.enabled && row.keys?.length ? keysText(row.keys) : t('keyNone')}`,
           fallback ? `${t('defaultKey')}: ${fallback}` : t('noDefault'),
-          `${t('reference')}: ${spec.reference}`,
         ].join(' · ');
         return <SettingsRow key={spec.id} title={label} description={details}
           control={<Toggle label={label} checked={row.enabled} onChange={enabled => shortcuts.setEnabled(spec.id, enabled)} />} />;
       })}
     </section>
-    <p className="studio-muted">{t('sessionOrderNote')}</p>
-    {shortcuts.desktop ? null : <p className="studio-muted">{t('webNoDefault')}</p>}
   </div>;
 }
 

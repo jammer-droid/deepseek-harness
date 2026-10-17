@@ -11,7 +11,6 @@ import { commandLabel, SettingsXPage, type CommandRowState, type SettingsXShortc
 type Observable<T> = { getSnapshot(): T; subscribe(listener: () => void): () => void };
 type ShortcutResolution = { status: 'handled'; run(): void } | { status: 'blocked'; reason: string };
 interface ShortcutsSlice {
-  readonly runtime: 'desktop' | 'web';
   readonly catalog: Observable<readonly { id: string; keys: readonly string[]; binding: unknown }[]>;
   register(command: {
     id: string; label: () => string; aliases: readonly string[];
@@ -90,8 +89,7 @@ export function mountSettingsX(ctx: StudioContext, options: { navFooter?: (local
     const catalog = React.useSyncExternalStore(listener => shortcuts?.catalog.subscribe(listener) ?? (() => {}), () => shortcuts?.catalog.getSnapshot() ?? []);
     const byId = new Map(catalog.map(entry => [entry.id, entry]));
     const rows: CommandRowState[] = STUDIO_COMMANDS.map(spec => ({ id: spec.id, enabled: !disabled.has(spec.id), keys: byId.get(spec.id)?.binding ? byId.get(spec.id)!.keys : null }));
-    const open = byId.get('shortcuts.open');
-    const state: SettingsXShortcuts = { rows, openKeys: open?.binding ? open.keys : null, desktop: shortcuts?.runtime === 'desktop', setEnabled };
+    const state: SettingsXShortcuts = { rows, setEnabled };
     return <SettingsXPage locale={active} shortcuts={state} navFooter={options.navFooter?.(active)} />;
   }
   ctx.slots.inject('local.dsh-studio.services', () => ctx.slots.register({

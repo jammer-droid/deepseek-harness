@@ -29,7 +29,7 @@ async function render(t, props) {
 }
 
 test('release page omits provider navigation when provider integration is not mounted', async t => {
-  const host = await render(t, { locale: 'en', shortcuts: { rows: [], openKeys: null, desktop: false, setEnabled() {} } });
+  const host = await render(t, { locale: 'en', shortcuts: { rows: [], setEnabled() {} } });
   assert.match(host.textContent, /Shortcuts/);
   assert.doesNotMatch(host.textContent, /Providers|ChatGPT|Claude/);
 });
@@ -37,13 +37,13 @@ test('release page omits provider navigation when provider integration is not mo
 test('shortcut rows show assigned keys, defaults, and toggles', async t => {
   const calls = [];
   const rows = STUDIO_COMMANDS.map(spec => ({ id: spec.id, enabled: spec.key !== 'fullscreen', keys: spec.key === 'previous' ? ['⌘', '⇧', '['] : null }));
-  const host = await render(t, { locale: 'en', shortcuts: { rows, openKeys: ['⌘', '/'], desktop: false, setEnabled: (id, on) => calls.push([id, on]) },
+  const host = await render(t, { locale: 'en', shortcuts: { rows, setEnabled: (id, on) => calls.push([id, on]) },
     providers: { list: async () => list, reload: async () => list } });
   const rowsText = [...host.querySelectorAll('section[aria-label="Shortcuts"] .studio-settings-card .studio-settings-row')].map(row => row.textContent);
   assert.equal(rowsText.length, STUDIO_COMMANDS.length);
   assert.match(rowsText[0], /Previous sidebar session.*Key: ⌘ ⇧ \[.*Default key: ⌘⇧\[/);
   assert.match(rowsText[2], /Sidebar session 1.*Not assigned.*No default key/);
-  assert.match(host.textContent, /Default keys apply to the desktop app on macOS only/);
+  assert.doesNotMatch(host.textContent, /Other harnesses|Codex|Default keys apply|private DSH setting|Open DSH shortcut settings/);
   const fullscreen = host.querySelector('[role="switch"][aria-label="Toggle full screen"]');
   assert.equal(fullscreen.getAttribute('aria-checked'), 'false');
   await act(async () => fullscreen.click());
@@ -52,7 +52,7 @@ test('shortcut rows show assigned keys, defaults, and toggles', async t => {
 
 test('provider page lists registered, invalid, and conflicting files and reloads', async t => {
   let reloads = 0;
-  const host = await render(t, { locale: 'ko', shortcuts: { rows: [], openKeys: null, desktop: true, setEnabled() {} },
+  const host = await render(t, { locale: 'ko', shortcuts: { rows: [], setEnabled() {} },
     providers: { list: async () => list, reload: async () => { reloads++; return { ...list, entries: [] }; } } });
   await act(async () => [...host.querySelectorAll('nav button')].find(button => button.textContent === '프로바이더').click());
   const text = host.textContent;
@@ -84,7 +84,7 @@ test('disabled command ids survive only when known; session targets block while 
 
 test('subscription template buttons create once and open OAuth without exposing JSON', async t => {
   let current = { directory: '/providers', entries: [], auth: {} }; const calls = [];
-  const host = await render(t, { locale: 'en', shortcuts: { rows: [], openKeys: null, desktop: true, setEnabled() {} }, providers: {
+  const host = await render(t, { locale: 'en', shortcuts: { rows: [], setEnabled() {} }, providers: {
     list: async () => current, reload: async () => current,
     addTemplate: async id => { calls.push(['add', id]); current = { ...current, entries: [{ file: 'studio-claude.json', status: 'registered', definition: providerTemplate(id) }] }; return current; },
     signIn: async route => { calls.push(['signIn', route]); return { url: 'https://example.test/login' }; },
