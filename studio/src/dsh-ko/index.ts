@@ -19,6 +19,7 @@ import inspectorPanel from './inspectorPanel.ts';
 import model from './model.ts';
 import permissionAccess from './permission.access.ts';
 import plan from './plan.ts';
+import pluginManager from './pluginManager.ts';
 import question from './question.ts';
 import reference from './reference.ts';
 import sessionInspector from './session-inspector.ts';
@@ -67,6 +68,7 @@ export const dshKo: DshKoDictionaries = {
   model: model,
   'permission.access': permissionAccess,
   plan: plan,
+  pluginManager: pluginManager,
   question: question,
   reference: reference,
   'session-inspector': sessionInspector,

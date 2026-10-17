@@ -162,3 +162,29 @@
 | session-inspector | 용어 | Settled | 확정됨 | — | 번역자 제안 |
 | session-inspector | 용어 | Presentation | 표시 형식 | — | 번역자 제안 |
 | session-inspector | 용어 | Step | 단계 | — | 번역자 제안 |
+| pluginManager | bundlesTitle | Installed plugins | 설치 완료 | 1.67/0.39/0.71 | 4회 미통과 |
+| pluginManager | installApplyingCancellationError | Cancellation was not confirmed. Installation is being applied; wait for its result. {reason} | 설치 취소가 확인되지 않았습니다. 현재 설치 작업을 반영하고 있습니다. 완료 결과를 기다려 주십시오. {reason} | 1.18/0.92/0.74 | 4회 미통과 |
+| pluginManager | installApprovalConsequence | Once allowed, the scripts run here with your permissions, and the permission is saved in this profile. | 스크립트 실행을 허용하면 여기에서 사용자와 동일한 권한으로 실행됩니다. 이 권한 설정은 현재 프로필에 저장됩니다. | 1.43/0.93/0.62 | 4회 미통과 |
+| pluginManager | installAttempt | {previous} could not serve the package; retrying through {registry} (registry {index} of {total}) | {previous}에서 패키지를 가져올 수 없어 {registry}(레지스트리 {index}/{total})를 통해 다시 시도하고 있습니다. | 1.32/0.93/0.63 | 4회 미통과 |
+| pluginManager | installAwaitingAcceptance | Waiting for the Host to accept installation. Cancellation will retry automatically after confirmation. | Host가 설치 요청을 수락하기를 기다리는 중입니다. 확인 후 취소를 자동으로 다시 시도합니다. | 1.38/0.91/0.82 | 4회 미통과 |
+| pluginManager | installCancelUnconfirmed | Installation has not been confirmed stopped. Retry cancellation or wait for the installation result. {reason} | 설치 중지 여부가 아직 확인되지 않았습니다. 취소를 재시도하거나 설치 결과를 기다리십시오. {reason} | 1.25/0.96/0.67 | 4회 미통과 |
+| pluginManager | installFailureNetworkHost | {host} could not be reached. A GitHub address or a .tgz link is not fetched through the registry: this machine must reach it directly or through a proxy. If the plugin is also published to npm, enter its package name instead. | {host}에 연결할 수 없습니다. GitHub 주소와 .tgz 링크는 레지스트리를 거치지 않으므로 이 컴퓨터에서 직접 연결하거나 프록시를 통해 연결해야 합니다. npm에도 게시된 플러그인이라면 주소 대신 패키지 이름을 입력하십시오. | 1.36/0.93/0.73 | 4회 미통과 |
+| pluginManager | installGuideFill | Use example | 예제 사용 | 1.49/0.96/0.76 | 4회 미통과 |
+| pluginManager | installGuideFillAria | Use the example {example} | 예시 {example} 사용 | 1.47/0.96/0.61 | 4회 미통과 |
+| pluginManager | installResultUnconfirmed | The installation result was not received. Check installation status. {reason} | 설치 결과를 받지 못했습니다. 설치 상태를 확인하십시오. {reason} | 1.34/0.96/0.76 | 4회 미통과 |
+| pluginManager | installUpgradeNotice | On-demand Official plugins offer Update when their version differs from DSH. To update other plugins, uninstall and reinstall them. | 별도로 설치한 공식 플러그인은 DSH와 버전이 다를 때 업데이트 버튼이 표시됩니다. 그 외 플러그인은 제거한 다음 새 버전을 다시 설치하여 업데이트하십시오. | 1.28/0.17/0.82 | 4회 미통과 |
+| pluginManager | reasonAmbiguousInstall | Which package was installed cannot be told from the dependency change. | 의존성이 변경된 내역만으로는 설치된 패키지를 확인할 수 없습니다. | 1.2/0.95/0.54 | 4회 미통과 |
+| pluginManager | reasonNotRemovable | This package is not owned by the profile, or plugin management needs it. | 이 프로필에 속한 패키지가 아니거나 플러그인 관리에 필요한 패키지입니다. | 1.43/0.95/0.47 | 4회 미통과 |
+| pluginManager | reasonUnaddressable | The profile patch cannot address this one uniquely. | 프로필 패치가 이 항목을 다른 항목과 구분할 수 없습니다. | 1.26/0.95/0.43 | 4회 미통과 |
+| pluginManager | installDoneOtherVersion | Under pnpm's supply-chain security policy (minimumReleaseAge), versions published more recently than the required age are not installed automatically, so this installation used {installed} instead of the latest version {version}. A newly published version has not completed this waiting period and may contain undetected malicious code or defects. If you need {version}, uninstall the current version and then install {exact} to request that version. | pnpm의 공급망 보안 정책(minimumReleaseAge)에 따라, 출시 후 정해진 기간이 지나지 않은 버전은 자동 설치 대상에서 제외됩니다. 이 때문에 최신 버전 {version}이 아닌 {installed} 버전이 설치되었습니다. 새로 출시된 버전은 대기 기간이 끝나지 않았으며, 발견되지 않은 악성 코드나 결함이 포함되어 있을 수 있습니다. {version} 버전이 꼭 필요하면 기존 버전을 제거한 뒤 {exact}을(를) 설치해 원하는 버전을 명시하십시오. | 1.41/0.91/0.66 | 4회 미통과 |
+| pluginManager | sourceTargetSpec | Source for this DSH | 현재 DSH에 맞는 소스 | 1.49/0.94/0.82 | 4회 미통과 |
+| pluginManager | 용어 | Registry | 레지스트리 | — | 번역자 제안 |
+| pluginManager | 용어 | Component | 구성 요소 | — | 번역자 제안 |
+| pluginManager | 용어 | Bundle | 번들 | — | 번역자 제안 |
+| pluginManager | 용어 | Dependency | 의존성 | — | 번역자 제안 |
+| pluginManager | 용어 | Tarball | 타르볼 | — | 번역자 제안 |
+| pluginManager | 용어 | Mirror | 미러 | — | 번역자 제안 |
+| pluginManager | 용어 | Integrity check | 무결성 검사 | — | 번역자 제안 |
+| pluginManager | 용어 | Supply-chain security policy | 공급망 보안 정책 | — | 번역자 제안 |
+| pluginManager | 용어 | Third-party | 서드파티 | — | 번역자 제안 |
+| pluginManager | 용어 | Signal | 시그널 | — | 번역자 제안 |
