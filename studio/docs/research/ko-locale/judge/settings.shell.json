@@ -1,0 +1,135 @@
+{
+  "namespace": "settings.shell",
+  "date": "2026-10-17",
+  "engine": "jev",
+  "thresholds": { "natural": 1.5, "meaning": 0.6, "style": 0.5 },
+  "rows": [
+    {
+      "key": "description",
+      "en": "Limit how long each command may run and how much it may output.",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "각 명령의 실행 시간과 출력 크기를 제한합니다.", "natural": 1.83, "meaning": 0.93, "style": 0.9, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "invalidNumber",
+      "en": "Enter a number, or leave blank to use the default.",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "숫자를 입력하거나, 기본값을 사용하려면 비워 두십시오.", "natural": 1.79, "meaning": 0.95, "style": 0.65, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "maxOutputBytes",
+      "en": "Output cap per stream (bytes)",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "스트림당 출력 상한(바이트)", "natural": 1.67, "meaning": 0.96, "style": 0.61, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "maxOutputBytesHint",
+      "en": "Output beyond this cap spills to a temporary file rather than being lost.",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "이 상한을 넘는 출력은 유실되지 않고 임시 파일로 넘깁니다.", "natural": 1.71, "meaning": 0.96, "style": 0.47, "pass": false },
+        { "ko": "이 상한을 넘는 출력은 잃지 않고 임시 파일로 보냅니다.", "natural": 1.52, "meaning": 0.91, "style": 0.41, "pass": false },
+        { "ko": "이 상한을 넘는 출력은 유실되지 않도록 임시 파일로 저장합니다.", "natural": 1.63, "meaning": 0.92, "style": 0.81, "pass": true }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "overridden",
+      "en": "Overridden",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "재정의됨", "natural": 1.78, "meaning": 0.93, "style": 0.66, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "readOnly",
+      "en": "This deployment stores settings read-only.",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "이 배포는 설정을 읽기 전용으로 저장합니다.", "natural": 1.64, "meaning": 0.97, "style": 0.71, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "reset",
+      "en": "Reset to default",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "기본값으로 재설정", "natural": 1.94, "meaning": 0.97, "style": 0.55, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "save",
+      "en": "Save",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "저장", "natural": 1.99, "meaning": 0.98, "style": 0.58, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "saveFailed",
+      "en": "The deployment did not accept these values; they were left for you to correct.",
+      "kind": "normal",
+      "attempts": [],
+      "result": "unresolved"
+    },
+    {
+      "key": "saving",
+      "en": "Saving…",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "저장하고 있습니다…", "natural": 1.94, "meaning": 0.97, "style": 0.77, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "timeoutMs",
+      "en": "Command timeout (ms)",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "명령 제한 시간(ms)", "natural": 1.64, "meaning": 0.93, "style": 0.53, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "timeoutMsHint",
+      "en": "How long one command may run before it is terminated.",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "명령이 종료되기 전까지 실행될 수 있는 시간입니다.", "natural": 1.37, "meaning": 0.86, "style": 0.82, "pass": false },
+        { "ko": "명령이 종료되기까지 실행될 수 있는 최대 시간입니다.", "natural": 1.6, "meaning": 0.91, "style": 0.65, "pass": true }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "title",
+      "en": "Shell",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "셸", "natural": 1.85, "meaning": 0.96, "style": 0.7, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "unavailable",
+      "en": "This plugin is not loaded, so it cannot be configured right now.",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "이 플러그인이 로드되어 있지 않아 지금은 설정할 수 없습니다.", "natural": 1.83, "meaning": 0.97, "style": 0.63, "pass": true }
+      ],
+      "result": "pass"
+    }
+  ]
+}
