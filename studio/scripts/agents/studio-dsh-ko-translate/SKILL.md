@@ -15,7 +15,7 @@ One run translates **one namespace**. Paths below are relative to the repository
 
 ## Inputs
 
-- Namespace `NS`: given by the user, or the smallest entry in `untranslated` from `node --import tsx scripts/check-dsh-ko-locale.mjs --json` (each entry of `reports`).
+- Namespace `NS`: given by the user, or the `next` printed by `node --import tsx scripts/dsh-ko-next.mjs` (it also lists the remaining keys, version-only keys, and rc.2 English that differs). For translating every namespace in order, follow `studio/scripts/agents/dsh-ko-sequential.md`.
 - Sources: `studio/docs/research/ko-locale/source-rc2.json` and `source-alpha2.json`, shape `namespaces[NS].keys[key] = { en, zh }`. Translate the **union** of keys. Use the alpha.2 English as the reference; when rc.2 English differs for a key, the Korean must pass the meaning question against both.
 - If `studio/src/dsh-ko/NS.ts` already exists, keep its passing entries and translate only the keys the check script reports missing.
 

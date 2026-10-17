@@ -85,3 +85,9 @@ DSH 화면 문구 전체를 한국어로 제공한다. Studio는 이미 `ctx.loc
 - 2026-10-17, 별도 세션에서 `studio-dsh-ko-translate`로 `sidebarCodePreview`를 번역했다. 세 키 모두 독립 라벨이고 첫 판정에 통과했다(복사됨·복사·코드).
 - 이 시범은 세 키가 모두 첫 판정에 통과해 다시 쓰기, fallback, 조각 문구 판정, 한 버전에만 있는 네임스페이스 처리를 거치지 않았다. S5 초반에 이 경로를 거치는 네임스페이스(예: alpha.2에만 있는 `claude-code-mods`, 조각 문구가 있는 `workspace`)를 번역하면서 확인한다.
 - 사전 파일의 키는 따옴표 없이 써도 타입 검사와 빠진 키 검사를 통과한다.
+
+## S5 진행 방법
+
+- 순차 진행 지침: [dsh-ko-sequential.md](../../scripts/agents/dsh-ko-sequential.md). 새 세션에서 이 문서를 읽으라고 지시하면 남은 네임스페이스를 작은 것부터 번역하고, 네임스페이스마다 로컬 커밋한다.
+- 진행률과 다음 대상: `node --import tsx scripts/dsh-ko-next.mjs`(`studio/`에서). `index.ts`에 등록된 네임스페이스는 완료, 등록되지 않은 사전 파일은 진행 중으로 본다. 끊긴 세션은 남은 키부터 이어 간다.
+- 미해결 문구와 용어집 제안은 `docs/research/ko-locale/judge/unresolved.md`에 모은다. S5 완료 전에 사용자가 검토한다.
