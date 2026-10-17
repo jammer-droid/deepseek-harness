@@ -24,6 +24,7 @@ import shortcutsLayout from './shortcuts.layout.ts';
 import sidebar from './sidebar.ts';
 import sidebarCodePreview from './sidebarCodePreview.ts';
 import sidebarExcel from './sidebarExcel.ts';
+import sidebarFiles from './sidebarFiles.ts';
 import sidebarImage from './sidebarImage.ts';
 import sidebarOffice from './sidebarOffice.ts';
 import sidebarPdf from './sidebarPdf.ts';
@@ -52,6 +53,7 @@ export const dshKo: DshKoDictionaries = {
   sidebar: sidebar,
   'sidebarCodePreview': sidebarCodePreview,
   sidebarExcel: sidebarExcel,
+  sidebarFiles: sidebarFiles,
   sidebarImage: sidebarImage,
   sidebarOffice: sidebarOffice,
   sidebarPdf: sidebarPdf,
