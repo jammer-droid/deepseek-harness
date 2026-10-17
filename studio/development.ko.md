@@ -35,11 +35,11 @@ DSH는 패키지당 Remote contribution을 하나만 받는다(`$mount`를 두 �
 
 `pack:bundle`은 `studio/dist`에 공개용 패키지(`@matamt-dbg/dsh-studio`) tarball 하나를 만든다. 공개 레포·npm 배포는 [배포 가이드](docs/release.md)를 따른다.
 
-셸과 번들의 지원 선언은 `0.2.0-rc.2 || 0.2.1-alpha.2`다. rc.2의 공개 Slot 등록·구독·목록 조회, locale 등록·구독·조회 계약과 셸 사용법을 대조했다. Host는 비즈니스 서비스가 없는 진입점이고 Client는 slots·locale만 요구한다. 버전 예외는 사용하지 않는다. 신규 기능은 별도 호환성 검증이 필요하다.
+셸과 번들의 지원 선언은 `0.2.0-rc.2 || 0.2.1-alpha.2 || 0.2.1-rc.1`다. 버전 예외는 사용하지 않는다. `0.2.1-rc.1`에서는 역할별 persona·Tool Filter를 `<profile>/studio-data/child-policies/`에 호출 시점의 값으로 저장하고, 공개 `agent/created` 훅에서 Fresh/Fork 생성·복원 전에 적용한다. 기존 자식을 계속 쓰려면 이 디렉터리를 함께 보존해야 한다. 파일이 없거나 손상되면 실행을 거부한다. [rc.1 검증 기록](docs/verification/dsh-0.2.1-rc.1.md)에 설치·회귀 검사와 검증 한계를 기록한다. 신규 기능은 별도 호환성 검증이 필요하다.
 
 ## Desktop과 분리된 Web 실행
 
-설치된 `dsh` CLI가 필요하다. 현재 머신의 `dsh --version`은 `0.2.0-rc.2`다. 아래 명령은 Studio를 테스트·빌드하고 수정하지 않은 설치 런타임으로 Web을 실행한다. DSH 본체를 빌드하거나 Desktop 프로필을 교체하지 않는다.
+설치된 `dsh` CLI가 필요하다. 2026-10-17 검증한 `dsh --version`은 `0.2.1-rc.1`이다. 아래 명령은 Studio를 테스트·빌드하고 수정하지 않은 설치 런타임으로 Web을 실행한다. DSH 본체를 빌드하거나 Desktop 프로필을 교체하지 않는다.
 
 ```sh
 cd /Users/home/playground/vibecoding/deepseek-harness

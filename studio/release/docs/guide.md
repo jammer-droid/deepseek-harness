@@ -342,6 +342,8 @@ To use such a tool, install the plugin that provides it in that profile, or add 
 
 Presets are saved per DSH profile in `<profile>/studio-data/`. Per-session subagent roles are saved per session under `session-roles/` there. Applying a preset registers a Studio-owned DSH agent preset; Studio never edits DSH's own presets or your profile's package list.
 
+On DSH `0.2.1-rc.1`, each role child's instructions and Tool Filter are saved at creation under `child-policies/`. Keep this directory when backing up or moving a profile: completed children also use it when continued. A missing or invalid policy file prevents that child from running. Later role edits do not change an existing child's policy.
+
 ## Troubleshooting
 
 **"@matamt-dbg/dsh-studio: failed" after installing.** An earlier local build of Studio (`@local/dsh-studio`) is still installed in the same profile, and both try to register the same page. Remove the old one and restart:

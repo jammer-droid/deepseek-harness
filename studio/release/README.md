@@ -44,7 +44,7 @@ Optimized is tuned for **coding-agent work**. It is a starting point, not a fixe
 
 ## Install
 
-Requires DSH `0.2.0-rc.2` or `0.2.1-alpha.2`.
+Requires DSH `0.2.0-rc.2`, `0.2.1-alpha.2` or `0.2.1-rc.1`.
 
 ```sh
 dsh plugin --profile web add @matamt-dbg/dsh-studio       # dsh web

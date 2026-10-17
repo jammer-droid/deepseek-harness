@@ -4,7 +4,7 @@ Release notes for `@matamt-dbg/dsh-studio`. Each version lists English notes fir
 
 ## 0.6.0 — 2026-10-17
 
-Requires DSH `0.2.0-rc.2` or `0.2.1-alpha.2`.
+Requires DSH `0.2.0-rc.2`, `0.2.1-alpha.2` or `0.2.1-rc.1`.
 
 ### Highlights
 
@@ -19,6 +19,8 @@ Requires DSH `0.2.0-rc.2` or `0.2.1-alpha.2`.
 
 ### Changes
 
+- Support DSH `0.2.1-rc.1` while preserving role personas and Tool Filters for Fresh and Fork children. Studio stores each child's fixed policy under `studio-data/child-policies/` and restores it before execution; keep this directory when backing up or moving a profile.
+- Update the development TypeScript loader to `tsx 4.23.13` to remove Node 26's `module.register()` deprecation warning.
 - Studio Master includes the `pixie_loop` tool; Optimized does not. Studio installs a new `studio-pixie-loop-guide` skill into `<DSH home>/skills/`.
 - Loop runs are stored in `<profile>/studio-data/pixie/loops/` per session (latest 50) and removed with deleted sessions. Recipes are stored in `<profile>/studio-data/pixie-loop/recipes.json`.
 - `act` accepts only `bash`, requires `safeToRepeat: true`, quotes `{{output}}`, `{{input}}`, `{{id}}` as single shell words, and runs one at a time unless `isolated: true`.
@@ -38,10 +40,12 @@ Requires DSH `0.2.0-rc.2` or `0.2.1-alpha.2`.
 
 ### 한국어
 
-DSH `0.2.0-rc.2` 또는 `0.2.1-alpha.2`가 필요합니다.
+DSH `0.2.0-rc.2`, `0.2.1-alpha.2` 또는 `0.2.1-rc.1`이 필요합니다.
 
 #### 주요 변경
 
+- **DSH rc.1 호환.** `0.2.1-rc.1`에서도 Fresh·Fork 자식의 역할 persona와 Tool Filter를 유지합니다. 생성 시점의 정책은 `studio-data/child-policies/`에 저장하고 실행 전에 복원합니다. 프로필을 백업하거나 옮길 때 이 디렉터리도 보존하세요.
+- 개발용 TypeScript 로더를 `tsx 4.23.13`으로 갱신해 Node 26의 `module.register()` 사용 중단 경고를 제거했습니다.
 - **Pixie Loop.** 새 `pixie_loop` 도구가 서로 독립인 항목 여러 개를 작업 → 정확한 검사 → 결정 엔진 판정 → Pixie 피드백 → 재시도로 처리합니다. 이 과정은 에이전트의 대화 밖에서 돕니다. 기준은 한 번만 질문으로 바뀌어 고정되고, 시작하기 전에 통과 예시와 실패 예시를 가를 수 있어야 합니다. 에이전트는 통과 수, 결과 파일, 끝내 통과하지 못한 항목만 돌려받고, 모든 시도는 **Pixie 탭 → 루프**에서 봅니다. [Pixie Loop 가이드](docs/appendix/pixie-loop.ko.md)를 참고하세요.
 - **실행, 단계별 진행, 선택.** `act`는 각 출력에 대해 세션의 `bash` 도구로 명령을 실행하고 그 결과로 판정합니다(예: 페이지의 CSS 셀렉터 테스트). `mode: "episode"`는 목표에 도달할 때까지 한 단계씩 진행하고, `select`는 각 항목이나 단계에서 결정 엔진이 보기 중 하나를 선택하도록 합니다. `route`는 choice 질문의 답에 따라 결과를 분기합니다.
 - **게이트와 훅 스크립트에서 쓰는 Loop 레시피.** **Studio → Pixie → 게이트 → Loop 레시피**에서 명세를 레시피로 저장합니다. 저장할 때 검사를 한 번 수행합니다. 게이트는 레시피로 판정할 수 있고(**판정**은 Pixie 피드백과 함께 차단하고, **고치기**는 통과하면 고친 내용으로 바꿉니다), 훅 스크립트는 `pixie loop --recipe <이름>`을 호출합니다.
