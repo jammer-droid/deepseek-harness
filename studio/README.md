@@ -31,3 +31,27 @@ npm --prefix studio run pack:bundle
 `test`는 Studio 타입 검사·빌드 후 테스트를 실행한다. `watch`는 Studio 번들만 재생성한다. 루트 빌드나 현재 앱 설치는 실행하지 않는다.
 
 개발 환경은 [개발 안내](development.ko.md), 공개 레포 동기화·npm 공개·업데이트 절차는 [배포 가이드](docs/release.md)를 참조한다. 패키징 성공은 수정하지 않은 DSH에서의 독립 설치 검증을 대신하지 않는다.
+
+## 에이전트 E2E 검증
+
+이슈 완료·배포 전 E2E는 에이전트가 격리 환경에서 실행하고, 사람은 결과와 실제 Desktop·Web 화면만 확인한다. 절차와 규칙의 기준은 [에이전트 E2E 검증 지침](scripts/agents/README.md)이다.
+
+1. 메인 세션이 [지침서 템플릿](scripts/agents/TEMPLATE-e2e.md)을 복사해 `scripts/agents/<이슈>-<주제>-e2e.md`를 쓴다.
+2. 사용자가 새 세션에 "`<지침서>`를 읽고 진행해"라고 지시한다. 검증자는 제품을 고치지 않고 기록만 남긴다.
+3. 판정은 싼 단계부터 한다: **L0** 스크립트 → **L1** `judge`·`pixie_loop` → **L2** 검증자. 결과마다 판정 단계를 적는다.
+
+| 스크립트 (`studio/scripts/e2e/`) | 용도 |
+| --- | --- |
+| `server.mjs up` / `status` / `down` | 빌드·패키징한 Studio를 격리 home에 설치하고 수정하지 않은 `dsh`를 띄운다. `--with-desktop-plugins`, `--with-secrets keys,subscriptions`, `--mock-llm` |
+| `smoke.mjs`, `browser.mjs` | L0 화면 검사(라이트·다크·좁은 폭, pageerror, 플러그인 활성화 실패) |
+| `probe.mjs`, `apply-repairs.mjs` | L1 셀렉터 복구([명세](scripts/e2e/selector-repair.md)) |
+| `agent.mjs`, `mock-llm.mjs` | 역할 자식·Tool Filter·persona·상속 같은 에이전트 제어 시나리오([작성 가이드](scripts/e2e/agent-scenarios.md)) |
+| `wait.mjs` | 실모델 세션·Pixie 루프·게이트 완료를 스크립트 안에서 대기 |
+
+```sh
+node studio/scripts/e2e/server.mjs up            # 구독·키가 필요하면 --with-desktop-plugins --with-secrets keys,subscriptions
+node studio/scripts/e2e/smoke.mjs
+node studio/scripts/e2e/server.mjs down
+```
+
+사전 조건은 화면 검사에 Playwright·Chrome, 에이전트 제어와 `wait.mjs`에 `zstd`다(없으면 `환경 차단`). 산출물과 기본 격리 home은 Git에서 제외된 `studio/dist/e2e/`에 남고 `down`해도 지워지지 않는다. 인증 URL(출력·상태 파일·서버 로그)과 복사한 비밀값은 문서·Git에 옮기지 않는다. `--with-secrets`의 구독 토큰은 격리 환경에서 갱신되면 Desktop 로그인이 끊길 수 있으니 [주의 사항](scripts/agents/README.md#격리-서버)을 먼저 읽는다.

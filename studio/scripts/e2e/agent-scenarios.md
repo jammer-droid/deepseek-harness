@@ -2,6 +2,8 @@
 
 역할 서브에이전트·Tool Filter·persona·대화 상속·게이트처럼 **에이전트가 어떻게 제어되는지**를 검증자가 스스로 세션을 만들고 돌려 확인하는 시나리오 작성법이다. 판정 단계(L0/L1/L2)와 기본 흐름은 [에이전트 E2E 검증 지침](../agents/README.md#기본-흐름)을 따른다. 화면 확인은 [browser.mjs](browser.mjs), 세션 제어는 이 문서의 [agent.mjs](agent.mjs)를 쓴다.
 
+**사전 조건:** `server.mjs`로 띄운 격리 서버(기본 home·프로필이 아니면 `STUDIO_E2E_HOME`·`STUDIO_E2E_PROFILE`을 모든 단계에 같은 값으로), PATH의 `zstd`(세션 로그 읽기, 없으면 `환경 차단`). 시나리오가 만든 임시 프리셋은 실행이 끝나면 삭제를 시도한다(실패해도 결과에는 영향 없음). 세션·자식 정책 파일은 격리 home에 남는다.
+
 ## 1. 모델을 고른다
 
 | 모델 | 서버 | 쓰는 곳 | L0으로 판정할 수 있는 것 |
@@ -50,23 +52,23 @@ await runAgent({ name: '<이름>' }, async t => {
 
 | API | 하는 일 |
 | --- | --- |
-| `t.preset({ tools, roles, deny, prompt, model })` | 임시 Studio 프리셋 저장·반영. 실행이 끝나면 삭제 |
-| `t.session(presetId)` | 세션 생성 |
-| `t.prompt(sessionId, text)` | 메시지 전송. 반환값(이전 종료 턴 수)을 `settle`의 `after`로 넘긴다 |
-| `t.settle(sessionId, { after, turns, children, timeoutMs })` | 부모 턴과 자식들의 첫 턴이 끝날 때까지 스크립트 안에서 대기. 시간 초과는 실패로 기록 |
+| `t.preset({ name, tools, roles, deny, prompt, model })` | 임시 Studio 프리셋 저장·반영(이름 기본 `__agent_e2e__`, 모델 기본은 카탈로그 기본값). 실행이 끝나면 삭제 시도 |
+| `t.session(presetId, { cwd })` | 세션 생성. `cwd`를 주지 않으면 서버의 작업 디렉터리(`studio/`) |
+| `t.prompt(sessionId, text)` | 메시지 전송. 반환값은 **보내기 직전**의 종료 턴 수이며 바로 다음 `settle`의 `after`로 넘긴다 |
+| `t.settle(sessionId, { after = 0, turns = 1, children = 0, timeoutMs = 120000 })` | 부모가 `after + turns`개 턴을 끝내고, 자식이 `children`개 이상이며 각자 첫 턴을 끝낼 때까지 스크립트 안에서 대기. 시간 초과는 실패로 기록하고 `false` |
 | `t.children(sessionId, { markers })` | 자식마다 `policy`(저장 증거: `child-policies/<id>.json`), `evidence`(세션 로그: 도구 호출·거부·턴), `capture`(목 모델: 제공 도구·persona·이력 표식) |
 | `t.expectChild(name, child, expect)` | 아래 기대값 비교 |
 | `t.check(name, fn)` | 그 밖의 사실. `fn`이 던지거나 `false`면 실패 |
-| `t.evidence(id)`, `t.captures()`, `t.rpc(method, args)` | 낮은 수준 접근 |
-| `t.reply(id)`, `t.handoff(id, input)` | L1로 넘길 응답 원문과 항목 |
+| `t.evidence(id, markers)`, `t.captures()`, `t.rpc(method, args)` | 낮은 수준 접근 |
+| `t.reply(id)`, `t.handoff(id, input)` | L1로 넘길 마지막 응답(최대 8,000자)과 항목(최대 32,000자, 넘으면 잘림) |
 
 `expectChild`의 기대값:
 
 | 키 | 확인 |
 | --- | --- |
-| `deny` | 저장된 금지 목록이 같고, 그 도구들이 모델에 제공되지 않았다 |
+| `deny` | 저장된 금지 목록이 같고, 그 도구들이 모델에 제공되지 않았다. 제공 도구를 알 수 없으면(캡처·요청 헤더 없음) 실패 |
 | `tools` | 모델에 제공된 도구 목록(순서 무관) |
-| `persona` | 저장된 persona가 같고 자식 모델에 도달했다(Fresh는 시스템 프롬프트, Fork는 시스템 갱신 메시지) |
+| `persona` | 저장된 persona가 같고 자식 모델에 도달했다(Fresh는 시스템 프롬프트, Fork는 시스템 갱신 메시지). 도달 확인에는 `--mock-llm`과 `t.children(s, { markers: [persona] })`가 필요하며, 없으면 `unverifiable`로 실패한다. 실제 모델에서는 `persona` 대신 저장값만 따로 `t.check`로 확인한다 |
 | `rejected` | 그 도구 호출이 Studio 정책으로 **실행 단계에서** 거부됐다 |
 | `executed` | 그 도구가 정상 실행됐다 |
 | `inheritsMarker` / `notInheritsMarker` | 부모의 완료된 이전 턴 표식이 자식 대화에 있다/없다. 목 모델 캡처 필요 |
@@ -76,8 +78,8 @@ await runAgent({ name: '<이름>' }, async t => {
 - **표식:** persona·이력 확인에는 `PERSONA_<짧은 임의값>`처럼 다른 문장에 우연히 나올 수 없는 표식을 쓴다. 이력 표식은 **이전 턴**에 넣고 그 턴이 끝난 뒤 위임한다. 위임하는 턴이나 자식 task에 넣으면 상속 증거가 아니다.
 - **실행 차단:** 자식 각본에서 금지 도구를 일부러 호출하고 `rejected`로 확인한다. 허용 도구도 하나 호출해 `executed`로 확인한다(전부 막힌 경우와 구분).
 - **상태:** 금지 도구가 실수로 실행돼도 피해가 없는 인자를 쓴다(`bash`는 `true`, `write`는 검증용 이름의 임시 파일). 작업 디렉터리의 파일을 지우거나 덮어쓰는 각본을 쓰지 않는다.
-- **여러 턴:** 턴마다 `t.prompt` → `t.settle`. 다음 턴은 이전 턴의 반환값을 `after`로 넘긴다.
-- **재시작 복원:** `server.mjs down` → `server.mjs up --reuse-profile --mock-llm --skip-build`로 같은 home·프로필을 다시 띄운 뒤 다른 시나리오 파일에서 기존 자식에 메시지를 보낸다. 새 자식을 만드는 것은 복원 검사가 아니다.
+- **여러 턴:** 턴마다 `const after = await t.prompt(...)` 바로 뒤에 `await t.settle(s, { after })`. 이전 턴의 `after`를 다시 쓰지 않는다.
+- **재시작 복원:** 첫 시나리오에서 부모·자식 id와 기대 정책을 `studio/dist/e2e/agent/<이름>/`에 파일로 남긴다(임시 프리셋은 시나리오 종료 때 삭제되므로 기존 세션으로만 확인한다). `server.mjs down` → `server.mjs up --reuse-profile --mock-llm --skip-build`로 같은 home·프로필을 다시 띄운 뒤 두 번째 시나리오에서 그 파일을 읽어 **기존 자식**에 메시지를 보낸다. 새 자식을 만드는 것은 복원 검사가 아니다. `up`은 목 모델 캡처(`mock-llm.jsonl`)를 비우므로, 첫 회차 캡처가 필요하면 `up` 전에 복사해 둔다.
 - **증거 구분:** 보고에 저장 증거(정책 파일), 적용 증거(목 모델 캡처·요청 헤더), 자기 보고(자식 응답)를 섞지 않는다. 자기 보고는 L1 자료일 뿐이다.
 
 ## 5. 실제 모델과 L1
@@ -104,7 +106,7 @@ node studio/scripts/e2e/<시나리오>.mjs
 node studio/scripts/e2e/server.mjs down
 ```
 
-출력은 JSON 요약 하나다: `model`(`mock`/`live`), `ok`, `passed`, `failed`, `failures`(자식 id·불일치 사실), `l1`. 보고 표에는 항목마다 판정 단계를 적는다.
+출력은 JSON 요약 하나다: `model`(`mock`/`live`), `ok`, `passed`, `failed`, `failures`(자식 id·불일치 사실), `l1`. exit 0 전부 통과, 1 실패 있음. 시나리오 파일은 CLI 인자를 받지 않으며 home·프로필은 환경 변수로 맞춘다. 보고 표에는 항목마다 판정 단계를 적는다.
 
 기준 예시는 [agent-roles.mjs](agent-roles.mjs)다: Fresh/Fork × 기본값/extend/replace, persona 전달, 금지 도구 실행 거부, Fork만 이력 상속, 부모 도구 유지.
 

@@ -77,17 +77,21 @@ export function checkChild({ policy, evidence, capture }, expect) {
   const failures = [];
   // History and prompt-reach facts need the mock capture; without it they are not verifiable at L0.
   const needsCapture = ['inheritsMarker', 'notInheritsMarker'].filter(key => expect[key]);
-  if (needsCapture.length && !capture) failures.push(`unverifiable without --mock-llm capture: ${needsCapture.join(', ')}`);
+  if (needsCapture.length && !capture?.historyMarkers) failures.push(`unverifiable without --mock-llm capture: ${needsCapture.join(', ')}`);
   if (expect.deny && !sameSet(policy?.deny ?? [], expect.deny)) failures.push(`deny ${JSON.stringify(policy?.deny ?? null)} ≠ ${JSON.stringify(expect.deny)}`);
   if (expect.persona !== undefined) {
     if ((policy?.persona ?? null) !== (expect.persona || null)) failures.push(`stored persona ${policy?.persona === undefined ? 'absent' : 'differs'}`);
-    if (expect.persona && capture?.systemMarkers?.[expect.persona] === false) failures.push('persona did not reach the child model (system prompt or system update)');
+    // Reaching the model is only provable from a mock capture that searched for this marker.
+    const reached = capture?.systemMarkers?.[expect.persona];
+    if (expect.persona && reached === undefined) failures.push(`persona reach unverifiable: run with --mock-llm and pass ${expect.persona} in t.children({ markers })`);
+    else if (expect.persona && reached === false) failures.push('persona did not reach the child model (system prompt or system update)');
   }
   const tools = capture?.tools ?? evidence?.tools;
+  if ((expect.deny?.length || expect.tools) && !tools) failures.push('offered tools unknown: no mock capture and no request header in the child log');
   if (expect.tools && !(tools && sameSet(tools, expect.tools))) failures.push(`tools ${JSON.stringify(tools)} ≠ ${JSON.stringify(expect.tools)}`);
   for (const name of expect.deny ?? []) if (tools?.includes(name)) failures.push(`denied tool ${name} offered to the model`);
-  if (expect.inheritsMarker && capture?.historyMarkers?.[expect.inheritsMarker] !== true) failures.push(`history marker ${expect.inheritsMarker} not inherited`);
-  if (expect.notInheritsMarker && capture?.historyMarkers?.[expect.notInheritsMarker] === true) failures.push(`history marker ${expect.notInheritsMarker} leaked`);
+  if (expect.inheritsMarker && capture?.historyMarkers && capture.historyMarkers[expect.inheritsMarker] !== true) failures.push(`history marker ${expect.inheritsMarker} not inherited`);
+  if (expect.notInheritsMarker && capture?.historyMarkers && capture.historyMarkers[expect.notInheritsMarker] !== false) failures.push(`history marker ${expect.notInheritsMarker} leaked`);
   for (const name of expect.rejected ?? []) {
     const call = evidence?.calls.find(item => item.name === name);
     if (!call) failures.push(`no ${name} call to test rejection`);

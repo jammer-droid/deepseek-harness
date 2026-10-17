@@ -81,3 +81,24 @@ export function repairsFrom(map, results) {
   }
   return repairs;
 }
+
+/**
+ * Classify pixie_loop results against every queued repair item. Applied: passed with a new, non-empty
+ * selector. Everything else is unresolved with a reason, including items missing from the results.
+ */
+export function classifyRepairs(map, results) {
+  const repairs = {};
+  const unresolved = [];
+  const seen = new Set();
+  for (const result of results) {
+    const original = map[result?.id];
+    if (original === undefined) { unresolved.push({ id: result?.id ?? null, status: result?.status ?? null, reason: 'unknown id' }); continue; }
+    seen.add(result.id);
+    const output = String(result.output ?? '').trim();
+    if (result.status !== 'passed') unresolved.push({ id: result.id, status: result.status ?? null, selector: original, reason: 'not passed' });
+    else if (!output || output === original) unresolved.push({ id: result.id, status: 'passed', selector: original, reason: 'no new selector' });
+    else repairs[original] = output;
+  }
+  for (const [id, selector] of Object.entries(map)) if (!seen.has(id)) unresolved.push({ id, status: null, selector, reason: 'missing from results' });
+  return { repairs, unresolved };
+}

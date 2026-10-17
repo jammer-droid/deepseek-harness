@@ -63,15 +63,17 @@
 
 - 완료 조건은 스크립트가 내부에서 확인하고 최대 시간이 지나면 `시간 초과`로 끝낸다. 검증자는 한 번 실행하고 최종 결과만 읽는다.
 - 오래 걸리는 실행은 관리형 background job으로 띄우고 완료 알림을 기다린다. 고정 `sleep` 뒤 재확인을 반복하지 않는다.
-- 실모델 세션·Pixie 루프·게이트의 완료는 [wait.mjs](../e2e/wait.mjs)로 기다린다. 한 번 호출하면 완료(exit 0) 또는 시간 초과(exit 1)에 요약 하나를 낸다. 메시지·게이트 원문·루프 출력은 출력하지 않는다.
+- 실모델 세션·Pixie 루프·게이트의 완료는 [wait.mjs](../e2e/wait.mjs)로 기다린다. 한 번 호출하면 요약 하나를 낸다. 메시지·게이트 원문·루프 출력은 출력하지 않는다.
+  - exit 0은 **끝났다**는 뜻이지 성공이 아니다. 루프의 `error`·`stopped`·`cancelled`, 게이트의 `error`·`skipped`·`cancelled`도 끝난 상태다. 결과는 `runs[].status`·`counts`, 세션의 `lastEnd`·`toolErrors`로 따로 판정한다. exit 1은 시간 초과(마지막 상태 포함), exit 2는 잘못된 입력(알 수 없는 옵션, 값 누락, 양의 정수가 아닌 `--turns`·`--count`, 숫자가 아닌 `--since`, 잘못된 기간) 또는 `zstd` 없음(환경 차단)이다. 모든 경우 JSON 하나를 출력한다.
 
   ```sh
   node studio/scripts/e2e/wait.mjs session [--session <id>] [--turns 1] [--timeout 10m]
   node studio/scripts/e2e/wait.mjs loop    [--session <id>] [--count 1] [--since <ms>] [--timeout 10m]
-  node studio/scripts/e2e/wait.mjs gate    [--session <id>] [--count 1] [--since <ms>] [--timeout 5m]
+  node studio/scripts/e2e/wait.mjs gate    [--session <id>] [--count 1] [--since <ms>] [--timeout 10m]
+  # 공통: [--profile e2e] [--home <dir>] [--interval 3s]
   ```
 
-  `session`은 세션 로그의 종료된 턴 수·열린 턴·도구 호출 수를, `loop`·`gate`는 프로필 `studio-data/pixie`의 실행 기록 상태·항목 수를 읽는다. `--since`(기본: 호출 시각) 이후 시작한 실행만 센다. 세션 id를 모르면 가장 최근 파일을 읽으므로, 여러 세션이 있으면 `--session`을 준다.
+  `session`은 세션 로그의 종료된 턴 수·열린 턴·도구 호출 수를, `loop`·`gate`는 프로필 `studio-data/pixie`의 실행 기록 상태·항목 수를 읽는다. `--since`(기본: 호출 시각) 이후 시작한 실행만 센다. 이미 시작한 루프·게이트를 기다리면 시작 전에 `date +%s000`으로 잰 epoch ms를 `--since`로 준다. `--turns`는 세션의 **누적** 종료 턴 수다. 세션 id를 모르면 가장 최근 파일을 읽으므로, 여러 세션이 있으면 `--session`을 준다.
 - 긴 출력은 spill 정책에 맡기고, 스크립트는 요약을 먼저 출력한다.
 
 ### 보고
@@ -83,27 +85,46 @@
 설치·기동·종료는 [server.mjs](../e2e/server.mjs)로 한다. 각 호출은 결과가 정해진 뒤에 JSON 요약 하나만 출력하고 끝난다.
 
 ```sh
-node studio/scripts/e2e/server.mjs up [--profile e2e] [--with-desktop-plugins] [--with-secrets keys,subscriptions] [--plugin <spec>] [--archive <tgz>] [--skip-build] [--port N] [--timeout 90s]
-node studio/scripts/e2e/server.mjs status [--profile e2e]
-node studio/scripts/e2e/server.mjs down [--profile e2e]
+node studio/scripts/e2e/server.mjs up [--profile e2e] [--home <dir>] [--with-desktop-plugins] [--with-secrets keys,subscriptions] [--mock-llm] [--plugin <spec>] [--archive <tgz>] [--skip-build] [--reuse-profile] [--port N] [--timeout 90s]
+node studio/scripts/e2e/server.mjs status [--profile e2e] [--home <dir>]
+node studio/scripts/e2e/server.mjs down [--profile e2e] [--home <dir>] [--timeout 20s]
 ```
 
+exit 0 성공, 1 실패(`step` 포함), 2 잘못된 인자 또는 사용자 home 거부.
+
 - `up`: Studio 빌드·pack(`--archive`가 있으면 생략) → 출하 `web` 템플릿으로 프로필 재생성 → 격리 home에 설치 → 수정하지 않은 `dsh` 기동 → 인증 URL이 응답할 때까지 스크립트 안에서 대기. 출력: `url`, `port`, `pid`, 런타임 `version`, 패키지 이름·`sha256`, 설치 목록, peer 경고, 로그 경로.
-- 격리 home은 기본 `studio/dist/e2e/home`(Git 제외, `--home` 또는 `STUDIO_E2E_HOME`으로 변경)이며 회차 사이에 유지한다. 프로필은 매번 새로 만든다(`--reuse-profile`로 유지). `~/.dsh`는 home으로 쓸 수 없다.
+- 격리 home은 기본 `studio/dist/e2e/home`(Git 제외)이며 회차 사이에 유지한다. 프로필은 매번 새로 만든다(`--reuse-profile`로 유지). `~/.dsh`와 그 아래(심볼릭 링크 포함)는 home으로 쓸 수 없다.
+- **home·프로필 맞추기:** `browser.mjs`·`agent.mjs`는 `server.mjs`가 남긴 `<home>/e2e-runs/<profile>/state.json`을 읽고, `wait.mjs`는 같은 home·프로필의 세션 로그와 `studio-data`를 직접 읽는다. `--home`·`--profile` 인자는 그 명령 한 번에만 적용되므로, 기본값이 아닌 home·프로필을 쓸 때는 **모든 단계 전에 환경 변수로** 맞춘다: `export STUDIO_E2E_HOME=<절대 경로> STUDIO_E2E_PROFILE=<이름>`. `server.mjs`·`browser.mjs`·`agent.mjs`·`wait.mjs` 모두 이 두 변수를 읽는다(인자가 있으면 인자 우선). 기본값이 아닌 home은 승인된 Git 제외 경로만 쓴다.
 - `--with-desktop-plugins`: Desktop 프로필 `package.json`을 **읽기만** 해서 Studio를 뺀 플러그인(구독 플러그인 등)을 같은 버전으로 설치한다. 이 옵션만으로는 토큰·자격 증명을 복사하지 않는다.
-- `--with-secrets keys,subscriptions`: `up`마다 `~/.dsh`에서 격리 home으로 복사한다(0600, Git 제외 경로). 출력에는 이름·계정 수·만료까지 남은 분만 나온다.
+- `--with-secrets keys,subscriptions`: `up`마다 `~/.dsh`에서 격리 home으로 복사한다(0600). 출력에는 이름·계정 수·만료까지 남은 분만 나온다. `down`은 복사본·세션·로그를 지우지 않는다. 한 번 복사한 비밀값은 다음 `up`에서 옵션을 빼도 그 home에 남는다. 지우려면 `<home>/.credentials.yaml`, `<home>/plugins/subscriptions/auth.json`을 직접 삭제한다.
   - `keys`: `.credentials.yaml`의 `refs`(API 키 참조)만. 기기·브라우저 연결 grant는 복사하지 않는다.
   - `subscriptions`: 구독 플러그인 OAuth 저장소 `plugins/subscriptions/auth.json`.
   - **주의:** 격리 환경에서 토큰이 갱신되면 갱신된 토큰은 격리 home에만 저장된다. 공급자가 갱신 토큰을 한 번만 쓰게 하면 사용자 Desktop의 로그인이 끊길 수 있다. 접근 토큰 만료가 120분 안이면 `secrets.warning`이 나온다. 경고가 있으면 실모델 실행 전에 Desktop에서 먼저 사용해 갱신하거나 진행 여부를 사용자에게 묻는다. 갱신이 일어나는 경우는 아직 시험하지 않았다(2026-10-17: 복사·화면 표시·사용량 조회만 확인, 갱신 미발생, Desktop 파일 불변).
 - 포트는 지정하지 않으면 19410–19499에서 빈 곳을 고른다. 다른 서버를 종료하지 않는다.
 - `--mock-llm`: 각본 목 모델([mock-llm.mjs](../e2e/mock-llm.mjs))을 함께 띄우고 DeepSeek 제공자를 그쪽으로 돌린다. 요청은 `<home>/e2e-runs/<profile>/mock-llm.jsonl`에 남는다. 사용법은 [에이전트 제어 시나리오 가이드](../e2e/agent-scenarios.md).
-- `down`은 이 스크립트가 띄운 프로세스(상태 파일의 pid, 목 모델 포함)만 종료하고 포트가 비었는지 확인한다.
-- 인증 URL은 출력과 상태 파일(0600)에만 있다. 보고서·문서·Git에 옮기지 않는다.
+- `down`은 상태 파일에 기록된 프로세스가 **같은 pid·같은 시작 시각**일 때만(이 스크립트가 띄운 그 프로세스일 때만) 종료하고 포트가 비었는지 확인한다. 시작 시각이 기록되지 않은 옛 상태 파일도 소유를 증명할 수 없으므로 신호를 보내지 않는다(수동 확인). 서버 pid가 다른 프로그램으로 바뀌었으면 서버에는 신호를 보내지 않고, 목 모델은 자기 기록으로 따로 확인해 종료한 뒤(`mockStopped`) 낡은 상태 파일을 지우고 `ok: false`를 낸다. `status`의 `running`도 같은 기준이다.
+- 인증 URL은 `up` 출력, 상태 파일(0600), 서버 로그 `<home>/e2e-runs/<profile>/server.log`(0600)에 있다. 보고서·문서·Git에 옮기지 않고, 로그를 공유할 때는 `token=` 값을 지운다.
+- 환경 변수: `STUDIO_DSH_BIN`(기본 `dsh`, 다른 순정 CLI 지정), `STUDIO_E2E_HOME`, `DSH_HOME_USER`(보호할 사용자 home, 기본 `~/.dsh`; `~/.dsh`는 항상 보호).
+
+`up` 실패(`ok: false`)는 `step`으로 대처한다. 제품 소스·코어·사용자 프로필을 고쳐 통과시키지 않는다.
+
+| `step` | 뜻 | 대처 |
+| --- | --- | --- |
+| (없음) `already has a running server` | 같은 home·프로필에 이 스크립트의 서버가 떠 있음 | `status`로 확인하고, 이 검증에서 띄운 서버면 `down` 후 다시 `up` |
+| `runtime` | `dsh --version`이 지원 목록 밖 | `version`·`supported`를 기록. 다른 순정 CLI가 있으면 `STUDIO_DSH_BIN`, 없으면 설치 검증 `대기` |
+| `build` / `pack` | 빌드·패키징 실패 | 출력 기록, `환경 차단` 또는 `실패`. 검증자는 소스를 고치지 않는다 |
+| `port` | 빈 포트 없음·지정 포트 사용 중 | 다른 `--port`. 다른 서버를 종료하지 않는다 |
+| `profile` / `install` / `plugins` | 프로필 생성·플러그인 설치 실패, Desktop 매니페스트 없음 | 출력 기록. `--with-desktop-plugins` 없이 다시 시도할지는 지침서 범위를 따른다 |
+| `secrets` | 복사 원본 없음 | 해당 기능을 `환경 차단`으로 적는다. 대신 로그인·키 입력을 하지 않는다 |
+| `mock-llm` | 목 모델 기동 실패 | `<home>/e2e-runs/<profile>/mock-llm.log` 기록 |
+| `start` | 서버 종료 또는 시간 내 미응답 | 출력(토큰 가림)과 `server.log` 확인, `--timeout`을 늘려 한 번 재시도 |
 - 설치·기동 성공은 Client 플러그인 활성화나 화면 동작을 뜻하지 않는다. 그 확인은 L0 브라우저 검사의 몫이다.
 
 ## 브라우저 검사 (L0)
 
 화면 검사는 [browser.mjs](../e2e/browser.mjs)의 `run()` 위에 시나리오만 쓴다. Playwright 경로 탐색, 인증 URL 접속, 첫 실행 안내 닫기, 테마·폭별 컨텍스트, pageerror·플러그인 활성화 실패 수집, 스크린샷 저장은 하네스가 한다.
+
+**사전 조건:** Playwright 모듈(저장소 `node_modules/.pnpm/playwright@<버전>` 자동 탐색, 또는 `STUDIO_PLAYWRIGHT=<.../playwright/index.mjs 파일 경로>`), 브라우저(설치된 Chrome 우선, 없으면 Playwright 번들 Chromium), 에이전트 제어·`wait.mjs`에는 PATH의 `zstd`. 없으면 해당 단계는 `환경 차단`이다. 저장소·사용자 환경에 자동 설치하지 않는다.
 
 ```js
 import { run } from '../e2e/browser.mjs';
@@ -115,9 +136,12 @@ await run({ name: 'pixie-tab', views: ['light', 'dark', 'light@480'] }, async ap
 
 - URL은 `server.mjs up`이 남긴 상태 파일에서 읽는다(`profile`·`url` 옵션이나 `STUDIO_E2E_URL`로 지정 가능). 토큰은 출력하지 않는다.
 - `views`: `light`, `dark`, `light@480`, `dark@1280x720`. 뷰마다 새 브라우저 컨텍스트에서 처음부터 실행한다.
-- `app.check(name, fn)`은 던지지 않고 통과·실패를 기록한다. 실패한 단계의 기본 대기는 10초(`actionTimeout`)다.
+- `app.check(name, fn)`: `fn`이 던지거나 `false`를 반환하면 실패로 기록하고, 그 밖에는 통과다. 자체는 던지지 않고 통과 여부를 반환한다. 반드시 `await`한다. 조건은 `app.assert(조건, 메시지)`로 쓴다.
+- `app.step(name, selector, { action, goal })`: 셀렉터 하나에 묶인 검사. `action`은 `'visible'`(기본)·`'click'`·`locator => Promise`. 통과 여부를 반환한다. `goal`은 실패 시 L1 복구 지시문이 되므로 요소를 말로 정확히 적는다.
+- `app.locator(selector)`: L1 복구(`repairs.json`)를 반영한 locator. `app.page.getByRole(...)` 등으로 직접 찾은 요소에는 복구가 반영되지 않는다.
+- `app.text(locator?)`(보이는 글자), `app.shot(name)`(스크린샷 경로 기록), `app.page`(Playwright Page). 실패한 단계의 기본 대기는 10초(`actionTimeout`), 셸 준비 대기는 30초(`readyTimeout`)다.
 - 출력은 JSON 요약 하나다: `ok`, `passed`, `failed`, `failures`(단계·뷰·오류 첫 줄), `pageErrors`, `pluginFailures`, 스크린샷 경로. 실패가 하나라도 있으면 exit 1.
-- 스크린샷은 `studio/dist/e2e/shots/<name>/`에 저장하고 경로만 보고한다. 판정은 검사로 하며, 검증자가 이미지를 읽는 것은 실패 원인을 볼 때나 사람 확인용 자료를 고를 때뿐이다.
+- 스크린샷은 `studio/dist/e2e/shots/<name>/`에 저장하고 경로만 보고한다. `<name>`은 `run({ name })` 값에서 영숫자·`_.-` 밖의 글자를 `-`로 바꾼 것이며, 이름은 ASCII로 짓는다. 판정은 검사로 하며, 검증자가 이미지를 읽는 것은 실패 원인을 볼 때나 사람 확인용 자료를 고를 때뿐이다.
 - 기본 확인은 [smoke.mjs](../e2e/smoke.mjs)다(셸 로드, 플러그인 활성화 실패 없음, Studio 진입·패널 열림, 라이트·다크·480px).
 - 셀렉터 단계는 `app.step(name, selector, { action, goal })`으로 쓴다. 실패하면 하네스가 실패 시점 DOM과 접근성 스냅샷을 남기고 요약에 `repair.items`를 낸다. 그 항목은 [L1 셀렉터 복구](../e2e/selector-repair.md) 명세로 `pixie_loop`에 넘기고, `apply-repairs.mjs`로 적용해 L0을 다시 실행한다. 검증자가 스냅샷·스크린샷을 직접 읽어 셀렉터를 고치지 않는다.
 

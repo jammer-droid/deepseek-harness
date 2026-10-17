@@ -55,8 +55,8 @@ async function launch(chromium) {
  */
 export async function run(options, scenario) {
   const { chromium } = await loadPlaywright();
-  const url = options.url ?? process.env.STUDIO_E2E_URL ?? serverState({ profile: options.profile }).url;
-  const outDir = path.join(studio, 'dist/e2e/shots', options.name.replace(/[^\w.-]+/g, '-'));
+  const url = options.url ?? process.env.STUDIO_E2E_URL ?? serverState({ profile: options.profile ?? process.env.STUDIO_E2E_PROFILE }).url;
+  const outDir = path.join(studio, 'dist/e2e/shots', slug(options.name));
   mkdirSync(outDir, { recursive: true });
   // Repaired selectors from a previous L1 run (apply-repairs.mjs); originals stay in the scenario source.
   const repairsPath = path.join(outDir, 'repairs.json');
@@ -166,10 +166,11 @@ export class App {
     }
   }
 
-  /** Record a named pass/fail fact. Returns true on pass; never throws. */
+  /** Record a named pass/fail fact: fn throws or returns false to fail. Returns true on pass; never throws. */
   async check(name, fn) {
     try {
-      await fn();
+      // Same contract as agent.mjs t.check: throwing or returning false fails.
+      if ((await fn()) === false) throw new Error('check returned false');
       this.checks.push({ name, view: viewName(this.view), ok: true });
       return true;
     } catch (error) {

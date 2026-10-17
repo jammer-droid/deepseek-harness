@@ -11,6 +11,8 @@
  * install the package (and optional extra plugins) into an isolated DSH_HOME, start the unmodified
  * `dsh` detached, wait inside this script until the authenticated URL answers, then print one JSON
  * summary. The home survives between runs (logins kept); the profile is fresh unless --reuse-profile.
+ * Env: STUDIO_E2E_HOME (home), STUDIO_E2E_PROFILE (profile; arguments win), STUDIO_DSH_BIN (runtime),
+ * DSH_HOME_USER (extra protected home; ~/.dsh is always protected, symlinks resolved).
  * The user's ~/.dsh is only read (--with-desktop-plugins, --with-secrets), never written.
  * --with-secrets copies, on every up, API key refs (keys) and/or the subscription OAuth store
  * (subscriptions) into the isolated home with mode 0600; only names and counts are printed.
@@ -19,7 +21,7 @@
  */
 import { spawn, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { copyFileSync, chmodSync, closeSync, existsSync, mkdirSync, openSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { copyFileSync, chmodSync, closeSync, existsSync, mkdirSync, openSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { createServer } from 'node:net';
 import { homedir } from 'node:os';
 import path from 'node:path';
@@ -32,14 +34,28 @@ const runtime = process.env.STUDIO_DSH_BIN || 'dsh';
 const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 
 let options;
-try { options = parseArgs(process.argv.slice(2)); } catch (error) { finish({ ok: false, error: error.message }, 2); }
+const argv = process.argv.slice(2);
+// STUDIO_E2E_PROFILE applies like --profile, so every script agrees on the profile.
+const hasProfile = argv.some(arg => arg === '--profile' || arg.startsWith('--profile='));
+if (!hasProfile && process.env.STUDIO_E2E_PROFILE && argv.length) argv.push('--profile', process.env.STUDIO_E2E_PROFILE);
+try { options = parseArgs(argv); } catch (error) { finish({ ok: false, error: error.message }, 2); }
 const profile = options.profile ?? DEFAULT_PROFILE;
 const home = path.resolve(options.home ?? process.env.STUDIO_E2E_HOME ?? path.join(studio, 'dist/e2e/home'));
 const runDir = path.join(home, 'e2e-runs', profile);
 const statePath = path.join(runDir, 'state.json');
 const logPath = path.join(runDir, 'server.log');
 const userHome = path.resolve(process.env.DSH_HOME_USER ?? path.join(homedir(), '.dsh'));
-if (home === userHome || home.startsWith(userHome + path.sep)) finish({ ok: false, error: `Refusing to use the user DSH home ${userHome}` }, 2);
+/** Resolve symlinks of the nearest existing ancestor so a link cannot point the E2E home into a user home. */
+const realish = target => {
+  let current = target;
+  const rest = [];
+  while (!existsSync(current) && path.dirname(current) !== current) { rest.unshift(path.basename(current)); current = path.dirname(current); }
+  return path.join(realpathSync(current), ...rest);
+};
+for (const protectedHome of new Set([userHome, path.join(homedir(), '.dsh')].map(realish))) {
+  const real = realish(home);
+  if (real === protectedHome || real.startsWith(protectedHome + path.sep)) finish({ ok: false, error: `Refusing to use the user DSH home ${protectedHome}` }, 2);
+}
 
 function finish(summary, code = summary.ok ? 0 : 1) {
   console.log(JSON.stringify(summary, null, 2));
@@ -49,6 +65,13 @@ function finish(summary, code = summary.ok ? 0 : 1) {
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 const readState = () => (existsSync(statePath) ? JSON.parse(readFileSync(statePath, 'utf8')) : undefined);
 const alive = pid => { try { process.kill(pid, 0); return true; } catch { return false; } };
+/** Process start time as ps prints it; with the pid it identifies one process (pids are reused, start times are not). */
+const startTime = pid => (spawnSync('ps', ['-o', 'lstart=', '-p', String(pid)], { encoding: 'utf8' }).stdout ?? '').trim();
+/**
+ * Only signal a recorded process that is still the one this script started: same pid and same start
+ * time. A state without a recorded start time (written before this check existed) is never trusted.
+ */
+const ours = (pid, started) => Boolean(pid && started && alive(pid) && startTime(pid) === started);
 const tail = (text, lines = 20) => String(text).trim().split('\n').slice(-lines).join('\n');
 
 function run(command, args, extraEnv = {}) {
@@ -71,7 +94,7 @@ async function pickPort(from) {
 
 async function up() {
   const previous = readState();
-  if (previous && alive(previous.pid)) finish({ ok: false, error: `Profile ${profile} already has a running server (pid ${previous.pid}, port ${previous.port}); run down first` });
+  if (previous && ours(previous.pid, previous.started)) finish({ ok: false, error: `Profile ${profile} already has a running server (pid ${previous.pid}, port ${previous.port}); run down first` });
 
   const versionRun = run(runtime, ['--version']);
   const version = versionRun.output.trim().split('\n').at(-1);
@@ -132,7 +155,7 @@ async function up() {
     const mockDeadline = Date.now() + 10_000;
     while (Date.now() < mockDeadline && !/mock-llm: /.test(readFileSync(mockLog, 'utf8'))) await sleep(200);
     if (!/mock-llm: /.test(readFileSync(mockLog, 'utf8'))) finish({ ok: false, step: 'mock-llm', output: tail(readFileSync(mockLog, 'utf8')) });
-    mock = { pid: mockChild.pid, port: mockPort, capture, baseUrl: `http://127.0.0.1:${mockPort}` };
+    mock = { pid: mockChild.pid, started: startTime(mockChild.pid), port: mockPort, capture, baseUrl: `http://127.0.0.1:${mockPort}` };
     env.DEEPSEEK_BASE_URL = mock.baseUrl;
     env.DEEPSEEK_API_KEY = 'mock-key';
   }
@@ -160,7 +183,7 @@ async function up() {
     }
     await sleep(1000);
   }
-  const state = { pid: child.pid, port, profile, home, log: logPath, url, archive, sha256, runtime, version, mock, startedAt: new Date().toISOString() };
+  const state = { pid: child.pid, started: startTime(child.pid), port, profile, home, log: logPath, url, archive, sha256, runtime, version, mock, startedAt: new Date().toISOString() };
   writeFileSync(statePath, JSON.stringify(state, null, 2), { mode: 0o600 });
   if (!ready) {
     if (alive(child.pid)) { try { process.kill(-child.pid, 'SIGTERM'); } catch { /* already gone */ } }
@@ -201,22 +224,30 @@ function copySecrets(kinds) {
 async function down() {
   const state = readState();
   if (!state) finish({ ok: true, profile, stopped: false, note: 'No state file; nothing started by this script' });
-  if (alive(state.pid)) {
-    try { process.kill(-state.pid, 'SIGTERM'); } catch { try { process.kill(state.pid, 'SIGTERM'); } catch { /* gone */ } }
+  const serverOurs = ours(state.pid, state.started);
+  const mockOurs = state.mock ? ours(state.mock.pid, state.mock.started) : false;
+  const kill = (pid, signal) => { try { process.kill(-pid, signal); } catch { try { process.kill(pid, signal); } catch { /* gone */ } } };
+  // The mock is stopped on its own identity, even when the server pid went stale.
+  if (mockOurs) kill(state.mock.pid, 'SIGTERM');
+  if (alive(state.pid) && !serverOurs) {
+    rmSync(statePath, { force: true });
+    const why = state.started ? 'is no longer this E2E server' : 'has no recorded start time (old state), so ownership cannot be proven';
+    finish({ ok: false, profile, stopped: false, mockStopped: mockOurs, error: `pid ${state.pid} ${why}; it was not signalled (state removed). Stop it manually only after checking it is yours` });
   }
+  if (serverOurs) kill(state.pid, 'SIGTERM');
   const deadline = Date.now() + (options.timeoutMs ?? 20_000);
-  while (Date.now() < deadline && (alive(state.pid) || !(await portFree(state.port)))) await sleep(500);
-  if (alive(state.pid)) { try { process.kill(-state.pid, 'SIGKILL'); } catch { /* gone */ } await sleep(500); }
-  if (state.mock?.pid && alive(state.mock.pid)) { try { process.kill(-state.mock.pid, 'SIGTERM'); } catch { try { process.kill(state.mock.pid, 'SIGTERM'); } catch { /* gone */ } } }
+  while (Date.now() < deadline && ((serverOurs && alive(state.pid)) || !(await portFree(state.port)))) await sleep(500);
+  if (serverOurs && alive(state.pid)) { kill(state.pid, 'SIGKILL'); await sleep(500); }
   const free = await portFree(state.port);
-  if (!alive(state.pid)) rmSync(statePath, { force: true });
-  finish({ ok: !alive(state.pid) && free, profile, stopped: !alive(state.pid), port: state.port, portFree: free });
+  const stopped = !serverOurs || !alive(state.pid);
+  if (stopped) rmSync(statePath, { force: true });
+  finish({ ok: stopped && free, profile, stopped, port: state.port, portFree: free });
 }
 
 async function status() {
   const state = readState();
   if (!state) finish({ ok: true, profile, running: false });
-  finish({ ok: true, ...state, running: alive(state.pid), portInUse: !(await portFree(state.port)) });
+  finish({ ok: true, ...state, running: ours(state.pid, state.started), portInUse: !(await portFree(state.port)) });
 }
 
 await { up, down, status }[options.command]();

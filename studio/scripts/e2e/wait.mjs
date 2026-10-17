@@ -22,19 +22,27 @@ import { DEFAULT_PROFILE, parseDuration } from './server-lib.mjs';
 
 const studio = fileURLToPath(new URL('../..', import.meta.url));
 const [kind, ...rest] = process.argv.slice(2);
+const out = (summary, code) => { console.log(JSON.stringify(summary, null, 2)); process.exit(code); };
+const KNOWN = ['session', 'turns', 'count', 'since', 'timeout', 'interval', 'profile', 'home'];
 const opts = {};
 for (let index = 0; index < rest.length; index++) {
   const [flag, inline] = rest[index].split(/=(.*)/s, 2);
-  opts[flag.replace(/^--/, '')] = inline ?? rest[++index];
+  const key = flag.replace(/^--/, '');
+  if (!flag.startsWith('--') || !KNOWN.includes(key)) out({ ok: false, error: `Unknown option: ${rest[index]}` }, 2);
+  const value = inline ?? rest[++index];
+  if (value === undefined) out({ ok: false, error: `Missing value for ${flag}` }, 2);
+  opts[key] = value;
 }
-const out = (summary, code) => { console.log(JSON.stringify(summary, null, 2)); process.exit(code); };
 if (!['session', 'loop', 'gate'].includes(kind)) out({ ok: false, error: 'Usage: wait.mjs <session|loop|gate> [options]' }, 2);
+for (const key of ['turns', 'count']) if (opts[key] !== undefined && !/^[1-9]\d*$/.test(opts[key])) out({ ok: false, error: `--${key} must be a positive integer` }, 2);
+if (opts.since !== undefined && !/^\d+$/.test(opts.since)) out({ ok: false, error: '--since must be epoch milliseconds' }, 2);
+const duration = (raw, fallback) => { try { return parseDuration(raw ?? fallback); } catch (error) { out({ ok: false, error: error.message }, 2); } };
 
 const started = Date.now();
 const home = path.resolve(opts.home ?? process.env.STUDIO_E2E_HOME ?? path.join(studio, 'dist/e2e/home'));
-const profile = opts.profile ?? DEFAULT_PROFILE;
-const timeoutMs = parseDuration(opts.timeout ?? '10m');
-const intervalMs = parseDuration(opts.interval ?? '3s');
+const profile = opts.profile ?? process.env.STUDIO_E2E_PROFILE ?? DEFAULT_PROFILE;
+const timeoutMs = duration(opts.timeout, '10m');
+const intervalMs = duration(opts.interval, '3s');
 const since = opts.since !== undefined ? Number(opts.since) : started;
 const count = Number(opts.count ?? 1);
 const turns = Number(opts.turns ?? 1);
@@ -61,6 +69,7 @@ function readSession() {
   const file = newest(path.join(home, 'sessions'), full => full.endsWith('session.v4.jsonl.zstd') && (!opts.session || full.includes(opts.session)));
   if (!file) return { state: { found: false } };
   const decoded = spawnSync('zstd', ['-dc', file], { encoding: 'utf8', maxBuffer: 256 << 20 });
+  if (decoded.error?.code === 'ENOENT') out({ ok: false, kind, error: 'zstd not found on PATH: environment blocked' }, 2);
   if (decoded.status !== 0) return { state: { found: true, error: 'zstd failed' } };
   const summary = sessionSummary(decoded.stdout);
   const sessionId = path.basename(path.dirname(file));

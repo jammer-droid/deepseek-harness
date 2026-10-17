@@ -64,3 +64,16 @@ test('PLUGIN_FAILURE matches DSH activation failures and errorLine keeps the fir
   assert.ok(!PLUGIN_FAILURE.test('플러그인'));
   assert.equal(errorLine(new Error('\u001b[2mlocator.click: Timeout\u001b[22m\nCall log: ...')), 'locator.click: Timeout');
 });
+
+test('classifyRepairs covers every queued item and names each unresolved reason', async () => {
+  const { classifyRepairs } = await import('../scripts/e2e/browser-lib.mjs');
+  const map = { a: 'old-a', b: 'old-b', c: 'old-c', d: 'old-d' };
+  const { repairs, unresolved } = classifyRepairs(map, [
+    { id: 'a', status: 'passed', output: 'new-a' },
+    { id: 'b', status: 'escalated', output: 'x' },
+    { id: 'c', status: 'passed', output: ' old-c ' },
+    { id: 'z', status: 'passed', output: 'new-z' },
+  ]);
+  assert.deepEqual(repairs, { 'old-a': 'new-a' });
+  assert.deepEqual(unresolved.map(item => [item.id, item.reason]), [['b', 'not passed'], ['c', 'no new selector'], ['z', 'unknown id'], ['d', 'missing from results']]);
+});

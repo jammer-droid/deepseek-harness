@@ -63,11 +63,14 @@ L0 실패 (summary.repair.items) → pixie_loop (이 명세) → apply-repairs.m
 ## 3. 적용과 재실행
 
 ```sh
-node studio/scripts/e2e/apply-repairs.mjs <name> studio/dist/e2e/shots/<name>/repair-done.jsonl
-node <시나리오>.mjs --name <name>   # repairs.json을 읽어 복구 셀렉터로 실행
+node studio/scripts/e2e/apply-repairs.mjs <name> <pixie_loop 요약의 results 경로>
+<L0 실패 때와 같은 시나리오 명령>   # 같은 run({ name })이면 repairs.json을 읽어 복구 셀렉터로 실행
 ```
 
+- `<name>`은 시나리오의 `run({ name })` 값이다(`smoke.mjs`는 `--name`으로 바꿀 수 있고, 다른 시나리오는 파일에 고정). 복구 파일은 이름별 폴더에 있으므로 재실행은 **처음과 같은 명령·이름**으로 한다.
+- 결과 파일은 `pixie_loop` 요약에 나온 `results` 경로를 쓴다. 요약에 경로가 없거나 파일이 없으면(모든 항목 skipped, 쓰기 실패) `apply-repairs.mjs`는 exit 2로 멈춘다. 이 경우 원인을 기록하고 셀렉터 단계는 `환경 차단`이다.
 - `passed` 항목만 `dist/e2e/shots/<name>/repairs.json`에 합친다. `escalated`·`error`는 `unresolved`로 출력되며 L2(검증자)가 판단한다. error는 `환경 차단`이다.
+- 대기열의 **모든 항목**을 결과와 대조한다. exit 0은 모든 항목이 새 셀렉터로 적용됨, exit 1은 하나 이상 `unresolved`(결과에 없음·통과 못함·셀렉터 그대로·알 수 없는 id; 통과분은 적용됨), exit 2는 결과 파일 없음, 또는 `repair-map.json`·결과 파일·기존 `repairs.json` 중 읽을 수 없는 JSON이다. `unresolved[].reason`을 보고서에 옮긴다. exit 1을 성공으로 적지 않는다.
 - 재실행 L0이 통과해야 원래 단계를 통과로 적는다. 결과에 `repairedSelectors` 수가 나온다.
 - 시나리오 원본의 셀렉터는 그대로다. 복구가 맞으면 메인 세션이 원본을 고쳐 커밋한다(검증자는 고치지 않는다).
 

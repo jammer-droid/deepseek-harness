@@ -74,6 +74,11 @@ test('checkChild passes a matching child and names each mismatch', () => {
   const bad = checkChild({ ...child, policy: { deny: ['write'] }, capture: { ...child.capture, tools: ['read', 'write'], historyMarkers: { H: false } },
     evidence: { calls: [{ name: 'write', ok: true, rejected: false }] } }, expect);
   assert.equal(bad.length, 7);
+  // Missing evidence fails closed instead of passing on stored values alone.
+  const noCapture = checkChild({ policy: { deny: ['write'], persona: 'P' }, evidence: { calls: [] } }, { deny: ['write'], persona: 'P' });
+  assert.ok(noCapture.some(text => /persona reach unverifiable/.test(text)));
+  assert.ok(noCapture.some(text => /offered tools unknown/.test(text)));
+  assert.match(checkChild({ ...child, capture: { ...child.capture, systemMarkers: {} } }, { persona: 'P' })[0], /unverifiable/);
   assert.ok(bad.some(text => /denied tool write offered/.test(text)));
   assert.ok(bad.some(text => /write was not rejected/.test(text)));
   assert.ok(bad.some(text => /not inherited/.test(text)));

@@ -15,14 +15,15 @@
 
 1. `git status --short`, `git branch --show-current`, `git log --oneline -3`을 기록한다.
 2. `dsh --version`이 `<버전>`인지 확인한다. 다르면 설치 검증 단계는 `대기`다.
-3. 도구 확인: <`pixie_loop`·`judge` 등>. 없으면 해당 L1 단계는 `환경 차단`이다.
+3. 도구 확인: <`pixie_loop`·`judge` 등>. 없으면 해당 L1 단계는 `환경 차단`이다. 화면 검사는 Playwright 모듈·Chrome, 에이전트 제어·`wait.mjs`는 PATH의 `zstd`가 필요하다([사전 조건](README.md#브라우저-검사-l0)). 없으면 해당 단계는 `환경 차단`이며 자동 설치하지 않는다.
+   기본값이 아닌 home·프로필을 쓰면 모든 명령 전에 `export STUDIO_E2E_HOME=<절대 경로> STUDIO_E2E_PROFILE=<이름>`.
 4. 서버를 띄운다.
 
    ```sh
    node studio/scripts/e2e/server.mjs up <--with-desktop-plugins> <--with-secrets ...>
    ```
 
-   `ok: false`면 `step`과 출력을 기록하고 멈춘다. `secrets.warning`이 있으면 <진행 조건>.
+   `ok: false`면 [step별 대처](README.md#격리-서버)를 따른다. `secrets.warning`이 있으면 <진행 조건>.
 
 ## 1. L0 검사
 

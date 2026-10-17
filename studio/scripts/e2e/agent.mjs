@@ -31,6 +31,7 @@ const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 function readEvents(file) {
   const out = spawnSync('zstd', ['-dc', file], { encoding: 'utf8', maxBuffer: 512 << 20 });
+  if (out.error?.code === 'ENOENT') throw new Error('zstd not found on PATH (needed to read session logs): environment blocked');
   if (out.status !== 0) return [];
   return out.stdout.split('\n').flatMap(line => { try { return [JSON.parse(line)]; } catch { return []; } });
 }
@@ -189,7 +190,7 @@ class AgentTest {
  * @param {(t: AgentTest) => Promise<void>} scenario
  */
 export async function runAgent(options, scenario) {
-  const state = serverState({ profile: options.profile });
+  const state = serverState({ profile: options.profile ?? process.env.STUDIO_E2E_PROFILE });
   const test = new AgentTest(state, options.name);
   await test.login();
   try { await scenario(test); } catch (error) {
