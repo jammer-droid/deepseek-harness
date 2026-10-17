@@ -62,7 +62,7 @@ function ShortcutsPage({ locale, shortcuts }: { locale: string; shortcuts: Setti
       })}
     </section>
     <p className="studio-muted">{t('sessionOrderNote')}</p>
-    <p className="studio-muted">{t('conflictNote')}{shortcuts.desktop ? '' : ` ${t('webNoDefault')}`}</p>
+    {shortcuts.desktop ? null : <p className="studio-muted">{t('webNoDefault')}</p>}
   </div>;
 }
 
