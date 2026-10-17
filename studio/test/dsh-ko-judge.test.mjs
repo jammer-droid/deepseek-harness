@@ -1,7 +1,7 @@
 /** Bulk Korean judging plan and record merge (#30 S5). No network. */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { attemptFrom, mergeRecord, MAX_ATTEMPTS, planNamespace, questionsFor, renderDictionary } from '../scripts/dsh-ko-judge.mjs';
+import { attemptFrom, mergeRecord, MAX_ATTEMPTS, openRows, planNamespace, questionsFor, renderDictionary } from '../scripts/dsh-ko-judge.mjs';
 
 const english = new Map([['a', ['Save']], ['b', ['Open {name}']], ['c', ['MCP']], ['d', ['New text', 'Old text']]]);
 
@@ -50,4 +50,15 @@ test('renders a dictionary with keys moved to fallback', () => {
   assert.match(text, /'b\.c': 'it\\'s\\n둘째 줄',/);
   assert.match(text, /fallback: \['z', 'a'\],/);
   assert.doesNotMatch(text, /저장/);
+});
+
+test('a failing key left unchanged stays open across runs until rewritten or moved to fallback', () => {
+  const record = { rows: [
+    { key: 'a', attempts: [{ ko: '시간', natural: 1.3, meaning: 0.4, style: 0.6, pass: false }], result: 'pending' },
+    { key: 'b', attempts: [{ ko: '닫기', natural: 1.9, meaning: 0.9, style: 0.7, pass: true }], result: 'pass' },
+    { key: 'c', attempts: [{ ko: '시도', natural: 1.0, meaning: 0.9, style: 0.6, pass: false }], result: 'pending' },
+  ] };
+  const dictionary = { ko: { a: '시간', b: '닫기' }, fallback: ['c'] };
+  assert.equal(planNamespace(dictionary, record, new Map([['a', ['hours']], ['b', ['Close']]])).items.length, 0);
+  assert.deepEqual(openRows(record, dictionary).map(row => row.key), ['a']);
 });

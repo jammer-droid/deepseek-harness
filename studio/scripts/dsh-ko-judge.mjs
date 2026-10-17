@@ -114,6 +114,11 @@ export function mergeRecord(record, ns, judged, today) {
   return { record: next, outcomes };
 }
 
+/** Rows whose key is still in `ko` and whose result awaits a rewrite or a retry. */
+export function openRows(record, dictionary) {
+  return (record?.rows ?? []).filter(row => ['pending', 'unjudged'].includes(row.result) && row.key in (dictionary.ko ?? {}));
+}
+
 /** Rewrite a dictionary file: move `keys` from ko into fallback, keeping key order. */
 export function renderDictionary(dictionary, moveToFallback) {
   const ko = Object.entries(dictionary.ko ?? {}).filter(([key]) => !moveToFallback.includes(key));
@@ -187,7 +192,7 @@ async function main() {
     const recordFile = `${research}judge/${ns}.json`;
     const record = existsSync(recordFile) ? JSON.parse(readFileSync(recordFile, 'utf8')) : undefined;
     const { items, skipped } = planNamespace(dictionary, record, englishOf(sources, ns));
-    if (dryRun) { report.push({ ns, toJudge: [...new Set(items.map(item => item.key))].length, requests: Math.ceil(items.length / BATCH), skipped }); continue; }
+    if (dryRun) { report.push({ ns, toJudge: [...new Set(items.map(item => item.key))].length, requests: Math.ceil(items.length / BATCH), open: openRows(record, dictionary).filter(row => !items.some(item => item.key === row.key)).map(row => row.key), skipped }); continue; }
 
     const judged = [];
     for (let start = 0; start < items.length; start += BATCH) {
@@ -210,10 +215,12 @@ async function main() {
     const unresolved = outcomes.filter(outcome => outcome.row.result === 'unresolved').map(outcome => outcome.row);
     writeFileSync(recordFile, `${JSON.stringify(nextRecord, null, 2)}\n`);
     if (unresolved.length) writeFileSync(dictFile, renderDictionary(dictionary, unresolved.map(row => row.key)));
-    const fails = outcomes.filter(outcome => ['pending', 'unjudged'].includes(outcome.row.result)).map(({ key, row, attempt }) => ({
-      key, en: row.en, ko: attempt.ko, scores: attempt.error ? attempt.error : `${attempt.natural}/${attempt.meaning}/${attempt.style}`,
-      attemptsLeft: MAX_ATTEMPTS - row.attempts.filter(entry => entry.error === undefined).length,
-    }));
+    // Report every key still waiting on a rewrite, including ones judged in earlier runs and left unchanged.
+    const fails = openRows(nextRecord, dictionary).map(row => {
+      const attempt = row.attempts.at(-1);
+      return { key: row.key, en: row.en, ko: attempt.ko, scores: attempt.error ? attempt.error : `${attempt.natural}/${attempt.meaning}/${attempt.style}`,
+        attemptsLeft: MAX_ATTEMPTS - row.attempts.filter(entry => entry.error === undefined).length };
+    });
     failing += fails.length;
     report.push({ ns, judged: outcomes.length, passed: outcomes.filter(outcome => ['pass', 'fixed'].includes(outcome.row.result)).length, fallback: unresolved.map(row => row.key), failing: fails, skipped });
     if (consecutiveErrors >= 3) break;
@@ -221,7 +228,7 @@ async function main() {
 
   if (json) console.log(JSON.stringify(report, null, 2));
   else for (const entry of report) {
-    if (dryRun) { console.log(`${entry.ns}: ${entry.toJudge} keys to judge in ${entry.requests} requests${entry.skipped.length ? `; not in source: ${entry.skipped.join(', ')}` : ''}`); continue; }
+    if (dryRun) { console.log(`${entry.ns}: ${entry.toJudge} keys to judge in ${entry.requests} requests${entry.open.length ? `; awaiting rewrite: ${entry.open.join(', ')}` : ''}${entry.skipped.length ? `; not in source: ${entry.skipped.join(', ')}` : ''}`); continue; }
     console.log(`${entry.ns}: judged ${entry.judged}, passed ${entry.passed}, moved to fallback ${entry.fallback.length}, failing ${entry.failing.length}`);
     for (const fail of entry.failing) console.log(`  FAIL ${fail.key} (${fail.attemptsLeft} left) ${fail.scores} | en: ${JSON.stringify(fail.en)} | ko: ${JSON.stringify(fail.ko)}`);
     if (entry.skipped.length) console.log(`  not in source: ${entry.skipped.join(', ')}`);
