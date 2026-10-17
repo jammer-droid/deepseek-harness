@@ -1,6 +1,32 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { PLUGIN_FAILURE, errorLine, parseView, pickPlaywright, shotName, summarize } from '../scripts/e2e/browser-lib.mjs';
+import { ARIA_LIMIT, PLUGIN_FAILURE, errorLine, parseView, pickPlaywright, repairItem, repairsFrom, shotName, slug, summarize } from '../scripts/e2e/browser-lib.mjs';
+
+test('repairItem builds one loop input with goal, selector and a capped snapshot', () => {
+  const item = repairItem({ id: 'a.light-1440', name: 'Panel', goal: 'The Presets tab', selector: '[role=tab]', view: 'light-1440', error: 'Timeout', aria: 'x'.repeat(ARIA_LIMIT + 10) });
+  assert.equal(item.id, 'a.light-1440');
+  assert.equal(item.selector, '[role=tab]');
+  assert.match(item.input, /^Goal: The Presets tab\n/);
+  assert.match(item.input, /Failed selector: \[role=tab\]/);
+  assert.match(item.input, /… \(cut\)$/);
+  assert.ok(item.input.length < ARIA_LIMIT + 400);
+});
+
+test('repairsFrom applies only passed, changed outputs', () => {
+  const map = { a: 'old-a', b: 'old-b', c: 'old-c', d: 'old-d' };
+  const repairs = repairsFrom(map, [
+    { id: 'a', status: 'passed', output: ' new-a ' },
+    { id: 'b', status: 'escalated', output: 'new-b' },
+    { id: 'c', status: 'passed', output: 'old-c' },
+    { id: 'z', status: 'passed', output: 'new-z' },
+  ]);
+  assert.deepEqual(repairs, { 'old-a': 'new-a' });
+});
+
+test('slug keeps file-safe names', () => {
+  assert.equal(slug('Studio panel opens'), 'Studio-panel-opens');
+  assert.equal(slug('  '), 'step');
+});
 
 test('pickPlaywright prefers the newest stable playwright and skips core and prereleases', () => {
   const entries = ['playwright-core@1.61.1', 'playwright@1.9.0', 'playwright@1.61.1', 'playwright@1.63.0-alpha-2026-08-31', 'zod@3.0.0'];

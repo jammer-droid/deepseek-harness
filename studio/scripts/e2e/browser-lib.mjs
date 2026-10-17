@@ -22,6 +22,8 @@ export function parseView(raw, defaults = { width: 1440, height: 900 }) {
 export const viewName = view => `${view.theme}-${view.width}`;
 
 /** File-safe screenshot name. */
+export const slug = text => String(text).replace(/[^\w.-]+/g, '-').replace(/^-+|-+$/g, '') || 'step';
+
 export const shotName = (name, view) => `${String(name).replace(/[^\w.-]+/g, '-')}${view ? `.${viewName(view)}` : ''}.png`;
 
 /**
@@ -35,7 +37,7 @@ export function summarize({ checks, pageErrors = [], pluginFailures = [], shots 
     level: 'L0',
     passed: checks.length - failed.length,
     failed: failed.length,
-    failures: failed.map(({ name, view, error }) => ({ name, view, error })),
+    failures: failed.map(({ name, view, error, selector }) => ({ name, view, error, ...(selector ? { selector } : {}) })),
     pageErrors: [...new Set(pageErrors)].slice(0, 20),
     pluginFailures: [...new Set(pluginFailures)],
     views,
@@ -47,4 +49,35 @@ export function summarize({ checks, pageErrors = [], pluginFailures = [], shots 
 export function errorLine(error) {
   const text = String(error?.message ?? error).replace(/\u001b\[[0-9;]*m/g, '');
   return text.split('\n').map(line => line.trim()).find(Boolean)?.slice(0, 300) ?? 'unknown error';
+}
+
+/** Accessibility snapshots above this size are cut so one repair item stays well under the loop's input limit. */
+export const ARIA_LIMIT = 20_000;
+
+/** One pixie_loop item for L1 selector repair. The id names the saved DOM file the probe opens. */
+export function repairItem({ id, name, goal, selector, view, error, aria }) {
+  const snapshot = aria.length > ARIA_LIMIT ? `${aria.slice(0, ARIA_LIMIT)}\n… (cut)` : aria;
+  return {
+    id,
+    input: [
+      `Goal: ${goal}`,
+      `Step: ${name} (${view})`,
+      `Failed selector: ${selector}`,
+      `Error: ${error}`,
+      'Accessibility snapshot of the page at the failure:',
+      snapshot,
+    ].join('\n'),
+    selector,
+  };
+}
+
+/** Map original selector -> repaired selector from pixie_loop results (passed items only). */
+export function repairsFrom(map, results) {
+  const repairs = {};
+  for (const result of results) {
+    const original = map[result.id];
+    const output = String(result.output ?? '').trim();
+    if (result.status === 'passed' && original && output && output !== original) repairs[original] = output;
+  }
+  return repairs;
 }
