@@ -280,3 +280,9 @@
 | open-in-app | 용어 | Footnotes | 각주 | — | 번역자 제안 |
 | open-in-app | 용어 | Sidebar | 사이드바 | — | 번역자 제안 |
 | common | copy.optionsHint | {action}; right-click for copy options | {action}; 우클릭하면 복사 옵션이 나타납니다. | 1.4/0.92/0.72 | 4회 미통과 |
+| subagent | readonly.unknown.body | Read the child session to determine whether it can be continued. | 하위 세션의 내용을 확인하여 이어서 진행할 수 있는지 판단하십시오. | 1.38/0.96/0.9 | 4회 미통과 |
+| subagent | 용어 | Continuable | 계속 가능 | — | 번역자 제안 |
+| subagent | 용어 | One-shot | 일회성 | — | 번역자 제안 |
+| subagent | 용어 | Parent session | 상위 세션 | — | 번역자 제안 |
+| subagent | 용어 | Child session | 하위 세션 | — | 번역자 제안 |
+| subagent | 용어 | Migration | 마이그레이션 | — | 번역자 제안 |
