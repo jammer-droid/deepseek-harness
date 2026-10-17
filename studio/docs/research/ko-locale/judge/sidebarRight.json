@@ -1,0 +1,669 @@
+{
+  "namespace": "sidebarRight",
+  "date": "2026-10-17",
+  "engine": "jev",
+  "thresholds": {
+    "natural": 1.5,
+    "meaning": 0.6,
+    "style": 0.5
+  },
+  "rows": [
+    {
+      "key": "chrome.collapse",
+      "en": "Collapse sidebar",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "사이드바 접기",
+          "natural": 1.81,
+          "meaning": 0.97,
+          "style": 0.65,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "chrome.collapseAria",
+      "en": "Collapse right sidebar",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "오른쪽 사이드바 접기",
+          "natural": 1.69,
+          "meaning": 0.97,
+          "style": 0.5,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "chrome.exitFullscreen",
+      "en": "Exit fullscreen",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "전체 화면 종료",
+          "natural": 1.84,
+          "meaning": 0.97,
+          "style": 0.52,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "chrome.expand",
+      "en": "Open sidebar",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "사이드바 열기",
+          "natural": 1.84,
+          "meaning": 0.97,
+          "style": 0.58,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "chrome.expandAria",
+      "en": "Open right sidebar",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "오른쪽 사이드바 열기",
+          "natural": 1.75,
+          "meaning": 0.97,
+          "style": 0.53,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "chrome.toFullscreen",
+      "en": "Fullscreen",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "전체 화면",
+          "natural": 1.77,
+          "meaning": 0.96,
+          "style": 0.78,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "command.budget",
+      "en": "Two panes is the limit",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "창은 두 개까지 나눌 수 있습니다",
+          "natural": 1.41,
+          "meaning": 0.91,
+          "style": 0.7,
+          "pass": false
+        },
+        {
+          "ko": "창은 최대 두 개까지 열 수 있습니다",
+          "natural": 1.57,
+          "meaning": 0.88,
+          "style": 0.94,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "command.close",
+      "en": "Close current page or window",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "현재 페이지 또는 창 닫기",
+          "natural": 1.57,
+          "meaning": 0.92,
+          "style": 0.41,
+          "pass": false
+        },
+        {
+          "ko": "현재 페이지나 창을 닫습니다",
+          "natural": 1.78,
+          "meaning": 0.91,
+          "style": 0.85,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "command.collapsed",
+      "en": "Expand the right sidebar first",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "먼저 오른쪽 사이드바를 펼치십시오",
+          "natural": 1.31,
+          "meaning": 0.97,
+          "style": 0.92,
+          "pass": false
+        },
+        {
+          "ko": "오른쪽 사이드바를 먼저 펼쳐 주십시오",
+          "natural": 1.31,
+          "meaning": 0.95,
+          "style": 0.96,
+          "pass": false
+        },
+        {
+          "ko": "오른쪽 사이드바를 먼저 펼치세요",
+          "natural": 1.71,
+          "meaning": 0.97,
+          "style": 0.53,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "command.empty",
+      "en": "Open a page first",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "먼저 페이지를 여십시오",
+          "natural": 1.76,
+          "meaning": 0.97,
+          "style": 0.51,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "command.float",
+      "en": "This action is unavailable in a floating panel",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "떠 있는 패널에서는 이 동작을 쓸 수 없습니다",
+          "natural": 1.45,
+          "meaning": 0.97,
+          "style": 0.7,
+          "pass": false
+        },
+        {
+          "ko": "플로팅 패널에서는 사용할 수 없는 기능입니다",
+          "natural": 1.69,
+          "meaning": 0.95,
+          "style": 0.91,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "command.fullscreen",
+      "en": "Toggle panel fullscreen",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "패널 전체 화면 전환",
+          "natural": 1.31,
+          "meaning": 0.93,
+          "style": 0.49,
+          "pass": false
+        },
+        {
+          "ko": "패널 전체 화면 켜기/끄기",
+          "natural": 1.55,
+          "meaning": 0.94,
+          "style": 0.5,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "command.noFocus",
+      "en": "Focus a right sidebar pane first",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "먼저 오른쪽 사이드바의 창을 선택하십시오",
+          "natural": 1.36,
+          "meaning": 0.96,
+          "style": 0.91,
+          "pass": false
+        },
+        {
+          "ko": "오른쪽 사이드바의 창을 먼저 선택해 주십시오",
+          "natural": 1.34,
+          "meaning": 0.91,
+          "style": 0.93,
+          "pass": false
+        },
+        {
+          "ko": "오른쪽 사이드바에서 창을 먼저 선택하세요",
+          "natural": 1.21,
+          "meaning": 0.84,
+          "style": 0.41,
+          "pass": false
+        },
+        {
+          "ko": "오른쪽 사이드바의 창을 먼저 선택하십시오",
+          "natural": 1.3,
+          "meaning": 0.91,
+          "style": 0.78,
+          "pass": false
+        }
+      ],
+      "result": "unresolved"
+    },
+    {
+      "key": "command.noRefresh",
+      "en": "This page cannot be refreshed",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "이 페이지는 새로 고칠 수 없습니다",
+          "natural": 1.67,
+          "meaning": 0.98,
+          "style": 0.73,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "command.noSession",
+      "en": "Select a session first",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "먼저 세션을 선택하십시오",
+          "natural": 1.79,
+          "meaning": 0.97,
+          "style": 0.74,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "command.refresh",
+      "en": "Refresh current page",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "현재 페이지 새로 고침",
+          "natural": 1.81,
+          "meaning": 0.96,
+          "style": 0.55,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "command.stale",
+      "en": "The page changed; focus it again",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "페이지가 바뀌었습니다. 다시 선택하십시오",
+          "natural": 1.46,
+          "meaning": 0.93,
+          "style": 0.67,
+          "pass": false
+        },
+        {
+          "ko": "페이지가 변경되었습니다. 다시 선택해 주십시오",
+          "natural": 1.41,
+          "meaning": 0.87,
+          "style": 0.91,
+          "pass": false
+        },
+        {
+          "ko": "페이지가 바뀌었습니다. 다시 선택하세요",
+          "natural": 1.38,
+          "meaning": 0.88,
+          "style": 0.53,
+          "pass": false
+        },
+        {
+          "ko": "페이지가 바뀌었습니다. 다시 선택하십시오.",
+          "natural": 1.33,
+          "meaning": 0.91,
+          "style": 0.48,
+          "pass": false
+        }
+      ],
+      "result": "unresolved"
+    },
+    {
+      "key": "command.toggle",
+      "en": "Toggle right sidebar",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "오른쪽 사이드바 열기/닫기",
+          "natural": 1.54,
+          "meaning": 0.96,
+          "style": 0.5,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "command.width",
+      "en": "Not enough width to split, widen the sidebar",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "나눌 공간이 부족합니다. 사이드바를 넓히십시오",
+          "natural": 1.68,
+          "meaning": 0.95,
+          "style": 0.67,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "dock.addTab",
+      "en": "New tab",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "새 탭",
+          "natural": 1.88,
+          "meaning": 0.97,
+          "style": 0.8,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "dock.closeFloat",
+      "en": "Close",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "닫기",
+          "natural": 1.97,
+          "meaning": 0.96,
+          "style": 0.63,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "dock.closeTab",
+      "en": "Close",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "닫기",
+          "natural": 1.97,
+          "meaning": 0.97,
+          "style": 0.6,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "dock.dockFloat",
+      "en": "Send back to the sidebar",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "사이드바로 되돌리기",
+          "natural": 1.19,
+          "meaning": 0.87,
+          "style": 0.46,
+          "pass": false
+        },
+        {
+          "ko": "사이드바에 다시 고정",
+          "natural": 1.49,
+          "meaning": 0.89,
+          "style": 0.47,
+          "pass": false
+        },
+        {
+          "ko": "사이드바에 다시 넣기",
+          "natural": 0.98,
+          "meaning": 0.91,
+          "style": 0.48,
+          "pass": false
+        },
+        {
+          "ko": "사이드바로 보내기",
+          "natural": 1.29,
+          "meaning": 0.92,
+          "style": 0.54,
+          "pass": false
+        }
+      ],
+      "result": "unresolved"
+    },
+    {
+      "key": "dock.drop.bottom",
+      "en": "Add bottom split",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "아래쪽에 분할 추가",
+          "natural": 1.67,
+          "meaning": 0.96,
+          "style": 0.56,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "dock.drop.center",
+      "en": "Move here",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "여기로 이동",
+          "natural": 1.62,
+          "meaning": 0.96,
+          "style": 0.39,
+          "pass": false
+        },
+        {
+          "ko": "여기로 옮기기",
+          "natural": 1.66,
+          "meaning": 0.92,
+          "style": 0.41,
+          "pass": false
+        },
+        {
+          "ko": "여기로 이동합니다",
+          "natural": 1.1,
+          "meaning": 0.94,
+          "style": 0.91,
+          "pass": false
+        },
+        {
+          "ko": "여기에 놓기",
+          "natural": 1.55,
+          "meaning": 0.89,
+          "style": 0.65,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "dock.drop.left",
+      "en": "Add left split",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "왼쪽에 분할 추가",
+          "natural": 1.76,
+          "meaning": 0.95,
+          "style": 0.66,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "dock.drop.right",
+      "en": "Add right split",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "오른쪽에 분할 추가",
+          "natural": 1.82,
+          "meaning": 0.96,
+          "style": 0.64,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "dock.drop.top",
+      "en": "Add top split",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "위쪽에 분할 추가",
+          "natural": 1.75,
+          "meaning": 0.95,
+          "style": 0.65,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "dock.emptyPane",
+      "en": "Empty pane",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "빈 창",
+          "natural": 1.58,
+          "meaning": 0.93,
+          "style": 0.72,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "dock.splitPane",
+      "en": "Split",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "분할",
+          "natural": 1.8,
+          "meaning": 0.92,
+          "style": 0.77,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "dock.splitPaneDisabled",
+      "en": "Two panes is the limit",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "창은 두 개까지 나눌 수 있습니다",
+          "natural": 1.58,
+          "meaning": 0.95,
+          "style": 0.55,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "dock.splitPaneNarrow",
+      "en": "Not enough width to split, widen the sidebar",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "나눌 공간이 부족합니다. 사이드바를 넓히십시오",
+          "natural": 1.56,
+          "meaning": 0.92,
+          "style": 0.76,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "tab.guide.title",
+      "en": "Start",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "시작",
+          "natural": 1.86,
+          "meaning": 0.9,
+          "style": 0.86,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "tab.unavailable",
+      "en": "Nothing here can view this kind of content yet.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "이 콘텐츠를 볼 수 있는 화면이 아직 없습니다.",
+          "natural": 0.9,
+          "meaning": 0.85,
+          "style": 0.55,
+          "pass": false
+        },
+        {
+          "ko": "이 형식의 콘텐츠는 아직 표시할 수 없습니다.",
+          "natural": 0.75,
+          "meaning": 0.55,
+          "style": 0.85,
+          "pass": false
+        },
+        {
+          "ko": "이 콘텐츠를 표시할 수 있는 보기가 아직 없습니다.",
+          "natural": 1.13,
+          "meaning": 0.88,
+          "style": 0.68,
+          "pass": false
+        },
+        {
+          "ko": "이 유형의 콘텐츠를 열 수 있는 보기가 아직 없습니다.",
+          "natural": 1.29,
+          "meaning": 0.91,
+          "style": 0.53,
+          "pass": false
+        }
+      ],
+      "result": "unresolved"
+    }
+  ]
+}

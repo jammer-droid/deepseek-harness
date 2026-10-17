@@ -52,3 +52,7 @@
 | settings | connection.restart | Reconnecting, reconnect now | 다시 연결하고 있습니다. 지금 다시 연결하십시오. | 1.38/0.93/0.96 | 두 상태 안내를 한 문장으로 합친 후보 모두 자연스러움 미달 |
 | settings | desktop.update.tasksChanged | New tasks have started. Confirm again to stop the tasks and update. | 새 작업이 시작되었습니다. 작업을 중지하고 업데이트하려면 다시 확인하십시오. | 1.45/0.92/0.6 | 확인 요청 안내문의 자연스러움 미달 |
 | settings | developerTools.description | Shows trajectory, code diffs, and all Agent presets | Trajectory, 코드 diff, 모든 에이전트 프리셋을 표시합니다 | 1.15/0.9/0.55 | 제품 용어가 섞인 설명문 후보 모두 자연스러움 미달 |
+| sidebarRight | command.noFocus | Focus a right sidebar pane first | 먼저 오른쪽 사이드바의 창을 선택하십시오 | 1.36/0.96/0.91 | 4회 미통과 |
+| sidebarRight | command.stale | The page changed; focus it again | 페이지가 변경되었습니다. 다시 선택해 주십시오 | 1.41/0.87/0.91 | 4회 미통과 |
+| sidebarRight | dock.dockFloat | Send back to the sidebar | 사이드바에 다시 고정 | 1.49/0.89/0.47 | 4회 미통과 |
+| sidebarRight | tab.unavailable | Nothing here can view this kind of content yet. | 이 유형의 콘텐츠를 열 수 있는 보기가 아직 없습니다. | 1.29/0.91/0.53 | 4회 미통과 |
