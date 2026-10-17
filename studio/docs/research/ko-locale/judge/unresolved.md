@@ -188,3 +188,12 @@
 | pluginManager | 용어 | Supply-chain security policy | 공급망 보안 정책 | — | 번역자 제안 |
 | pluginManager | 용어 | Third-party | 서드파티 | — | 번역자 제안 |
 | pluginManager | 용어 | Signal | 시그널 | — | 번역자 제안 |
+| settings.subagent | saveFailed | The deployment did not accept these values; they were left for you to correct. | 배포 환경에서 입력한 값을 저장하지 못했습니다. 수정할 수 있도록 입력값은 그대로 유지됩니다. | 1.44/0.67/0.92 | 4회 미통과 |
+| settings.subagent | subagentCapacityHelp | Total live Subagents under the same main Agent, across all recursion levels. The main Agent is excluded. New start requests are rejected when the limit is reached. | 하나의 메인 에이전트가 실행할 수 있는 서브에이전트의 총수입니다. 모든 재귀 단계의 서브에이전트를 포함하되 메인 에이전트는 제외합니다. 한도를 채우면 추가 실행 요청은 거부됩니다. | 1.4/0.9/0.7 | 4회 미통과 |
+| settings.subagent | subagentModelSelectionAllowed | Models agents may choose | 에이전트용 선택 가능 모델 | 1.41/0.9/0.77 | 4회 미통과 |
+| settings.subagent | subagentModelSelectionPartial | Some model providers could not be loaded; saved choices remain removable. | 일부 모델 프로바이더를 불러오는 데 실패했습니다. 저장해 둔 모델 선택 항목을 제거하는 것은 가능합니다. | 1.2/0.81/0.85 | 4회 미통과 |
+| settings.subagent | 용어 | Recursion depth | 재귀 깊이 | — | 번역자 제안 |
+| settings.subagent | 용어 | Parallelism limit | 동시 실행 한도 | — | 번역자 제안 |
+| settings.subagent | 용어 | Reasoning effort | 추론 수준 | — | 번역자 제안 |
+| settings.subagent | 용어 | Main Agent | 메인 에이전트 | — | 번역자 제안 |
+| settings.subagent | 용어 | Parent agent | 부모 에이전트 | — | 번역자 제안 |
