@@ -123,7 +123,7 @@ calibration은 기준이 실제로 좋은 출력과 나쁜 출력을 가르는�
 
 | 검사 | 옵션 | 실패 조건 |
 | --- | --- | --- |
-| `{"type":"placeholders"}` | | 입력의 `{name}`, `{{count}}`, `%s`·`%1$d`, `<b>`·`</b>` 같은 자리표시자와 태그가 출력에 같은 수만큼 없거나, 입력에 없는 것이 생김 |
+| `{"type":"placeholders"}` | | 입력의 `{name}`, `{{count}}`, `%s`·`%1$d`, `<b>`·`</b>` 같은 자리표시자와 태그, 인라인 코드(백틱 안 글), Markdown 링크 주소가 출력에 같은 수만큼 없거나, 입력에 없는 것이 생김 |
 | `{"type":"regex","pattern":"[가-힣]","expect":"match"}` | `flags`: `i` `m` `s` `u` | `match`면 출력이 패턴에 맞지 않을 때, `no-match`면 맞을 때 |
 | `{"type":"json","keys":["title"]}` | `keys` 선택 | 출력이 JSON이 아니거나, 객체에 지정한 키가 없음 |
 

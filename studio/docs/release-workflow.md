@@ -65,21 +65,75 @@ description: "Studio 기능 브랜치를 병합부터 배포까지 마무리하�
 3단계에서 바뀐 한국어 문장을 `pixie_loop`으로 교정한다. 메인 에이전트가 문장마다 직접 판정하지 않는다.
 
 1. **항목 만들기:** 이번 배포에서 바뀐 한국어 문단을 항목으로 뽑는다. 대상은 `CHANGELOG.md`의 `### 한국어` 섹션, 바뀐 `release/docs/**/*.ko.md` 문단, 새 화면 문구(ko 로캘)다. 항목 하나는 문단 하나(목록이면 항목 하나)이고 id는 `파일:줄`로 한다. 코드 블록·표의 코드 칸·링크 주소는 넣지 않는다.
-2. **명세:** 아래 레시피 형식으로 `pixie_loop`을 실행한다. `shared`에는 Studio 용어(프리셋, 게이트, 세션, 도구, 레시피 등)와 문체 규칙(문서는 합니다체, UI 문구는 해요체 또는 명사형)을 넣는다.
+2. **명세:** 아래 명세로 `pixie_loop`을 실행한다. `shared`에는 Studio 용어와 문체 규칙(문서는 합니다체, UI 문구는 해요체 또는 명사형)을 넣는다. 판정 질문과 기준값은 Jev로 직접 잰 값이다(0.6.0 배포 때 측정: 뜻이 바뀐 문장 0.63 대 같은 문장 0.99, 깨진 문장 0.06–0.12 대 자연스러운 문장 0.38–0.63). 자연스러움 질문은 점수가 낮게 나오므로 기준을 0.3으로 둔다. 인라인 코드·링크 보존은 결정 엔진이 약해 `placeholders` 코드 검사가 맡는다. 질문을 바꾸면 calibration이 통과하는지 먼저 확인한다.
 
    ```json
    {
-     "items": { "path": "work/ko-polish.jsonl" },
-     "shared": "Studio Korean style: documents use 합니다체; UI strings use 해요체 or noun phrases. Keep product names, code, paths, option names, numbers, and Markdown links unchanged. Terms: preset → 프리셋, gate → 게이트, session → 세션, tool → 도구, recipe → 레시피.",
-     "work": { "instruction": "Polish this Korean text: fix awkward translation-style wording, spacing, and particles. Keep the meaning, terms, Markdown, and inline code exactly. If it is already natural, return it unchanged. Reply with the text only." },
-     "criteria": "The output keeps the full meaning of the input. The output reads as natural Korean, not translated English. The output keeps every inline code span, link, and number from the input. If there is a problem, say whether it is meaning change, unnatural wording, or broken formatting.",
-     "codeChecks": [{ "type": "placeholders" }, { "type": "regex", "pattern": "[가-힣]", "expect": "match" }],
-     "calibration": {
-       "pass": [{ "input": "레시피를 저장할 때 기준을 질문으로 바꿉니다.", "output": "레시피를 저장할 때 기준을 질문으로 바꿉니다." }],
-       "fail": [{ "input": "레시피를 저장할 때 기준을 질문으로 바꿉니다.", "output": "레시피를 저장할 때 질문을 기준으로 바꿉니다." }, { "input": "`pixie_loop` 도구를 씁니다.", "output": "pixie_loop 도구를 씁니다." }]
+     "items": {
+       "path": "work/ko-polish.jsonl"
      },
-     "maxAttempts": 3, "concurrency": 4,
-     "limits": { "tokens": 1500000, "timeMs": 1800000 },
+     "shared": "Studio Korean style: documents use 합니다체; UI strings use 해요체 or noun phrases. Keep product names, code, paths, option names, numbers, and Markdown links unchanged. Terms: preset → 프리셋, gate → 게이트, session → 세션, tool → 도구, recipe → 레시피.",
+     "work": {
+       "instruction": "Polish this Korean text: fix awkward translation-style wording, spacing, and particles. Keep the meaning, terms, Markdown, and inline code exactly. If it is already natural, return it unchanged. Reply with the text only."
+     },
+     "checks": {
+       "questions": {
+         "meaning": {
+           "type": "noul",
+           "instructions": "Does `output` keep the full meaning of `input`, adding or dropping nothing important?"
+         },
+         "fluent": {
+           "type": "noul",
+           "instructions": "Would a native Korean technical editor leave `output` as it is, without rewriting it for awkward, ungrammatical, or translation-style wording?"
+         }
+       },
+       "pass": {
+         "meaning": {
+           "min": 0.85
+         },
+         "fluent": {
+           "min": 0.3
+         }
+       }
+     },
+     "codeChecks": [
+       {
+         "type": "placeholders"
+       },
+       {
+         "type": "regex",
+         "pattern": "[가-힣]",
+         "expect": "match"
+       }
+     ],
+     "calibration": {
+       "pass": [
+         {
+           "input": "레시피를 저장할 때 기준을 질문으로 바꿉니다.",
+           "output": "레시피를 저장할 때 기준을 질문으로 바꿉니다."
+         },
+         {
+           "input": "실행 기록은 Pixie 탭 → 루프에 남습니다.",
+           "output": "실행 기록은 Pixie 탭 → 루프에 남습니다."
+         }
+       ],
+       "fail": [
+         {
+           "input": "레시피를 저장할 때 기준을 질문으로 바꿉니다.",
+           "output": "레시피를 저장할 때 질문을 기준으로 바꿉니다."
+         },
+         {
+           "input": "그것은 가능하게 됩니다 되어지는 것이 사용함에 의해서.",
+           "output": "그것은 가능하게 됩니다 되어지는 것이 사용함에 의해서."
+         }
+       ]
+     },
+     "maxAttempts": 3,
+     "concurrency": 4,
+     "limits": {
+       "tokens": 1500000,
+       "timeMs": 1800000
+     },
      "output": "work/ko-polish-done.jsonl"
    }
    ```

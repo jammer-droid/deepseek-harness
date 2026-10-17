@@ -386,8 +386,9 @@ export function validateLoopSpec(raw: unknown): LoopSpec {
   };
 }
 
-/** Placeholders and tags whose presence must survive a rewrite: `{name}`, `{{x}}`, `%s`/`%1$d`, `<tag>`/`</tag>`. */
-const PLACEHOLDER = /\{\{[^{}]+\}\}|\{[A-Za-z0-9_.-]+\}|%(?:\d+\$)?[sdif@]|<\/?[A-Za-z][A-Za-z0-9-]*(?:\s[^<>]*)?\/?>/g;
+/** Tokens that must survive a rewrite unchanged: inline code spans, Markdown link targets, `{name}`, `{{x}}`, `%s`/`%1$d`, `<tag>`/`</tag>`.
+ * Code spans are matched first so placeholders inside them count once, as part of the span. */
+const PLACEHOLDER = /`[^`\n]+`|\]\([^)\s]+\)|\{\{[^{}]+\}\}|\{[A-Za-z0-9_.-]+\}|%(?:\d+\$)?[sdif@]|<\/?[A-Za-z][A-Za-z0-9-]*(?:\s[^<>]*)?\/?>/g;
 function tokens(value: string): Map<string, number> {
   const counts = new Map<string, number>();
   for (const match of value.matchAll(PLACEHOLDER)) counts.set(match[0], (counts.get(match[0]) ?? 0) + 1);

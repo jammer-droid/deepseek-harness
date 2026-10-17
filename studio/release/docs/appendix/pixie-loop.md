@@ -123,7 +123,7 @@ When the start is refused, the error names each example judged the wrong way and
 
 | Check | Options | Fails when |
 | --- | --- | --- |
-| `{"type":"placeholders"}` | | Placeholders and tags in the input (`{name}`, `{{count}}`, `%s`/`%1$d`, `<b>`/`</b>`) are not all in the output the same number of times, or new ones appear |
+| `{"type":"placeholders"}` | | Placeholders, tags, inline code spans, and Markdown link targets in the input (`{name}`, `{{count}}`, `%s`/`%1$d`, `<b>`/`</b>`) are not all in the output the same number of times, or new ones appear |
 | `{"type":"regex","pattern":"[가-힣]","expect":"match"}` | `flags`: `i` `m` `s` `u` | `match`: the output does not match; `no-match`: it does |
 | `{"type":"json","keys":["title"]}` | `keys` optional | The output is not JSON, or the object lacks a listed key |
 

@@ -191,3 +191,10 @@ test('no model or engine is a run error before any call', async () => {
   assert.match((await runLoop(spec, spec.items.inline, { llm: fakeLlm({ work: () => '' }), model: undefined, judge: fakeJudge() }, { sessionId: 's', signal: signal() })).reason, /No Pixie model/);
   assert.match((await runLoop(spec, spec.items.inline, { llm: fakeLlm({ work: () => '' }), model, judge: undefined }, { sessionId: 's', signal: signal() })).reason, /No decision engine/);
 });
+
+test('placeholders also keep inline code spans and link targets', () => {
+  assert.deepEqual(runCodeChecks([{ type: 'placeholders' }], 'Use `pixie_loop` and see [guide](docs/a.md).', '`pixie_loop`를 쓰고 [가이드](docs/a.md)를 보세요.'), []);
+  assert.match(runCodeChecks([{ type: 'placeholders' }], 'Use `pixie_loop`.', 'pixie_loop를 쓰세요.')[0].message, /missing `pixie_loop`/);
+  assert.match(runCodeChecks([{ type: 'placeholders' }], 'See [guide](docs/a.md).', '[가이드](docs/b.md)를 보세요.')[0].message, /missing \]\(docs\/a\.md\)/);
+  assert.deepEqual(runCodeChecks([{ type: 'placeholders' }], 'Run `{{output}}` here', '`{{output}}`를 여기서 실행'), []);
+});
