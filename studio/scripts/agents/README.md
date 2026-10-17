@@ -72,6 +72,26 @@ node studio/scripts/e2e/server.mjs down [--profile e2e]
 - 인증 URL은 출력과 상태 파일(0600)에만 있다. 보고서·문서·Git에 옮기지 않는다.
 - 설치·기동 성공은 Client 플러그인 활성화나 화면 동작을 뜻하지 않는다. 그 확인은 L0 브라우저 검사의 몫이다.
 
+## 브라우저 검사 (L0)
+
+화면 검사는 [browser.mjs](../e2e/browser.mjs)의 `run()` 위에 시나리오만 쓴다. Playwright 경로 탐색, 인증 URL 접속, 첫 실행 안내 닫기, 테마·폭별 컨텍스트, pageerror·플러그인 활성화 실패 수집, 스크린샷 저장은 하네스가 한다.
+
+```js
+import { run } from '../e2e/browser.mjs';
+await run({ name: 'pixie-tab', views: ['light', 'dark', 'light@480'] }, async app => {
+  await app.check('Pixie 탭 열림', () => app.page.getByRole('button', { name: 'Pixie' }).click());
+  await app.shot('pixie');
+});
+```
+
+- URL은 `server.mjs up`이 남긴 상태 파일에서 읽는다(`profile`·`url` 옵션이나 `STUDIO_E2E_URL`로 지정 가능). 토큰은 출력하지 않는다.
+- `views`: `light`, `dark`, `light@480`, `dark@1280x720`. 뷰마다 새 브라우저 컨텍스트에서 처음부터 실행한다.
+- `app.check(name, fn)`은 던지지 않고 통과·실패를 기록한다. 실패한 단계의 기본 대기는 10초(`actionTimeout`)다.
+- 출력은 JSON 요약 하나다: `ok`, `passed`, `failed`, `failures`(단계·뷰·오류 첫 줄), `pageErrors`, `pluginFailures`, 스크린샷 경로. 실패가 하나라도 있으면 exit 1.
+- 스크린샷은 `studio/dist/e2e/shots/<name>/`에 저장하고 경로만 보고한다. 판정은 검사로 하며, 검증자가 이미지를 읽는 것은 실패 원인을 볼 때나 사람 확인용 자료를 고를 때뿐이다.
+- 기본 확인은 [smoke.mjs](../e2e/smoke.mjs)다(셸 로드, 플러그인 활성화 실패 없음, Studio 진입·패널 열림, 라이트·다크·480px).
+- 셀렉터를 못 찾는 실패는 L1 셀렉터 복구 후보다. 복구한 셀렉터는 시나리오에 반영해 L0으로 다시 실행한다.
+
 ## 목록
 
 | 문서 | 대상 |
