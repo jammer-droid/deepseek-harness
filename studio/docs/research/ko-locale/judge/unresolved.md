@@ -148,3 +148,17 @@
 | chat | 용어 | Surface event | 화면 이벤트 | — | 번역자 제안 |
 | chat | 용어 | Work details | 작업 세부 정보 | — | 번역자 제안 |
 | chat | 용어 | Step | 단계 | — | 번역자 제안 |
+| session-inspector | filter.context | Parent context of a matching record | 검색 조건에 맞는 레코드의 상위 컨텍스트 | 1.41/0.92/0.78 | 4회 미통과 |
+| session-inspector | filter.noCandidates | No suggestions. You can still apply this keyword. | 제안이 없습니다. 이 키워드는 그대로 적용할 수 있습니다. | 1.71/0.94/0.4 | 4회 미통과 |
+| session-inspector | object.accessor | [Getter / Setter, not evaluated] | [Getter / Setter, 아직 평가하지 않음] | 1.13/0.94/0.78 | 4회 미통과 |
+| session-inspector | object.navigation | Raw data navigation | 원시 데이터 탐색 메뉴 | 1.44/0.94/0.81 | 4회 미통과 |
+| session-inspector | 용어 | Record | 레코드 | — | 번역자 제안 |
+| session-inspector | 용어 | Raw data | 원시 데이터 | — | 번역자 제안 |
+| session-inspector | 용어 | Raw log | 원시 로그 | — | 번역자 제안 |
+| session-inspector | 용어 | Node | 노드 | — | 번역자 제안 |
+| session-inspector | 용어 | Group | 그룹 | — | 번역자 제안 |
+| session-inspector | 용어 | Property | 속성 | — | 번역자 제안 |
+| session-inspector | 용어 | Serialize | 직렬화 | — | 번역자 제안 |
+| session-inspector | 용어 | Settled | 확정됨 | — | 번역자 제안 |
+| session-inspector | 용어 | Presentation | 표시 형식 | — | 번역자 제안 |
+| session-inspector | 용어 | Step | 단계 | — | 번역자 제안 |

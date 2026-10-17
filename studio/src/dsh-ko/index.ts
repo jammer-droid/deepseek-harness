@@ -21,6 +21,7 @@ import permissionAccess from './permission.access.ts';
 import plan from './plan.ts';
 import question from './question.ts';
 import reference from './reference.ts';
+import sessionInspector from './session-inspector.ts';
 import sessionLogDownload from './session-log-download.ts';
 import settings from './settings.ts';
 import settingsAgentLoop from './settings.agentLoop.ts';
@@ -68,6 +69,7 @@ export const dshKo: DshKoDictionaries = {
   plan: plan,
   question: question,
   reference: reference,
+  'session-inspector': sessionInspector,
   'session-log-download': sessionLogDownload,
   settings: settings,
   'settings.agentLoop': settingsAgentLoop,
@@ -82,7 +84,7 @@ export const dshKo: DshKoDictionaries = {
   'shortcuts.layout': shortcutsLayout,
   sidebar: sidebar,
   sidebarBrowser: sidebarBrowser,
-  'sidebarCodePreview': sidebarCodePreview,
+  sidebarCodePreview: sidebarCodePreview,
   sidebarDocumentPreview: sidebarDocumentPreview,
   sidebarExcel: sidebarExcel,
   sidebarFiles: sidebarFiles,
