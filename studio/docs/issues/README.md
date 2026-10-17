@@ -17,6 +17,12 @@ description: "Studio 이슈별 구현 명세의 색인."
 - [#26 Pixie Gate — 작업 중심 런타임 게이트](26-pixie-gate.md): 정해진 순간(입력·에이전트 메시지·도구 전후·답변 끝)에 Pixie가 읽고 판단·가공한 결과를 보내는 프리셋 단위 게이트. 훅 스크립트와 `pixie ask/judge` 헬퍼 포함. 작업 완료(R1–R5, 판정 기능은 별도 기능으로 분리). 실모델 검증은 [R5 기록](../verification/pixie-gate-r5/README.md), 남은 미검증은 명세 참조. [GitHub #26](https://github.com/jammer-droid/deepseek-harness/issues/26) 닫음.
 - [#27 Jev 결정 엔진 — Pixie Gate 판정 헬퍼와 스크립트 직접 결론](27-jev-decision-engine.md): 훅 스크립트의 `pixie judge`에 Jev 엔진·bool/select/score 형식을 추가하고, exit 11로 Pixie 없이 게이트 결론을 낸다. 키는 DSH credentials, Pixie 출력은 Markdown 표시. S1–S7 완료. Jev 실호출과 실세션 Jev 판정 게이트(exit 11) 확인. [GitHub #27](https://github.com/jammer-droid/deepseek-harness/issues/27).
 
+## 편의 기능
+
+- [#28 SettingsX — 단축키 확장과 사용자 프로바이더 등록](28-settingsx.md): DSH 설정을 확장하는 Studio 영역. session-cycle 이관과 추가 단축키, Studio 자체 LLM 어댑터로 등록하는 프로바이더. `draft`; 첫 단계 S1. [GitHub #28](https://github.com/jammer-droid/deepseek-harness/issues/28).
+- [#29 세션별 서브에이전트 역할 덮어쓰기](29-session-roles.md): 프리셋 역할을 세션 단위로 덮어쓰고 임시 역할 추가, Subagents 탭. `draft`; 첫 단계 S1. [GitHub #29](https://github.com/jammer-droid/deepseek-harness/issues/29).
+- [#30 DSH 전체 한국어 번역](30-korean-locale.md): DSH 네임스페이스별 ko 사전, judge 검수 번역 스킬. `draft`; 첫 단계 S1. [GitHub #30](https://github.com/jammer-droid/deepseek-harness/issues/30).
+
 ## 프리셋 구성 설계 기록
 
 - [#24 minimal 기반 프리셋 구성과 선택적 덮어쓰기](24-preset-composition.md): 현재 셸 기반 신규 설계. 도구·프롬프트 제공자 선택, persona 편집, scoped override, 통합 미리보기 및 독립 배포. `draft`; 첫 단계 S1은 공개 API·구성 계약 확정.
