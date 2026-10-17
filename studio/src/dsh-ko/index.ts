@@ -53,6 +53,7 @@ import sidebarTerminal from './sidebarTerminal.ts';
 import skill from './skill.ts';
 import slashMenu from './slash.menu.ts';
 import trajectory from './trajectory.ts';
+import voiceInput from './voice-input.ts';
 import workflowRun from './workflowRun.ts';
 import workspace from './workspace.ts';
 
@@ -107,6 +108,7 @@ export const dshKo: DshKoDictionaries = {
   skill: skill,
   'slash.menu': slashMenu,
   trajectory: trajectory,
+  'voice-input': voiceInput,
   workflowRun: workflowRun,
   workspace: workspace,
 };

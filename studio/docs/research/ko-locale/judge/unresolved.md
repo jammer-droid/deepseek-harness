@@ -251,3 +251,14 @@
 | settings.pluginInventory | 용어 | Dependencies | 의존성 | — | 번역자 제안 |
 | settings.pluginInventory | 용어 | Unloading | 언로드 중 | — | 번역자 제안 |
 | settings.pluginInventory | 용어 | Metadata | 메타데이터 | — | 번역자 제안 |
+| voice-input | downloadAdvice.network | Check that the machine running DSH can reach the download source and its model download services. Configure a proxy on that machine if needed, then retry. | DSH를 실행하는 컴퓨터에서 다운로드 출처와 모델 다운로드 서비스에 접속할 수 있는지 확인하십시오. 필요하면 해당 컴퓨터에 프록시를 설정하고 다시 시도하십시오. | 1.45/0.97/0.86 | 4회 미통과 |
+| voice-input | local | Audio is recognized on the machine running DSH. If models need downloading, that machine must be able to reach the selected source and its file services. Configure a proxy on that machine if needed. | 음성 인식은 DSH를 실행하는 컴퓨터에서 처리합니다. 모델 다운로드가 필요할 때는 이 컴퓨터에서 선택한 다운로드 출처와 파일 서비스에 접속할 수 있어야 합니다. 필요하면 이 컴퓨터에 프록시를 설정하십시오. | 1.45/0.96/0.8 | 4회 미통과 |
+| voice-input | preparation.waking | Waking local speech recognition… | 로컬 음성 인식 서비스를 대기 상태에서 복구합니다… | 1.32/0.91/0.72 | 4회 미통과 |
+| voice-input | wakingShort | Waking… | 깨우는 중… | 1.29/0.95/0.66 | 4회 미통과 |
+| voice-input | 용어 | Speech recognition | 음성 인식 | — | 번역자 제안 |
+| voice-input | 용어 | Transcript | 변환된 텍스트 | — | 번역자 제안 |
+| voice-input | 용어 | Transcribe | 텍스트 변환 | — | 번역자 제안 |
+| voice-input | 용어 | Recognition service | 인식 서비스 | — | 번역자 제안 |
+| voice-input | 용어 | Download source | 다운로드 출처 | — | 번역자 제안 |
+| voice-input | 용어 | Input device | 입력 장치 | — | 번역자 제안 |
+| voice-input | 용어 | Input level | 입력 레벨 | — | 번역자 제안 |

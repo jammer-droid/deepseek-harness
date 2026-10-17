@@ -1,0 +1,1913 @@
+{
+  "namespace": "voice-input",
+  "date": "2026-10-17",
+  "engine": "jev",
+  "thresholds": {
+    "natural": 1.5,
+    "meaning": 0.6,
+    "style": 0.5
+  },
+  "rows": [
+    {
+      "key": "auto",
+      "en": "Detect automatically",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "자동 감지",
+          "natural": 1.47,
+          "meaning": 0.89,
+          "style": 0.7,
+          "pass": false
+        },
+        {
+          "ko": "자동 언어 감지",
+          "natural": 1.61,
+          "meaning": 0.89,
+          "style": 0.75,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "cancel",
+      "en": "Cancel",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "취소",
+          "natural": 1.98,
+          "meaning": 0.96,
+          "style": 0.69,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "cancelPrepare",
+      "en": "Cancel preparation",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "준비 취소",
+          "natural": 1.54,
+          "meaning": 0.96,
+          "style": 0.58,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "cancelled",
+      "en": "Voice input cancelled.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "음성 입력이 취소되었습니다.",
+          "natural": 1.81,
+          "meaning": 0.97,
+          "style": 0.86,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "cloud",
+      "en": "Audio will be sent to the selected cloud service.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "오디오가 선택한 클라우드 서비스로 전송됩니다.",
+          "natural": 1.59,
+          "meaning": 0.97,
+          "style": 0.81,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "cloudReady",
+      "en": "Cloud speech recognition is ready.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "클라우드 음성 인식이 준비되었습니다.",
+          "natural": 1.68,
+          "meaning": 0.98,
+          "style": 0.7,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "conflict",
+      "en": "Your draft changed. The transcript is preserved and can be inserted at the current cursor.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "초안이 변경되었습니다. 변환된 텍스트는 보존되어 있으며 현재 커서 위치에 삽입할 수 있습니다.",
+          "natural": 1.34,
+          "meaning": 0.94,
+          "style": 0.55,
+          "pass": false
+        },
+        {
+          "ko": "작성 중인 초안이 변경되었습니다. 음성을 변환한 텍스트는 그대로 남아 있으며, 현재 커서 위치에 삽입할 수 있습니다.",
+          "natural": 1.58,
+          "meaning": 0.94,
+          "style": 0.79,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "dictate",
+      "en": "Dictate",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "음성 입력",
+          "natural": 1.74,
+          "meaning": 0.94,
+          "style": 0.7,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "discard",
+      "en": "Discard transcript",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "변환된 텍스트 삭제",
+          "natural": 1.7,
+          "meaning": 0.96,
+          "style": 0.72,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "download.certificate",
+      "en": "Cannot download {resource}: certificate verification failed.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{resource} 다운로드 불가: 인증서 검증에 실패했습니다.",
+          "natural": 1.73,
+          "meaning": 0.96,
+          "style": 0.82,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "download.dns",
+      "en": "Cannot download {resource}: the download address could not be resolved.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{resource} 다운로드 불가: 다운로드 주소를 확인할 수 없습니다.",
+          "natural": 1.52,
+          "meaning": 0.96,
+          "style": 0.55,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "download.http",
+      "en": "Cannot download {resource}: the download service returned HTTP {status}.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{resource} 다운로드 불가: 다운로드 서비스가 HTTP {status}을 반환했습니다.",
+          "natural": 1.6,
+          "meaning": 0.95,
+          "style": 0.79,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "download.integrity",
+      "en": "The download of {resource} is incomplete or failed verification.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{resource} 다운로드가 완료되지 않았거나 검증에 실패했습니다.",
+          "natural": 1.54,
+          "meaning": 0.97,
+          "style": 0.5,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "download.network",
+      "en": "Cannot download {resource}: connection to the download service failed.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{resource} 다운로드 불가: 다운로드 서비스에 연결하지 못했습니다.",
+          "natural": 1.76,
+          "meaning": 0.97,
+          "style": 0.51,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "download.storage",
+      "en": "Cannot save {resource}: insufficient disk space or write permission.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{resource} 저장 불가: 디스크 공간이나 쓰기 권한이 부족합니다.",
+          "natural": 1.79,
+          "meaning": 0.96,
+          "style": 0.43,
+          "pass": false
+        },
+        {
+          "ko": "{resource}을 저장할 수 없습니다. 디스크 공간 또는 쓰기 권한이 부족합니다.",
+          "natural": 1.77,
+          "meaning": 0.97,
+          "style": 0.68,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "download.timeout",
+      "en": "The download of {resource} timed out.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{resource} 다운로드 시간이 초과되었습니다.",
+          "natural": 1.79,
+          "meaning": 0.96,
+          "style": 0.44,
+          "pass": false
+        },
+        {
+          "ko": "{resource} 다운로드 중 제한 시간을 초과했습니다.",
+          "natural": 1.76,
+          "meaning": 0.96,
+          "style": 0.53,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "download.unknown",
+      "en": "Could not prepare {resource}.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{resource} 준비에 실패했습니다.",
+          "natural": 1.56,
+          "meaning": 0.96,
+          "style": 0.79,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "downloadAdvice.certificate",
+      "en": "Check the system clock, trusted certificates and proxy settings on the machine running DSH, then retry.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "DSH가 실행 중인 컴퓨터의 시스템 시각, 신뢰할 수 있는 인증서, 프록시 설정을 확인한 후 다시 시도하십시오.",
+          "natural": 1.29,
+          "meaning": 0.95,
+          "style": 0.55,
+          "pass": false
+        },
+        {
+          "ko": "DSH를 실행하는 컴퓨터에서 시스템 시간과 신뢰할 수 있는 인증서, 프록시 설정을 확인하고 다시 시도하십시오.",
+          "natural": 1.56,
+          "meaning": 0.96,
+          "style": 0.83,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "downloadAdvice.dns",
+      "en": "Check DNS and proxy settings on the machine running DSH. Confirm that it can resolve the download source domain, then retry.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "DSH가 실행 중인 컴퓨터의 DNS 및 프록시 설정을 확인하십시오. 다운로드 출처의 도메인 주소를 확인할 수 있는지 점검한 후 다시 시도하십시오.",
+          "natural": 1.29,
+          "meaning": 0.94,
+          "style": 0.61,
+          "pass": false
+        },
+        {
+          "ko": "DSH를 실행하는 컴퓨터에서 DNS와 프록시 설정을 확인하십시오. 다운로드 출처의 도메인을 IP 주소로 변환할 수 있는지 확인하고 다시 시도하십시오.",
+          "natural": 1.53,
+          "meaning": 0.97,
+          "style": 0.81,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "downloadAdvice.http",
+      "en": "Confirm that the download address is available and the proxy can reach the download service, or retry later.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "다운로드 주소를 사용할 수 있고 프록시가 다운로드 서비스에 연결할 수 있는지 확인하거나 나중에 다시 시도하십시오.",
+          "natural": 1.25,
+          "meaning": 0.93,
+          "style": 0.38,
+          "pass": false
+        },
+        {
+          "ko": "다운로드 주소가 유효한지, 프록시를 통해 다운로드 서비스에 접속할 수 있는지 확인하십시오. 또는 나중에 다시 시도하십시오.",
+          "natural": 1.56,
+          "meaning": 0.96,
+          "style": 0.85,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "downloadAdvice.integrity",
+      "en": "Retry the download. Other completed and verified files are retained.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "다운로드를 다시 시도하십시오. 다운로드와 검증이 완료된 다른 파일은 유지됩니다.",
+          "natural": 1.71,
+          "meaning": 0.93,
+          "style": 0.83,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "downloadAdvice.network",
+      "en": "Check that the machine running DSH can reach the download source and its model download services. Configure a proxy on that machine if needed, then retry.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "DSH가 실행 중인 컴퓨터에서 다운로드 출처와 해당 모델 다운로드 서비스에 연결할 수 있는지 확인하십시오. 필요한 경우 해당 컴퓨터에 프록시를 설정한 후 다시 시도하십시오.",
+          "natural": 1.45,
+          "meaning": 0.96,
+          "style": 0.61,
+          "pass": false
+        },
+        {
+          "ko": "DSH를 실행하는 컴퓨터에서 다운로드 출처와 모델 다운로드 서비스에 접속할 수 있는지 확인하십시오. 필요하면 해당 컴퓨터에 프록시를 설정하고 다시 시도하십시오.",
+          "natural": 1.45,
+          "meaning": 0.97,
+          "style": 0.86,
+          "pass": false
+        },
+        {
+          "ko": "DSH가 실행되는 컴퓨터의 연결 상태를 확인하십시오. 다운로드 출처와 해당 모델 다운로드 서비스에 연결할 수 있어야 합니다. 프록시가 필요하다면 이 컴퓨터에 설정한 뒤 다시 시도하십시오.",
+          "natural": 1.31,
+          "meaning": 0.93,
+          "style": 0.82,
+          "pass": false
+        },
+        {
+          "ko": "DSH를 실행 중인 컴퓨터에서 다운로드 사이트 및 해당 사이트의 모델 다운로드 서비스에 접속 가능한지 확인하십시오. 필요한 경우 컴퓨터에 프록시를 설정한 다음 다시 시도하십시오.",
+          "natural": 1.34,
+          "meaning": 0.94,
+          "style": 0.92,
+          "pass": false
+        }
+      ],
+      "result": "unresolved"
+    },
+    {
+      "key": "downloadAdvice.storage",
+      "en": "Check available disk space and write permission for the model directory on the machine running DSH, then retry.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "DSH가 실행 중인 컴퓨터의 디스크 여유 공간과 모델 디렉터리 쓰기 권한을 확인한 후 다시 시도하십시오.",
+          "natural": 1.66,
+          "meaning": 0.97,
+          "style": 0.64,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "downloadAdvice.timeout",
+      "en": "Check the network or proxy connection on the machine running DSH, then retry later. Verified downloaded files are retained.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "DSH가 실행 중인 컴퓨터의 네트워크 또는 프록시 연결을 확인한 후 나중에 다시 시도하십시오. 다운로드 후 검증된 파일은 유지됩니다.",
+          "natural": 1.55,
+          "meaning": 0.96,
+          "style": 0.63,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "downloadAdvice.unknown",
+      "en": "Check the network, disk space and model directory permissions on the machine running DSH, then retry.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "DSH가 실행 중인 컴퓨터의 네트워크, 디스크 공간, 모델 디렉터리 권한을 확인한 후 다시 시도하십시오.",
+          "natural": 1.63,
+          "meaning": 0.98,
+          "style": 0.55,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "downloadBytes",
+      "en": "Download: {completed} / {total} MB, {percent}%",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "다운로드: {completed} / {total} MB, {percent}%",
+          "natural": 1.75,
+          "meaning": 0.98,
+          "style": 0.56,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "downloadCode",
+      "en": "Error code: {code}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "오류 코드: {code}",
+          "natural": 1.88,
+          "meaning": 0.96,
+          "style": 0.71,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "downloadProgress",
+      "en": "Download progress",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "다운로드 진행 상황",
+          "natural": 1.94,
+          "meaning": 0.98,
+          "style": 0.72,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "downloadSource",
+      "en": "Download source: {source}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "다운로드 출처: {source}",
+          "natural": 1.8,
+          "meaning": 0.96,
+          "style": 0.74,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "downloadUnknown",
+      "en": "Downloaded {completed} MB",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{completed} MB 다운로드 완료",
+          "natural": 1.7,
+          "meaning": 0.95,
+          "style": 0.6,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "elapsed",
+      "en": "Waiting {seconds} seconds",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{seconds}초 대기 중",
+          "natural": 1.72,
+          "meaning": 0.97,
+          "style": 0.41,
+          "pass": false
+        },
+        {
+          "ko": "{seconds}초 동안 대기하고 있습니다.",
+          "natural": 1.69,
+          "meaning": 0.97,
+          "style": 0.66,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "empty",
+      "en": "No speech recognized",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "인식된 음성 없음",
+          "natural": 1.8,
+          "meaning": 0.98,
+          "style": 0.66,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "en",
+      "en": "English",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "영어",
+          "natural": 1.95,
+          "meaning": 0.98,
+          "style": 0.64,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "failed",
+      "en": "Speech recognition failed: {message}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "음성 인식 실패: {message}",
+          "natural": 1.75,
+          "meaning": 0.95,
+          "style": 0.41,
+          "pass": false
+        },
+        {
+          "ko": "음성 인식에 실패했습니다: {message}",
+          "natural": 1.82,
+          "meaning": 0.96,
+          "style": 0.51,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "insert",
+      "en": "Insert text",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "텍스트 삽입",
+          "natural": 1.72,
+          "meaning": 0.98,
+          "style": 0.7,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "interrupted",
+      "en": "Recording was interrupted. Please try again.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "녹음이 중단되었습니다. 다시 시도하십시오.",
+          "natural": 1.82,
+          "meaning": 0.95,
+          "style": 0.76,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "ja",
+      "en": "Japanese",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "일본어",
+          "natural": 1.96,
+          "meaning": 0.99,
+          "style": 0.66,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "ko",
+      "en": "Korean",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "한국어",
+          "natural": 1.98,
+          "meaning": 0.98,
+          "style": 0.69,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "language",
+      "en": "Recognition language",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "인식 언어",
+          "natural": 1.81,
+          "meaning": 0.98,
+          "style": 0.7,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "loading",
+      "en": "Loading recognition services…",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "인식 서비스 불러오는 중…",
+          "natural": 1.76,
+          "meaning": 0.97,
+          "style": 0.41,
+          "pass": false
+        },
+        {
+          "ko": "음성 인식 서비스를 불러오고 있습니다…",
+          "natural": 1.81,
+          "meaning": 0.98,
+          "style": 0.56,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "local",
+      "en": "Audio is recognized on the machine running DSH. If models need downloading, that machine must be able to reach the selected source and its file services. Configure a proxy on that machine if needed.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "DSH가 실행 중인 컴퓨터에서 오디오를 인식합니다. 모델을 다운로드해야 하는 경우 해당 컴퓨터에서 선택한 출처와 해당 파일 서비스에 연결할 수 있어야 합니다. 필요한 경우 해당 컴퓨터에 프록시를 설정하십시오.",
+          "natural": 1.12,
+          "meaning": 0.94,
+          "style": 0.67,
+          "pass": false
+        },
+        {
+          "ko": "음성 인식은 DSH를 실행하는 컴퓨터에서 처리합니다. 모델 다운로드가 필요할 때는 이 컴퓨터에서 선택한 다운로드 출처와 파일 서비스에 접속할 수 있어야 합니다. 필요하면 이 컴퓨터에 프록시를 설정하십시오.",
+          "natural": 1.45,
+          "meaning": 0.96,
+          "style": 0.8,
+          "pass": false
+        },
+        {
+          "ko": "DSH가 실행되는 컴퓨터에서 음성을 인식합니다. 모델을 내려받아야 한다면 선택한 다운로드 출처와 해당 파일 서비스에 이 컴퓨터가 연결될 수 있어야 합니다. 프록시가 필요한 환경에서는 이 컴퓨터에 프록시를 설정하십시오.",
+          "natural": 1.12,
+          "meaning": 0.9,
+          "style": 0.85,
+          "pass": false
+        },
+        {
+          "ko": "음성은 DSH를 실행 중인 컴퓨터에서 인식됩니다. 모델을 다운로드하려면 해당 컴퓨터에서 선택한 다운로드 사이트와 파일 서비스에 접속할 수 있어야 합니다. 필요한 경우 해당 컴퓨터의 프록시를 설정하십시오.",
+          "natural": 1.15,
+          "meaning": 0.92,
+          "style": 0.81,
+          "pass": false
+        }
+      ],
+      "result": "unresolved"
+    },
+    {
+      "key": "permission",
+      "en": "Microphone access is disabled. Allow it in browser and system settings.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "마이크 접근이 비활성화되어 있습니다. 브라우저 및 시스템 설정에서 허용하십시오.",
+          "natural": 1.8,
+          "meaning": 0.96,
+          "style": 0.64,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "preparation.cancelled",
+      "en": "Preparation cancelled. Completed downloads are retained.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "준비가 취소되었습니다. 완료된 다운로드는 유지됩니다.",
+          "natural": 1.73,
+          "meaning": 0.95,
+          "style": 0.51,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "preparation.cancelling",
+      "en": "Cancelling preparation…",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "준비 취소 중…",
+          "natural": 1.77,
+          "meaning": 0.96,
+          "style": 0.43,
+          "pass": false
+        },
+        {
+          "ko": "준비를 취소하고 있습니다…",
+          "natural": 1.63,
+          "meaning": 0.98,
+          "style": 0.68,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "preparation.checking",
+      "en": "Checking local resources…",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "로컬 리소스 확인 중…",
+          "natural": 1.8,
+          "meaning": 0.97,
+          "style": 0.61,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "preparation.loading",
+      "en": "Loading {name}…",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{name} 불러오는 중…",
+          "natural": 1.68,
+          "meaning": 0.95,
+          "style": 0.34,
+          "pass": false
+        },
+        {
+          "ko": "{name}을 불러오고 있습니다…",
+          "natural": 1.82,
+          "meaning": 0.97,
+          "style": 0.49,
+          "pass": false
+        },
+        {
+          "ko": "불러오기를 진행하고 있습니다: {name}…",
+          "natural": 1.8,
+          "meaning": 0.95,
+          "style": 0.73,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "preparation.ready",
+      "en": "Local speech recognition is ready.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "로컬 음성 인식이 준비되었습니다.",
+          "natural": 1.86,
+          "meaning": 0.98,
+          "style": 0.75,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "preparation.standby",
+      "en": "Local resources are prepared. Recording wakes the recognizer.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "로컬 리소스가 준비되었습니다. 녹음을 시작하면 인식기가 깨어납니다.",
+          "natural": 1.62,
+          "meaning": 0.93,
+          "style": 0.74,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "preparation.unprepared",
+      "en": "First use downloads the local recognition models.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "처음 사용할 때 로컬 인식 모델을 다운로드합니다.",
+          "natural": 1.66,
+          "meaning": 0.95,
+          "style": 0.66,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "preparation.waking",
+      "en": "Waking local speech recognition…",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "로컬 음성 인식 깨우는 중…",
+          "natural": 1.5,
+          "meaning": 0.97,
+          "style": 0.48,
+          "pass": false
+        },
+        {
+          "ko": "로컬 음성 인식기를 깨우고 있습니다…",
+          "natural": 1.44,
+          "meaning": 0.97,
+          "style": 0.33,
+          "pass": false
+        },
+        {
+          "ko": "로컬 음성 인식 기능을 다시 활성화하고 있습니다…",
+          "natural": 1.3,
+          "meaning": 0.9,
+          "style": 0.57,
+          "pass": false
+        },
+        {
+          "ko": "로컬 음성 인식 서비스를 대기 상태에서 복구합니다…",
+          "natural": 1.32,
+          "meaning": 0.91,
+          "style": 0.72,
+          "pass": false
+        }
+      ],
+      "result": "unresolved"
+    },
+    {
+      "key": "preparationFailed",
+      "en": "Preparation failed: {message}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "준비 실패: {message}",
+          "natural": 1.84,
+          "meaning": 0.96,
+          "style": 0.51,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "preparationSteps",
+      "en": "Preparation steps",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "준비 단계",
+          "natural": 1.83,
+          "meaning": 0.97,
+          "style": 0.7,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "prepare",
+      "en": "Download and prepare",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "다운로드 및 준비",
+          "natural": 1.83,
+          "meaning": 0.97,
+          "style": 0.73,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "provider",
+      "en": "Recognition service",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "인식 서비스",
+          "natural": 1.85,
+          "meaning": 0.97,
+          "style": 0.7,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "reconnecting",
+      "en": "Connecting to speech recognition…",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "음성 인식에 연결 중…",
+          "natural": 1.74,
+          "meaning": 0.98,
+          "style": 0.33,
+          "pass": false
+        },
+        {
+          "ko": "음성 인식 서비스에 연결하고 있습니다…",
+          "natural": 1.71,
+          "meaning": 0.96,
+          "style": 0.52,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "recording",
+      "en": "Recording…",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "녹음 중…",
+          "natural": 1.98,
+          "meaning": 0.98,
+          "style": 0.52,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "requesting",
+      "en": "Allow microphone access to continue…",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "계속하려면 마이크 접근을 허용하십시오…",
+          "natural": 1.65,
+          "meaning": 0.94,
+          "style": 0.65,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "retryPrepare",
+      "en": "Retry preparation",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "준비 재시도",
+          "natural": 1.81,
+          "meaning": 0.96,
+          "style": 0.72,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "retryRecording",
+      "en": "Record again",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "다시 녹음",
+          "natural": 1.93,
+          "meaning": 0.98,
+          "style": 0.67,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "setup.disk",
+      "en": "Disk space",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "디스크 공간",
+          "natural": 1.91,
+          "meaning": 0.97,
+          "style": 0.77,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "setup.diskValue",
+      "en": "Allow about {gb} GB for models, runtime, and download caches",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "모델, 런타임, 다운로드 캐시용으로 약 {gb} GB 필요",
+          "natural": 1.69,
+          "meaning": 0.92,
+          "style": 0.46,
+          "pass": false
+        },
+        {
+          "ko": "모델, 런타임 및 다운로드 캐시를 위해 약 {gb} GB의 공간을 확보하십시오.",
+          "natural": 1.59,
+          "meaning": 0.92,
+          "style": 0.69,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "setup.estimateNote",
+      "en": "These are estimates; slow networks may take longer. Downloads are reused; idle models release memory by default.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "예상 수치이며 네트워크가 느리면 시간이 더 걸릴 수 있습니다. 다운로드한 파일은 재사용하며, 기본적으로 사용하지 않는 모델은 메모리를 해제합니다.",
+          "natural": 1.76,
+          "meaning": 0.94,
+          "style": 0.41,
+          "pass": false
+        },
+        {
+          "ko": "표시된 값은 예상치입니다. 네트워크가 느리면 시간이 더 걸릴 수 있습니다. 다운로드한 파일은 다시 사용합니다. 기본 설정에서는 모델을 사용하지 않을 때 메모리를 해제합니다.",
+          "natural": 1.66,
+          "meaning": 0.93,
+          "style": 0.52,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "setup.local",
+      "en": "Local models will be downloaded to the machine running DSH. No Python or compiler is required.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "로컬 모델은 DSH가 실행 중인 컴퓨터에 다운로드됩니다. Python이나 컴파일러는 필요하지 않습니다.",
+          "natural": 1.82,
+          "meaning": 0.97,
+          "style": 0.51,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "setup.memory",
+      "en": "Memory",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "메모리",
+          "natural": 1.83,
+          "meaning": 0.97,
+          "style": 0.83,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "setup.memoryValue",
+      "en": "About {gb} GB with the model loaded; recognition may use more",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "모델을 불러온 상태에서 약 {gb} GB 사용, 인식 중에는 더 사용할 수 있음",
+          "natural": 1.61,
+          "meaning": 0.93,
+          "style": 0.44,
+          "pass": false
+        },
+        {
+          "ko": "모델을 불러오면 약 {gb} GB를 사용합니다. 음성을 인식하는 동안에는 메모리 사용량이 늘어날 수 있습니다.",
+          "natural": 1.71,
+          "meaning": 0.93,
+          "style": 0.7,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "setup.time",
+      "en": "First setup",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "최초 설정",
+          "natural": 1.82,
+          "meaning": 0.97,
+          "style": 0.78,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "setup.timeValue",
+      "en": "Allow roughly {min}–{max} minutes, depending on the network and machine",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "네트워크와 컴퓨터에 따라 약 {min}–{max}분 소요",
+          "natural": 1.86,
+          "meaning": 0.96,
+          "style": 0.38,
+          "pass": false
+        },
+        {
+          "ko": "네트워크와 컴퓨터 성능에 따라 약 {min}–{max}분이 걸립니다.",
+          "natural": 1.82,
+          "meaning": 0.95,
+          "style": 0.44,
+          "pass": false
+        },
+        {
+          "ko": "약 {min}–{max}분 정도 기다려 주십시오. 소요 시간은 네트워크와 컴퓨터에 따라 달라집니다.",
+          "natural": 1.57,
+          "meaning": 0.95,
+          "style": 0.88,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "setupPrompt.body",
+      "en": "Voice input is enabled. First use requires downloading and preparing local recognition models. Open the plugin details to review disk space, memory and time estimates before starting setup.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "음성 입력이 활성화되어 있습니다. 처음 사용하려면 로컬 인식 모델을 다운로드하고 준비해야 합니다. 설정을 시작하기 전에 플러그인 상세 정보를 열어 예상 디스크 공간, 메모리, 소요 시간을 확인하십시오.",
+          "natural": 1.43,
+          "meaning": 0.95,
+          "style": 0.89,
+          "pass": false
+        },
+        {
+          "ko": "음성 입력 기능이 켜져 있습니다. 처음 사용하기 전에 로컬 음성 인식 모델을 다운로드하고 준비해야 합니다. 설정을 시작하기 전에 플러그인 상세 정보에서 필요한 디스크 공간과 메모리, 예상 소요 시간을 확인하십시오.",
+          "natural": 1.59,
+          "meaning": 0.92,
+          "style": 0.91,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "setupPrompt.details",
+      "en": "Open voice plugin settings",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "음성 플러그인 설정 열기",
+          "natural": 1.78,
+          "meaning": 0.97,
+          "style": 0.67,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "setupPrompt.later",
+      "en": "Later",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "나중에",
+          "natural": 1.93,
+          "meaning": 0.95,
+          "style": 0.76,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "setupPrompt.open",
+      "en": "Go to setup",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "설정으로 이동",
+          "natural": 1.81,
+          "meaning": 0.98,
+          "style": 0.47,
+          "pass": false
+        },
+        {
+          "ko": "설정 화면",
+          "natural": 1.61,
+          "meaning": 0.75,
+          "style": 0.86,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "setupPrompt.title",
+      "en": "Set up voice input before recording",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "녹음 전 음성 입력 설정",
+          "natural": 1.64,
+          "meaning": 0.97,
+          "style": 0.52,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "setupPrompt.trigger",
+      "en": "Open voice input setup",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "음성 입력 설정 열기",
+          "natural": 1.8,
+          "meaning": 0.98,
+          "style": 0.57,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "setupPrompt.unavailableBody",
+      "en": "Open the voice plugin details to check recognition status, preparation progress, or errors.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "음성 플러그인 상세 정보를 열어 인식 상태, 준비 진행 상황 또는 오류를 확인하십시오.",
+          "natural": 1.77,
+          "meaning": 0.98,
+          "style": 0.9,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "setupPrompt.unavailableTitle",
+      "en": "Speech recognition is not ready",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "음성 인식 준비 안 됨",
+          "natural": 1.48,
+          "meaning": 0.98,
+          "style": 0.68,
+          "pass": false
+        },
+        {
+          "ko": "음성 인식이 아직 준비되지 않았습니다.",
+          "natural": 1.76,
+          "meaning": 0.97,
+          "style": 0.65,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "short.downloading",
+      "en": "Downloading",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "다운로드 중",
+          "natural": 1.93,
+          "meaning": 0.96,
+          "style": 0.71,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "short.failed",
+      "en": "Setup failed",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "설정 실패",
+          "natural": 1.85,
+          "meaning": 0.97,
+          "style": 0.69,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "sourceAuto",
+      "en": "Automatic (recommended)",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "자동(권장)",
+          "natural": 1.93,
+          "meaning": 0.94,
+          "style": 0.73,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "sourceAutoHelp",
+      "en": "Prefer the first responding source and try another if a download fails.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "먼저 응답한 출처를 우선 사용하고 다운로드에 실패하면 다른 출처를 시도합니다.",
+          "natural": 1.64,
+          "meaning": 0.95,
+          "style": 0.47,
+          "pass": false
+        },
+        {
+          "ko": "가장 먼저 응답하는 다운로드 출처를 우선 선택합니다. 다운로드에 실패하면 다른 출처를 사용합니다.",
+          "natural": 1.49,
+          "meaning": 0.92,
+          "style": 0.33,
+          "pass": false
+        },
+        {
+          "ko": "응답이 가장 빠른 다운로드 출처를 우선적으로 이용합니다. 다운로드가 실패할 경우 다른 출처에서 다시 시도합니다.",
+          "natural": 1.59,
+          "meaning": 0.92,
+          "style": 0.54,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "sourceChoice",
+      "en": "Model download source",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "모델 다운로드 출처",
+          "natural": 1.78,
+          "meaning": 0.94,
+          "style": 0.73,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "sourceHuggingFace",
+      "en": "Hugging Face",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "Hugging Face",
+          "natural": 1.35,
+          "meaning": 0.98,
+          "style": 0.73,
+          "pass": false
+        }
+      ],
+      "result": "pending"
+    },
+    {
+      "key": "sourceManualHelp",
+      "en": "Download only from the selected source. Verified downloaded files are reused.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "선택한 출처에서만 다운로드합니다. 다운로드 후 검증된 파일은 재사용합니다.",
+          "natural": 1.44,
+          "meaning": 0.95,
+          "style": 0.61,
+          "pass": false
+        },
+        {
+          "ko": "다운로드는 선택한 출처에서만 진행합니다. 이미 다운로드하여 검증을 마친 파일은 다시 사용합니다.",
+          "natural": 1.64,
+          "meaning": 0.95,
+          "style": 0.48,
+          "pass": false
+        },
+        {
+          "ko": "선택한 출처 이외의 곳에서는 다운로드하지 않습니다. 다운로드와 검증이 끝난 파일은 재사용됩니다.",
+          "natural": 1.66,
+          "meaning": 0.95,
+          "style": 0.53,
+          "pass": true
+        }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "sourceMirror",
+      "en": "HF-Mirror (China mirror)",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "HF-Mirror(중국 미러)",
+          "natural": 1.52,
+          "meaning": 0.94,
+          "style": 0.68,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "start",
+      "en": "Start recording",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "녹음 시작",
+          "natural": 1.92,
+          "meaning": 0.98,
+          "style": 0.73,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "step.check",
+      "en": "Check local resources",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "로컬 리소스 확인",
+          "natural": 1.74,
+          "meaning": 0.97,
+          "style": 0.73,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "step.load",
+      "en": "Load {name}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "{name} 불러오기",
+          "natural": 1.62,
+          "meaning": 0.94,
+          "style": 0.62,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "step.model",
+      "en": "Prepare recognition model",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "인식 모델 준비",
+          "natural": 1.78,
+          "meaning": 0.98,
+          "style": 0.73,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "step.vad",
+      "en": "Prepare voice detection model",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "음성 감지 모델 준비",
+          "natural": 1.72,
+          "meaning": 0.98,
+          "style": 0.68,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "step.verify",
+      "en": "Verify model files",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "모델 파일 검증",
+          "natural": 1.85,
+          "meaning": 0.97,
+          "style": 0.7,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "stepStatus.cancelled",
+      "en": "Cancelled",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "취소됨",
+          "natural": 1.85,
+          "meaning": 0.97,
+          "style": 0.7,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "stepStatus.complete",
+      "en": "Completed",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "완료",
+          "natural": 1.94,
+          "meaning": 0.97,
+          "style": 0.75,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "stepStatus.failed",
+      "en": "Failed",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "실패",
+          "natural": 1.92,
+          "meaning": 0.97,
+          "style": 0.76,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "stepStatus.pending",
+      "en": "Not started",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "시작 전",
+          "natural": 1.75,
+          "meaning": 0.94,
+          "style": 0.7,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "stepStatus.running",
+      "en": "In progress",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "진행 중",
+          "natural": 1.94,
+          "meaning": 0.97,
+          "style": 0.72,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "stop",
+      "en": "Stop and transcribe",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "녹음 중지 및 텍스트 변환",
+          "natural": 1.57,
+          "meaning": 0.91,
+          "style": 0.62,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "tooLarge",
+      "en": "The recording exceeds the service limit. Try a shorter recording.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "녹음이 서비스 제한을 초과했습니다. 더 짧게 녹음해 보십시오.",
+          "natural": 1.53,
+          "meaning": 0.91,
+          "style": 0.79,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "transcribingShort",
+      "en": "Transcribing…",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "텍스트 변환 중…",
+          "natural": 1.86,
+          "meaning": 0.95,
+          "style": 0.53,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "unavailable",
+      "en": "This browser cannot record audio. Use a browser with microphone support.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "이 브라우저에서는 오디오를 녹음할 수 없습니다. 마이크를 지원하는 브라우저를 사용하십시오.",
+          "natural": 1.72,
+          "meaning": 0.96,
+          "style": 0.82,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "wakingShort",
+      "en": "Waking…",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "깨우는 중…",
+          "natural": 1.29,
+          "meaning": 0.95,
+          "style": 0.66,
+          "pass": false
+        },
+        {
+          "ko": "대기 상태에서 깨우고 있습니다…",
+          "natural": 1.07,
+          "meaning": 0.7,
+          "style": 0.39,
+          "pass": false
+        },
+        {
+          "ko": "다시 활성화하고 있습니다…",
+          "natural": 1.11,
+          "meaning": 0.86,
+          "style": 0.35,
+          "pass": false
+        },
+        {
+          "ko": "대기 상태를 해제합니다…",
+          "natural": 1.29,
+          "meaning": 0.89,
+          "style": 0.29,
+          "pass": false
+        }
+      ],
+      "result": "unresolved"
+    },
+    {
+      "key": "yue",
+      "en": "Cantonese",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "광둥어",
+          "natural": 1.94,
+          "meaning": 0.97,
+          "style": 0.77,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "zh",
+      "en": "Chinese",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "중국어",
+          "natural": 1.71,
+          "meaning": 0.94,
+          "style": 0.7,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "deviceMissing",
+      "en": "Microphone unavailable. Choose another input device.",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "마이크를 사용할 수 없습니다. 다른 입력 장치를 선택하십시오.",
+          "natural": 1.72,
+          "meaning": 0.97,
+          "style": 0.83,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "deviceUnavailable",
+      "en": "Unavailable",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "사용 불가",
+          "natural": 1.84,
+          "meaning": 0.96,
+          "style": 0.72,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "inputDevice",
+      "en": "Input device",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "입력 장치",
+          "natural": 1.94,
+          "meaning": 0.98,
+          "style": 0.72,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "inputLevel",
+      "en": "Microphone input level",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "마이크 입력 레벨",
+          "natural": 1.84,
+          "meaning": 0.96,
+          "style": 0.67,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "systemMicrophone",
+      "en": "System default",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "시스템 기본값",
+          "natural": 1.91,
+          "meaning": 0.97,
+          "style": 0.7,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "systemMicrophoneNamed",
+      "en": "System default ({name})",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "시스템 기본값({name})",
+          "natural": 1.74,
+          "meaning": 0.95,
+          "style": 0.53,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "unnamedMicrophone",
+      "en": "Microphone {number}",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "마이크 {number}",
+          "natural": 1.85,
+          "meaning": 0.97,
+          "style": 0.67,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "unnamedSelectedMicrophone",
+      "en": "Microphone",
+      "kind": "normal",
+      "attempts": [
+        {
+          "ko": "마이크",
+          "natural": 1.95,
+          "meaning": 0.97,
+          "style": 0.75,
+          "pass": true
+        }
+      ],
+      "result": "pass"
+    }
+  ]
+}
