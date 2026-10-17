@@ -125,3 +125,26 @@
 | shortcuts | 용어 | Modifier | 보조 키 | — | 번역자 제안 |
 | shortcuts | 용어 | Bindings | 키 바인딩 | — | 번역자 제안 |
 | shortcuts | 용어 | Dialog | 대화상자 | — | 번역자 제안 |
+| chat | chat.turnNavigation.jump | Jump to turn {turn} | {turn}번째 턴으로 이동합니다 | 1.4/0.87/0.92 | 4회 미통과 |
+| chat | chat.turnNavigation.jumpLoad | Load and jump to turn {turn} | {turn}번째 턴 불러오기 및 이동 | 1.45/0.96/0.56 | 4회 미통과 |
+| chat | message.context.catalog.replaced | Replacement catalog | 대체할 카탈로그 | 1.42/0.96/0.82 | 4회 미통과 |
+| chat | message.failure.accountSignInRequired | Sign in to DeepSeek and ensure the request destination supports account authentication. | DeepSeek에 로그인하고 요청 대상이 계정 인증을 지원하는지 확인하십시오. | 1.23/0.96/0.89 | 4회 미통과 |
+| chat | message.retry.status | {label} ({retry}/{maximum}) · {seconds}s | {label} ({retry}/{maximum}) · {seconds}초 | 1.48/0.91/0.59 | 4회 미통과 |
+| chat | message.stepProcess.prepare.subagents | Preparing to coordinate subagents | 서브에이전트 조율 준비 단계 | 1.38/0.95/0.81 | 4회 미통과 |
+| chat | message.trigger.explanation | This notification triggered this response. | 이 알림이 응답을 시작하는 계기가 되었습니다. | 1.36/0.96/0.81 | 4회 미통과 |
+| chat | message.trigger.goal | Continuing goal | 목표 계속 수행 | 1.49/0.96/0.77 | 4회 미통과 |
+| chat | message.turnProcess.thoughtForAWhile | Thought for a while | 잠시 생각함 | 1.37/0.92/0.63 | 4회 미통과 |
+| chat | message.turnProcess.took | Completed in  | 완료 소요 시간:  | 1.49/0.74/0.71 | 4회 미통과 |
+| chat | message.turnUsage.reasoning |  ({tokens} reasoning) |  (추론 {tokens}) | 1.33/0.93/0.66 | 4회 미통과 |
+| chat | message.unknownSurface | Unknown surface event: {type} | 알 수 없는 화면 이벤트: {type} | 1.36/0.93/0.53 | 4회 미통과 |
+| chat | 용어 | Deep diving | 심층 분석 | — | 번역자 제안 |
+| chat | 용어 | Branch | 분기 | — | 번역자 제안 |
+| chat | 용어 | Catalog | 카탈로그 | — | 번역자 제안 |
+| chat | 용어 | Snapshot | 스냅샷 | — | 번역자 제안 |
+| chat | 용어 | Injection | 주입 | — | 번역자 제안 |
+| chat | 용어 | Recall | 회상 | — | 번역자 제안 |
+| chat | 용어 | Cache hit | 캐시 적중 | — | 번역자 제안 |
+| chat | 용어 | Content block | 콘텐츠 블록 | — | 번역자 제안 |
+| chat | 용어 | Surface event | 화면 이벤트 | — | 번역자 제안 |
+| chat | 용어 | Work details | 작업 세부 정보 | — | 번역자 제안 |
+| chat | 용어 | Step | 단계 | — | 번역자 제안 |

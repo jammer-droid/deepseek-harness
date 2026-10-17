@@ -5,6 +5,7 @@
 import type { DshKoDictionaries } from '../dsh-ko-locale.ts';
 import agentTeam from './agent-team.ts';
 import approval from './approval.ts';
+import chat from './chat.ts';
 import claudeCodeMods from './claude-code-mods.ts';
 import command from './command.ts';
 import conversation from './conversation.ts';
@@ -51,6 +52,7 @@ import workflowRun from './workflowRun.ts';
 export const dshKo: DshKoDictionaries = {
   'agent-team': agentTeam,
   approval: approval,
+  chat: chat,
   'claude-code-mods': claudeCodeMods,
   command: command,
   conversation: conversation,
