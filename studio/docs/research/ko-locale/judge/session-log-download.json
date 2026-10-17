@@ -1,0 +1,99 @@
+{
+  "namespace": "session-log-download",
+  "date": "2026-10-17",
+  "engine": "jev",
+  "thresholds": { "natural": 1.5, "meaning": 0.6, "style": 0.5 },
+  "rows": [
+    {
+      "key": "dialog.close",
+      "en": "Close",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "닫기", "natural": 1.99, "meaning": 0.97, "style": 0.56, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "dialog.commandFailed",
+      "en": "Could not start the Session export.",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "세션 내보내기를 시작하지 못했습니다.", "natural": 1.64, "meaning": 0.96, "style": 0.81, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "dialog.errorTitle",
+      "en": "Session export failed",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "세션 내보내기 실패", "natural": 1.93, "meaning": 0.97, "style": 0.7, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "dialog.preparingDescription",
+      "en": "Preparing a ZIP containing this Session, its sub-Sessions, and attachments.",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "이 세션과 하위 세션, 첨부 파일을 담은 ZIP을 준비하고 있습니다.", "natural": 1.68, "meaning": 0.96, "style": 0.85, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "dialog.preparingTitle",
+      "en": "Exporting Session",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "세션 내보내는 중", "natural": 1.74, "meaning": 0.97, "style": 0.46, "pass": false },
+        { "ko": "세션을 내보내고 있습니다", "natural": 1.65, "meaning": 0.9, "style": 0.84, "pass": true }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "dialog.successDescription",
+      "en": "The browser is downloading the Session ZIP.",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "브라우저가 세션 ZIP을 다운로드하고 있습니다.", "natural": 1.74, "meaning": 0.97, "style": 0.72, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "dialog.successTitle",
+      "en": "Session download started",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "세션 다운로드를 시작했습니다", "natural": 1.83, "meaning": 0.97, "style": 0.88, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "header.more",
+      "en": "More actions",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "추가 작업", "natural": 1.72, "meaning": 0.97, "style": 0.69, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "menu.download",
+      "en": "Download session log",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "세션 로그 다운로드", "natural": 1.87, "meaning": 0.97, "style": 0.52, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "menu.feedback",
+      "en": "Feedback",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "피드백", "natural": 1.92, "meaning": 0.98, "style": 0.62, "pass": true }
+      ],
+      "result": "pass"
+    }
+  ]
+}

@@ -8,6 +8,7 @@ import claudeCodeMods from './claude-code-mods.ts';
 import documentHtml from './documentHtml.ts';
 import documentMarkdown from './documentMarkdown.ts';
 import inspectorPanel from './inspectorPanel.ts';
+import sessionLogDownload from './session-log-download.ts';
 import settingsLocale from './settings.locale.ts';
 import settingsPlugins from './settings.plugins.ts';
 import settingsSessionLog from './settings.sessionLog.ts';
@@ -23,6 +24,7 @@ export const dshKo: DshKoDictionaries = {
   documentHtml: documentHtml,
   documentMarkdown: documentMarkdown,
   inspectorPanel: inspectorPanel,
+  'session-log-download': sessionLogDownload,
   'settings.locale': settingsLocale,
   'settings.plugins': settingsPlugins,
   'settings.sessionLog': settingsSessionLog,
