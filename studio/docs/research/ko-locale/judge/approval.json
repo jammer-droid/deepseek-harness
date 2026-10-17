@@ -1,0 +1,56 @@
+{
+  "namespace": "approval",
+  "date": "2026-10-17",
+  "engine": "jev",
+  "thresholds": { "natural": 1.5, "meaning": 0.6, "style": 0.5 },
+  "rows": [
+    {
+      "key": "allowOnce",
+      "en": "Allow once",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "한 번 허용", "natural": 1.59, "meaning": 0.96, "style": 0.57, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "detail.aria",
+      "en": "Approval details",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "승인 세부 정보", "natural": 1.79, "meaning": 0.97, "style": 0.49, "pass": false },
+        { "ko": "승인 정보", "natural": 1.91, "meaning": 0.96, "style": 0.66, "pass": true }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "escalation",
+      "en": "Tool {toolName} requests privileged execution",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "{toolName} 도구가 높은 권한의 실행을 요청합니다", "natural": 1.46, "meaning": 0.94, "style": 0.84, "pass": false },
+        { "ko": "{toolName} 도구가 특권 실행을 요청합니다", "natural": 1.47, "meaning": 0.95, "style": 0.78, "pass": false },
+        { "ko": "권한 있는 실행을 요청한 도구: {toolName}", "natural": 1.24, "meaning": 0.9, "style": 0.63, "pass": false }
+      ],
+      "result": "unresolved"
+    },
+    {
+      "key": "reject",
+      "en": "Reject",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "거부", "natural": 1.96, "meaning": 0.98, "style": 0.63, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "waiting",
+      "en": "Waiting for approval",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "승인 대기 중", "natural": 1.88, "meaning": 0.98, "style": 0.58, "pass": true }
+      ],
+      "result": "pass"
+    }
+  ]
+}
