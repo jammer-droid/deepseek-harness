@@ -11,6 +11,7 @@ import goal from './goal.ts';
 import inspectorPanel from './inspectorPanel.ts';
 import reference from './reference.ts';
 import sessionLogDownload from './session-log-download.ts';
+import settingsAgentLoop from './settings.agentLoop.ts';
 import settingsLocale from './settings.locale.ts';
 import settingsPlugins from './settings.plugins.ts';
 import settingsSessionLog from './settings.sessionLog.ts';
@@ -30,6 +31,7 @@ export const dshKo: DshKoDictionaries = {
   inspectorPanel: inspectorPanel,
   reference: reference,
   'session-log-download': sessionLogDownload,
+  'settings.agentLoop': settingsAgentLoop,
   'settings.locale': settingsLocale,
   'settings.plugins': settingsPlugins,
   'settings.sessionLog': settingsSessionLog,
