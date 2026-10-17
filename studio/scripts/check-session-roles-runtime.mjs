@@ -1,10 +1,9 @@
+import { runtimeCheckTarget } from './runtime-check-target.mjs';
 // Packaged, unmodified-runtime check of session roles (#29). No LLM calls; the temporary preset is removed afterwards.
 // Usage: node studio/scripts/check-session-roles-runtime.mjs '<isolated preview URL with token>' [--keep]
 import assert from 'node:assert/strict';
-const url = new URL(process.argv[2]);
+const url = runtimeCheckTarget(process.argv[2]);
 const keep = process.argv.includes('--keep');
-assert.equal(url.hostname, '127.0.0.1');
-assert.notEqual(url.port, '19387', 'never the user GUI');
 const auth = await fetch(url, { redirect: 'manual' });
 const cookie = auth.headers.getSetCookie().map(v => v.split(';')[0]).join('; ');
 async function rpc(method, args = {}) {

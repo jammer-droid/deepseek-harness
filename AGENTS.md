@@ -34,7 +34,7 @@ Git 커밋과 merge 커밋 훅은 `node studio/scripts/check-staged-scope.mjs`�
 
 사용자가 승인한 범위 밖 변경에만 `STUDIO_APPROVED_PATHS`에 정확한 저장소 상대 경로의 JSON 배열을, `STUDIO_APPROVAL_REASON`에 승인 사유를 넣어 커밋한다. 디렉터리·와일드카드 일괄 허용은 없다. 에이전트가 스스로 승인하거나 `--no-verify`, `LEFTHOOK=0` 등으로 우회하지 않는다. 이 로컬 훅은 실수 방지 장치이며 사용자 승인 진위나 훅 비활성화를 강제하는 보안 장치는 아니다.
 
-저장소 로컬 `.agents/skills`는 사용하지 않는다. 사용자 전역 스킬과 현재 세션에 이미 로드된 지침은 저장소 파일 삭제로 제거되지 않는다.
+저장소 로컬 `.agents/skills`는 사용하지 않는다. 단, 사용자가 요청한 `/studio-build`는 예외이며 [Studio 빌드·검증 스킬](.agents/skills/studio-build/SKILL.md)을 사용한다. 이 예외는 다른 저장소 스킬이나 DSH 코어 변경을 허용하지 않는다. 사용자 전역 스킬과 현재 세션에 이미 로드된 지침은 저장소 파일 삭제로 제거되지 않는다.
 
 ## Agent skills
 

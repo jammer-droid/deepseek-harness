@@ -8,7 +8,7 @@
 
 <p align="center">
   <a href="https://www.npmjs.com/package/@matamt-dbg/dsh-studio"><img src="https://img.shields.io/npm/v/@matamt-dbg/dsh-studio" alt="npm version"></a>
-  <img src="https://img.shields.io/badge/DSH-0.2.0--rc.2%20%7C%200.2.1--alpha.2-4f6bff" alt="Supported DSH versions">
+  <img src="https://img.shields.io/badge/DSH-0.2.0--rc.2%20%7C%200.2.1--alpha.2%20%7C%200.2.1--rc.1-4f6bff" alt="Supported DSH versions">
   <img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT license">
 </p>
 
@@ -52,6 +52,12 @@ dsh plugin --profile desktop add @matamt-dbg/dsh-studio   # desktop app: quit th
 ```
 
 Restart the web GUI or the app, then open **DSH Studio** from the sidebar. Each profile keeps its own presets and its own set of tools.
+
+### Compatibility verification for 0.6.0
+
+On 2026-10-17, the same packaged Studio `0.6.0` was installed into isolated Web profiles of unmodified DSH `0.2.0-rc.2` and `0.2.1-alpha.2` on macOS. Installation, Web startup and four HTTP RPC checks per version passed (eight runs total): Master protection and preview/config overrides, Optimized copy activation, session-role editing and isolation, and role save/reapply/unapply/restore.
+
+This was a **fresh-install Web Host RPC check**, not a full Desktop compatibility certification. Browser rendering and clicks, actual Fresh/Fork child execution and persona/Tool Filter enforcement on these older runtimes, Studio `0.5.0 → 0.6.0` data upgrades, and the Desktop app's loading/update path were not tested. Installation also emitted dependency/install-script warnings; subprocess and PTY execution were not tested. Back up your profile before upgrading. See the [0.6.0 release notes](CHANGELOG.md#060--2026-10-17).
 
 ## Features
 

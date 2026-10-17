@@ -6,6 +6,12 @@ Release notes for `@matamt-dbg/dsh-studio`. Each version lists English notes fir
 
 Requires DSH `0.2.0-rc.2`, `0.2.1-alpha.2` or `0.2.1-rc.1`.
 
+### Older-runtime verification
+
+- On 2026-10-17, the same Studio `0.6.0` package passed fresh installation and Web startup on unmodified DSH `0.2.0-rc.2` and `0.2.1-alpha.2` in isolated macOS profiles. Four HTTP RPC scripts passed on each runtime (eight runs total): Master protection/preview/config overrides, Optimized copy activation, session-role editing/isolation, and role save/reapply/unapply/restore.
+- These checks did **not** cover browser rendering/clicks, actual Fresh/Fork child execution or persona/Tool Filter enforcement on the older runtimes, `0.5.0 → 0.6.0` data upgrades, or the Desktop app's loading/update path. They are not a full compatibility guarantee; back up your profile before upgrading.
+- Installation succeeded with deprecated-dependency, unapproved install-script and missing runtime-peer warnings. Subprocess/PTY execution was not tested; successful Web RPC checks do not establish that those paths work.
+
 ### Highlights
 
 - **Pixie Loop.** The new `pixie_loop` tool runs many independent items through work → exact checks → decision-engine judgment → Pixie feedback → retry, outside the agent's context. Criteria are compiled once into fixed questions and must separate pass and fail examples before the run starts. The agent gets back only counts, a results file and the items that still failed; every attempt is in **Pixie tab → Loops**. See the [Pixie Loop guide](docs/appendix/pixie-loop.md).
@@ -41,6 +47,12 @@ Requires DSH `0.2.0-rc.2`, `0.2.1-alpha.2` or `0.2.1-rc.1`.
 ### 한국어
 
 DSH `0.2.0-rc.2`, `0.2.1-alpha.2` 또는 `0.2.1-rc.1`이 필요합니다.
+
+#### 구버전 런타임 검증
+
+- 2026-10-17, 수정하지 않은 DSH `0.2.0-rc.2`와 `0.2.1-alpha.2`의 격리된 macOS 프로필에 동일한 Studio `0.6.0` 패키지를 신규 설치하고 Web 기동을 확인했습니다. Master 보호·프리뷰·설정 override, Optimized 복사 적용, 세션 역할 편집·격리, 역할 저장·재적용·해제·복원을 검사하는 HTTP RPC 스크립트 4개가 각 런타임에서 통과했습니다(총 8회).
+- 이 검사는 **브라우저 렌더링·클릭, 구버전 런타임의 Fresh/Fork 자식 실제 실행과 persona·Tool Filter 적용, `0.5.0 → 0.6.0` 데이터 업그레이드, Desktop 앱의 로딩·업데이트 경로를 포함하지 않습니다.** 전체 호환성을 보장하는 결과는 아니며, 업데이트 전에 프로필을 백업하세요.
+- 설치는 성공했지만 의존성 사용 중단, install script 미승인, 런타임 peer 누락 경고가 있었습니다. subprocess·PTY 실행은 미검증이며, Web RPC 성공만으로 해당 실행 경로의 정상 동작을 보장하지 않습니다.
 
 #### 주요 변경
 

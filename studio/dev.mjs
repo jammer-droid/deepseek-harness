@@ -8,7 +8,7 @@
  *
  * Default: verify the shell (typecheck + build + tests), pack it, install the tarball into the
  * isolated studio/.dsh-home `lean-agent-web` profile and start the unmodified dsh runtime for a
- * browser check. That preview is not a tarball install test.
+ * browser check. Installation alone does not establish UI or runtime compatibility.
  *
  * --desktop (or --profile <name>): instead install the same packed build into a real profile.
  * `desktop` is the DSH app. This changes a user profile, so it refuses while the DSH app is
@@ -85,13 +85,15 @@ function applyProfile(name) {
       + `  ${runtime} plugin --profile ${name} remove @local/dsh-studio`);
   }
 
+  console.log(`Target runtime: ${runtime} (${version}); profile: ${manifestPath}`);
+  console.log('This changes a real profile. Back it up first; stop the app on every OS. --force is not a safety check.');
   const archive = pack(name);
   console.log(`\nInstalling the local build into the real ${name} profile:\n  ${manifestPath}\n  ${archive}`);
   const added = spawnSync(runtime, ['plugin', '--profile', name, 'add', archive], { cwd: root, stdio: 'inherit' });
   if (added.error || added.status !== 0) fail(`Installing into ${name} failed.`);
   console.log(`\nInstalled the local build into the ${name} profile. Restart the DSH app to load it.`);
   console.log(`Presets stay in ${path.join(home, 'profiles', name, 'studio-data')}.`);
-  console.log(`Back to the published build: ${runtime} plugin --profile ${name} add @matamt-dbg/dsh-studio@latest`);
+  console.log(`Recovery: reinstall the exact previously verified Studio version, not @latest. Restore data from your backup if needed.`);
 }
 
 /** Default: isolated Web preview through start-web.mjs (packs and installs lean-agent-web itself). */

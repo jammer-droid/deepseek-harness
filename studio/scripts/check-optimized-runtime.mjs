@@ -1,5 +1,6 @@
+import { runtimeCheckTarget } from './runtime-check-target.mjs';
 import assert from 'node:assert/strict';
-const url = new URL(process.argv[2]); assert.equal(url.hostname, '127.0.0.1'); assert.equal(url.port, '19388');
+const url = runtimeCheckTarget(process.argv[2]);
 const auth = await fetch(url, { redirect: 'manual' });
 const cookie = auth.headers.getSetCookie().map(v => v.split(';')[0]).join('; ');
 async function rpc(method, args = {}, ok = true) {
