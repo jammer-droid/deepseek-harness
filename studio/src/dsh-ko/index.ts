@@ -15,6 +15,7 @@ import shortcutsLayout from './shortcuts.layout.ts';
 import sidebar from './sidebar.ts';
 import sidebarCodePreview from './sidebarCodePreview.ts';
 import skill from './skill.ts';
+import slashMenu from './slash.menu.ts';
 
 export const dshKo: DshKoDictionaries = {
   approval: approval,
@@ -29,4 +30,5 @@ export const dshKo: DshKoDictionaries = {
   sidebar: sidebar,
   'sidebarCodePreview': sidebarCodePreview,
   skill: skill,
+  'slash.menu': slashMenu,
 };
