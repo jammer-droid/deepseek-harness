@@ -60,6 +60,18 @@ test('empty state, Korean copy, and the Pixie tab shows Loops only when the Remo
   assert.ok(pixieDescriptors().some(item => item.method === 'loopRuns'));
 });
 
+test('act observations, selections, groups, and episode steps are shown', async () => {
+  const run = loopRun({ mode: 'episode', total: 1, items: [{ id: 'g', status: 'passed', bucket: 'bug', attempts: [
+    { output: 'heal', observation: '{"hp":3}', selection: { choice: 'heal', confidence: 0.81, probabilities: { heal: 0.81, wait: 0.19 } }, codeFailures: [], passed: false },
+    { output: 'heal', observation: '{"hp":4}', codeFailures: [], passed: true }] }] });
+  const { host, close } = await mount(React.createElement(LoopRunsPanel, { actions: { loopRuns: async () => ({ version: 1, runs: [run] }) }, locale: 'en' }));
+  assert.match(host.textContent, /Groupsbug 1/); assert.match(host.textContent, /Episode/);
+  await act(async () => host.querySelector('[data-loop-item="g"] button').click());
+  assert.match(host.textContent, /Step 1/); assert.match(host.textContent, /Picked/); assert.match(host.textContent, /confidence 0.81/);
+  assert.match(host.textContent, /Observation\{"hp":3\}/);
+  await close();
+});
+
 test('store: put replaces by id, keeps retention, and marks silent active runs interrupted', async t => {
   const dir = await mkdtemp(join(tmpdir(), 'loop-store-')); t.after(() => rm(dir, { recursive: true, force: true }));
   const store = new PixieLoopStore(dir);

@@ -19,7 +19,7 @@ test('a valid spec gets defaults; unknown fields and both criteria+checks are re
   const spec = validateLoopSpec(base());
   assert.equal(spec.maxAttempts, 3); assert.equal(spec.concurrency, 4);
   assert.throws(() => validateLoopSpec(base({ extra: 1 })), /Unknown field in spec: extra/);
-  assert.throws(() => validateLoopSpec(base({ criteria: 'x' })), /exactly one of criteria and checks/);
+  assert.throws(() => validateLoopSpec(base({ criteria: 'x' })), /only one of criteria and checks/);
   assert.throws(() => validateLoopSpec({ ...base(), checks: undefined }), /exactly one/);
   assert.throws(() => validateLoopSpec(base({ calibration: { pass: [], fail: [{ input: '', output: '' }] } })), /calibration.pass needs at least one/);
   assert.throws(() => validateLoopSpec(base({ items: { inline: [{ id: 'a', input: 'x' }, { id: 'a', input: 'y' }] } })), /Duplicate item id: a/);

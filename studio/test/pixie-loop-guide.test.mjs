@@ -15,9 +15,14 @@ const asSpec = ({ run_in_background: _background, ...spec }) => spec;
 
 test('every JSON block in both guides is a valid spec or checks object, and the languages match', () => {
   const en = blocks(read('pixie-loop.md')), ko = blocks(read('pixie-loop.ko.md'));
-  assert.equal(en.length, 4); assert.deepEqual(ko, en);
+  assert.equal(en.length, 7); assert.deepEqual(ko, en);
   validateLoopChecks(en[0]);
   for (const spec of en.slice(1)) validateLoopSpec(asSpec(spec));
+  const [, , , selector, game, route] = en.slice(1).map(asSpec).map(validateLoopSpec);
+  assert.equal(selector.act.isolated, true); assert.equal(game.mode, 'episode'); assert.equal(game.select.optionsFrom, 'observation'); assert.equal(route.route.question, 'kind');
+  const probes = [...read('pixie-loop.md').matchAll(/```js\n([\s\S]*?)\n```/g)].map(match => match[1]);
+  assert.deepEqual(probes, [...read('pixie-loop.ko.md').matchAll(/```js\n([\s\S]*?)\n```/g)].map(match => match[1]));
+  assert.equal(probes.length, 1); assert.match(probes[0], /matches: \$\{await found.count\(\)\}/);
 });
 
 test('the translation example calibrates with its own code checks and runs end to end', async () => {

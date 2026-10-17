@@ -1,6 +1,6 @@
 ---
 name: studio-pixie-loop-guide
-description: Write DSH Studio `pixie_loop` specs — many independent items judged by the same criteria (translation review, copy edits, per-file audits) run outside your context with the Pixie model and the decision engine. Use when the user asks to batch, review, translate, or check many items with Pixie or Jev, or to write or debug a pixie_loop spec.
+description: Write DSH Studio `pixie_loop` specs — many independent items judged by the same criteria (translation review, copy edits, per-file audits), experiments judged by running each output (selectors, regexes), step-by-step episodes, and picking one listed option per item or step (e.g. game actions), all outside your context with the Pixie model and the decision engine. Use when the user asks to batch, review, translate, try, or choose over many items with Pixie or Jev, or to write or debug a pixie_loop spec.
 ---
 
 # DSH Studio Pixie Loop
@@ -13,8 +13,8 @@ Use `pixie_loop` only when all hold:
 
 - There are several independent items (usually 5 or more).
 - One fixed set of criteria judges every item.
-- The worker needs no tools: everything it needs fits in the item input and `shared`.
-- The result can be judged from text.
+- The worker needs no tools: everything it needs fits in the item input and `shared`. If an output must be run to be judged, one fixed `act` command can run it.
+- The result can be judged from text (an act command's output counts).
 
 Otherwise: one judgment → `judge`; multi-step work with files or tools → `subagent_role`; branching or many cooperating agents → `workflow` (only when the user asks for one); a check at a set moment of the agent's work → Pixie Gate (`studio-pixie-hook-guide`). Tell the user which and why.
 
@@ -27,7 +27,10 @@ Otherwise: one judgment → `judge`; multi-step work with files or tools → `su
 5. **codeChecks.** Put every exact requirement here, not in criteria: `placeholders` when inputs contain `{x}`, `{{x}}`, `%s`, or tags; `regex` with `expect` `match`/`no-match` for required or forbidden text; `json` with `keys` when the output must be JSON.
 6. **Calibration.** At least one realistic pass example and one realistic fail example per criterion. Use real inputs. The run refuses to start if the checks do not separate them; then reword the failing question or switch to `checks`.
 7. **Limits.** `limits.tokens` ≈ items × attempts × (input + output + shared tokens) × 3 for checks and feedback, plus headroom; `limits.timeMs` generous. Defaults: `maxAttempts` 3, `concurrency` 4.
-8. **output** path for the results JSONL. Use `run_in_background: true` for long runs; keep working and collect with `job_output`.
+8. **Act (optional).** When an output only proves itself by running it, add `act: { tool: "bash", command: "… {{output}} …", safeToRepeat: true }`. Values are quoted for you. Only use commands that are safe to run again; set `isolated: true` only when each item uses its own state. Write a small probe script that prints just what the judgment needs, and give each calibration example an `observation`. Add `extract` when observations are long.
+9. **Episodes and selection (optional).** `mode: "episode"` makes each output one step that act runs, until the checks say the goal is reached. `select` lets the decision engine pick one option from JSON `{"options": [...]}` in the input or (episodes) the observation; the worker writes nothing. Never invent options yourself; they must come from the source. Set `minConfidence` when a wrong pick is costly.
+10. **Route (optional).** `route: { question: "<choice id>" }` groups results by that answer.
+11. **output** path for the results JSONL. Use `run_in_background: true` for long runs; keep working and collect with `job_output`.
 
 ## After the run
 

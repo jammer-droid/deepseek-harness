@@ -6,13 +6,17 @@ import { validateJudgeRequest } from './pixie-contracts.ts';
 
 /** Hard ceilings a spec cannot exceed, whatever it asks for. */
 export const LOOP_LIMITS = {
-  items: 2000, attempts: 10, concurrency: 8, inputChars: 32_000, sharedChars: 64_000, calibration: 10,
+  items: 2000, attempts: 10, steps: 100, concurrency: 8, inputChars: 32_000, sharedChars: 64_000, calibration: 10,
   codeChecks: 10, questions: 10, tokens: 50_000_000, timeMs: 6 * 60 * 60 * 1000,
+  actTimeoutMs: 10 * 60 * 1000, observationChars: 32_000, options: 255,
 } as const;
+export const ACT_DEFAULTS = { timeoutMs: 120_000, maxObservationChars: 8_000 } as const;
+/** Placeholders an `act.command` may use; each is replaced by a single-quoted shell word. */
+export const ACT_VARIABLES = ['input', 'output', 'id'] as const;
 export const LOOP_DEFAULTS = { maxAttempts: 3, concurrency: 4 } as const;
 
 export interface LoopItem { id: string; input: string }
-export interface LoopExample { input: string; output: string }
+export interface LoopExample { input: string; output: string; observation?: string }
 
 /** Deterministic checks run before the decision engine (D11). */
 export type CodeCheck =
@@ -27,6 +31,30 @@ export type PassRule =
 
 export interface LoopChecks { questions: Record<string, JudgeQuestion>; pass: Record<string, PassRule> }
 
+/** Run one fixed tool on each output and judge what it observed (2차 S9). Only `bash` is allowed. */
+export interface LoopAct {
+  tool: 'bash';
+  /** Shell command; `{{input}}`, `{{output}}`, `{{id}}` become single-quoted words. */
+  command: string;
+  timeoutMs: number;
+  /** Required acknowledgement: retries and episodes run the command again. */
+  safeToRepeat: true;
+  /** Items may act at the same time only when each works on its own state; otherwise acts run one at a time. */
+  isolated: boolean;
+  maxObservationChars: number;
+}
+/** Shorten an observation before judging (S10); stateless Pixie call. */
+export interface LoopExtract { instruction: string; maxChars: number }
+/** Let the decision engine pick one of the options a fixed source lists (S13). Pixie never writes the options. */
+export interface LoopSelect {
+  instructions: string;
+  /** JSON with an `options` array: the item input, or the latest act observation (episodes). */
+  optionsFrom: 'input' | 'observation';
+  /** Below this confidence the item is escalated instead of acting on a guess. */
+  minConfidence: number;
+}
+export interface LoopOption { name: string; description: string }
+
 export interface LoopSpec {
   items: { inline: LoopItem[] } | { path: string };
   shared?: string;
@@ -36,7 +64,16 @@ export interface LoopSpec {
   /** Checks given directly; still calibrated (O3). */
   checks?: LoopChecks;
   codeChecks?: CodeCheck[];
-  calibration: { pass: LoopExample[]; fail: LoopExample[] };
+  /** Required whenever criteria or checks are given. */
+  calibration?: { pass: LoopExample[]; fail: LoopExample[] };
+  /** `retry` (default): retry until the checks pass. `episode`: act step by step until the checks say the goal is reached. */
+  mode: 'retry' | 'episode';
+  act?: LoopAct;
+  extract?: LoopExtract;
+  select?: LoopSelect;
+  /** Group results by the final answer of one choice question (S12). */
+  route?: { question: string };
+  /** Tries per item (`retry`) or steps per episode (`episode`). */
   maxAttempts: number;
   concurrency: number;
   limits: { tokens: number; timeMs: number };
@@ -44,13 +81,17 @@ export interface LoopSpec {
 }
 
 /** What the engine judges: the item input and one output. Instructions name these fields. */
-export interface LoopState { input: string; output: string }
+export interface LoopState { input: string; output: string; observation?: string }
 
 export interface CodeCheckFailure { check: CodeCheck['type']; message: string }
 export interface QuestionFailure { id: string; instructions: string; answer: JudgeAnswer; rule: PassRule }
 
 export interface LoopAttempt {
   output: string;
+  /** What `act` observed (after `extract`), when the spec acts. */
+  observation?: string;
+  /** Selection mode: the engine's answer for the pick. */
+  selection?: { choice: string; confidence: number; probabilities: Record<string, number> };
   codeFailures: CodeCheckFailure[];
   answers?: Record<string, JudgeAnswer>;
   passed: boolean;
@@ -60,7 +101,7 @@ export interface LoopAttempt {
 }
 
 export type LoopItemStatus = 'passed' | 'escalated' | 'error' | 'cancelled' | 'skipped';
-export interface LoopItemResult { id: string; status: LoopItemStatus; output?: string; attempts: LoopAttempt[]; error?: string }
+export interface LoopItemResult { id: string; status: LoopItemStatus; output?: string; attempts: LoopAttempt[]; error?: string; bucket?: string }
 
 export type LoopUsage = { pixie: PixieUsage; judge: PixieUsage };
 export type LoopRunStatus = 'compiling' | 'running' | 'done' | 'stopped' | 'error' | 'cancelled';
@@ -73,6 +114,11 @@ export interface LoopRun {
   /** Last time the writer saved this run; an active run that stops updating was interrupted. */
   updatedAt?: number;
   instruction: string;
+  mode?: LoopSpec['mode'];
+  /** The recipe this run came from (3차), when any. */
+  recipe?: string;
+  /** Where the run started: the agent tool, a gate, or a hook script. */
+  source?: 'tool' | 'gate' | 'hook';
   checks?: LoopChecks;
   compiledBy?: 'pixie' | 'spec';
   /** Why the run stopped early or failed to start. */
@@ -94,6 +140,8 @@ export interface LoopSummary {
   escalated: { id: string; attempts: number; failed: string[]; feedback?: string }[];
   errors: { id: string; error: string }[];
   skipped: number;
+  /** Item counts per route bucket, when the spec routes. */
+  buckets?: Record<string, number>;
   outputPath?: string;
   usage: LoopUsage;
 }
@@ -188,9 +236,10 @@ function validateExamples(raw: unknown, where: string): LoopExample[] {
   if (raw.length > LOOP_LIMITS.calibration) throw new Error(`${where} may have at most ${LOOP_LIMITS.calibration} examples`);
   return raw.map((example, index) => {
     if (!object(example)) throw new Error(`${where}[${index}] must be an object`);
-    onlyKeys(example, ['input', 'output'], `${where}[${index}]`);
+    onlyKeys(example, ['input', 'output', 'observation'], `${where}[${index}]`);
     if (typeof example.input !== 'string' || typeof example.output !== 'string') throw new Error(`${where}[${index}] needs input and output strings`);
-    return { input: example.input, output: example.output };
+    if (example.observation !== undefined && typeof example.observation !== 'string') throw new Error(`${where}[${index}].observation must be a string`);
+    return { input: example.input, output: example.output, ...(example.observation !== undefined ? { observation: example.observation } : {}) };
   });
 }
 
@@ -199,10 +248,62 @@ const relativePath = (value: unknown, where: string): string => {
   return value;
 };
 
+function validateAct(raw: unknown): LoopAct {
+  if (!object(raw)) throw new Error('act must be an object');
+  onlyKeys(raw, ['tool', 'command', 'timeoutMs', 'safeToRepeat', 'isolated', 'maxObservationChars'], 'act');
+  if (raw.tool !== 'bash') throw new Error('act.tool must be bash');
+  if (!text(raw.command)) throw new Error('act.command is required');
+  for (const match of raw.command.matchAll(/{{\s*([^{}]*?)\s*}}/g)) if (!(ACT_VARIABLES as readonly string[]).includes(match[1]!)) throw new Error(`act.command uses an unknown variable: ${match[1]}`);
+  if (raw.safeToRepeat !== true) throw new Error('act.safeToRepeat must be true: retries and episodes run the command again, so use act only for commands that are safe to repeat');
+  if (raw.isolated !== undefined && typeof raw.isolated !== 'boolean') throw new Error('act.isolated must be a boolean');
+  return {
+    tool: 'bash', command: raw.command, safeToRepeat: true, isolated: raw.isolated === true,
+    timeoutMs: raw.timeoutMs === undefined ? ACT_DEFAULTS.timeoutMs : integer(raw.timeoutMs, 1000, LOOP_LIMITS.actTimeoutMs, 'act.timeoutMs'),
+    maxObservationChars: raw.maxObservationChars === undefined ? ACT_DEFAULTS.maxObservationChars : integer(raw.maxObservationChars, 100, LOOP_LIMITS.observationChars, 'act.maxObservationChars'),
+  };
+}
+function validateExtract(raw: unknown): LoopExtract {
+  if (!object(raw)) throw new Error('extract must be an object');
+  onlyKeys(raw, ['instruction', 'maxChars'], 'extract');
+  if (!text(raw.instruction)) throw new Error('extract.instruction is required');
+  return { instruction: raw.instruction, maxChars: raw.maxChars === undefined ? 4000 : integer(raw.maxChars, 100, LOOP_LIMITS.observationChars, 'extract.maxChars') };
+}
+function validateSelect(raw: unknown): LoopSelect {
+  if (!object(raw)) throw new Error('select must be an object');
+  onlyKeys(raw, ['instructions', 'optionsFrom', 'minConfidence'], 'select');
+  if (!text(raw.instructions)) throw new Error('select.instructions is required');
+  if (raw.optionsFrom !== 'input' && raw.optionsFrom !== 'observation') throw new Error('select.optionsFrom must be input or observation');
+  if (raw.minConfidence !== undefined && (typeof raw.minConfidence !== 'number' || raw.minConfidence < 0 || raw.minConfidence > 1)) throw new Error('select.minConfidence must be from 0 to 1');
+  return { instructions: raw.instructions, optionsFrom: raw.optionsFrom, minConfidence: (raw.minConfidence as number | undefined) ?? 0 };
+}
+
+/** Read the options a source lists: JSON with `options` as names or `{ name, description }`. Pixie never fills them in. */
+export function parseOptions(source: string, where: string): LoopOption[] {
+  let parsed: unknown;
+  try { parsed = JSON.parse(source); } catch { throw new Error(`${where} is not JSON with an options array`); }
+  const raw = object(parsed) ? parsed.options : undefined;
+  if (!Array.isArray(raw) || raw.length < 2) throw new Error(`${where} needs an options array with at least 2 entries`);
+  if (raw.length > LOOP_LIMITS.options) throw new Error(`${where} lists ${raw.length} options; the decision engine takes at most ${LOOP_LIMITS.options}. Narrow them first (group or filter in the act command).`);
+  const options = raw.map((option, index) => {
+    if (typeof option === 'string' && option.trim()) return { name: option, description: option };
+    if (object(option) && text(option.name)) return { name: option.name, description: typeof option.description === 'string' && option.description.trim() ? option.description : option.name };
+    throw new Error(`${where} options[${index}] must be a name or { name, description }`);
+  });
+  if (new Set(options.map(option => option.name)).size !== options.length) throw new Error(`${where} options must have unique names`);
+  return options;
+}
+
+/** Quote a value as one POSIX shell word. */
+export const shellWord = (value: string) => `'${value.replace(/'/g, `'\\''`)}'`;
+/** Fill `{{input}}`, `{{output}}`, `{{id}}` in an act command with quoted words. */
+export function actCommand(command: string, values: Record<(typeof ACT_VARIABLES)[number], string>): string {
+  return command.replace(/{{\s*(input|output|id)\s*}}/g, (_, name: (typeof ACT_VARIABLES)[number]) => shellWord(values[name]));
+}
+
 /** Validate a loop spec; anything unknown or out of range is an error before any model call. */
 export function validateLoopSpec(raw: unknown): LoopSpec {
   if (!object(raw)) throw new Error('Loop spec must be an object');
-  onlyKeys(raw, ['items', 'shared', 'work', 'criteria', 'checks', 'codeChecks', 'calibration', 'maxAttempts', 'concurrency', 'limits', 'output'], 'spec');
+  onlyKeys(raw, ['items', 'shared', 'work', 'criteria', 'checks', 'codeChecks', 'calibration', 'mode', 'act', 'extract', 'select', 'route', 'maxAttempts', 'concurrency', 'limits', 'output'], 'spec');
   if (!object(raw.items)) throw new Error('items must be { inline: [...] } or { path: "..." }');
   let items: LoopSpec['items'];
   if ('inline' in raw.items) { onlyKeys(raw.items, ['inline'], 'items'); items = { inline: validateLoopItems(raw.items.inline) }; }
@@ -212,27 +313,52 @@ export function validateLoopSpec(raw: unknown): LoopSpec {
   if (!object(raw.work)) throw new Error('work must be { instruction }');
   onlyKeys(raw.work, ['instruction'], 'work');
   if (!text(raw.work.instruction)) throw new Error('work.instruction is required');
-  if ((raw.criteria === undefined) === (raw.checks === undefined)) throw new Error('Give exactly one of criteria and checks');
+  if (raw.mode !== undefined && raw.mode !== 'retry' && raw.mode !== 'episode') throw new Error('mode must be retry or episode');
+  const mode = (raw.mode ?? 'retry') as LoopSpec['mode'];
+  const act = raw.act === undefined ? undefined : validateAct(raw.act);
+  const extract = raw.extract === undefined ? undefined : validateExtract(raw.extract);
+  const select = raw.select === undefined ? undefined : validateSelect(raw.select);
+  if (raw.criteria !== undefined && raw.checks !== undefined) throw new Error('Give only one of criteria and checks');
+  // Only a plain selection (choose once, no act) may skip review entirely: the choice is the result.
+  if (raw.criteria === undefined && raw.checks === undefined && !(select && mode === 'retry' && !act)) throw new Error('Give exactly one of criteria and checks');
   if (raw.criteria !== undefined && !text(raw.criteria)) throw new Error('criteria must be a non-empty string');
   const checks = raw.checks === undefined ? undefined : validateLoopChecks(raw.checks);
+  if (mode === 'episode' && !act) throw new Error('mode episode needs act: each step must change something and observe it');
+  if (extract && !act) throw new Error('extract needs act: it shortens what act observed');
+  if (select?.optionsFrom === 'observation' && mode !== 'episode') throw new Error('select.optionsFrom observation needs mode episode');
+  let route: LoopSpec['route'];
+  if (raw.route !== undefined) {
+    if (!object(raw.route)) throw new Error('route must be { question }');
+    onlyKeys(raw.route, ['question'], 'route');
+    if (!text(raw.route.question)) throw new Error('route.question is required');
+    if (checks && checks.questions[raw.route.question]?.type !== 'choice') throw new Error('route.question must name a choice question in checks');
+    if (!checks && raw.criteria === undefined) throw new Error('route needs checks or criteria');
+    route = { question: raw.route.question };
+  }
   let codeChecks: CodeCheck[] | undefined;
   if (raw.codeChecks !== undefined) {
     if (!Array.isArray(raw.codeChecks) || raw.codeChecks.length > LOOP_LIMITS.codeChecks) throw new Error(`codeChecks must be an array of at most ${LOOP_LIMITS.codeChecks}`);
     codeChecks = raw.codeChecks.map(validateCodeCheck);
   }
-  if (!object(raw.calibration)) throw new Error('calibration needs pass and fail examples');
-  onlyKeys(raw.calibration, ['pass', 'fail'], 'calibration');
-  const calibration = { pass: validateExamples(raw.calibration.pass, 'calibration.pass'), fail: validateExamples(raw.calibration.fail, 'calibration.fail') };
+  const reviewed = raw.criteria !== undefined || raw.checks !== undefined;
+  let calibration: LoopSpec['calibration'];
+  if (reviewed || raw.calibration !== undefined) {
+    if (!object(raw.calibration)) throw new Error('calibration needs pass and fail examples');
+    onlyKeys(raw.calibration, ['pass', 'fail'], 'calibration');
+    calibration = { pass: validateExamples(raw.calibration.pass, 'calibration.pass'), fail: validateExamples(raw.calibration.fail, 'calibration.fail') };
+  }
   if (!object(raw.limits)) throw new Error('limits needs tokens and timeMs');
   onlyKeys(raw.limits, ['tokens', 'timeMs'], 'limits');
   const limits = { tokens: integer(raw.limits.tokens, 1000, LOOP_LIMITS.tokens, 'limits.tokens'), timeMs: integer(raw.limits.timeMs, 1000, LOOP_LIMITS.timeMs, 'limits.timeMs') };
   return {
-    items, work: { instruction: raw.work.instruction }, calibration, limits,
+    items, work: { instruction: raw.work.instruction }, limits, mode,
+    ...(calibration ? { calibration } : {}),
+    ...(act ? { act } : {}), ...(extract ? { extract } : {}), ...(select ? { select } : {}), ...(route ? { route } : {}),
     ...(raw.shared ? { shared: raw.shared } : {}),
     ...(raw.criteria !== undefined ? { criteria: raw.criteria as string } : {}),
     ...(checks ? { checks } : {}),
     ...(codeChecks?.length ? { codeChecks } : {}),
-    maxAttempts: raw.maxAttempts === undefined ? LOOP_DEFAULTS.maxAttempts : integer(raw.maxAttempts, 1, LOOP_LIMITS.attempts, 'maxAttempts'),
+    maxAttempts: raw.maxAttempts === undefined ? LOOP_DEFAULTS.maxAttempts : integer(raw.maxAttempts, 1, mode === 'episode' ? LOOP_LIMITS.steps : LOOP_LIMITS.attempts, 'maxAttempts'),
     concurrency: raw.concurrency === undefined ? LOOP_DEFAULTS.concurrency : integer(raw.concurrency, 1, LOOP_LIMITS.concurrency, 'concurrency'),
     ...(raw.output !== undefined ? { output: relativePath(raw.output, 'output') } : {}),
   };
@@ -297,8 +423,11 @@ export function summarizeRun(run: LoopRun): LoopSummary {
     const failed = [...(last?.codeFailures.map(failure => `code:${failure.check}`) ?? []), ...(last?.answers && run.checks ? failedQuestions(run.checks, last.answers).map(failure => failure.id) : [])];
     return { id: item.id, attempts: item.attempts.length, failed, ...(last?.feedback ? { feedback: last.feedback } : {}) };
   });
+  const buckets: Record<string, number> = {};
+  for (const item of run.items) if (item.bucket) buckets[item.bucket] = (buckets[item.bucket] ?? 0) + 1;
   return {
     runId: run.id, status: run.status, ...(run.reason ? { reason: run.reason } : {}),
+    ...(Object.keys(buckets).length ? { buckets } : {}),
     passed: run.items.filter(item => item.status === 'passed').length, escalated,
     errors: run.items.filter(item => item.status === 'error').map(item => ({ id: item.id, error: item.error ?? 'error' })),
     skipped: run.total - run.items.filter(item => item.status !== 'skipped' && item.status !== 'cancelled').length,

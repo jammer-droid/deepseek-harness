@@ -13,6 +13,9 @@ Pixie Loop repeats **work → judge → fix and retry** outside the main agent's
 - [Code checks](#code-checks)
 - [Limits and results](#limits-and-results)
 - [Example specs](#example-specs)
+- [Run and judge (act)](#run-and-judge-act)
+- [Episodes and selection](#episodes-and-selection)
+- [Grouping results (route)](#grouping-results-route)
 - [Viewing runs](#viewing-runs)
 - [What it cannot do](#what-it-cannot-do)
 - [Agent skill](#agent-skill)
@@ -61,11 +64,16 @@ Only code checks and the decision engine decide pass or fail. Pixie's feedback g
 | `items` | yes | `{ "inline": [{ "id", "input" }] }` or `{ "path": "work/items.jsonl" }` with one `{"id","input"}` per line. Ids are unique. Up to 2000 items, 32,000 characters per input |
 | `work.instruction` | yes | What to do with one item. The worker has no tools |
 | `shared` | | Fixed material every item sees (glossary, style guide). Up to 64,000 characters |
-| `criteria` | one of | Review criteria in plain words |
+| `criteria` | one of | Review criteria in plain words. Only a plain pick-once `select` may omit both |
 | `checks` | one of | Questions and pass rules given directly; see [below](#giving-checks-directly) |
 | `codeChecks` | | Exact checks run before the decision engine; see [Code checks](#code-checks) |
-| `calibration` | yes | `{ "pass": [{ "input", "output" }], "fail": [...] }`, 1–10 each |
-| `maxAttempts` | | Tries per item. Default 3, at most 10 |
+| `calibration` | yes, with criteria or checks | `{ "pass": [{ "input", "output", "observation"? }], "fail": [...] }`, 1–10 each |
+| `mode` | | `retry` (default) or `episode`; see [episodes](#episodes-and-selection) |
+| `act` | | Run each output and judge what it printed; see [act](#run-and-judge-act) |
+| `extract` | | Shorten observations before judging |
+| `select` | | The decision engine picks one listed option |
+| `route` | | Group results by a choice answer; see [route](#grouping-results-route) |
+| `maxAttempts` | | Tries per item (at most 10) or steps per episode (at most 100). Default 3 |
 | `concurrency` | | Items in flight. Default 4, at most 8 |
 | `limits` | yes | `{ "tokens", "timeMs" }`. Reaching either stops the run; remaining items are reported as skipped |
 | `output` | | Results JSONL path |
@@ -185,6 +193,115 @@ The agent reads the files into `items` or a JSONL file first; the worker cannot 
 }
 ```
 
+## Run and judge (act)
+
+When an output only proves itself by running it (CSS selectors, regular expressions, command options, config snippets), use `act`. The loop runs one command per output with the session's `bash` tool, and the decision engine judges what it printed (`observation`). The worker (Pixie) still has no tools.
+
+```json
+{
+  "items": { "inline": [{ "id": "save-button", "input": "Find a CSS selector for the Save button in page.html" }] },
+  "work": { "instruction": "Reply with one CSS selector only." },
+  "criteria": "The observation shows exactly one element matched and its text is Save.",
+  "act": { "tool": "bash", "command": "node probe.mjs page.html {{output}}", "safeToRepeat": true, "isolated": true, "timeoutMs": 30000 },
+  "extract": { "instruction": "Keep the match count and the matched element's text." },
+  "calibration": {
+    "pass": [{ "input": "Find the Save button", "output": "#save", "observation": "matches: 1\ntext: Save" }],
+    "fail": [{ "input": "Find the Save button", "output": "button", "observation": "matches: 4\ntext: Save, Cancel, Help, Close" }]
+  },
+  "maxAttempts": 4,
+  "limits": { "tokens": 300000, "timeMs": 900000 }
+}
+```
+
+- `{{output}}`, `{{input}}`, `{{id}}` in `command` become one single-quoted word each. Quotes or `;` in an output cannot break the command or run another one.
+- `safeToRepeat: true` is required: retries and episodes run the command again. Never use it for anything that must not happen twice (deleting, sending, paying).
+- `isolated` (default `false`): set `true` when each item uses its own state (a new page, a temp folder) so acts may run at the same time. With `false` acts run one at a time.
+- The command follows the session's file policy and sandbox. Commands that need approval are refused. A non-zero exit does not stop the loop; the observation is judged with `[command failed]` in front.
+- Calibration examples give their `observation` directly; the start check never runs the command.
+- Observations are cut at `maxObservationChars` (default 8,000). With `extract`, Pixie shortens them as instructed before judging.
+- On a retry the worker sees the previous observation and the feedback.
+
+`probe.mjs` in the example is a small script you write. For instance, with Playwright it opens the file and prints how many elements match and their text:
+
+```js
+// probe.mjs — usage: node probe.mjs <page.html> <selector>
+import { chromium } from 'playwright';
+import { pathToFileURL } from 'node:url';
+const [file, selector] = process.argv.slice(2);
+const browser = await chromium.launch();
+const page = await browser.newPage();
+await page.goto(pathToFileURL(file).href);
+try {
+  const found = page.locator(selector);
+  console.log(`matches: ${await found.count()}`);
+  console.log(`text: ${(await found.allInnerTexts()).join(', ')}`);
+} catch (error) { console.log(`invalid selector: ${error.message.split('\n')[0]}`); process.exitCode = 1; }
+await browser.close();
+```
+
+When writing such a script:
+
+- Print only what the judgment needs, as short text. Screenshots cannot be judged.
+- Start each item from a new page or temporary state, so `isolated: true` is safe.
+- Report failures as output (`invalid selector: …`); the engine sees the cause and Pixie writes feedback.
+
+## Episodes and selection
+
+`mode: "episode"` treats each output as **one step**. `act` runs every step, and the next step sees the new observation. The episode ends when the checks pass (goal reached), or is escalated after `maxAttempts` steps.
+
+With `select`, the worker writes nothing: **the decision engine picks one listed option.** Options come only from JSON `{"options": [name | {"name", "description"}]}` in the item input (`optionsFrom: "input"`) or, in episodes, the latest observation (`optionsFrom: "observation"`). Pixie never writes the options, so an action that is not allowed cannot come out.
+
+- A `select` without criteria (pick once) returns the pick as the result and needs no calibration.
+- Below `minConfidence` the item is escalated instead of acting on a guess.
+- At most 255 options; group or filter them in the command first.
+
+### Example: choose actions in a running game
+
+Say a command `game-cli` prints the game state and allowed actions as JSON.
+
+```json
+{
+  "items": { "inline": [{ "id": "run-1", "input": "Reach the exit without losing all hp." }] },
+  "work": { "instruction": "Play one turn per step." },
+  "mode": "episode",
+  "act": { "tool": "bash", "command": "game-cli step {{output}}", "safeToRepeat": true },
+  "select": { "instructions": "Given `state`, which action best moves toward the exit while keeping hp above 0?", "optionsFrom": "observation", "minConfidence": 0.4 },
+  "criteria": "The observation shows the player reached the exit.",
+  "calibration": {
+    "pass": [{ "input": "Reach the exit", "output": "move-east", "observation": "{\"state\":\"at exit\",\"hp\":3,\"options\":[]}" }],
+    "fail": [{ "input": "Reach the exit", "output": "move-east", "observation": "{\"state\":\"corridor\",\"hp\":3,\"options\":[\"move-east\",\"wait\"]}" }]
+  },
+  "maxAttempts": 30,
+  "limits": { "tokens": 500000, "timeMs": 1800000 }
+}
+```
+
+- The first step runs the command once with an empty output to get the starting state and options; make `game-cli step ''` print the current state only.
+- The engine sees only the current state. When lookahead matters, put predicted outcomes in option descriptions (`{"name":"attack","description":"enemy hp -3, counterattack likely"}`).
+- Suited to turn-based work with decisions seconds apart, not real-time control.
+
+## Grouping results (route)
+
+Give `route.question` the id of a choice question; each item's final answer to it becomes its group. The summary counts each group, and each results line gets `bucket`. With `criteria`, include a sentence for that question; Pixie creates it under the same id.
+
+```json
+{
+  "items": { "path": "work/reports.jsonl" },
+  "work": { "instruction": "Restate the report as one clear sentence." },
+  "checks": {
+    "questions": { "kind": { "type": "choice", "instructions": "What kind of report is `input`?", "criteria": { "bug": "a defect", "feature": "a request for new behavior", "unclear": "cannot tell" } } },
+    "pass": { "kind": { "accept": ["bug", "feature"] } }
+  },
+  "route": { "question": "kind" },
+  "calibration": {
+    "pass": [{ "input": "Saving crashes the app", "output": "Saving crashes the app." }],
+    "fail": [{ "input": "hmm", "output": "hmm" }]
+  },
+  "maxAttempts": 1,
+  "limits": { "tokens": 200000, "timeMs": 600000 }
+}
+```
+
 ## Viewing runs
 
 Open **Pixie tab → Loops** in the session's right sidebar. Selecting a run shows:
@@ -197,12 +314,13 @@ Active runs refresh every 2 seconds. A run in progress when DSH restarts does no
 
 ## What it cannot do
 
-- Let the worker use tools or read files. Put the material in `items` or `shared`.
+- Let the worker use tools or read files. Put the material in `items` or `shared`; when something must run, `act` runs one fixed command for it.
 - Let items reference each other or grow the glossary during a run. Run one more consistency check over the results afterwards.
 - Change criteria or items during a run. Stop and start again.
 - Use different models per stage. Every stage uses the default Pixie model.
 - Judge images or react in real time.
-- Exact checks beyond the three code checks (length, external execution results).
+- Exact checks beyond the three code checks, unless an `act` command prints them for judging.
+- Use `act` for a command that must not run twice.
 - Resume after DSH restarts.
 - With the LLM engine on the same model as Pixie, the producer grades itself. Prefer Jev or a different model.
 

@@ -13,6 +13,9 @@ Pixie Loop는 같은 기준으로 판정할 항목이 많을 때 **작업 → �
 - [코드 검사](#코드-검사)
 - [상한과 결과](#상한과-결과)
 - [예시 명세](#예시-명세)
+- [실행해서 판정하기 (act)](#실행해서-판정하기-act)
+- [연속 실행과 선택](#연속-실행과-선택)
+- [결과 분류 (route)](#결과-분류-route)
 - [실행 기록 보기](#실행-기록-보기)
 - [할 수 없는 일](#할-수-없는-일)
 - [에이전트 스킬](#에이전트-스킬)
@@ -61,11 +64,16 @@ Pixie Loop는 같은 기준으로 판정할 항목이 많을 때 **작업 → �
 | `items` | 예 | `{ "inline": [{ "id", "input" }] }` 또는 `{ "path": "work/items.jsonl" }`. 파일은 한 줄에 `{"id","input"}` 하나. id는 겹치면 안 됩니다. 최대 2000개, 입력 하나 32,000자 |
 | `work.instruction` | 예 | 항목 하나로 무엇을 할지. 작업자에게는 도구가 없습니다 |
 | `shared` | | 모든 항목이 똑같이 보는 고정 자료(용어집, 스타일 가이드). 최대 64,000자 |
-| `criteria` | 둘 중 하나 | 판정 기준을 평문으로 |
+| `criteria` | 둘 중 하나 | 판정 기준을 평문으로. 기준 없는 한 번 고르기(`select`)만 생략 가능 |
 | `checks` | 둘 중 하나 | 질문과 통과 규칙을 직접. [아래](#checks를-직접-줄-때) 참고 |
 | `codeChecks` | | 결정 엔진 전에 돌리는 정확한 검사. [코드 검사](#코드-검사) |
-| `calibration` | 예 | `{ "pass": [{ "input", "output" }], "fail": [...] }`. 각각 1–10개 |
-| `maxAttempts` | | 항목당 시도 횟수. 기본 3, 최대 10 |
+| `calibration` | 기준이 있으면 예 | `{ "pass": [{ "input", "output", "observation"? }], "fail": [...] }`. 각각 1–10개 |
+| `mode` | | `retry`(기본) 또는 `episode`. [연속 실행](#연속-실행과-선택) |
+| `act` | | 출력을 실행해서 판정. [act](#실행해서-판정하기-act) |
+| `extract` | | 실행 결과를 판정 전에 줄임 |
+| `select` | | 결정 엔진이 보기 중 하나를 고름 |
+| `route` | | choice 질문 답으로 결과 분류. [route](#결과-분류-route) |
+| `maxAttempts` | | 항목당 시도 횟수(최대 10) 또는 연속 실행 단계 수(최대 100). 기본 3 |
 | `concurrency` | | 동시에 처리할 항목 수. 기본 4, 최대 8 |
 | `limits` | 예 | `{ "tokens", "timeMs" }`. 둘 중 하나에 닿으면 멈추고 남은 항목은 건너뜀으로 보고합니다 |
 | `output` | | 결과 JSONL 경로 |
@@ -185,6 +193,115 @@ calibration은 기준이 실제로 좋은 출력과 나쁜 출력을 가르는�
 }
 ```
 
+## 실행해서 판정하기 (act)
+
+출력이 글이 아니라 **실행해 봐야 맞는지 아는 것**(CSS 셀렉터, 정규식, 명령 옵션, 설정 조각)이면 `act`를 씁니다. 루프 엔진이 출력마다 세션의 `bash` 도구로 명령을 한 번 실행하고, 그 출력(`observation`)을 결정 엔진이 판정합니다. 작업자(Pixie)는 여전히 도구가 없습니다.
+
+```json
+{
+  "items": { "inline": [{ "id": "save-button", "input": "Find a CSS selector for the Save button in page.html" }] },
+  "work": { "instruction": "Reply with one CSS selector only." },
+  "criteria": "The observation shows exactly one element matched and its text is Save.",
+  "act": { "tool": "bash", "command": "node probe.mjs page.html {{output}}", "safeToRepeat": true, "isolated": true, "timeoutMs": 30000 },
+  "extract": { "instruction": "Keep the match count and the matched element's text." },
+  "calibration": {
+    "pass": [{ "input": "Find the Save button", "output": "#save", "observation": "matches: 1\ntext: Save" }],
+    "fail": [{ "input": "Find the Save button", "output": "button", "observation": "matches: 4\ntext: Save, Cancel, Help, Close" }]
+  },
+  "maxAttempts": 4,
+  "limits": { "tokens": 300000, "timeMs": 900000 }
+}
+```
+
+- `command`의 `{{output}}`, `{{input}}`, `{{id}}`는 작은따옴표로 감싼 한 단어로 바뀝니다. 출력에 따옴표나 `;`가 있어도 명령이 깨지거나 다른 명령이 실행되지 않습니다.
+- `safeToRepeat: true`는 필수입니다. 재시도와 연속 실행은 명령을 다시 실행합니다. 파일 삭제·전송·결제처럼 두 번 하면 안 되는 일에는 쓰지 않습니다.
+- `isolated`(기본 `false`): 항목마다 새 페이지·임시 폴더처럼 상태를 따로 쓰면 `true`로 두어 동시에 실행합니다. `false`면 한 번에 하나씩 실행합니다.
+- 명령은 세션의 파일 정책과 샌드박스를 그대로 따릅니다. 승인이 필요한 명령은 거부됩니다. 종료 코드가 0이 아니어도 루프는 멈추지 않고, `[command failed]`가 붙은 실행 결과로 판정합니다.
+- calibration 예시에는 `observation`을 직접 적습니다. 시작 전 확인에서는 명령을 실행하지 않습니다.
+- 실행 결과는 `maxObservationChars`(기본 8,000자)에서 자릅니다. `extract`를 주면 Pixie가 판정 전에 지시대로 줄입니다.
+- 재시도할 때 작업자는 직전 실행 결과와 피드백을 봅니다.
+
+예시의 `probe.mjs`는 직접 만드는 작은 스크립트입니다. 예를 들어 Playwright로 파일을 열고 셀렉터에 맞는 요소 수와 텍스트를 출력합니다.
+
+```js
+// probe.mjs — usage: node probe.mjs <page.html> <selector>
+import { chromium } from 'playwright';
+import { pathToFileURL } from 'node:url';
+const [file, selector] = process.argv.slice(2);
+const browser = await chromium.launch();
+const page = await browser.newPage();
+await page.goto(pathToFileURL(file).href);
+try {
+  const found = page.locator(selector);
+  console.log(`matches: ${await found.count()}`);
+  console.log(`text: ${(await found.allInnerTexts()).join(', ')}`);
+} catch (error) { console.log(`invalid selector: ${error.message.split('\n')[0]}`); process.exitCode = 1; }
+await browser.close();
+```
+
+스크립트를 쓸 때:
+
+- 판정에 필요한 것만 짧은 텍스트로 출력합니다. 화면 이미지는 판정할 수 없습니다.
+- 항목마다 새 페이지나 임시 상태로 시작합니다. 그래야 `isolated: true`로 둘 수 있습니다.
+- 실패도 출력으로 알립니다(`invalid selector: …`). 판정 엔진이 원인을 보고 Pixie가 피드백을 씁니다.
+
+## 연속 실행과 선택
+
+`mode: "episode"`는 출력 하나가 **한 단계**인 작업입니다. 단계마다 `act`가 실행되고, 다음 단계는 새 실행 결과를 보고 정합니다. 검사가 통과하면(목표 도달) 끝나고, `maxAttempts` 단계 안에 못 하면 넘깁니다.
+
+`select`를 주면 작업자가 출력을 쓰지 않고 **결정 엔진이 보기 중에서 하나를 고릅니다.** 보기는 JSON `{"options": [이름 | {"name", "description"}]}`에서만 읽습니다. 항목 입력(`optionsFrom: "input"`) 또는 연속 실행에서 마지막 실행 결과(`optionsFrom: "observation"`)가 보기를 줍니다. Pixie가 보기를 만들지 않으므로 고를 수 없는 행동은 나오지 않습니다.
+
+- 기준이 없는 `select`(한 번 고르기)는 고른 것이 곧 결과이며 calibration이 필요 없습니다.
+- `minConfidence`보다 확신이 낮으면 추측으로 진행하지 않고 넘깁니다.
+- 보기는 최대 255개입니다. 넘으면 실행 명령에서 먼저 묶거나 거릅니다.
+
+### 예: 실행 중인 게임에서 행동 고르기
+
+게임이 상태와 가능한 행동을 JSON으로 출력하는 명령(`game-cli`)이 있다고 합니다.
+
+```json
+{
+  "items": { "inline": [{ "id": "run-1", "input": "Reach the exit without losing all hp." }] },
+  "work": { "instruction": "Play one turn per step." },
+  "mode": "episode",
+  "act": { "tool": "bash", "command": "game-cli step {{output}}", "safeToRepeat": true },
+  "select": { "instructions": "Given `state`, which action best moves toward the exit while keeping hp above 0?", "optionsFrom": "observation", "minConfidence": 0.4 },
+  "criteria": "The observation shows the player reached the exit.",
+  "calibration": {
+    "pass": [{ "input": "Reach the exit", "output": "move-east", "observation": "{\"state\":\"at exit\",\"hp\":3,\"options\":[]}" }],
+    "fail": [{ "input": "Reach the exit", "output": "move-east", "observation": "{\"state\":\"corridor\",\"hp\":3,\"options\":[\"move-east\",\"wait\"]}" }]
+  },
+  "maxAttempts": 30,
+  "limits": { "tokens": 500000, "timeMs": 1800000 }
+}
+```
+
+- 첫 단계에서는 빈 출력으로 명령을 한 번 실행해 처음 상태와 보기를 받습니다. `game-cli step ''`이 현재 상태만 출력하게 만듭니다.
+- 결정 엔진은 지금 상태만 봅니다. 몇 수 앞을 읽어야 하면 명령이 보기 설명에 결과 예측을 넣습니다(`{"name":"attack","description":"enemy hp -3, counterattack likely"}`).
+- 결정 주기가 몇 초 이상인 턴제 작업에만 맞습니다. 실시간 조작은 할 수 없습니다.
+
+## 결과 분류 (route)
+
+`route.question`에 choice 질문 id를 주면 항목마다 그 질문의 마지막 답이 분류가 됩니다. 요약에 분류별 개수가 나오고, 결과 파일 각 줄에 `bucket`이 붙습니다. `criteria`로 기준을 줄 때는 기준에 그 질문을 만들 문장을 넣으면 Pixie가 같은 id로 질문을 만듭니다.
+
+```json
+{
+  "items": { "path": "work/reports.jsonl" },
+  "work": { "instruction": "Restate the report as one clear sentence." },
+  "checks": {
+    "questions": { "kind": { "type": "choice", "instructions": "What kind of report is `input`?", "criteria": { "bug": "a defect", "feature": "a request for new behavior", "unclear": "cannot tell" } } },
+    "pass": { "kind": { "accept": ["bug", "feature"] } }
+  },
+  "route": { "question": "kind" },
+  "calibration": {
+    "pass": [{ "input": "Saving crashes the app", "output": "Saving crashes the app." }],
+    "fail": [{ "input": "hmm", "output": "hmm" }]
+  },
+  "maxAttempts": 1,
+  "limits": { "tokens": 200000, "timeMs": 600000 }
+}
+```
+
 ## 실행 기록 보기
 
 세션 오른쪽 사이드바 **Pixie 탭 → 루프**에서 실행 목록을 봅니다. 실행을 고르면 다음이 보입니다.
@@ -197,12 +314,13 @@ calibration은 기준이 실제로 좋은 출력과 나쁜 출력을 가르는�
 
 ## 할 수 없는 일
 
-- 작업자가 도구를 쓰거나 파일을 읽는 일. 필요한 자료는 `items`나 `shared`에 넣습니다.
+- 작업자가 도구를 쓰거나 파일을 읽는 일. 필요한 자료는 `items`나 `shared`에 넣습니다. 실행이 필요하면 `act`가 정해진 명령 하나를 대신 실행합니다.
 - 항목끼리 참조하거나 실행 중에 용어집을 늘리는 일. 끝난 뒤 전체 결과로 일관성 검사를 한 번 더 돌립니다.
 - 실행 중에 기준이나 항목 바꾸기. 멈추고 다시 시작합니다.
 - 단계별로 다른 모델 쓰기. 모두 기본 Pixie 모델입니다.
 - 이미지 판정, 실시간 조작.
-- 코드 검사 세 종 밖의 정확한 검사(글자 수, 외부 실행 결과).
+- 코드 검사 세 종 밖의 정확한 검사는 `act` 명령으로 직접 출력해 판정합니다.
+- 두 번 실행하면 안 되는 명령을 `act`로 쓰는 일.
 - DSH 재시작 뒤 이어서 실행하기.
 - 결정 엔진을 LLM으로 두고 Pixie와 같은 모델을 쓰면 생성한 쪽이 스스로 채점하게 됩니다. 가능하면 Jev나 다른 모델을 씁니다.
 

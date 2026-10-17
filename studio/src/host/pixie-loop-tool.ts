@@ -27,9 +27,9 @@ const MAX_RESULT_CHARS = 20_000;
 const READ_PAGE = 2000;
 
 const TEXT = { type: 'string', minLength: 1 } as const;
-const EXAMPLE = { type: 'object', additionalProperties: false, required: ['input', 'output'], properties: { input: { type: 'string' }, output: { type: 'string' } } } as const;
+const EXAMPLE = { type: 'object', additionalProperties: false, required: ['input', 'output'], properties: { input: { type: 'string' }, output: { type: 'string' }, observation: { type: 'string', description: 'What running this output produced; needed when act is used.' } } } as const;
 export const LOOP_PARAMETERS = {
-  type: 'object', additionalProperties: false, required: ['items', 'work', 'calibration', 'limits'],
+  type: 'object', additionalProperties: false, required: ['items', 'work', 'limits'],
   properties: {
     items: { description: 'Items to process: inline [{id, input}] or a JSONL file path (one {"id","input"} per line).', oneOf: [
       { type: 'object', additionalProperties: false, required: ['inline'], properties: { inline: { type: 'array', minItems: 1, items: { type: 'object', additionalProperties: false, required: ['id', 'input'], properties: { id: TEXT, input: TEXT } } } } },
@@ -40,9 +40,17 @@ export const LOOP_PARAMETERS = {
     criteria: { type: 'string', description: 'Review criteria in plain words; compiled once into fixed judge questions. Give this or checks.' },
     checks: { type: 'object', description: 'Judge questions and pass rules given directly instead of criteria: {questions: {id: noul|choice|score question about `input`/`output`}, pass: {id: {min} | {accept: [options]}}}.' },
     codeChecks: { type: 'array', description: 'Exact checks run before the judge: {type:"placeholders"} keeps {x}, {{x}}, %s and tags; {type:"regex", pattern, flags?, expect:"match"|"no-match"}; {type:"json", keys?}.', items: { type: 'object' } },
-    calibration: { type: 'object', additionalProperties: false, required: ['pass', 'fail'], description: 'Examples the checks must pass and fail before the run starts.',
+    calibration: { type: 'object', additionalProperties: false, required: ['pass', 'fail'], description: 'Examples the checks must pass and fail before the run starts. Required with criteria or checks.',
       properties: { pass: { type: 'array', minItems: 1, items: EXAMPLE }, fail: { type: 'array', minItems: 1, items: EXAMPLE } } },
-    maxAttempts: { type: 'integer', minimum: 1, maximum: 10, description: 'Tries per item, each retry seeing its own previous output and feedback. Default 3.' },
+    mode: { type: 'string', enum: ['retry', 'episode'], description: 'retry (default): retry each item until it passes. episode: each reply is one step; act runs it and the next step sees the new observation, until the checks pass. Needs act.' },
+    act: { type: 'object', additionalProperties: false, required: ['tool', 'command', 'safeToRepeat'], description: 'Run each output with the session bash tool and judge what it printed (`observation`). The worker still has no tools.',
+      properties: { tool: { const: 'bash' }, command: { ...TEXT, description: 'Shell command; {{output}}, {{input}}, {{id}} become single-quoted words.' }, safeToRepeat: { const: true, description: 'Retries and steps run the command again; only use commands that are safe to repeat.' },
+        isolated: { type: 'boolean', description: 'true when each item works on its own state (new page, temp dir) so acts may overlap. Default false: acts run one at a time.' }, timeoutMs: { type: 'integer', minimum: 1000 }, maxObservationChars: { type: 'integer', minimum: 100 } } },
+    extract: { type: 'object', additionalProperties: false, required: ['instruction'], description: 'Shorten each observation with Pixie before judging.', properties: { instruction: TEXT, maxChars: { type: 'integer', minimum: 100 } } },
+    select: { type: 'object', additionalProperties: false, required: ['instructions', 'optionsFrom'], description: 'The decision engine picks one option instead of the worker writing an output. Options come from JSON {"options": [name | {name, description}]} in the item input or, in episodes, the act observation.',
+      properties: { instructions: TEXT, optionsFrom: { type: 'string', enum: ['input', 'observation'] }, minConfidence: { type: 'number', minimum: 0, maximum: 1, description: 'Escalate instead of acting when the pick is less certain.' } } },
+    route: { type: 'object', additionalProperties: false, required: ['question'], description: 'Group results by the final answer of one choice question in checks; the summary counts each group.', properties: { question: TEXT } },
+    maxAttempts: { type: 'integer', minimum: 1, maximum: 100, description: 'Tries per item (retry, at most 10) or steps per episode (at most 100), each seeing its own previous output and feedback. Default 3.' },
     concurrency: { type: 'integer', minimum: 1, maximum: 8, description: 'Items in flight. Default 4.' },
     limits: { type: 'object', additionalProperties: false, required: ['tokens', 'timeMs'], description: 'Run stops when either is reached; remaining items are reported as skipped.',
       properties: { tokens: { type: 'integer', minimum: 1000 }, timeMs: { type: 'integer', minimum: 1000 } } },
@@ -51,7 +59,7 @@ export const LOOP_PARAMETERS = {
   },
 } as const;
 
-const DESCRIPTION = 'Run a repeated generate-and-review loop outside your context with the lightweight Pixie model and the decision engine. For each item: the worker produces an output from `work.instruction` and `shared`; exact codeChecks run; the decision engine judges it with fixed questions; on failure Pixie writes feedback and the worker retries with only that item\'s history. Criteria are compiled once and must separate the calibration examples, or the run does not start. You get counts, the results file, and only the items that still failed (escalated) or errored — handle those yourself. Use it for many independent items judged by the same criteria (translation review, copy edits, per-file audits). Item inputs go to the configured model providers.';
+const DESCRIPTION = 'Run a repeated generate-and-review loop outside your context with the lightweight Pixie model and the decision engine. For each item: the worker produces an output from `work.instruction` and `shared`; exact codeChecks run; the decision engine judges it with fixed questions; on failure Pixie writes feedback and the worker retries with only that item\'s history. Criteria are compiled once and must separate the calibration examples, or the run does not start. You get counts, the results file, and only the items that still failed (escalated) or errored — handle those yourself. Use it for many independent items judged by the same criteria (translation review, copy edits, per-file audits). With act, each output is run by the session bash tool and judged by what it printed (experiments such as trying selectors in a page). With select, the decision engine picks one listed option per item or per step. Item inputs go to the configured model providers.';
 
 interface ToolExec { agent?: { id: string }; signal: AbortSignal; callId: string; rootCallId?: string; token?: unknown }
 type ToolsSlice = { register(definition: unknown): () => void; execute(call: unknown): Promise<{ isError: boolean; value?: unknown; content: { type: string; text?: string }[] }> };
@@ -60,6 +68,7 @@ type ToolsSlice = { register(definition: unknown): () => void; execute(call: unk
 export function renderSummary(summary: LoopSummary): string {
   const lines = [`pixie_loop ${summary.status}${summary.reason ? `: ${summary.reason}` : ''}`,
     `passed ${summary.passed}, escalated ${summary.escalated.length}, errors ${summary.errors.length}, skipped ${summary.skipped}`,
+    ...(summary.buckets ? [`groups: ${Object.entries(summary.buckets).map(([name, count]) => `${name} ${count}`).join(', ')}`] : []),
     ...(summary.outputPath ? [`results: ${summary.outputPath}`] : []),
     `usage: pixie ${summary.usage.pixie.inputTokens}/${summary.usage.pixie.outputTokens}, judge ${summary.usage.judge.inputTokens}/${summary.usage.judge.outputTokens} (input/output tokens)`];
   const detail = JSON.stringify({ escalated: summary.escalated, errors: summary.errors });
@@ -78,9 +87,14 @@ export interface LoopToolDeps {
 export function installLoop(ctx: Context, life: Lifetime, deps: LoopToolDeps): () => void {
   const tools = ctx.get('tools') as unknown as ToolsSlice | undefined;
   if (!tools) throw new Error('Studio pixie_loop requires tools');
-  const nested = async (exec: ToolExec, name: string, args: Record<string, unknown>, signal: AbortSignal) => {
+  const nested = async (exec: ToolExec, name: string, args: Record<string, unknown>, signal: AbortSignal, keepErrors = false) => {
     const result = await tools.execute({ name, arguments: args, ...(exec.agent ? { agent: exec.agent } : {}), signal, callId: ToolCallId(`${exec.callId}:loop-${name}-${randomUUID().slice(0, 8)}`), rootCallId: exec.rootCallId, parent: exec.token });
-    if (result.isError) throw new Error(`${name} failed: ${result.content.map(block => block.text ?? '').join(' ').slice(0, 500)}`);
+    if (result.isError) {
+      const text = result.content.map(block => block.text ?? '').join(' ').slice(0, 2000);
+      // A failing act command is an observation, not a loop failure.
+      if (keepErrors) return { kind: 'foreground', exitCode: null, stdout: { text }, stderr: { text: '' } };
+      throw new Error(`${name} failed: ${text.slice(0, 500)}`);
+    }
     return result.value as Record<string, unknown>;
   };
   async function loadItems(spec: LoopSpec, exec: ToolExec, signal: AbortSignal): Promise<LoopItem[]> {
@@ -102,10 +116,16 @@ export function installLoop(ctx: Context, life: Lifetime, deps: LoopToolDeps): (
     const llm = deps.llm() ?? { stream: () => { throw new Error('DSH llm service is unavailable'); } };
     const judge = judgeEngineFor(settings, { llm, credentials: deps.credentials() });
     const writer = throttledWriter(run => deps.store.put(run), 500, error => ctx.logger?.warn?.(`studio pixie_loop: record write failed: ${String(error)}`));
-    const run = await runLoop(spec, items, { llm, model: settings.model, judge, update: value => { writer.update(value); onProgress?.(value); } },
-      { sessionId: exec.agent!.id, signal, runId, ...(outputPath ? { outputPath } : {}) });
+    const act = async (command: string, timeoutMs: number, actSignal: AbortSignal) => {
+      const value = await nested(exec, 'bash', { command, description: 'pixie_loop act', timeoutMs }, actSignal, true) as { kind?: string; exitCode?: number | null; timedOut?: boolean; stdout?: { text?: string }; stderr?: { text?: string } };
+      if (value.kind !== 'foreground') return { ok: false, text: 'act command did not finish in the foreground; lower its run time or raise act.timeoutMs' };
+      const out = [value.stdout?.text ?? '', value.stderr?.text ? `[stderr]\n${value.stderr.text}` : ''].filter(Boolean).join('\n');
+      return { ok: value.exitCode === 0 && !value.timedOut, text: `${out}${value.timedOut ? '\n[timed out]' : ''}\n[exit code: ${value.exitCode ?? 'none'}]` };
+    };
+    const run = await runLoop(spec, items, { llm, model: settings.model, judge, act, update: value => { writer.update(value); onProgress?.(value); } },
+      { sessionId: exec.agent!.id, signal, runId, source: 'tool', ...(outputPath ? { outputPath } : {}) });
     if (outputPath && run.items.some(item => item.status !== 'skipped')) {
-      const body = run.items.filter(item => item.status !== 'skipped').map(item => JSON.stringify({ id: item.id, status: item.status, ...(item.output !== undefined ? { output: item.output } : {}), attempts: item.attempts.length, ...(item.error ? { error: item.error } : {}) })).join('\n') + '\n';
+      const body = run.items.filter(item => item.status !== 'skipped').map(item => JSON.stringify({ id: item.id, status: item.status, ...(item.output !== undefined ? { output: item.output } : {}), ...(item.bucket ? { bucket: item.bucket } : {}), attempts: item.attempts.length, ...(item.error ? { error: item.error } : {}) })).join('\n') + '\n';
       try { await nested(exec, 'write', { file_path: outputPath, content: body }, new AbortController().signal); }
       catch (error) { run.reason = `${run.reason ? `${run.reason}; ` : ''}results file not written: ${error instanceof Error ? error.message : String(error)}`; delete run.outputPath; }
     }

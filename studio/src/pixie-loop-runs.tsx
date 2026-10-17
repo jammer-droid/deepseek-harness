@@ -27,6 +27,9 @@ function RunDetail({ run, locale, onBack }: { run: LoopRun; locale: string; onBa
     <p className="studio-card-meta">{new Date(run.startedAt).toLocaleString(locale)} · {t('progress', { done, total: run.total })} · {t('counts', { passed: count('passed'), escalated: count('escalated'), errors: count('error') })}</p>
     <dl className="studio-gate-facts">
       {run.reason && <><dt>{t('reason')}</dt><dd>{run.reason}</dd></>}
+      {run.recipe && <><dt>{t('recipe')}</dt><dd>{run.recipe}{run.source === 'gate' ? ` · ${t('sourceGate')}` : run.source === 'hook' ? ` · ${t('sourceHook')}` : ''}</dd></>}
+      {run.mode === 'episode' && <><dt>{t('episode')}</dt><dd>{t('progress', { done: run.items.filter(item => item.status !== 'skipped').length, total: run.total })}</dd></>}
+      {run.items.some(item => item.bucket) && <><dt>{t('groups')}</dt><dd>{Object.entries(run.items.reduce<Record<string, number>>((all, item) => { if (item.bucket) all[item.bucket] = (all[item.bucket] ?? 0) + 1; return all; }, {})).map(([name, count]) => `${name} ${count}`).join(' · ')}</dd></>}
       <dt>{t('answers')}</dt><dd>{t('usage', { pixieIn: run.usage.pixie.inputTokens, pixieOut: run.usage.pixie.outputTokens, judgeIn: run.usage.judge.inputTokens, judgeOut: run.usage.judge.outputTokens })}</dd>
       {run.outputPath && <><dt>{t('results')}</dt><dd className="studio-gate-text">{run.outputPath}</dd></>}
     </dl>
@@ -41,12 +44,15 @@ function RunDetail({ run, locale, onBack }: { run: LoopRun; locale: string; onBa
       <SectionHead title={t('items')} />
       <ul className="studio-loop-items">{run.items.map(item => <li key={item.id} data-loop-item={item.id}>
         <button type="button" className="studio-loop-item" aria-expanded={openItem === item.id} onClick={() => setOpenItem(current => current === item.id ? undefined : item.id)}>
-          <span className="studio-card-head"><strong>{item.id}</strong><Badge tone={itemTone(item.status)}>{t(itemKey[item.status])}</Badge></span>
+          <span className="studio-card-head"><strong>{item.id}</strong><span className="studio-inline-actions">{item.bucket && <Badge tone="outline">{item.bucket}</Badge>}<Badge tone={itemTone(item.status)}>{t(itemKey[item.status])}</Badge></span></span>
           <span className="studio-card-meta">{item.attempts.length ? t('attempts', { n: item.attempts.length }) : ''}{item.error ? ` · ${item.error}` : ''}</span>
         </button>
         {openItem === item.id && <ol className="studio-loop-attempts">{item.attempts.map((attempt, index) => <li key={index} className="studio-loop-attempt">
-          <SectionHead title={t('attempt', { n: index + 1 })} actions={<Badge tone={attempt.passed ? 'success' : 'warning'}>{t(attempt.passed ? 'passed' : 'attemptFailed')}</Badge>} />
+          <SectionHead title={t(run.mode === 'episode' ? 'step' : 'attempt', { n: index + 1 })} actions={<Badge tone={attempt.passed ? 'success' : 'warning'}>{t(attempt.passed ? 'passed' : 'attemptFailed')}</Badge>} />
           <p className="studio-pixie-answer studio-gate-text">{attempt.output}</p>
+          {attempt.selection && <dl className="studio-gate-facts"><dt>{t('selection')}</dt><dd>{attempt.selection.choice} <span className="studio-card-meta">{t('confidence', { value: attempt.selection.confidence.toFixed(2) })}</span></dd></dl>}
+          {attempt.observation !== undefined && <><SectionHead title={t('observation')} /><p className="studio-pixie-answer studio-gate-text">{attempt.observation}</p></>}
+          {attempt.error && <dl className="studio-gate-facts"><dt>{t('reason')}</dt><dd>{attempt.error}</dd></dl>}
           {attempt.codeFailures.length > 0 && <dl className="studio-gate-facts"><dt>{t('codeFailures')}</dt><dd>{attempt.codeFailures.map(failure => `${failure.check}: ${failure.message}`).join(' · ')}</dd></dl>}
           {attempt.answers && <dl className="studio-gate-facts"><dt>{t('answers')}</dt><dd>{Object.entries(attempt.answers).map(([id, answer]) => `${id} ${answerText(answer)}`).join(' · ')}</dd></dl>}
           {attempt.feedback && <><SectionHead title={t('feedback')} /><ModelText text={attempt.feedback} locale={locale} /></>}
