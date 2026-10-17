@@ -26,6 +26,7 @@ import settingsShell from './settings.shell.ts';
 import settingsWebSearch from './settings.webSearch.ts';
 import shortcutsLayout from './shortcuts.layout.ts';
 import sidebar from './sidebar.ts';
+import sidebarBrowser from './sidebarBrowser.ts';
 import sidebarCodePreview from './sidebarCodePreview.ts';
 import sidebarDocumentPreview from './sidebarDocumentPreview.ts';
 import sidebarExcel from './sidebarExcel.ts';
@@ -61,6 +62,7 @@ export const dshKo: DshKoDictionaries = {
   'settings.webSearch': settingsWebSearch,
   'shortcuts.layout': shortcutsLayout,
   sidebar: sidebar,
+  sidebarBrowser: sidebarBrowser,
   'sidebarCodePreview': sidebarCodePreview,
   sidebarDocumentPreview: sidebarDocumentPreview,
   sidebarExcel: sidebarExcel,

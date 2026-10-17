@@ -26,3 +26,6 @@
 | model | search.clear | Clear search | 검색 지우기 | 1.88/0.97/0.46 | 검색 지우기·검색어 지우기 모두 문체 기준 미달 |
 | agent-team | blockedBy | Blocked by | 차단 요인 | 1.33/0.81/0.61 | 머리글 라벨 후보 모두 자연스러움 미달 |
 | agent-team | task.collapse | Show less | 줄여서 보기 | 1.43/0.94/0.52 | 접기 토글 라벨 후보 모두 자연스러움 미달 |
+| sidebarBrowser | address.unknown | The page navigated; this carrier cannot read its new URL. | 페이지가 이동했습니다. 이 캐리어는 새 URL을 읽을 수 없습니다. | 1.29/0.95/0.55 | 캐리어·URL 표현의 자연스러움 미달 |
+| sidebarBrowser | error.invalid | That address is invalid or too long. | 주소가 올바르지 않거나 너무 깁니다. | 1.77/0.94/0.28 | 올바른 한국어 문장인데 문체 판정이 계속 낮음 |
+| sidebarBrowser | go | Go | 이동 | 1.64/0.92/0.47 | 단어 하나짜리 버튼 라벨의 문체 기준 미달 |
