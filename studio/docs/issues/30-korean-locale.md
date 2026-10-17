@@ -12,7 +12,7 @@ DSH 화면 문구 전체를 한국어로 제공한다. Studio는 이미 `ctx.loc
 - GitHub 이슈: [#30](https://github.com/jammer-droid/deepseek-harness/issues/30)
 - 기준 브랜치·시작 커밋: `studio/feat/workflow` @ `b288fc95fa`
 - 대상 DSH: `0.2.0-rc.2 || 0.2.1-alpha.2`(Studio 지원 범위). 본체 수정 없음
-- 관련: 기존 스킬 `studio-ko-locale-review`(Pixie 문구 전용), `judge` 도구(#27)
+- 관련: 스킬 `studio-ko-review`(이슈 단위 Studio 한국어 검수, 이전 `studio-ko-locale-review`를 대체), `judge` 도구(#27)
 
 ## 조사 결과
 
@@ -35,7 +35,7 @@ DSH 화면 문구 전체를 한국어로 제공한다. Studio는 이미 `ctx.loc
 
 - DSH 본체 사전 파일 수정, 업스트림 기여
 - 문서(README 등) 번역
-- Studio 자체 문구(기존 ko·en·zh 사전과 `studio-ko-locale-review`가 맡음)
+- Studio 자체 문구(기존 ko·en·zh 사전과 `studio-ko-review`가 맡음)
 
 ## 결정
 
@@ -73,3 +73,9 @@ DSH 화면 문구 전체를 한국어로 제공한다. Studio는 이미 `ctx.loc
 - 시범 번역 후보: 키가 적은 `settings.locale`(1), `sidebarCodePreview`(3), `claude-code-mods`(4, alpha.2에만 있음).
 - 스킬 명령(`node --import tsx …`)은 `studio/`에서 실행해야 한다. 저장소 루트에서는 `tsx`를 찾지 못한다.
 - 임시 사전으로 확인함: `check-dsh-ko-locale.mjs`가 빠진 키(`claude-code-mods.pressing`)를 잡고, 한 버전에만 있는 네임스페이스는 허용하며, 사전 파일 형식은 client 타입 검사를 통과한다.
+
+## Studio 한국어 검수 스킬 (#30 밖 부속 작업)
+
+- 사용자 요청으로 `studio/scripts/agents/studio-ko-review/SKILL.md`를 추가했다. 이슈 하나가 바꾼 명세·UI 문구·공개 문서의 한국어를 `judge`로 검수하고, 빠진 ko 문구를 새로 쓴다. 사용자가 승인한 행만 반영한다.
+- 이 스킬이 Pixie 파일 2개 전용이던 `studio-ko-locale-review`를 대체한다. 기존 스킬은 저장소에 원본이 없고 `~/.dsh/skills/`에만 있다. 설치본 삭제와 새 스킬 설치는 사용자 프로필 변경이라 사용자가 하거나 승인한다.
+- 문서용 문체 질문을 Jev로 확인했다. 한다체 질문은 한다체 문장 0.86, 합쇼체 문장 0.06, 반말 0.23으로 구분했다. 합쇼체 질문은 합쇼체 문장 0.58, 한다체 문장 0.07, 반말 0.04였다. 맞는 합쇼체도 0.58로 기준 0.5에 가깝다. 의미 질문은 "기록되지 않고 전달되지 않습니다"를 "전달됩니다"로 바꾼 문장에 0.06을 주었다.
