@@ -16,6 +16,7 @@ import inspectorPanel from './inspectorPanel.ts';
 import model from './model.ts';
 import permissionAccess from './permission.access.ts';
 import plan from './plan.ts';
+import question from './question.ts';
 import reference from './reference.ts';
 import sessionLogDownload from './session-log-download.ts';
 import settingsAgentLoop from './settings.agentLoop.ts';
@@ -55,6 +56,7 @@ export const dshKo: DshKoDictionaries = {
   model: model,
   'permission.access': permissionAccess,
   plan: plan,
+  question: question,
   reference: reference,
   'session-log-download': sessionLogDownload,
   'settings.agentLoop': settingsAgentLoop,

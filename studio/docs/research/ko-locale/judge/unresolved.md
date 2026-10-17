@@ -33,3 +33,14 @@
 | command | search.aria | Filter options | 옵션 필터링 | 1.42/0.84/0.66 | 옵션 필터 입력의 aria-label, 후보 모두 자연스러움 미달 |
 | sidebarTerminal | control | Take control | 제어권 가져오기 | 1.69/0.96/0.48 | 버튼 라벨 후보 모두 문체 기준 미달 |
 | settings.theme | appearance.title | Appearance | 화면 테마 | 1.50/0.55/0.42 | 모양·테마·화면 모드 모두 의미 기준 미달 |
+| question | error.resubmit | The answer did not arrive before work continued; submit it again. | 작업이 계속되기 전에 답변이 도착하지 않았습니다. 다시 제출해 주십시오. | 1.21/0.94/0.87 | 시간 관계 안내 문장의 자연스러움 미달 |
+| question | nav.cancel | Dismiss all questions | 모든 질문 닫기 | 1.54/0.83/0.40 | 라벨 후보 모두 문체 기준 미달 |
+| question | nav.close | Close the panel — reopen it from the tool call | 패널을 닫고 도구 호출에서 다시 여십시오 | 1.2/0.93/0.54 | 설명형 라벨의 자연스러움 미달 |
+| question | plan.approve | Approve | 승인 | 1.88/0.97/0.37 | 버튼 라벨 후보 모두 문체 기준 미달 |
+| question | plan.decline | Refuse | 거부 | 1.85/0.97/0.48 | 버튼 라벨 후보 모두 문체 기준 미달 |
+| question | plan.header | Plan review | 계획 검토 | 1.73/0.96/0.39 | 머리글 라벨 후보 모두 문체 기준 미달 |
+| question | reply.answerLabel | Answer:  | 답변:  | 1.79/0.96/0.42 | 이어 붙이는 라벨, 문체 기준 미달 |
+| question | reply.close | Close question details | 질문 상세 닫기 | 1.71/0.97/0.40 | 라벨 후보 모두 문체 기준 미달 |
+| question | reply.label | Reply to earlier pending questions | 대기 중인 이전 질문에 답장합니다 | 1.39/0.88/0.85 | 긴 동작 라벨의 자연스러움 미달 |
+| question | status.sent | Reply sent; the panel could not close. | 답장은 보냈지만 패널을 닫지 못했습니다. | 1.45/0.96/0.57 | 두 동작 안내의 자연스러움 미달 |
+| question | wait.continued | Work continued — you can still answer | 답변하지 않아도 작업이 계속되었습니다. 지금도 답변할 수 있습니다. | 1.39/0.77/0.76 | 상태 안내의 자연스러움 미달 |
