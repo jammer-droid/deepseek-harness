@@ -24,7 +24,8 @@
     "./policy": "./policy.js",
     "./roles": "./roles.js",
     "./batch": "./batch.js",
-    "./judge": "./judge.js"
+    "./judge": "./judge.js",
+    "./loop": "./loop.js"
   },
   "files": [
     "index.js",
@@ -33,6 +34,7 @@
     "roles.js",
     "batch.js",
     "judge.js",
+    "loop.js",
     "skills",
     "cordis.patch.yml"
   ],

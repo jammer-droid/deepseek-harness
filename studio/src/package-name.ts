@@ -6,6 +6,7 @@ export const POLICY_PLUGIN = `${PACKAGE_NAME}/policy`;
 export const ROLE_PLUGIN = `${PACKAGE_NAME}/roles`;
 export const BATCH_PLUGIN = `${PACKAGE_NAME}/batch`;
 export const JUDGE_PLUGIN = `${PACKAGE_NAME}/judge`;
+export const LOOP_PLUGIN = `${PACKAGE_NAME}/loop`;
 
 /** Rewrite a Loader entry name from the pre-publication package to the published one. */
 export function currentPluginName(name: string): string {

@@ -660,6 +660,11 @@ ${adapter}.studio-ui *, .studio-ui *::before, .studio-ui *::after { box-sizing: 
 .studio-ui .studio-gate-facts { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 12px; align-items: baseline; margin: 0; font-size: 13px; }
 .studio-ui .studio-gate-facts dt { color: var(--studio-muted); font-size: 12px; }
 .studio-ui .studio-gate-facts dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.studio-ui .studio-loop-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.studio-ui ul.studio-loop-items, .studio-ui ol.studio-loop-attempts { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.studio-ui .studio-loop-item { display: grid; gap: 2px; width: 100%; padding: 8px 10px; border: .5px solid var(--studio-line); border-radius: var(--studio-control-radius); background: var(--studio-surface); color: var(--studio-ink); font: inherit; text-align: start; cursor: pointer; }
+.studio-ui .studio-loop-item:hover, .studio-ui .studio-loop-item[aria-expanded=true] { background: var(--studio-hover); }
+.studio-ui .studio-loop-attempt { display: grid; gap: 6px; padding: 8px 10px; border-inline-start: 2px solid var(--studio-line); }
 .studio-ui .studio-gate-block { display: grid; gap: 6px; padding-top: 10px; border-top: .5px solid var(--studio-line); }
 .studio-ui .studio-gate-session-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
 .studio-ui .studio-gate-session-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-width: 0; }

@@ -23,6 +23,8 @@ await compile({
 await compile({ absWorkingDir: root, tsconfig: 'tsconfig.host.json', entryPoints: ['src/host/batch-tool.ts'], outfile: 'packages/shell/batch.js', bundle: true, minify: true, platform: 'node', format: 'esm', target: 'node22', external: ['@deepseek-ai/*'] });
 await compile({ absWorkingDir: root, tsconfig: 'tsconfig.host.json', entryPoints: ['src/host/judge-tool.ts'], outfile: 'packages/shell/judge.js',
   bundle: true, platform: 'node', format: 'esm', target: 'node22', packages: 'external', external: ['@deepseek-ai/*'] });
+await compile({ absWorkingDir: root, tsconfig: 'tsconfig.host.json', entryPoints: ['src/host/pixie-loop-tool.ts'], outfile: 'packages/shell/loop.js',
+  bundle: true, platform: 'node', format: 'esm', target: 'node22', packages: 'external', external: ['@deepseek-ai/*'] });
 for (const part of ['shell']) {
   await compile({
     absWorkingDir: root, tsconfig: 'tsconfig.host.json', entryPoints: [`src/host/${part}.ts`], outfile: `packages/${part}/index.js`,

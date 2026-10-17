@@ -7,6 +7,7 @@ packages/*/delegation-tool.js
 packages/*/policy.js
 packages/*/batch.js
 packages/*/judge.js
+packages/*/loop.js
 packages/*/tasks.js
 packages/*/roles.js
 packages/shell/skills/

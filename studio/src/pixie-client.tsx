@@ -29,6 +29,7 @@ const descriptor = (method: string, parameters: string[], extra: Record<string, 
 type RemoteValue<T> = Promise<{ ok: true; value: T } | { ok: false; error: { message: string } }>;
 interface PixieRemote {
   gateRuns(sessionId: string): RemoteValue<GateRunRecord>;
+  loopRuns(sessionId: string): RemoteValue<import('./pixie-loop-contracts.ts').LoopRunRecord>;
   followGates(sessionId: string): AsyncIterable<GateRunFrame> & { dispose(): void };
   resolveGateRejection(sessionId: string, runId: string, status: string): RemoteValue<unknown>;
   sessionGates(sessionId: string): RemoteValue<import('./pixie-gate-contracts.ts').SessionGates>;
@@ -69,6 +70,7 @@ interface SidebarServices {
 export function pixieDescriptors() {
   return [
     descriptor('gateRuns', ['sessionId']),
+    descriptor('loopRuns', ['sessionId']),
     descriptor('followGates', ['sessionId'], { mode: 'stream', cancellation: { parameter: 'signal' } }),
     descriptor('resolveGateRejection', ['sessionId', 'runId', 'status']),
     descriptor('sessionGates', ['sessionId']),
@@ -171,6 +173,7 @@ export function mountPixie(ctx: StudioContext, options: { navFooter?: (locale: s
     view: () => unwrap(remote().view(sessionId)),
     follow: listener => followPixieStream(() => remote().follow(sessionId), listener),
     gateRuns: () => unwrap(remote().gateRuns(sessionId)),
+    loopRuns: () => unwrap(remote().loopRuns(sessionId)),
     followGates: listener => followPixieStream(() => remote().followGates(sessionId), listener),
     resolveGateRejection: (runId, status) => unwrap(remote().resolveGateRejection(sessionId, runId, status)),
     sessionGates: () => unwrap(remote().sessionGates(sessionId)),
