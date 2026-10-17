@@ -286,3 +286,7 @@
 | subagent | 용어 | Parent session | 상위 세션 | — | 번역자 제안 |
 | subagent | 용어 | Child session | 하위 세션 | — | 번역자 제안 |
 | subagent | 용어 | Migration | 마이그레이션 | — | 번역자 제안 |
+| job | 용어 | Live output | 실시간 출력 | — | 번역자 제안 |
+| job | 용어 | Exit code | 종료 코드 | — | 번역자 제안 |
+| job | 용어 | Signal | 시그널 | — | 번역자 제안 |
+| job | 용어 | Command line | 명령줄 | — | 번역자 제안 |
