@@ -34,8 +34,27 @@
 | 편집 대화상자: 모델·추론·지침만 편집, 복사 안내 | [edit-light-1440](edit-light-1440.png), [edit-dark-1440](edit-dark-1440.png) |
 | 라이트·다크 520: 카드 한 열, 동작 버튼은 제목 아래로 | [tab-light-520](tab-light-520.png), [tab-dark-520](tab-dark-520.png) |
 
+## 실세션 위임
+
+모델 키 대신 로컬 스크립트 응답 서버를 썼다. 격리 프로필의 `cordis.patch.yml`에 DSH 공개 `dsh-llm-pi-ai` 설정으로 OpenAI 호환 경로 `fake29`(모델 `parent-model`, `session-model`)를 잠시 추가하고 기본 모델을 `fake29/parent-model`로 바꿨다. 서버(`127.0.0.1:19395`)는 사용자 메시지에 `DELEGATE-NOW`가 있으면 `subagent_role` 호출(`role: review`)을 돌려주고, 나머지에는 짧은 텍스트로 답하며 받은 요청을 기록한다. Studio나 DSH 코드는 바꾸지 않았다. 확인이 끝난 뒤 패치를 원래대로 되돌리고 임시 프리셋을 지웠다.
+
+세션 `Delegation check`, 프리셋 역할 `review`(`inherit`, 추론 `inherit`, `fork`, 지침 `Preset persona.`).
+
+| 순서 | 조작 | 자식 요청(서버 기록·자식 세션 로그) | 결과 |
+| --- | --- | --- | --- |
+| 1 | Remote로 세션 복사본: `fake29/session-model`, `high`, 지침 `SESSION-PERSONA-29` | `session-model`, `reasoning_effort: high`, 자식 로그에 `SESSION-PERSONA-29` | 통과. 부모는 계속 `parent-model` |
+| 2 | 자식 세션의 Subagents 탭 | 루트 값, 읽기 전용 안내, 동작 없음 | 통과 [delegation-child-tab-light-1440](delegation-child-tab-light-1440.png) |
+| 3 | `프리셋 값 사용`(되돌리기) 후 다시 위임 | `parent-model`(inherit), 자식 로그에 `Preset persona.` | 통과 |
+| 4 | 탭에서 GUI로 편집: 추론 `Low`, 지침 `GUI-PERSONA-29` | `session-model`, `reasoning_effort: low`, 자식 로그에 `GUI-PERSONA-29` | 통과. 다음 호출부터 적용 |
+| 5 | GUI `역할 추가`: `Scout`/`scout` | 카드 추가, 출처 `이 세션` | 통과 [gui-edit-result-light-1440](gui-edit-result-light-1440.png) |
+| 6 | GUI `역할 추가`: 이미 있는 id `review` | 대화상자 유지, 오류 `Role identifier already exists: review` | 통과 [gui-duplicate-error-light-1440](gui-duplicate-error-light-1440.png) |
+
+- 자식이 다시 `subagent_role`을 호출한 요청은 `subagent depth 2 exceeds maxDepth 1`로 DSH가 거절했다. 이 프로필의 위임 깊이 제한이며 손자 위임은 실세션에서 확인하지 못했다. 손자가 루트 값을 따르는 것은 단위 테스트로 확인했다.
+- 발견한 문제: 자식 세션 탭(읽기 전용)이 모델 목록을 불러오지 않아 모델을 경로 id(`fake29/session-model`)로 보였다. 읽기 전용에서도 목록을 불러오도록 고쳤고, 재설치 후 `Fake 29 · Session Model`로 보이는 것을 확인했다.
+- 콘솔 오류 0.
+
 ## 미검증
 
-- 실제 위임: 세션 역할의 모델·지침으로 자식이 시작되는지는 실제 `ToolRuntime` 단위 테스트([role-tool-session.test.mjs](../../../test/role-tool-session.test.mjs))로만 확인했다. 모델 키가 없어 실세션 위임은 하지 않았다.
-- 자식 세션 탭의 읽기 전용 표시는 단위 테스트로만 확인했다(실제 자식 세션 없음).
+- 실제 DeepSeek 모델 응답으로 한 위임. 위임 경로와 자식 설정은 스크립트 응답 서버로 확인했고, 모델이 스스로 역할을 골라 호출하는지는 확인하지 않았다.
+- 손자(깊이 2) 위임의 실세션 확인. 프로필 `maxDepth 1`로 막힘.
 - `0.2.1-alpha.2` 설치 검증은 하지 않았다.

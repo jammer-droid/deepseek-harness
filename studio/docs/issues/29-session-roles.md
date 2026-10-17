@@ -76,7 +76,8 @@ status: ready
 - **S2 완료:** [session-role-store.ts](../../src/host/session-role-store.ts), [session-root.ts](../../src/host/session-root.ts), Remote `studioSessionRoles`([session-role-service.ts](../../src/host/session-role-service.ts)). 저장·되돌리기·구독·정리와 루트 해석 [테스트](../../test/session-role-store.test.mjs) 9개.
 - **S3 완료:** [role-tool.ts](../../src/host/role-tool.ts)가 호출마다 루트 세션 역할을 읽어 합친다. 실제 `ToolRuntime` [테스트](../../test/role-tool-session.test.mjs) 5개.
 - **S4 완료:** [session-roles-tab.tsx](../../src/session-roles-tab.tsx), [session-roles-client.tsx](../../src/session-roles-client.tsx), [문구](../../src/session-roles-locale.ts). UI [테스트](../../test/session-roles-tab.test.mjs) 8개(카드 스냅샷 포함).
-- **S5 부분 완료:** 수정하지 않은 rc.2 격리 프로필에 패키징 Studio를 설치해 Remote 흐름과 탭 화면(라이트·다크·520)을 확인했다. [검증 기록](../verification/session-roles-29/README.md). **실세션 위임은 미검증**(격리 프로필에 모델 키 없음).
+- **S5 완료:** 수정하지 않은 rc.2 격리 프로필에 패키징 Studio를 설치했다. Remote 흐름, 탭 화면(라이트·다크·520), 실세션 위임(로컬 스크립트 응답 서버)으로 세션 복사본·되돌리기·GUI 편집이 다음 자식의 모델·추론·지침에 반영되는 것, 자식 세션 탭의 읽기 전용 표시를 확인했다. [검증 기록](../verification/session-roles-29/README.md). 실제 모델 응답 위임과 손자 위임 실세션, `0.2.1-alpha.2`는 미검증.
+- S5 중 발견: 읽기 전용 탭이 모델 이름 대신 경로 id를 보임 → 수정.
 - Studio 전체: 타입 검사·빌드·테스트 559개 통과.
 
-현재 단계: S5(실세션 위임 확인 남음).
+현재 단계: 구현 단계 완료. 남은 일: 사용자 문서·CHANGELOG, 검수, 통합.
