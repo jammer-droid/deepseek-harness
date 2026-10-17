@@ -31,6 +31,7 @@ import sidebarOffice from './sidebarOffice.ts';
 import sidebarPdf from './sidebarPdf.ts';
 import skill from './skill.ts';
 import slashMenu from './slash.menu.ts';
+import workflowRun from './workflowRun.ts';
 
 export const dshKo: DshKoDictionaries = {
   approval: approval,
@@ -61,4 +62,5 @@ export const dshKo: DshKoDictionaries = {
   sidebarPdf: sidebarPdf,
   skill: skill,
   'slash.menu': slashMenu,
+  workflowRun: workflowRun,
 };
