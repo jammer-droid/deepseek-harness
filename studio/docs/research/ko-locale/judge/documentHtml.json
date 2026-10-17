@@ -1,0 +1,44 @@
+{
+  "namespace": "documentHtml",
+  "date": "2026-10-17",
+  "engine": "jev",
+  "thresholds": { "natural": 1.5, "meaning": 0.6, "style": 0.5 },
+  "rows": [
+    {
+      "key": "failed",
+      "en": "This HTML document could not be previewed.",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "이 HTML 문서를 미리 볼 수 없습니다.", "natural": 1.79, "meaning": 0.98, "style": 0.7, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "frame",
+      "en": "HTML document preview",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "HTML 문서 미리보기", "natural": 1.9, "meaning": 0.98, "style": 0.75, "pass": true }
+      ],
+      "result": "pass"
+    },
+    {
+      "key": "loading",
+      "en": "Rendering document...",
+      "kind": "normal",
+      "attempts": [
+        { "ko": "문서를 렌더링하는 중...", "natural": 1.71, "meaning": 0.97, "style": 0.49, "pass": false },
+        { "ko": "문서 렌더링 중...", "natural": 1.84, "meaning": 0.97, "style": 0.47, "pass": false },
+        { "ko": "문서를 렌더링하고 있습니다...", "natural": 1.74, "meaning": 0.97, "style": 0.79, "pass": true }
+      ],
+      "result": "fixed"
+    },
+    {
+      "key": "title",
+      "en": "HTML",
+      "kind": "verbatim",
+      "attempts": [],
+      "result": "verbatim"
+    }
+  ]
+}
