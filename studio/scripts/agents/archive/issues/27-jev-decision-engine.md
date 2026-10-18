@@ -1,6 +1,6 @@
 # Jev 결정 엔진 실사용 확인 (#27): 로케일 교정과 영어 답변 번역
 
-> fork 내부 확인용이다. 1번에 쓰던 `studio-ko-locale-review` 스킬은 `studio-ko-review`(이슈 단위 한국어 검수)로 바뀌었다. 다시 실행할 때는 `studio-ko-review`에 이슈 #27을 지정하고 대상을 아래 두 파일의 UI 문구로 줄인다. 공개 안내는 [Pixie Gate 가이드](../../release/docs/appendix/pixie-gate.ko.md)를 따른다. 서브에이전트 라우팅(3번)은 스크립트와 게이트를 만든 뒤 이 문서에 추가한다.
+> fork 내부 확인용이다. 1번에 쓰던 한국어 검수 스킬(`studio-ko-locale-review` → `studio-ko-review`)은 삭제되었다. 다시 실행할 때는 1번 대신 [마무리·배포 절차 4단계](../../../../docs/release-workflow.md#4-한국어-문체-교정)의 `pixie_loop` 명세로 아래 두 파일의 UI 문구를 교정한다. 공개 안내는 [Pixie Gate 가이드](../../../../release/docs/appendix/pixie-gate.ko.md)를 따른다. 서브에이전트 라우팅(3번)은 스크립트와 게이트를 만든 뒤 이 문서에 추가한다.
 
 이 문서를 받은 에이전트는 아래 순서대로 두 가지를 진행하고 결과를 세션에 보고한다. 사용자가 **Test Preset**으로 연 세션에서 이 문서를 읽으라고 지시한 상태를 전제로 한다. 사용자는 결과를 세션 창과 오른쪽 Pixie 탭에서 확인한다.
 

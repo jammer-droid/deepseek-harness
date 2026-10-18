@@ -12,7 +12,7 @@ DSH 화면 문구 전체를 한국어로 제공한다. Studio는 이미 `ctx.loc
 - GitHub 이슈: [#30](https://github.com/jammer-droid/deepseek-harness/issues/30)
 - 기준 브랜치·시작 커밋: `studio/feat/workflow` @ `b288fc95fa`
 - 대상 DSH: `0.2.0-rc.2 || 0.2.1-alpha.2`(Studio 지원 범위). 본체 수정 없음
-- 관련: 스킬 `studio-ko-review`(이슈 단위 Studio 한국어 검수, 이전 `studio-ko-locale-review`를 대체), `judge` 도구(#27)
+- 관련: `judge` 도구(#27). Studio 문구의 한국어 교정은 [마무리·배포 절차](../release-workflow.md#4-한국어-문체-교정)의 `pixie_loop` 단계가 맡는다(이전 스킬 `studio-ko-review`는 2026-10-18 삭제).
 
 ## 조사 결과
 
@@ -35,7 +35,7 @@ DSH 화면 문구 전체를 한국어로 제공한다. Studio는 이미 `ctx.loc
 
 - DSH 본체 사전 파일 수정, 업스트림 기여
 - 문서(README 등) 번역
-- Studio 자체 문구(기존 ko·en·zh 사전과 `studio-ko-review`가 맡음)
+- Studio 자체 문구(기존 ko·en·zh 사전과 배포 절차의 한국어 문체 교정이 맡음)
 
 ## 결정
 
@@ -52,7 +52,7 @@ DSH 화면 문구 전체를 한국어로 제공한다. Studio는 이미 `ctx.loc
 | S1 | 원문 추출 스크립트, 네임스페이스 목록과 키 수(rc.2·alpha.2) | — | 완료: [S1 결과](../research/ko-locale/README.md). 해석 실패 0, 추출 단위 테스트 2/2 |
 | S2 | 용어집과 검수 기준 확정 | S1 | 완료: [S2 판정](../research/ko-locale/README.md#s2-샘플-판정-검수-기준-재확인). 20문구 중 첫 통과 9, 재작성 통과 6, 미해결 5, 미판정 0. 기준 유지 |
 | S3 | Studio 사전 등록 코드와 빠진 키 검사 | S1 | 완료: [dsh-ko-locale.ts](../../src/dsh-ko-locale.ts), 사전 묶음 [dsh-ko/index.ts](../../src/dsh-ko/index.ts), 검사 `node --import tsx studio/scripts/check-dsh-ko-locale.mjs`. 단위 테스트 5/5 |
-| S4 | 번역 스킬 작성·설치 | S2, S3 | 완료: [SKILL.md](../../scripts/agents/studio-dsh-ko-translate/SKILL.md). 다른 세션에서 `sidebarCodePreview`(3키) 번역 완료, 첫 판정 3/3 통과, 검사 3종 통과([판정 기록](../research/ko-locale/judge/sidebarCodePreview.json)) |
+| S4 | 번역 스킬 작성·설치 | S2, S3 | 완료: 스킬 `studio-dsh-ko-translate`(2026-10-18 삭제). 다른 세션에서 `sidebarCodePreview`(3키) 번역 완료, 첫 판정 3/3 통과, 검사 3종 통과([판정 기록](../research/ko-locale/judge/sidebarCodePreview.json)) |
 | S5 | 네임스페이스별 번역(반복, 별도 세션) | S4 | 완료: 62개 네임스페이스 2,779키. 한국어 2,721(판정 통과 2,449, 승인 161, 판정 없이 둔 토큰·형식 111), 영어 유지 58. 빠진 키 검사 rc.2·alpha.2 통과. 목록 [unresolved.md](../research/ko-locale/judge/unresolved.md) |
 | S6 | 독립 설치 검증 | S5 | 수정하지 않은 rc.2 + 패키징 Studio, 한국어 선택 시 화면 확인 |
 
@@ -68,8 +68,7 @@ DSH 화면 문구 전체를 한국어로 제공한다. Studio는 이미 `ctx.loc
 
 ## S4 메모
 
-- 스킬 원본은 `studio/scripts/agents/studio-dsh-ko-translate/SKILL.md`다. 번역 개발용 스킬이라 Studio 패키지(`build.mjs`가 배포하는 스킬)에는 넣지 않는다.
-- 설치: `cp -R studio/scripts/agents/studio-dsh-ko-translate ~/.dsh/skills/`. 사용자 프로필을 바꾸므로 사용자가 직접 하거나 승인한다.
+- 스킬 `studio-dsh-ko-translate`는 2026-10-18 삭제했다. S5 이후 번역은 [dsh-ko-sequential.md](../../scripts/agents/tasks/dsh-ko-sequential.md)(서브에이전트 번역 + `dsh-ko-judge.mjs` 일괄 판정) 또는 `pixie_loop`으로 한다.
 - 시범 번역 후보: 키가 적은 `settings.locale`(1), `sidebarCodePreview`(3), `claude-code-mods`(4, alpha.2에만 있음).
 - 스킬 명령(`node --import tsx …`)은 `studio/`에서 실행해야 한다. 저장소 루트에서는 `tsx`를 찾지 못한다.
 - 임시 사전으로 확인함: `check-dsh-ko-locale.mjs`가 빠진 키(`claude-code-mods.pressing`)를 잡고, 한 버전에만 있는 네임스페이스는 허용하며, 사전 파일 형식은 client 타입 검사를 통과한다.
@@ -88,7 +87,7 @@ DSH 화면 문구 전체를 한국어로 제공한다. Studio는 이미 `ctx.loc
 
 ## S5 진행 방법
 
-- 진행 지침: [dsh-ko-sequential.md](../../scripts/agents/dsh-ko-sequential.md). 조율자 세션이 남은 네임스페이스를 묶음(약 250키)으로 나눠 서브에이전트에 번역을 맡긴다. 판정은 [dsh-ko-judge.mjs](../../scripts/dsh-ko-judge.mjs)가 Jev로 일괄 처리하고, 조율자가 등록·검사·커밋한다.
+- 진행 지침: [dsh-ko-sequential.md](../../scripts/agents/tasks/dsh-ko-sequential.md). 조율자 세션이 남은 네임스페이스를 묶음(약 250키)으로 나눠 서브에이전트에 번역을 맡긴다. 판정은 [dsh-ko-judge.mjs](../../scripts/dsh-ko-judge.mjs)가 Jev로 일괄 처리하고, 조율자가 등록·검사·커밋한다.
 - 판정 스크립트: `judge` 도구와 같은 `JevJudgeEngine`, 같은 세 질문과 기준을 쓴다. 판정을 마친 문구는 다시 보내지 않는다. 첫 번역과 다시 쓰기 3회까지 통과하지 못한 키는 `fallback`으로 옮긴다. 버전 사이에 영어가 다른 키는 두 영어 모두로 판정하고 낮은 점수를 쓴다. Jev 키는 `TYPESAFE_API_KEY` 환경 변수, 없으면 `~/.dsh/.credentials.yaml`을 읽기만 한다.
 - 이전 방식(에이전트가 `judge`를 직접 호출)은 판정 요청·응답이 대화에 쌓여 한 세션 400키에서 멈췄다. 2026-10-17에 40개 네임스페이스(583키)를 이 방식으로 마쳤다.
 - 시험: `sidebarRight`(34키)를 새 방식으로 처리했다. 판정 4회차, Jev 요청 5번. 결과 통과 24, 재작성 통과 6, fallback 4. 회차마다 바뀐 키만 다시 판정했다.
@@ -106,8 +105,4 @@ DSH 화면 문구 전체를 한국어로 제공한다. Studio는 이미 `ctx.loc
 
 - 사용자 결정(2026-10-17): `studio-dsh-ko-translate`와 `studio-ko-review`는 Studio 개발용 스킬이다. 배포 패키지에 넣지 않고 개발 기기에만 설치한다. 원본은 `studio/scripts/agents/<skill>/SKILL.md`다.
 - 배포에 들어가는 스킬은 `build.mjs`가 `packages/shell/skills/`로 복사하는 것뿐이다(현재 `studio-pixie-hook-guide`). 두 스킬은 `build.mjs`·`pack.mjs`·`packages/shell/package.json` 어디에도 없어 패키지에 들어가지 않는다.
-- 설치(2026-10-17, 이 기기): 두 스킬의 `SKILL.md`를 `~/.dsh/skills/<skill>/`에 복사했다. 대체된 `~/.dsh/skills/studio-ko-locale-review`는 지웠다. 원본을 고치면 같은 방법으로 다시 복사한다.
-
-  ```sh
-  for s in studio-dsh-ko-translate studio-ko-review; do mkdir -p ~/.dsh/skills/$s && cp studio/scripts/agents/$s/SKILL.md ~/.dsh/skills/$s/; done
-  ```
+- 2026-10-18: 두 개발용 스킬을 저장소 원본과 `~/.dsh/skills/` 설치본 모두 삭제했다. 한국어 번역·교정은 [dsh-ko-sequential.md](../../scripts/agents/tasks/dsh-ko-sequential.md)와 [마무리·배포 절차](../release-workflow.md#4-한국어-문체-교정)의 `pixie_loop`이 맡는다.

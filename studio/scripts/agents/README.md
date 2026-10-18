@@ -1,12 +1,39 @@
 # 에이전트 E2E 검증 지침
 
-이 디렉터리에는 에이전트가 새 세션에서 받아 실행하는 검증 지침을 둔다. 사용자가 "`<파일>`을 읽고 진행해"라고 지시하면 에이전트는 그 문서만으로 검증을 끝내고 보고한다. 이전 대화는 필요 없다.
+이 디렉터리에는 에이전트가 새 세션에서 받아 실행하는 지침서를 둔다. 아래 [디렉터리와 파일 규칙](#디렉터리와-파일-규칙)을 따른다. 사용자가 "`<파일>`을 읽고 진행해"라고 지시하면 에이전트는 그 문서만으로 검증을 끝내고 보고한다. 이전 대화는 필요 없다.
 
-## 이름과 위치
+## 디렉터리와 파일 규칙
 
-- 이슈 검증: `<이슈 번호>-<주제>-e2e.md` (예: `31-pixie-loop-e2e.md`)
-- 이슈 없는 배포 검증: `release-<버전>-e2e.md`
-- 산출물: `studio/dist/e2e/<이슈 번호 또는 버전>/`(Git 제외). 결론으로 남길 기록은 메인 세션이 `studio/docs/verification/`에 옮긴다.
+이 디렉터리의 문서는 모두 **에이전트가 새 세션에서 받아 실행하는 지침서**다. 사람용 설명·결과 기록은 두지 않는다(결과는 `studio/docs/verification/`, 설계는 `studio/docs/`).
+
+```text
+scripts/agents/
+├── README.md            이 지침(공통 규칙·방법의 유일한 기준)
+├── TEMPLATE-e2e.md      지침서 템플릿
+├── issues/              이슈 완료 검증    <이슈 번호>-<주제>.md
+├── releases/            배포 검증         <버전>.md, <버전>-<보조 이름>.md
+├── checks/              다시 쓰는 점검    <주제>.md
+├── tasks/               검증이 아닌 작업  <주제>.md
+├── tools/               지침서가 부르는 읽기 전용 보조 스크립트
+└── archive/             실행이 끝나 다시 쓰지 않는 지침서 (issues/, releases/ 같은 구조)
+```
+
+| 위치 | 언제 | 이름 | 예 |
+| --- | --- | --- | --- |
+| `issues/` | 한 이슈의 완료를 확인한다. 이슈가 끝나면 `archive/issues/`로 옮긴다 | `<이슈 번호>-<주제>.md` | `33-session-role-spawn.md` |
+| `releases/` | 한 배포 후보를 확인한다([마무리·배포 절차 5단계](../../docs/release-workflow.md#5-배포-e2e)). 배포가 끝나면 `archive/releases/`로 옮긴다 | `<버전>.md`, 이어하기·재실행은 `<버전>-<보조 이름>.md` | `0.6.2.md`, `0.6.1-continue.md` |
+| `checks/` | 이슈·배포와 무관하게 여러 번 다시 돌리는 점검(호환성, 비용 비교, 동작 확인) | `<주제>.md` | `subagent-tool-filter.md` |
+| `tasks/` | 에이전트가 수행하는 작업 절차(번역 진행 등). 제품을 고칠 수 있으므로 범위·커밋 규칙을 문서 안에 적는다 | `<주제>.md` | `dsh-ko-sequential.md` |
+| `tools/` | 지침서에서 실행하는 보조 스크립트. 읽기만 하고 아무것도 쓰지 않는다. 하네스(서버·브라우저·대기)는 [scripts/e2e/](../e2e/)에 둔다 | `<주제>.mjs` | `subagent-report.mjs` |
+| `archive/` | 실행이 끝난 지침서. 결론은 이슈 명세나 `docs/verification/`에 있어야 한다. 고치지 않고, 다시 쓸 때는 새 지침서를 만든다 | 원래 이름 그대로 | `archive/releases/0.6.1.md` |
+
+규칙:
+
+- 이름은 소문자·숫자·`-`만 쓰고, 위치가 종류를 말하므로 `-e2e`, `-check`, `release-` 같은 접미사·접두사를 붙이지 않는다.
+- 새 지침서는 [템플릿](TEMPLATE-e2e.md)을 복사해 쓰고, 아래 [목록](#목록)에 한 줄을 더한다. `archive/`로 옮기면 목록의 위치를 고친다.
+- 지침서가 이슈 명세·다른 지침서를 링크하면 옮길 때 링크를 함께 고친다. 다른 문서가 지침서를 링크할 때는 `scripts/agents/<위치>/<이름>` 경로를 쓴다.
+- 한 번만 쓰는 지침서에 사용자 프로필 경로(`~/.dsh/profiles/...`)나 개인 게이트·스크립트를 전제로 넣지 않는다. 격리 서버([격리 서버](#격리-서버))로 재현할 수 있게 쓴다.
+- 산출물은 `studio/dist/e2e/<이슈 번호 또는 버전>/`(Git 제외)에 둔다. 결론으로 남길 기록은 메인 세션이 `studio/docs/verification/`이나 이슈 명세에 옮긴다.
 
 ## 지침서에 들어갈 것
 
@@ -15,7 +42,7 @@
 3. **단계:** 각 단계의 명령, 기준선(알려진 기대값), 완료 기준, 판정 단계(아래 L0–L2)와 올림 조건. 명세의 판정 질문과 calibration은 실제 데이터로 정한다.
 4. **보고 양식:** `통과 / 실패 / 발견 / 대기 / 미실행 / 환경 차단`과 판정 단계. workspace 테스트, 설치 검증, 실제 모델 실행은 서로 대신하지 않는다.
 
-이미 다른 문서에 있는 절차(배포 절차의 문체 교정, 개발 문서의 matrix 검증)는 옮겨 적지 않고 링크한다.
+이미 다른 문서에 있는 절차(배포 절차의 문체 교정 등)는 옮겨 적지 않고 링크한다. 이 문서는 격리 설치 검증(서버, RPC, 브라우저, matrix, 업그레이드, 배포 후 확인)의 유일한 기준이다.
 
 ## 기본 흐름
 
@@ -145,19 +172,77 @@ await run({ name: 'pixie-tab', views: ['light', 'dark', 'light@480'] }, async ap
 - 기본 확인은 [smoke.mjs](../e2e/smoke.mjs)다(셸 로드, 플러그인 활성화 실패 없음, Studio 진입·패널 열림, 라이트·다크·480px).
 - 셀렉터 단계는 `app.step(name, selector, { action, goal })`으로 쓴다. 실패하면 하네스가 실패 시점 DOM과 접근성 스냅샷을 남기고 요약에 `repair.items`를 낸다. 그 항목은 [L1 셀렉터 복구](../e2e/selector-repair.md) 명세로 `pixie_loop`에 넘기고, `apply-repairs.mjs`로 적용해 L0을 다시 실행한다. 검증자가 스냅샷·스크린샷을 직접 읽어 셀렉터를 고치지 않는다.
 
+## Web RPC 검사 (L0)
+
+[통합 검사](../check-web-runtime.mjs)는 다음 네 스크립트를 순차 실행하고 첫 실패에서 멈춘다. **프로필을 수정한다**(Master 확장 임시 변경, 테스트 프리셋·세션 생성). 프리셋은 정상 종료 시 정리하지만 세션은 남을 수 있다. `server.mjs up`으로 띄운 격리 서버에만 실행하고 사용자의 현재 GUI나 Desktop을 대상으로 삼지 않는다. 환경 변수는 확인 표시일 뿐 격리를 증명하지 않는다.
+
+```sh
+STUDIO_TEST_ISOLATED=1 STUDIO_TEST_PORT=<port> node studio/scripts/check-web-runtime.mjs '<인증 URL>'
+```
+
+| 스크립트 | 검사 |
+| --- | --- |
+| [Master](../check-master-runtime.mjs) | 읽기 전용 보호·파생 프리뷰·설정 override·확장 추가/원복 |
+| [Optimized](../check-optimized-runtime.mjs) | 순서·삭제 보호·복사 적용·기본 catalog |
+| [세션 역할](../check-session-roles-runtime.mjs) | 실제 세션 생성·역할 편집/추가·프리셋 불변·세션 격리 |
+| [역할](../check-role-runtime.mjs) | 저장·재적용·해제·복원·모델 catalog |
+
+이 검사는 브라우저, 모델 호출, Fresh/Fork 자식 실행을 검사하지 않는다. runtime별 tool 수 차이와 peer/native dependency 경고도 기록한다. 기동 성공으로 subprocess·PTY 정상 동작을 추정하지 않는다.
+
+## 브라우저 기능 확인
+
+배포 검증이나 기능 전반을 확인할 때 다음을 L0 시나리오 또는 사람 확인으로 다룬다. 이슈 검증은 그 이슈에서 바뀐 흐름만 고른다.
+
+1. Studio 패널과 프리셋 목록이 표시되고 Client 모듈/Slot 오류가 없다.
+2. Master가 읽기 전용이고, Optimized를 복사할 수 있다.
+3. 복사본의 도구·프롬프트·설정을 바꾸면 프리뷰에 반영된다.
+4. 저장·적용 후 새 세션에서 해당 프리셋을 고를 수 있다.
+5. 세션 역할을 바꿔도 원본 프리셋과 다른 세션이 그대로다.
+6. 적용 해제·재적용 및 서버 재시작 후 저장 내용이 유지된다.
+7. 라이트·다크, 좁은 창, 키보드 포커스와 Host/브라우저 콘솔 오류.
+8. 실제 역할 실행이 범위에 포함되면 Fresh/Fork 각각 persona, 금지 도구 노출·실행 제한, 부모 대화 상속, 재시작 후 재개를 따로 확인한다(`runAgent()`, `--mock-llm`). 설정 저장 성공으로 대신하지 않는다.
+
+## 지원 버전별 검증 (matrix)
+
+지원 범위의 기준은 [배포 manifest](../../packages/shell/package.json)의 peerDependencies이며, 개발 스크립트의 허용 목록과 일치해야 한다. [구버전 Web 기록](../../docs/verification/older-dsh-web.md), [rc.1 기록](../../docs/verification/dsh-0.2.1-rc.1.md)은 과거 증거이며 새 소스의 성공을 대신하지 않는다.
+
+1. Studio를 한 번 패키징하고 SHA256을 기록한다. 런타임별로 다시 빌드하지 않는다.
+2. 각 정확한 DSH 버전의 배포 CLI를 확보하고 `--version`을 확인한다. npm으로 받을 때는 `npm install --prefix studio/dist/matrix/<버전>/runtime --no-audit --no-fund @deepseek-ai/dsh@<정확한 버전>`처럼 격리한다. 의존성 install script 승인을 자동 우회하지 않는다.
+3. 버전마다 다른 프로필로 같은 tarball을 설치해 띄운다.
+
+   ```sh
+   STUDIO_DSH_BIN=<버전별 dsh 절대 경로> node studio/scripts/e2e/server.mjs up --profile m-<버전 이름> --archive <같은 tgz 절대 경로>
+   ```
+
+4. 버전마다 smoke·RPC 검사와 범위에 든 기능 시나리오를 실행하고 `down`한 뒤 다음 버전으로 간다.
+5. 버전·패키지 해시·설치 경고·통과·실패·미검증을 표로 기록한다. 하나라도 실패하면 지원 범위를 넓히거나 성공으로 발표하지 않는다.
+
+## 업그레이드 검사
+
+신규 설치와 `0.5 → 0.6` 같은 업데이트는 별개다. 격리 프로필에 이전 Studio를 설치(`up --archive <이전 tgz>`; 공개 버전은 `npm pack @matamt-dbg/dsh-studio@<이전 버전> --pack-destination studio/dist/e2e/packs`로 받는다)하고 대표 프리셋·설정·세션을 만든 뒤, 같은 프로필에 후보 tarball을 설치(`up --reuse-profile --archive <후보 tgz>`)해 데이터·적용 상태·재시작·재개를 확인한다. 사용자 데이터를 복사하지 않는다.
+
+## 배포 후 확인
+
+npm에 올린 버전을 새 격리 프로필에 설치해 확인한다. 레지스트리 반영 확인(`npm view`, `dist.shasum`)은 [배포 가이드](../../docs/release.md#5-공개-후-확인)가 맡는다.
+
+```sh
+npm pack @matamt-dbg/dsh-studio@<버전> --pack-destination studio/dist/e2e/packs
+node studio/scripts/e2e/server.mjs up --profile published --archive studio/dist/e2e/packs/matamt-dbg-dsh-studio-<버전>.tgz
+node studio/scripts/e2e/smoke.mjs --profile published
+```
+
+`server.mjs`는 로컬 Studio 패키지를 항상 설치하므로 `--plugin`으로 Studio를 넘기지 않는다. 레지스트리의 tarball을 `--archive`로 준다.
+
+smoke 통과와 함께 프리셋 목록과 Optimized 도구 수(22)를 확인하고 `down`한다.
+
 ## 목록
 
-| 문서 | 대상 |
-| --- | --- |
-| [release-0.6.1-e2e.md](release-0.6.1-e2e.md) | Studio 0.6.1 (DSH 0.2.1-rc.1·rc.2 호환) 배포 검증 |
-| [release-0.6.1-e2e-continue.md](release-0.6.1-e2e-continue.md) | 0.6.1 배포 검증 E1 완료 지점부터 E2–E5 이어하기 |
-| [release-0.6.1-e3-e4-rerun.md](release-0.6.1-e3-e4-rerun.md) | 0.6.1 반영 커밋 기준 E3·E4 재실행 |
-| [dsh-rc1-compat-check.md](dsh-rc1-compat-check.md) | rc.1 역할 persona·Tool Filter·자식 정책 복원 |
-| [jev-decision-engine-check.md](jev-decision-engine-check.md) | #27 Jev 결정 엔진 실사용 |
-| [subagent-tool-filter-check.md](subagent-tool-filter-check.md) | 서브에이전트 Tool Filter |
-| [web-search-cost-e2e.md](web-search-cost-e2e.md) | 웹 검색 provider(기존 Messages 검색 / Search·Fetch API) 비용·품질 비교 |
-| [dsh-ko-sequential.md](dsh-ko-sequential.md) | #30 한국어 번역 진행(검증이 아닌 작업 지침) |
-
-이 규칙 전에 만든 문서는 이름이 다르다. 새로 고칠 때 이름을 바꾸지 않아도 된다.
-
-새 지침서는 [템플릿](TEMPLATE-e2e.md)을 복사해 쓴다. 공통 절차(서버, L0 하네스, 셀렉터 복구, 기다리기)는 링크로 두고 이슈에서 확인할 것만 적는다.
+| 위치 | 문서 | 대상 |
+| --- | --- | --- |
+| checks | [dsh-role-compat.md](checks/dsh-role-compat.md) | DSH 업데이트 뒤 역할 persona·Tool Filter·자식 정책 복원 호환(rc.1 기준으로 작성) |
+| checks | [subagent-tool-filter.md](checks/subagent-tool-filter.md) | 서브에이전트 Tool Filter 동작 |
+| checks | [web-search-cost.md](checks/web-search-cost.md) | 웹 검색 provider(기존 Messages 검색 / Search·Fetch API) 비용·품질 비교 |
+| tasks | [dsh-ko-sequential.md](tasks/dsh-ko-sequential.md) | DSH 한국어 사전 번역 진행(서브에이전트 번역 + 일괄 판정) |
+| tools | [subagent-report.mjs](tools/subagent-report.mjs) | 세션과 그 자식이 실제로 받은 프리셋·도구·지침 보고 |
+| archive | [releases/0.6.1.md](archive/releases/0.6.1.md), [0.6.1-continue.md](archive/releases/0.6.1-continue.md), [0.6.1-e3-e4-rerun.md](archive/releases/0.6.1-e3-e4-rerun.md) | Studio 0.6.1 배포 검증(새 배포 지침서의 예시로 참고) |
+| archive | [issues/27-jev-decision-engine.md](archive/issues/27-jev-decision-engine.md) | #27 Jev 결정 엔진 실사용(사용자 Desktop 프로필 전제, 재실행 불가) |

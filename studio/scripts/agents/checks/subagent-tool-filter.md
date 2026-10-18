@@ -1,6 +1,6 @@
 # 서브에이전트 Tool Filter 동작 확인 절차
 
-> 공개용 스킬은 [release/docs/appendix/preset-check](../../release/docs/appendix/preset-check/SKILL.md)에 있다. 이 문서는 fork 내부 확인용이다.
+> 공개용 스킬은 [release/docs/appendix/preset-check](../../../release/docs/appendix/preset-check/SKILL.md)에 있다. 이 문서는 fork 내부 확인용이다.
 
 이 문서를 받은 에이전트는 아래 절차대로 Studio 서브에이전트 동작을 직접 확인하고 [보고 양식](#보고-양식)으로 결과를 보고한다. 사용자가 이 문서를 세션에 참조로 걸고, Studio 프리셋을 지정해 세션을 시작한 상태를 전제로 한다.
 
@@ -70,7 +70,7 @@ Do not modify anything.
 서브에이전트의 자기 보고는 틀릴 수 있다. 실제로 모델에 전달된 도구와 DSH가 기록한 Tool Filter를 세션 기록에서 확인한다. 저장소 루트에서 실행한다. 프로필이 `desktop`이 아니면 `--profile <이름>`을 붙인다.
 
 ```sh
-node studio/scripts/agents/subagent-report.mjs <현재 세션 ID>
+node studio/scripts/agents/tools/subagent-report.mjs <현재 세션 ID>
 ```
 
 - 세션 ID는 `session-` 접두어를 붙여도, 빼도 된다.

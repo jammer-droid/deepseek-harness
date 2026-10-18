@@ -2,7 +2,7 @@
 /**
  * Read-only report of what one DSH session and the subagents it started actually received.
  *
- *   node studio/scripts/agents/subagent-report.mjs <parent-session-id> [--home ~/.dsh] [--profile desktop] [--json]
+ *   node studio/scripts/agents/tools/subagent-report.mjs <parent-session-id> [--home ~/.dsh] [--profile desktop] [--json]
  *
  * Reads the persisted session logs (session.v4.jsonl.zstd) under <home>/sessions. For the parent and
  * every child whose `parentSession` is the parent, it prints the preset, spawn provider, the

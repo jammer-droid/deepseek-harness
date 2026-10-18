@@ -30,13 +30,13 @@ npm --prefix studio run pack:bundle
 
 `test`는 Studio 타입 검사·빌드 후 테스트를 실행한다. `watch`는 Studio 번들만 재생성한다. 루트 빌드나 현재 앱 설치는 실행하지 않는다.
 
-개발 환경은 [개발 안내](development.ko.md), 공개 레포 동기화·npm 공개·업데이트 절차는 [배포 가이드](docs/release.md)를 참조한다. 패키징 성공은 수정하지 않은 DSH에서의 독립 설치 검증을 대신하지 않는다.
+개발 환경은 [개발 안내](development.ko.md), 이슈 단위 명세·구현·검증은 [이슈 작업 절차](docs/design-workflow.md), 병합부터 배포·이슈 정리까지의 순서는 [마무리·배포 절차](docs/release-workflow.md), 버전·공개 레포 동기화·npm 공개 명령은 [배포 가이드](docs/release.md)를 참조한다. 패키징 성공은 수정하지 않은 DSH에서의 독립 설치 검증을 대신하지 않는다.
 
 ## 에이전트 E2E 검증
 
 이슈 완료·배포 전 E2E는 에이전트가 격리 환경에서 실행하고, 사람은 결과와 실제 Desktop·Web 화면만 확인한다. 절차와 규칙의 기준은 [에이전트 E2E 검증 지침](scripts/agents/README.md)이다.
 
-1. 메인 세션이 [지침서 템플릿](scripts/agents/TEMPLATE-e2e.md)을 복사해 `scripts/agents/<이슈>-<주제>-e2e.md`를 쓴다.
+1. 메인 세션이 [지침서 템플릿](scripts/agents/TEMPLATE-e2e.md)을 복사해 `scripts/agents/issues/<이슈 번호>-<주제>.md`(배포는 `releases/<버전>.md`)를 쓴다. 위치·이름 규칙은 [디렉터리와 파일 규칙](scripts/agents/README.md#디렉터리와-파일-규칙)을 따른다.
 2. 사용자가 새 세션에 "`<지침서>`를 읽고 진행해"라고 지시한다. 검증자는 제품을 고치지 않고 기록만 남긴다.
 3. 판정은 싼 단계부터 한다: **L0** 스크립트 → **L1** `judge`·`pixie_loop` → **L2** 검증자. 결과마다 판정 단계를 적는다.
 

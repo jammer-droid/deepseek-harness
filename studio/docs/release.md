@@ -121,18 +121,7 @@ npm view @matamt-dbg/dsh-studio version dist.shasum
 ```
 
 - `dist.shasum`이 sync 결과 폴더의 tarball(`shasum dist/*.tgz`)과 같은지 본다.
-- 깨끗한 환경에서 설치를 확인한다. 기존 프로필은 쓰지 않는다.
-
-```sh
-mkdir -p /tmp/dsh-check && cd /tmp/dsh-check
-npm init -y >/dev/null && npm install @deepseek-ai/dsh@0.2.0-rc.2
-export DSH_HOME=/tmp/dsh-check/home
-./node_modules/.bin/dsh --profile web --dump-config >/dev/null
-./node_modules/.bin/dsh plugin --profile web add @matamt-dbg/dsh-studio
-./node_modules/.bin/dsh --profile web --host 127.0.0.1 --port 54313 --no-open
-```
-
-출력된 주소를 열어 DSH Studio 화면, 프리셋 목록, Optimized 도구 수(22), 콘솔 오류 여부를 확인한다. 끝나면 서버를 끄고 `/tmp/dsh-check`를 지운다.
+- 깨끗한 환경에서의 설치 확인은 [E2E 지침의 배포 후 확인](../scripts/agents/README.md#배포-후-확인)을 따른다. 기존 프로필은 쓰지 않는다.
 
 ### 6. 기록
 

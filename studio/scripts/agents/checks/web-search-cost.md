@@ -1,6 +1,6 @@
 # 웹 검색 provider 비용 비교 E2E
 
-이 문서를 받은 에이전트(**검증자**)는 아래 단계를 실행하고 보고 양식으로 결과를 낸다. 제품을 고치지 않는다. 판정 단계·올림 규칙·기다리기는 [에이전트 E2E 검증 지침](README.md#판정-단계)을 따른다.
+이 문서를 받은 에이전트(**검증자**)는 아래 단계를 실행하고 보고 양식으로 결과를 낸다. 제품을 고치지 않는다. 판정 단계·올림 규칙·기다리기는 [에이전트 E2E 검증 지침](../README.md#판정-단계)을 따른다.
 
 비교 대상은 DSH 웹 검색 provider 둘이다.
 
@@ -9,7 +9,7 @@
 | 기존 (`legacy`) | `deepseek-official`(`dsh-web-search-deepseek`) + 로컬 HTTP fetch | 검색마다 보조 Messages 요청(`deepseek-v4-flash`, 서버 측 `web_search` 최대 5회, thinking 끔) |
 | 신규 (`api`) | `deepseek-search-api`·`deepseek-fetch-api`(`dsh-web-deepseek-api`) | Search API·Fetch API 직접 요청, 성공 1,000건당 $0.75 |
 
-요금 기준은 [DeepSeek 요금표](https://api-docs.deepseek.com/quick_start/pricing)와 [Search & Fetch 과금 규칙](https://api-docs.deepseek.com/guides/search#billing)이다. 서버 측 검색은 2026-11-01 00:00(베이징)부터 건당 과금된다. 값이 바뀌면 [web-cost-lib.mjs](../e2e/web-cost-lib.mjs)의 `PRICES`를 바꾸지 말고 보고에 차이를 적는다.
+요금 기준은 [DeepSeek 요금표](https://api-docs.deepseek.com/quick_start/pricing)와 [Search & Fetch 과금 규칙](https://api-docs.deepseek.com/guides/search#billing)이다. 서버 측 검색은 2026-11-01 00:00(베이징)부터 건당 과금된다. 값이 바뀌면 [web-cost-lib.mjs](../../e2e/web-cost-lib.mjs)의 `PRICES`를 바꾸지 말고 보고에 차이를 적는다.
 
 ## 범위
 
@@ -32,7 +32,7 @@
 
 ## 1. provider 직접 측정 (L0)
 
-두 provider가 보내는 요청과 같은 본문으로 검색어 20개([`QUERIES`](../e2e/web-cost-lib.mjs))와 URL 5개를 호출한다. 서버 한 대만 있으면 된다(키 복사용).
+두 provider가 보내는 요청과 같은 본문으로 검색어 20개([`QUERIES`](../../e2e/web-cost-lib.mjs))와 URL 5개를 호출한다. 서버 한 대만 있으면 된다(키 복사용).
 
 ```sh
 STUDIO_E2E_PROFILE=web-legacy node studio/scripts/e2e/server.mjs up --with-secrets keys
@@ -45,7 +45,7 @@ node studio/scripts/e2e/web-cost-probe.mjs
 
 ## 2. 실세션 측정 (L0)
 
-같은 과제 5개([`SESSION_TASKS`](../e2e/web-cost-lib.mjs))를 각 환경에서 실모델 세션으로 실행한다. 임시 Studio 프리셋은 `web_search`·`web_fetch`만 가진다.
+같은 과제 5개([`SESSION_TASKS`](../../e2e/web-cost-lib.mjs))를 각 환경에서 실모델 세션으로 실행한다. 임시 Studio 프리셋은 `web_search`·`web_fetch`만 가진다.
 
 ```sh
 # 기존: 1단계 서버(web-legacy)를 그대로 쓴다

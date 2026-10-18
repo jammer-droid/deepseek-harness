@@ -11,13 +11,13 @@ disable-model-invocation: true
 ## 1. 대상과 범위 확정
 
 1. `pwd`, Git 루트·브랜치·상태를 확인한다. 기존 변경을 보존하고 사용자 요청 없이 다른 worktree의 변경을 병합하지 않는다.
-2. 해당 checkout의 `AGENTS.md`, `studio/AGENTS.md`, `studio/development.ko.md`를 읽는다. 경로는 이 스킬 파일 위치가 아니라 선택한 저장소 루트를 기준으로 한다.
+2. 해당 checkout의 `AGENTS.md`, `studio/AGENTS.md`, `studio/development.ko.md`를 읽는다. web·matrix 모드는 `studio/scripts/agents/README.md`(에이전트 E2E 검증 지침)도 읽는다. 경로는 이 스킬 파일 위치가 아니라 선택한 저장소 루트를 기준으로 한다.
 3. 사용자 인자로 검증 모드를 선택한다. 지정하지 않으면 **build**다. 계획과 미검증으로 남을 범위를 먼저 알린다.
 
 | 모드 | 수행 범위 |
 | --- | --- |
 | build | Studio 타입 검사·빌드·단위 테스트. 설치·서버 없음 |
-| web | build 후 격리 Web 설치·RPC·가능한 브라우저 확인 |
+| web | build 후 E2E 격리 서버에 설치·smoke·RPC·브라우저 확인 |
 | matrix | 한 패키지를 정확한 지원 DSH 버전별 순정 런타임에 설치·검증 |
 | desktop | 승인된 실제 Desktop 프로필에 Studio 설치 후 앱 검증 |
 
@@ -27,14 +27,13 @@ disable-model-invocation: true
 
 - 의존성과 공개 타입 준비물이 없으면 정확한 누락 항목을 보고한다. 루트 install·lockfile 변경·코어 전체 빌드로 우회하지 않는다.
 - build: `npm --prefix studio test`를 실행한다. 이는 타입 검사·빌드를 포함한다. 실패하면 설치 단계로 넘어가지 않는다.
-- web: 개발 문서 3절의 `dev`를 관리형 background job으로 실행한다. 같은 소스에 방금 전체 테스트가 통과했다면 `--skip-test`로 중복 단위 테스트만 생략할 수 있으며 기록한다. 출력된 격리 URL과 실제 home/profile/포트를 대조한다.
-- RPC: 검증한 격리 서버에만 `STUDIO_TEST_ISOLATED=1 STUDIO_TEST_PORT=<port> node studio/scripts/check-web-runtime.mjs '<인증 URL>'`을 실행한다. 이 검사는 데이터 변경을 일으킨다. 환경 변수만으로 격리가 보장되지 않으므로 사용자의 현재 GUI를 대상으로 삼지 않는다. 토큰을 결과 문서에 남기지 않는다.
-- matrix: 개발 문서 4절을 따른다. manifest의 지원 버전 목록을 읽고 동일 tarball·해시로 순정 버전별 새 home/profile을 검사한다. 개발 workspace 타입 검사로 독립 설치를 대신하지 않는다.
+- web: E2E 지침의 [격리 서버](../../../studio/scripts/agents/README.md#격리-서버)대로 `node studio/scripts/e2e/server.mjs up`을 실행한다(build 직후면 `--skip-build`). 결과 JSON의 home/profile/포트/패키지 해시를 기록한다. 이어서 `smoke.mjs`, [Web RPC 검사](../../../studio/scripts/agents/README.md#web-rpc-검사-l0), 요청 범위의 [브라우저 기능 확인](../../../studio/scripts/agents/README.md#브라우저-기능-확인)을 실행하고 `server.mjs down`으로 끝낸다. RPC 검사는 데이터를 바꾸므로 이 격리 서버에만 실행하고 사용자의 현재 GUI를 대상으로 삼지 않는다. 토큰을 결과 문서에 남기지 않는다. `npm --prefix studio run dev`의 재사용 프로필은 개발 루프용이며 이 검증을 대신하지 않는다.
+- matrix: E2E 지침의 [지원 버전별 검증](../../../studio/scripts/agents/README.md#지원-버전별-검증-matrix)을 따른다. manifest의 지원 버전 목록을 읽고 같은 tarball·해시를 버전별 `STUDIO_DSH_BIN`과 별도 프로필로 검사한다. 개발 workspace 타입 검사로 독립 설치를 대신하지 않는다.
 - desktop: 개발 문서 5절의 앱 종료·백업·설치 승인 절차를 완료한 뒤 `dev:desktop`을 사용한다. `--force` 자동 사용 금지. 복구는 정확한 이전 호환 버전이며 `@latest`로 대체하지 않는다.
 
 ## 3. 관찰과 종료
 
-브라우저 검사는 개발 문서의 기능 체크리스트를 따른다. 도구가 없으면 UI를 미검증으로 남긴다. RPC 통과를 화면 정상, 역할 저장을 실제 persona/Tool Filter 적용, 신규 설치를 기존 데이터 업그레이드 성공으로 표현하지 않는다. 모델 호출·실제 Fresh/Fork 실행은 사용자가 승인한 환경에서 별도 검증한다.
+브라우저 검사는 E2E 지침의 `browser.mjs` 하네스와 기능 확인 목록을 따른다. 도구가 없으면 UI를 미검증으로 남긴다. RPC 통과를 화면 정상, 역할 저장을 실제 persona/Tool Filter 적용, 신규 설치를 기존 데이터 업그레이드 성공으로 표현하지 않는다. 모델 호출·실제 Fresh/Fork 실행은 사용자가 승인한 환경에서 별도 검증한다.
 
 시작한 job ID를 모두 기록하고 필요한 결과를 회수한다. 사용자가 계속 열어두라고 요청하지 않았다면 자신이 시작한 서버를 종료하고 종료 결과를 확인한다. 포트를 비우려고 다른 프로세스를 죽이지 않는다.
 

@@ -2,7 +2,7 @@
 
 이 문서를 받은 에이전트는 Studio의 **Fresh/Fork persona·Tool Filter·자식 정책 복원**과 **개발용 tsx 경고 제거**를 확인하고 마지막 보고 양식으로 결과를 낸다. 문서 작성 요청만 받았다면 테스트를 실행하지 않는다. 테스트 실행을 요청받았을 때 아래 절차를 수행한다.
 
-모든 명령의 기준 디렉터리는 저장소 루트다. 대상 런타임은 수정하지 않은 DSH `0.2.1-rc.1`이다. 구현과 이전 검증 근거는 [검증 기록](../../docs/verification/dsh-0.2.1-rc.1.md)을 참조한다.
+모든 명령의 기준 디렉터리는 저장소 루트다. 대상 런타임은 수정하지 않은 DSH `0.2.1-rc.1`이다. 구현과 이전 검증 근거는 [검증 기록](../../../docs/verification/dsh-0.2.1-rc.1.md)을 참조한다.
 
 ## 0. 실행 범위와 대상 확정
 
@@ -46,8 +46,8 @@ node --trace-deprecation --import tsx -e 'console.log("tsx loader ready")'
 A에서는 `subagent_role`의 `action: list`로 현재 역할을 조회한다. 이 응답은 persona를 숨기므로, persona 기대값은 Subagents 화면 또는 정확한 프로필의 저장 데이터에서 별도로 확인한다.
 
 - 프리셋은 **현재 적용된 구성**을 기준으로 한다. `presets.json`의 미반영 편집값을 실행값으로 취급하지 않는다.
-- 세션별 역할 복사본이 있으면 그 값이 우선이다. `<profile>/studio-data/session-roles/<rootSessionId>.json`과 [역할 병합 규칙](../../src/session-roles.ts)을 따른다.
-- 금지 목록은 [역할 필터 규칙](../../src/role-settings.ts)에 따라 계산한다. `default`는 프리셋 기본값, `extend`는 기본값과 역할 목록의 합집합, `replace`는 역할 목록만 사용한다.
+- 세션별 역할 복사본이 있으면 그 값이 우선이다. `<profile>/studio-data/session-roles/<rootSessionId>.json`과 [역할 병합 규칙](../../../src/session-roles.ts)을 따른다.
+- 금지 목록은 [역할 필터 규칙](../../../src/role-settings.ts)에 따라 계산한다. `default`는 프리셋 기본값, `extend`는 기본값과 역할 목록의 합집합, `replace`는 역할 목록만 사용한다.
 - 호출 전에 역할 ID·시작 방식·persona 표식·최종 금지 목록을 기록한다. 자식 생성 후 파일을 보고 기대값을 역으로 만들어 맞추지 않는다.
 
 전체 검증을 위한 예시는 다음과 같다. **`read`는 예시일 뿐 제품에서 특별히 금지하거나 제외할 도구가 아니다.** 현재 설정이 다르면 실제 값으로 표를 작성한다.
@@ -86,10 +86,10 @@ A에서는 `subagent_role`의 `action: list`로 현재 역할을 조회한다. �
 
 5. 가능하면 실제 자식 모델 요청의 도구 schema와 system message도 읽어 비교한다. 설정 파일은 **저장 증거**, 요청 기록은 **적용 증거**다. 자식의 자기 보고는 보조 자료이며 둘을 대신하지 않는다.
 
-   기존 [subagent-report.mjs](subagent-report.mjs)는 세션 위치·설치 메타데이터 확인에 참고할 수 있다.
+   기존 [subagent-report.mjs](../tools/subagent-report.mjs)는 세션 위치·설치 메타데이터 확인에 참고할 수 있다.
 
    ```sh
-   node studio/scripts/agents/subagent-report.mjs <부모 세션 ID> --home <정확한 DSH home> --profile <프로필> --json
+   node studio/scripts/agents/tools/subagent-report.mjs <부모 세션 ID> --home <정확한 DSH home> --profile <프로필> --json
    ```
 
    **rc.1에서 이 스크립트만으로 합격을 판정하지 않는다.** 이 스크립트는 Studio `child-policies`를 읽지 않으며, DSH descriptor의 persona/toolFilter가 비어 있어도 새 구현에서는 정상이다. 또한 Fork의 첫 `request/header`·`system/message`를 단순히 읽으면 부모에게서 상속한 기록일 수 있다. 공개 SessionQuery의 `inheritedEventCount` 등으로 상속 구간을 제외한 **자식 자신의 요청**을 특정한다. 정확한 경계나 요청 형식을 확인하지 못하면 요청 기반 판정은 `확인 불가`로 남긴다. 원문 로그·프롬프트·인증 토큰을 통째로 보고서에 붙이지 않는다.
@@ -100,7 +100,7 @@ A에서는 `subagent_role`의 `action: list`로 현재 역할을 조회한다. �
 
 ## 4. 복원·실패 주입: B 또는 별도 승인된 테스트 환경
 
-전체 재현은 [runtime probe fixture](../../test/fixtures/role-policy-runtime-probe.mjs)와 [검증 기록의 실행 절차](../../docs/verification/dsh-0.2.1-rc.1.md)를 따른다. fixture는 standalone CLI가 아니다. 파일을 `node`로 실행한 것만으로 검사했다고 적지 않는다.
+전체 재현은 [runtime probe fixture](../../../test/fixtures/role-policy-runtime-probe.mjs)와 [검증 기록의 실행 절차](../../../docs/verification/dsh-0.2.1-rc.1.md)를 따른다. fixture는 standalone CLI가 아니다. 파일을 `node`로 실행한 것만으로 검사했다고 적지 않는다.
 
 1. `studio/dist/` 아래 새 검증 디렉터리를 만들고, 모든 `dsh` 명령에 그 아래의 **절대 `DSH_HOME`**을 명시한다. fixture가 사용하는 프로필은 `rc1-compat-fixed`다. 포트는 사용 중인지 확인하고 빈 포트를 쓴다.
 2. Studio를 빌드·패키징한다. 미수정 rc.1에 설치할 **임시 staging 패키지에만** fixture를 복사하고, Host 진단 wrapper가 `runRolePolicyProbe(ctx, catalog)`를 호출하도록 연결한다. 필요한 공개 서비스는 `agents`, `subagents`, `llm`이다. 제품 소스·DSH 코어·사용자 프로필에 진단 코드를 넣지 않는다.

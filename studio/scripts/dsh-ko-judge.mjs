@@ -7,7 +7,7 @@
  * `fallback` in src/dsh-ko/<ns>.ts. `--ledger <ns ...>` appends unresolved keys to judge/unresolved.md
  * (run it from one process only; parallel judging never writes that file).
  *
- * The questions and thresholds are the `studio-dsh-ko-translate` ones. The engine is Studio's
+ * The questions and thresholds (`THRESHOLDS`) are defined here. The engine is Studio's
  * JevJudgeEngine (the one behind the `judge` tool). The key comes from $TYPESAFE_API_KEY, else from
  * `refs.TYPESAFE_API_KEY` in $DSH_HOME/.credentials.yaml (read only).
  *
