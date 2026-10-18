@@ -3,15 +3,32 @@
  *
  * Every edit is matched against the in-memory result of the previous one; if any edit fails to
  * match (missing or ambiguous), nothing is written. Otherwise the file is written once through
- * `ctx.fs.writeText`, guarded by the same observation policy as the native `edit` tool: the file
+ * the `fs` service's `writeText`, guarded by the same observation policy as the native `edit` tool: the file
  * must have been read in this session and not changed since. Multi-file changes are separate
  * calls (one file per call), so each file commits or fails on its own.
  */
 import type { Context } from '@deepseek-ai/cordis';
 import type {} from '@deepseek-ai/dsh-tools';
-import type {} from '@deepseek-ai/dsh-fs';
-import type {} from '@deepseek-ai/dsh-working-directory';
 import { z } from 'zod';
+
+/**
+ * The public `fs` service members this tool uses, typed locally so the Studio build does not
+ * depend on `@deepseek-ai/dsh-fs` type declarations (DSH 0.2.0-rc.2 publishes no such package).
+ */
+interface FsTarget { readonly displayPath: string }
+interface FsService {
+  resolve(path: string, opts?: { cwd?: string; signal?: AbortSignal }): Promise<FsTarget>;
+  stat(target: FsTarget, signal?: AbortSignal): Promise<{ version: unknown } | undefined>;
+  readText(target: FsTarget, signal?: AbortSignal): Promise<string>;
+  writeText(target: FsTarget, content: string, expected?: { kind: 'replaceIfVersion'; version: unknown }, signal?: AbortSignal, sandboxPolicy?: unknown): Promise<{ version: unknown }>;
+  processPath(target: FsTarget): string;
+}
+interface FsEvents {
+  waterfall(name: 'fs/edit-intent', target: FsTarget, actor: object, next: () => undefined): Promise<{ version: unknown } | undefined>;
+  emit(name: 'fs/observed', target: FsTarget, observation: { kind: 'present'; version: unknown }, actor: object): void;
+}
+/** DSH 0.2.1 provides `workingDirectory`; 0.2.0-rc.2 resolves against the session header cwd. */
+interface WorkingDirectory { ensure(agent: unknown, signal?: AbortSignal): Promise<string> }
 
 export const EDIT_BATCH_TOOL = 'edit_batch';
 export const EDIT_BATCH_MAX = 50;
@@ -81,24 +98,30 @@ export function installEditBatch(ctx: Context): () => void {
     },
     async execute(raw: unknown, exec: any) {
       const args = input.parse(raw);
-      const cwd = exec.agent === undefined ? undefined : await ctx.workingDirectory.ensure(exec.agent, exec.signal);
-      const target = await ctx.fs.resolve(args.file_path, { ...(cwd !== undefined ? { cwd } : {}), signal: exec.signal });
-      const sandboxPolicy = ctx.get('sandboxPolicy')?.resolve({ ...(exec.agent ? { session: exec.agent.session } : {}) });
+      const fs = ctx.get('fs' as never) as unknown as FsService;
+      const workingDirectory = ctx.get('workingDirectory' as never) as unknown as WorkingDirectory | undefined;
+      const cwd: string | undefined = exec.agent === undefined ? undefined
+        : workingDirectory ? await workingDirectory.ensure(exec.agent, exec.signal) : exec.agent.session?.header?.cwd;
+      const target = await fs.resolve(args.file_path, { ...(cwd !== undefined ? { cwd } : {}), signal: exec.signal });
+      const sandboxPolicy = (ctx.get('sandboxPolicy' as never) as { resolve(input: object): unknown } | undefined)?.resolve({ ...(exec.agent ? { session: exec.agent.session } : {}) });
       // Same guard as the native edit: unread → FS_NOT_OBSERVED, observed version → stale check under the provider lock.
-      const intent = await ctx.waterfall('fs/edit-intent', target, exec, () => undefined);
+      // fs/edit-intent and fs/observed are declared by the public fs service (0.2.0-rc.2 and later).
+      const events = ctx as unknown as FsEvents;
+      const intent = await events.waterfall('fs/edit-intent', target, exec, () => undefined);
       // Without the observation policy there is no observed version; take one now so the
       // read→write window is still guarded and a concurrent change fails as FS_STALE_VERSION.
-      const version = intent?.version ?? (await ctx.fs.stat(target, exec.signal))?.version;
+      const version = intent?.version ?? (await fs.stat(target, exec.signal))?.version;
       if (version === undefined) throw new Error(`cannot edit "${target.displayPath}": not found`);
-      const original = await ctx.fs.readText(target, exec.signal);
+      const original = await fs.readText(target, exec.signal);
       const edited = applyEdits(original, args.edits, target.displayPath);
-      const outcome = await ctx.fs.writeText(target, restoreLineEndings(original, edited.content),
+      const outcome = await fs.writeText(target, restoreLineEndings(original, edited.content),
         { kind: 'replaceIfVersion', version }, exec.signal, sandboxPolicy);
-      ctx.emit('fs/observed', target, { kind: 'present', version: outcome.version }, exec);
-      return { path: ctx.fs.processPath(target), edits: args.edits.length, replacements: edited.replacements };
+      events.emit('fs/observed', target, { kind: 'present', version: outcome.version }, exec);
+      return { path: fs.processPath(target), edits: args.edits.length, replacements: edited.replacements };
     },
   } as never);
 }
 
-export const inject = ['tools', 'fs', 'workingDirectory'];
+// workingDirectory is read with ctx.get when present: DSH 0.2.0-rc.2 has no such service.
+export const inject = ['tools', 'fs'];
 export function apply(ctx: Context) { ctx.effect(() => installEditBatch(ctx)); }

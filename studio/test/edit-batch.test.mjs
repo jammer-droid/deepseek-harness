@@ -14,10 +14,11 @@ test('applyEdits rejects a missing or ambiguous edit and names its index', () =>
   assert.equal(applyEdits('x\nx\n', [{ old_string: 'x', new_string: 'y', replace_all: true }], 'f').content, 'y\ny\n');
 });
 
-function fakeCtx(file, { observed = true } = {}) {
+function fakeCtx(file, { observed = true, legacy = false } = {}) {
+  const workingDirectory = legacy ? undefined : { async ensure() { return '/work'; } };
   let tool; const events = []; const writes = [];
   const fs = {
-    async resolve(path) { return { targetKey: path, displayPath: path }; },
+    async resolve(path, opts) { file.cwd = opts?.cwd; return { targetKey: path, displayPath: path }; },
     async readText() { file.onRead?.(); return file.content; },
     async stat() { return { version: file.version, type: "file" }; },
     async writeText(target, content, expected) {
@@ -27,8 +28,7 @@ function fakeCtx(file, { observed = true } = {}) {
     processPath(target) { return `/abs/${target.displayPath}`; },
   };
   const ctx = {
-    get: name => name === 'tools' ? { register(t) { tool = t; return () => {}; } } : undefined,
-    fs, workingDirectory: { async ensure() { return '/work'; } },
+    get: name => name === 'tools' ? { register(t) { tool = t; return () => {}; } } : name === 'fs' ? fs : name === 'workingDirectory' ? workingDirectory : undefined,
     async waterfall(name, target) { events.push(name); if (!observed) { const e = new Error('edit requires reading'); e.code = 'FS_NOT_OBSERVED'; throw e; } return { version: file.version }; },
     emit(name, target, observation) { events.push(`${name}:${observation.version}`); },
   };
@@ -75,4 +75,14 @@ test('edit_batch rejects bad arguments before touching the file', async () => {
   await assert.rejects(tool.execute({ file_path: '', edits: [{ old_string: 'a', new_string: 'b' }] }, exec));
   await assert.rejects(tool.execute({ file_path: 'f', edits: [{ old_string: '', new_string: 'b' }] }, exec));
   assert.equal(writes.length, 0); assert.equal(events.length, 0);
+});
+
+test('edit_batch resolves against the session cwd when DSH has no workingDirectory service (0.2.0-rc.2)', async () => {
+  const file = { content: 'a', version: 'v1' };
+  const { tool } = fakeCtx(file, { legacy: true });
+  await tool.execute({ file_path: 'f', edits: [{ old_string: 'a', new_string: 'b' }] }, { agent: { session: { header: { cwd: '/session' } } }, signal: new AbortController().signal });
+  assert.equal(file.cwd, '/session'); assert.equal(file.content, 'b');
+  const next = { content: 'a', version: 'v1' };
+  await fakeCtx(next).tool.execute({ file_path: 'f', edits: [{ old_string: 'a', new_string: 'b' }] }, exec);
+  assert.equal(next.cwd, '/work');
 });
