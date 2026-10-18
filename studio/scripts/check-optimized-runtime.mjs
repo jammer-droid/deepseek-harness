@@ -18,7 +18,7 @@ assert.equal(template.request.configOverrides?.['spill-policy']?.maxInlineTokens
 const preview = await rpc('preview', { request: template.request });
 for (const name of ['task_run', 'get_goal', 'create_goal', 'update_goal', 'todo_write']) assert.ok(!preview.tools.some(tool => tool.name === name), name);
 assert.doesNotMatch(preview.prompt, /task_run/);
-assert.equal(preview.tools.find(tool => tool.name === 'bash').parameters.properties.timeoutMs.default, 600000);
+assert.equal(preview.tools.find(tool => tool.name === 'bash').parameters.properties.timeoutMs.default, 120000);
 assert.equal(preview.tools.find(tool => tool.name === 'job_output').parameters.properties.timeout_ms.default, 120000);
 // Avoid rewriting an existing user's modified/applied snapshot during this smoke test.
 // Persistent edit/apply/unapply/restart behavior is covered by optimized-preset.test.mjs.
