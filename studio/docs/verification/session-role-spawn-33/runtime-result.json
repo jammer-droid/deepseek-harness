@@ -1,0 +1,50 @@
+{
+  "name": "agent-session-role-spawn",
+  "level": "L0",
+  "model": "mock",
+  "ok": true,
+  "passed": 9,
+  "failed": 0,
+  "failures": [],
+  "checks": [
+    {
+      "name": "preset role override persists Fresh and original configuration",
+      "ok": true
+    },
+    {
+      "name": "session override creates Fresh without parent history",
+      "ok": true,
+      "child": "studio-child-4dce5f51-f24e-4545-adfe-4366e16b70cc"
+    },
+    {
+      "name": "original child exposes a concrete wire model",
+      "ok": true
+    },
+    {
+      "name": "same session role saves Fork and changed persona/model selection",
+      "ok": true
+    },
+    {
+      "name": "next child uses Fork and changed persona",
+      "ok": true,
+      "child": "studio-child-db0dd053-40b5-4094-b932-0a543015d05f"
+    },
+    {
+      "name": "temporary role persists explicit Fork",
+      "ok": true
+    },
+    {
+      "name": "temporary Fork inherits completed parent history",
+      "ok": true,
+      "child": "studio-child-a0825358-624d-477c-a95e-6e77f68d82fd"
+    },
+    {
+      "name": "send_message executes successfully on existing child",
+      "ok": true
+    },
+    {
+      "name": "continuation preserves original policy, persona and wire model",
+      "ok": true
+    }
+  ]
+}

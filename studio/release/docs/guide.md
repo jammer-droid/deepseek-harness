@@ -225,7 +225,7 @@ The DSH `tool-subagent` Config in **Execution settings** has its own `toolFilter
 
 ## Per-session subagent roles
 
-Without touching the preset, you can change a subagent role's model, reasoning effort and instructions **for one session only**, or add roles that exist only in that session. Use the **Subagents** tab next to **Chat** and **Trajectory** at the top of the session.
+Without touching the preset, you can change a subagent role's model, reasoning effort, start mode and instructions **for one session only**, or add roles that exist only in that session. Use the **Subagents** tab next to **Chat** and **Trajectory** at the top of the session.
 
 ![Subagents tab of a session](images/en/session-subagents.png)
 
@@ -239,7 +239,7 @@ Each card shows where the role comes from:
 
 ### Change a role
 
-**Edit** lets you change the model, reasoning effort and role instructions (persona). Name, role ID, spawn mode and Tool Filter stay as the preset defines them.
+**Edit** lets you change the model, reasoning effort, start mode and role instructions (persona). Name, role ID and Tool Filter stay as the preset defines them.
 
 ![Edit a role for this session](images/en/session-role-edit.png)
 
@@ -249,13 +249,13 @@ Each card shows where the role comes from:
 
 ### Add a role
 
-**Add role** creates a role for this session only: set its name, role ID, model, reasoning effort and instructions. Such a role always starts a **new conversation** and uses the preset's default Tool Filter. A role ID that the preset or this session already uses is rejected. **Remove** it when you no longer need it.
+**Add role** creates a role for this session only: set its name, role ID, model, reasoning effort and instructions. Such a role defaults to a **new conversation (Fresh)**, can **inherit the parent conversation (Fork)**, and uses the preset's default Tool Filter. A role ID that the preset or this session already uses is rejected. **Remove** it when you no longer need it.
 
 You can add roles even when the preset defines none; `subagent_role` then delegates to them instead of starting a child that matches the parent.
 
 ### When and where changes apply
 
-- From the **next delegation** on. Subagents already running keep their settings.
+- From the **next delegation** on. Existing subagents keep their settings, including when continued. Fork inherits conversation history but does not guarantee KV cache reuse when changing models.
 - Subagents started from this session, and subagents they start in turn, use this session's roles.
 - When you open a subagent session, its **Subagents** tab shows the main session's roles read-only. Edit them in the main session.
 

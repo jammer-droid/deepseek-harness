@@ -1,0 +1,20 @@
+{
+  "pid": 87371,
+  "started": "Sun Oct 18 14:37:26 2026",
+  "port": 19410,
+  "profile": "issue33",
+  "home": "/Users/home/playground/vibecoding/deepseek-harness/studio/dist/e2e/33/home",
+  "log": "/Users/home/playground/vibecoding/deepseek-harness/studio/dist/e2e/33/home/e2e-runs/issue33/server.log",
+  "archive": "/Users/home/playground/vibecoding/deepseek-harness/studio/dist/e2e/packs/1792301844658/matamt-dbg-dsh-studio-0.6.2.tgz",
+  "sha256": "0f07a213385c2f95e1a7969360a0b76b3e7631860257348669ba8209b16eca62",
+  "runtime": "/usr/local/bin/dsh",
+  "version": "0.2.1-rc.2",
+  "mock": {
+    "pid": 87357,
+    "started": "Sun Oct 18 14:37:25 2026",
+    "port": 19411,
+    "capture": "/Users/home/playground/vibecoding/deepseek-harness/studio/dist/e2e/33/home/e2e-runs/issue33/mock-llm.jsonl",
+    "baseUrl": "http://127.0.0.1:19411"
+  },
+  "startedAt": "2026-10-18T05:37:27.092Z"
+}

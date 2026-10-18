@@ -1,0 +1,57 @@
+{
+  "name": "session-role-spawn-ui",
+  "level": "L0",
+  "model": "mock",
+  "ok": true,
+  "passed": 10,
+  "failed": 0,
+  "failures": [],
+  "checks": [
+    {
+      "name": "UI33 light 1440 551ffc7a: UI saves persisted",
+      "ok": true
+    },
+    {
+      "name": "UI33 light 1440 551ffc7a: UI saved review child history",
+      "ok": true,
+      "child": "studio-child-05828ef1-e8d2-4b4b-869e-92c0914f06e7"
+    },
+    {
+      "name": "UI33 light 1440 551ffc7a: UI saved temporary33 child history",
+      "ok": true,
+      "child": "studio-child-b04d6a3b-60e6-4251-aa09-4d69055d5081"
+    },
+    {
+      "name": "UI33 dark 1440 f8955706: UI saves persisted",
+      "ok": true
+    },
+    {
+      "name": "UI33 dark 1440 f8955706: UI saved review child history",
+      "ok": true,
+      "child": "studio-child-ce20e6a5-248d-40fd-9f5e-6c54ff0ae4ad"
+    },
+    {
+      "name": "UI33 dark 1440 f8955706: UI saved temporary33 child history",
+      "ok": true,
+      "child": "studio-child-cb577ec2-e1ce-41db-b7b7-79bf7eb4e9f6"
+    },
+    {
+      "name": "UI33 light 520 f5546f7e: UI saves persisted",
+      "ok": true
+    },
+    {
+      "name": "UI33 light 520 f5546f7e: UI saved review child history",
+      "ok": true,
+      "child": "studio-child-befdf55f-1c55-424f-b2fa-1b484ceb70a8"
+    },
+    {
+      "name": "UI33 light 520 f5546f7e: UI saved temporary33 child history",
+      "ok": true,
+      "child": "studio-child-8b2b6daf-88d2-4874-b068-fd75d99863e8"
+    },
+    {
+      "name": "browser UI scenario passes",
+      "ok": true
+    }
+  ]
+}

@@ -24,6 +24,8 @@ description: "Studio 이슈별 구현 명세의 색인."
 - [#29 세션별 서브에이전트 역할](29-session-roles.md): 프리셋 역할의 모델·추론·지침을 세션 단위 독립 복사본으로 바꾸고 임시 역할 추가, 자식은 루트 세션 값을 따름, Subagents 탭. 구현·문서 완료(rc.2 설치·위임 확인, 가이드·CHANGELOG); 미출시. [GitHub #29](https://github.com/jammer-droid/deepseek-harness/issues/29).
 - [#30 DSH 전체 한국어 번역](30-korean-locale.md): DSH 네임스페이스별 ko 사전과 등록, 빠진 키 검사, 번역·검수 스킬과 Jev 일괄 판정. S1–S5 완료(2,779키 중 2,721키 한국어, 58키 영어 유지). S6 독립 설치 검증 미완료. [GitHub #30](https://github.com/jammer-droid/deepseek-harness/issues/30).
 
+- [#33 세션 역할의 시작 방식 편집](33-session-role-spawn.md): 세션 역할의 Fresh/Fork 선택, 다음 자식 생성에만 반영, 기존 자식 continuation 보존. S1–S4 완료: 0.2.1-rc.2 격리 설치·mock 실행·라이트/다크/좁은 UI E2E 및 독립 검토 통과. 미출시. [GitHub #33](https://github.com/jammer-droid/deepseek-harness/issues/33).
+
 ## 프리셋 구성 설계 기록
 
 - [#32 프리셋 실행 기본값](32-preset-execution-settings.md): Studio가 덮어쓴 도구 대기 기본값(`request.execution`)과 `read_batch` 상한을 표시하고 재설정해 DSH 원래 동작(셸 설정 등)으로 되돌림. dsh-base 행은 프리셋 범위에 올리지 않음(S1 판정). `ready`. [GitHub #32](https://github.com/jammer-droid/deepseek-harness/issues/32).

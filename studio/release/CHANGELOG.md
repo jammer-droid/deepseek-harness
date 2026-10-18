@@ -2,6 +2,11 @@
 
 Release notes for `@matamt-dbg/dsh-studio`. Each version lists English notes first, then Korean.
 
+## Unreleased
+
+- Session role dialogs allow Fresh/Fork selection. Changes affect new children only; existing child continuation keeps its settings.
+- 세션 역할 추가·편집 창에서 Fresh/Fork를 선택할 수 있습니다. 변경은 새 자식에만 적용되며 기존 자식을 이어서 실행할 때는 기존 설정을 유지합니다.
+
 ## 0.6.2 — 2026-10-18
 
 Requires DSH `0.2.0-rc.2`, `0.2.1-alpha.2`, `0.2.1-rc.1` or `0.2.1-rc.2`.

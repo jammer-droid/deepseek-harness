@@ -1,0 +1,51 @@
+{
+  "ok": true,
+  "level": "L0",
+  "passed": 54,
+  "failed": 0,
+  "failures": [],
+  "pageErrors": [],
+  "pluginFailures": [],
+  "views": [
+    "light-1440",
+    "dark-1440",
+    "light-520"
+  ],
+  "shots": [
+    "studio/dist/e2e/shots/session-role-spawn-ui/edit-fresh.light-1440.png",
+    "studio/dist/e2e/shots/session-role-spawn-ui/add-fork.light-1440.png",
+    "studio/dist/e2e/shots/session-role-spawn-ui/persisted-cards.light-1440.png",
+    "studio/dist/e2e/shots/session-role-spawn-ui/edit-fresh.dark-1440.png",
+    "studio/dist/e2e/shots/session-role-spawn-ui/add-fork.dark-1440.png",
+    "studio/dist/e2e/shots/session-role-spawn-ui/persisted-cards.dark-1440.png",
+    "studio/dist/e2e/shots/session-role-spawn-ui/edit-fresh.light-520.png",
+    "studio/dist/e2e/shots/session-role-spawn-ui/add-fork.light-520.png",
+    "studio/dist/e2e/shots/session-role-spawn-ui/persisted-cards.light-520.png"
+  ],
+  "sessions": [
+    {
+      "session": "session-923eeea4-6a75-440b-8dc2-0378551ffc7a",
+      "view": {
+        "theme": "light",
+        "width": 1440,
+        "height": 900
+      }
+    },
+    {
+      "session": "session-765cac7f-df37-4808-b6c2-4cfcf8955706",
+      "view": {
+        "theme": "dark",
+        "width": 1440,
+        "height": 900
+      }
+    },
+    {
+      "session": "session-b3e9a478-bda6-4236-88ff-7c30f5546f7e",
+      "view": {
+        "theme": "light",
+        "width": 520,
+        "height": 900
+      }
+    }
+  ]
+}
