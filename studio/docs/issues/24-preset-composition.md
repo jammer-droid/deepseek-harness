@@ -5,6 +5,17 @@ status: implemented-with-limitations
 
 # #24 minimal 기반 프리셋 구성과 선택적 덮어쓰기
 
+## 2026-10-18 Master 수명 정리 (구조 개선 R2)
+
+기존 기능·실패 동작을 유지하는 내부 리팩터링. [#31의 R1](31-pixie-loop.md) 다음에 수행하고 R3 전에 양측 교차 리뷰한다. `MasterCatalog`가 현재 snapshot, 직렬 변경 큐, 등록 disposer, stopped, standard, 확장 파일, baseline/pending과 capture/observe/confirm을 함께 소유한다. Shell은 기존 Remote 서명, PresetStore, 플러그인·스킬 설치와 effect 순서를 유지한다.
+
+- 초기 수집은 기존 위치에서 `setImmediate` 이후 시작한다. 각 reader는 호출 시점의 snapshot을 기다린다.
+- 교체 순서: 이전 작업 종료 → snapshot → 이전 확장 읽기 → 임시 probe 등록·resolve·해제 → 기존 Master 해제 → 새 capture → 확장 저장.
+- 실패 시 disposer를 다시 호출하고 이전 구성을 capture하여 snapshot을 복구한 뒤 원래 오류를 던진다. 복구 자체가 실패하면 복구 오류가 우선한다. 기존 부수효과를 새 보상 로직으로 바꾸지 않는다.
+- 종료는 stopped 표시 → 현재 snapshot의 성공/실패 대기 → disposer 호출이다. 변경 큐 전체를 기다리지 않는 기존 제한도 유지한다.
+- 검증: 이동 전 characterization(실패 probe, 교체 실패/저장 실패, 복구 실패 우선순위, 동시 요청, 초기화/종료), 이동 후 같은 테스트와 Master/Remote/스킬 회귀, Studio 타입·빌드, OpusRev와 Reviewer 독립 검토.
+- 상태: 이동 전 characterization 9개 통과 후 추출. 이동 후 start/ready/stop 테스트 포함 수명 테스트 10개, 전체 Studio 테스트 754개, Host/Client 타입·번들 빌드 통과. Reviewer 독립 검토 PASS(당시 Master 관련 23개 독립 실행), OpusRev 읽기 전용 독립 검토 PASS. 등록 Context는 Studio 소유자로 통일했다(이전 Remote 교체는 Gateway 호출 Context). 검토한 registry는 이 Context에서 baseUrl만 사용하고 검증된 bare package 이름은 loader의 bare-module 경로로 해석하므로 현재 지원 입력의 관찰 가능한 차이는 예상하지 않는다. 향후 상대 경로 입력을 허용하면 이 전제를 재검토해야 한다. 전체 테스트는 Studio 디렉터리에서 실행해야 한다(루트에서 실행한 최초 시도는 기존 plugin-catalog 테스트의 상대 경로 때문에 실패). 순정 DSH 설치 검증은 별도이며 아직 수행하지 않았다.
+
 ## 최신 UI 수정 계약 (기존 S1–S5 내보내기/단일열 결정을 대체)
 
 - 기본 4개 프리셋의 비도구 기여자는 7종: persona, agent-instructions, time-context, skill-filesystem, compaction-basic, compaction-tool-result-pruner, agent-tool-presentation.

@@ -1,5 +1,9 @@
 # 기본 tool·Config 카탈로그와 Master 생성·갱신 조사
 
+## 구조 변경 이후의 읽기 안내 (2026-10-18)
+
+아래는 조사 당시의 기록이며 당시 `shell.ts` 줄 번호를 현재 소스 위치로 사용하면 안 된다. 동작 보존 리팩터링 후 수집·교체·복구·종료 상태의 소유자는 [MasterCatalog](../../src/host/master-catalog.ts)이고, [Shell](../../src/host/shell.ts)은 Remote 진입과 플러그인 설치를 담당한다. 현재 교체 오류·동시 호출·종료 동작은 [수명 테스트](../../test/master-lifecycle.test.mjs), 변경 계약은 [#24 R2](../issues/24-preset-composition.md)를 기준으로 확인한다. 이 안내는 과거 조사의 나머지 주장을 재검증했다는 뜻은 아니다.
+
 ## 범위와 결론
 
 이 문서는 로컬 checkout의 현행 Studio 소스와 테스트를 추적한 조사 기록이다. **설치 앱의 `app.asar`는 파일이며 `/Applications/DeepSeek Harness.app/Contents/Resources/app.asar/dsh`는 실제 디렉터리가 아니다.** 따라서 아래 workspace 코드는 로컬 참고본이고, 실행 중인 설치 앱과 동일한 구현·버전임을 확인한 결과가 아니다. 설치 앱, 사용자 프로필, 코어를 수정하지 않았다. own-scope 정책과 대안 설계는 부모 에이전트의 별도 조사 결과를 접점 요약으로만 포함한다.

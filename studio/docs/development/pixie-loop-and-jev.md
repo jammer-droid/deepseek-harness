@@ -28,7 +28,7 @@ description: "Pixie Loop의 생성·실행·판정 경계, Jev/LLM 결정 엔진
 일반 검토에서는 코드 검사를 모두 통과한 뒤 질문별 고정 pass 규칙도 모두 만족해야 한다.
 단순 select는 별도 검토 질문 없이 선택 확신도와 코드 검사로 끝날 수 있다.
 근거는 [review](<../../src/host/pixie-loop-engine.ts#L109-L119>),
-[단순 선택 분기](<../../src/host/pixie-loop-engine.ts#L247-L252>),
+[단순 선택 분기](<../../src/host/pixie-loop-engine.ts#L248-L253>),
 [#31 D4·D11](<../issues/31-pixie-loop.md#L115-L122>)다.
 
 Pixie 호출은 세션 밖의 텍스트 스트림이며 tools를 전달하지 않는다.
@@ -37,7 +37,7 @@ Pixie 호출은 세션 밖의 텍스트 스트림이며 tools를 전달하지 �
 compile·extract·interpret는 새 메시지로 호출한다.
 [#31 D2·D3](<../issues/31-pixie-loop.md#L113-L114>),
 [pixieCall](<../../src/host/pixie-loop-engine.ts#L57-L84>),
-[항목 스레드](<../../src/host/pixie-loop-engine.ts#L210-L242>)가 이 경계를 만든다.
+[항목 스레드](<../../src/host/pixie-loop-engine.ts#L210-L243>)가 이 경계를 만든다.
 
 ## 2. 실행 흐름
 
@@ -90,13 +90,13 @@ calibration은 예시 분리 검사이지 전체 입력에 대한 판정 정확�
 
 ### 항목별: 생성, 판정, 피드백
 
-[runItem](<../../src/host/pixie-loop-engine.ts#L210-L277>)은 입력 하나당 스레드를 만든다.
+[runItem](<../../src/host/pixie-loop-engine.ts#L210-L278>)은 입력 하나당 스레드를 만든다.
 generate 시스템 메시지에는 work와 shared가 들어가고 입력은 user 데이터로 전달한다.
 [generateSystem](<../../src/host/pixie-loop-engine.ts#L45-L51>)은 입력을 지시가 아닌 데이터로 다루도록 요청한다.
 
 실제 순서는 **생성 → act/observation → codeChecks → judge**다.
 파일 머리말의 간략한 generate→code checks 설명만 보고 act를 검사 뒤로 이해하면 안 된다.
-[act 호출](<../../src/host/pixie-loop-engine.ts#L244-L259>)이 review보다 먼저다.
+[act 호출](<../../src/host/pixie-loop-engine.ts#L245-L260>)이 review보다 먼저다.
 codeChecks를 안전하지 않은 명령 실행의 사전 차단 장치로 사용할 수 없다는 뜻이다.
 코드 검사 실패 시 judge를 생략하지만, 이미 실행한 act를 되돌리지는 않는다.
 [runCodeChecks](<../../src/pixie-loop-contracts.ts#L389-L417>)의 placeholders는
@@ -114,7 +114,7 @@ JSON Schema 전체 검증이나 인용 원문 대조를 대신하지 않는다.
 retry는 같은 입력을 다시 작성하라고 하고, episode는 관찰 뒤 다음 행동을 요구한다.
 직전 출력과 피드백은 해당 항목의 스레드에 누적한다.
 마지막 실패 시도에도 interpret를 호출하므로 최종 escalated 요약에 피드백을 남길 수 있다.
-[실패 후 분기](<../../src/host/pixie-loop-engine.ts#L267-L275>)를 바꿀 때 이 비용도 고려한다.
+[실패 후 분기](<../../src/host/pixie-loop-engine.ts#L268-L276>)를 바꿀 때 이 비용도 고려한다.
 
 ## 3. input, output, observation과 결과 표현
 
@@ -132,7 +132,7 @@ select의 pick 질문은 이 객체 대신 **선택지 출처 문자열 자체**
 [review state](<../../src/host/pixie-loop-engine.ts#L110-L118>)와
 [choose state](<../../src/host/pixie-loop-engine.ts#L193-L202>)를 구분한다.
 
-[결과 JSONL 작성](<../../src/host/pixie-loop-tool.ts#L150-L157>)은 skipped를 제외하고
+[결과 JSONL 작성](<../../src/host/pixie-loop-recording.ts#L18-L25>)은 skipped를 제외하고
 `id`, `status`, 선택적 `output`, `bucket`, 시도 **횟수**, 선택적 `error`만 쓴다.
 **결과 JSONL에는 observation, 질문별 answers, 피드백, 전체 시도 이력이 없다.**
 output은 통과한 결과에만 설정하므로 escalated의 마지막 후보를 이 파일에서 얻을 수 없다.
@@ -200,7 +200,7 @@ retry select는 같은 선택지를 다시 고르며 낭비하지 않도록 실�
 
 route는 실행 경로를 분기시키는 워크플로우가 아니라 **choice 답변별 결과 분류**다.
 [bucketOf](<../../src/host/pixie-loop-engine.ts#L205-L208>)와
-[항목 bucket 갱신](<../../src/host/pixie-loop-engine.ts#L262-L266>)을 사용한다.
+[항목 bucket 갱신](<../../src/host/pixie-loop-engine.ts#L263-L267>)을 사용한다.
 마지막으로 기록된 분류를 요약의 buckets에 집계하며 통과하지 않은 항목에도 bucket이 있을 수 있다.
 
 ## 6. Jev와 LLM 결정 엔진
@@ -248,8 +248,8 @@ HTTP 오류·잘못된 JSON·누락 답변·비정상 스트림을 낮은 점수
 [#27 D5](<../issues/27-jev-decision-engine.md#L102>)와
 [runJudge](<../../src/host/judge-tool.ts#L38-L44>)는 이 규칙을 공유한다.
 루프는 시작 단계 오류를 run error로, 항목 처리 오류를 item error로 기록한다.
-[시작 오류 처리](<../../src/host/pixie-loop-engine.ts#L305-L324>)와
-[worker 오류 처리](<../../src/host/pixie-loop-engine.ts#L332-L351>)를 함께 본다.
+[시작 오류 처리](<../../src/host/pixie-loop-engine.ts#L306-L325>)와
+[worker 오류 처리](<../../src/host/pixie-loop-engine.ts#L333-L352>)를 함께 본다.
 item error가 있어도 나머지를 끝낸 run의 status는 done일 수 있다.
 
 ## 7. 한도, 동시성, 취소
@@ -257,7 +257,7 @@ item error가 있어도 나머지를 끝낸 run의 status는 done일 수 있다.
 [상한 상수](<../../src/pixie-loop-contracts.ts#L7-L16>)는 항목 2,000개,
 retry 10회·episode 100step, concurrency 8, 토큰 5천만, 시간 6시간을 강제한다.
 기본 maxAttempts는 3, concurrency는 4다. tokens/timeMs 자체는 명세에 필수다.
-[runLoop](<../../src/host/pixie-loop-engine.ts#L280-L352>)는 제한된 수의 worker를 만들고
+[runLoop](<../../src/host/pixie-loop-engine.ts#L281-L353>)는 제한된 수의 worker를 만들고
 토큰 합계와 전체 실행 타이머를 공유한다.
 
 usage는 Pixie와 judge를 분리한다. [usageTokens](<../../src/pixie-loop-contracts.ts#L433-L440>)는
@@ -276,9 +276,9 @@ usage는 Pixie와 judge를 분리한다. [usageTokens](<../../src/pixie-loop-con
 | skipped | 종료 때 아직 결과가 등록되지 않은 미시작 항목 |
 | done | 실행기가 정상 종료됐다는 뜻이며 모든 항목 passed라는 뜻은 아님 |
 
-[finish·ended](<../../src/host/pixie-loop-engine.ts#L289-L304>)가 run 상태와 미시작 항목을 정리한다.
+[finish·ended](<../../src/host/pixie-loop-engine.ts#L290-L305>)가 run 상태와 미시작 항목을 정리한다.
 한도 중단도 진행 중 항목에는 cancelled로 기록될 수 있어 run의 reason을 함께 읽는다.
-[백그라운드 실행](<../../src/host/pixie-loop-tool.ts#L181-L203>)은 소유자가 있는 DSH job이다.
+[백그라운드 실행](<../../src/host/pixie-loop-tool.ts#L178-L200>)은 소유자가 있는 DSH job이다.
 job_kill은 controller를 취소하며 진행 로그와 최종 요약을 job 결과로 돌려준다.
 background 반환 자체는 완료가 아니다. item error만 있는 done도 job completed일 수 있다.
 
@@ -288,18 +288,18 @@ background 반환 자체는 완료가 아니다. item error만 있는 done도 jo
 검토 레시피 저장 시 compile+calibrate를 한 번 수행하고 고정 checks를 함께 저장한다.
 실패하면 저장하지 않는다. 직접 checks를 준 경우 컴파일 모델 호출은 생략하지만 calibration은 한다.
 단순 선택 레시피에는 검토 자체가 없으므로 이 단계도 없다.
-이후 [runLoop의 options.checks 분기](<../../src/host/pixie-loop-engine.ts#L312-L320>)는 재컴파일·재보정을 생략한다.
+이후 [runLoop의 options.checks 분기](<../../src/host/pixie-loop-engine.ts#L313-L321>)는 재컴파일·재보정을 생략한다.
 따라서 엔진·모델 변경 뒤 기존 레시피의 판정 품질이 유지된다고 자동 보장하지 않는다.
 
 도구의 recipe 호출은 items·output·run_in_background 외 추가 덮어쓰기를 거부한다.
-[레시피 도구 진입](<../../src/host/pixie-loop-tool.ts#L163-L173>)이 저장된 실행 조건을 보존한다.
-[레시피 실행 어댑터](<../../src/host/pixie-loop-recipe-run.ts#L9-L36>)는 게이트·훅 대상 하나를 처리한다.
-check는 실제 모델 생성 대신 echo 스트림으로 원문을 그대로 판정한다.
+[레시피 도구 진입](<../../src/host/pixie-loop-tool.ts#L160-L170>)이 저장된 실행 조건을 보존한다.
+[레시피 실행 어댑터](<../../src/host/pixie-loop-recipe-run.ts#L9-L32>)는 게이트·훅 대상 하나를 처리한다.
+check는 내부 `outputSource: 'input'` 모드로 대상의 앞뒤 공백을 제거한 값을 판정한다. 이는 이전 echo 스트림에 적용되던 trim을 보존한 것이며 원문 바이트 전체를 그대로 판정하는 계약은 아니다. 생성 모델 호출·사용량은 없고, 실패 피드백에는 기존대로 Pixie를 사용한다. 기존 모델 설정 필수 조건과 기록용 instruction도 유지한다.
 repair는 원문을 입력으로 생성·재시도한다. act·episode·select 레시피는 이 경로에서 거부한다.
 
-[recipeGateOutput](<../../src/host/pixie-loop-recipe-run.ts#L38-L43>)은 미통과를 stop,
+[recipeGateOutput](<../../src/host/pixie-loop-recipe-run.ts#L34-L38>)은 미통과를 stop,
 repair 성공을 pass+replace로 바꾼다.
-[게이트 runner](<../../src/host/pixie-gate-task-runner.ts#L122-L136>)가 사용량과 세션 기록을 연결한다.
+[게이트 runner](<../../src/host/pixie-gate-task-runner.ts#L123-L135>)가 사용량과 세션 기록을 연결한다.
 기존 시점·프리셋·결과 적용 규칙은 유지한다([#31 D10](<../issues/31-pixie-loop.md#L121>)).
 `pixie loop --recipe <name> --mode check|repair` 훅 헬퍼도 같은 어댑터를 사용한다.
 [헬퍼 계약](<../../src/host/pixie-gate-helper.ts#L23>)과
@@ -366,7 +366,7 @@ first stream event timeout 1건만 재실행해 통과하여 최종 **134 / 15 /
 매번 코드 검사와 고정 질문 전체를 다시 적용해야 하는 이유다.
 피드백 문장을 Jev가 제공한 원인으로 해석하면 안 된다.
 해당 시도 값의 출처는 위 run의 해당 항목 attempts이며,
-처리 규칙은 [interpret와 재검토](<../../src/host/pixie-loop-engine.ts#L259-L275>)다.
+처리 규칙은 [interpret와 재검토](<../../src/host/pixie-loop-engine.ts#L260-L276>)다.
 
 ### escalated를 무조건 더 돌리지 않는다
 

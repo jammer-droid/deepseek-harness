@@ -224,6 +224,19 @@ status: ready
 - **S16 훅 헬퍼 `pixie loop`:** 헬퍼 경로 `/loop`, `pixie loop --recipe <이름> --mode check|repair [--input] [--json]`. 기존 실행별 토큰을 쓰고 사용량은 게이트 실행에 합산한다.
 - **가이드:** 레시피 저장·calibration 실패 대응, 게이트 판정 방식 선택(`check`/`repair`, 시점별 허용), 훅 스크립트에서 `pixie loop` 쓰는 예시를 루프 가이드와 [Pixie Gate 가이드](../../release/docs/appendix/pixie-gate.ko.md)에 쓰고, `studio-pixie-hook-guide`·`studio-pixie-loop-guide` 스킬을 갱신한다.
 
+## 2026-10-18 동작 보존 구조 개선
+
+사용자 승인 범위는 기존 기능·관찰 가능한 동작을 유지하는 내부 리팩터링이다. 기준 커밋은 `71ce896a75fae72ba777330d4d9a03af23a1ba31`이며, 기존 구현 단계 S1–S16과 구분해 아래 R ID를 사용한다. 전체 진행 순서는 R1 → Master 수명 정리(#24) → R3이다. DSH 본체·공개 도구 계약·설치된 사용자 프로필은 변경하지 않는다.
+
+| 단계 | 결과와 변경 책임 | 수용 조건·검증 | 상태 |
+| --- | --- | --- | --- |
+| R1 | 기록 module이 도구의 실행·결과 파일·최종 기록·요약 순서를 소유. 게이트/훅은 별도 final-only 경로 유지 | 도구 update→progress, 500ms coalescing·heartbeat·경고, 결과 파일 실패 반영 후 flush, 게이트/훅 기록 거절 무시 유지. 지연 저장·heartbeat 정리·기존 도구/게이트 테스트 | 구현·개발 검사·양측 교차 리뷰 통과 |
+| R3 | check의 생성 프롬프트 접두어 의존을 내부 실행 seam으로 대체 | 기존 trim·기록 instruction·모델 필수·취소·예산·판정·피드백·사용량 유지. 공개 LoopSpec 확장 없음. strict spy와 오류 경로 테스트 | 구현·개발 검사·양측 교차 리뷰 통과 |
+
+R1 개발 검증: 관련 테스트 26개 통과(격리 worktree 재실행), Studio Host/Client 타입 검사와 번들 빌드 통과. Reviewer 독립 실행은 당시 25개 통과, OpusRev는 읽기 전용 검토로 PASS. 양측 의견이 갈린 작은 recipe adapter는 게이트/훅 final-only 정책을 명시하는 고정 경로로 유지했다. 기존 writer의 예외 실행 경로 정리 의미는 이 변경에서 수정하지 않는다. 수정하지 않은 DSH 격리 설치 검증은 아직 실행하지 않았으며, 개발 검사로 독립 배포 완료를 주장하지 않는다.
+
+R3 개발 검증: trim·빈 결과·기록 instruction·생성 호출 없음·0 사용량·실패 피드백 단일 호출·모델 미설정·사전 취소를 기존 echo 구현에서 먼저 확인한 뒤 같은 테스트를 새 경로에서 통과했다. Reviewer는 engine/phase2/phase3 35개를 독립 실행하여 PASS, OpusRev는 읽기 전용 코드·테스트 검토로 PASS. 지적된 echo 설명과 이동한 소스 링크를 수정했다. 최종 Studio 전체 756개, Host/Client 타입, 번들 빌드, diff 공백 검사 통과. 이후 exact-check 실패 시 judge 우회·피드백 유지 테스트를 추가하고 phase3 12개를 재실행하여 통과했다. 내부 모드는 가짜 스트림의 부수적인 microtask 대기를 재현하지 않지만 생성 분기 전후 취소·예산 검사와 judge signal 전달은 유지한다. 배포·설치 검증은 수행하지 않았다.
+
 ## 알려진 한계
 
 - Jev는 이유를 주지 않는다. 수정 피드백의 품질은 질문 설계와 `interpret`의 추정에 달려 있다.
