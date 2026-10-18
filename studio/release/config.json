@@ -17,7 +17,12 @@
     "test/release-changelog.test.mjs",
     "test/dsh-ko-judge.test.mjs",
     "test/extract-dsh-locale.test.mjs",
-    "test/runtime-check-target.test.mjs"
+    "test/runtime-check-target.test.mjs",
+    "test/e2e-agent.test.mjs",
+    "test/e2e-browser.test.mjs",
+    "test/e2e-server.test.mjs",
+    "test/e2e-wait.test.mjs",
+    "test/e2e-web-cost.test.mjs"
   ],
   "copy": {
     "release/standalone/tsconfig.base.json": "tsconfig.base.json",
