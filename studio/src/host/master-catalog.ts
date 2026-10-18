@@ -120,7 +120,7 @@ export class MasterCatalog {
     }
     const baseline = catalog.presets.find(p => p.id === MASTER_PRESET_ID)!;
     this.store.setMaster(composition);
-    await this.store.ensureOptimized(baseline.tools.map(t => t.name), composition);
+    await this.store.ensureOptimized(baseline.tools.map(t => t.name));
     catalog.plugins = plugins;
     catalog.execution = executionCapabilities(catalog.tools);
     catalog.origins = Object.fromEntries(pluginOrigins(this.standard, composition));

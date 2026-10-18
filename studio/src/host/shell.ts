@@ -74,6 +74,9 @@ export default class StudioCatalog extends TypertRemoteService {
   async applyPreset(id: string) { await this.master.ready(); return this.store.apply(id); }
   @Remote
   async unapplyPreset(id: string) { return this.store.unapply(id); }
+  /** Replace Optimized with the shipped defaults and apply them. */
+  @Remote
+  async restoreOptimized() { await this.master.ready(); return this.store.restoreOptimized(); }
   @Remote
   async roleModels() {
     const service = this.ctx.get('sessionController');
