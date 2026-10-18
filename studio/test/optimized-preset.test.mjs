@@ -156,6 +156,32 @@ test('Optimized rows from before it was editable are treated as unedited and ado
   assert.equal(row.request.prompt, optimizedTemplate(['read']).request.prompt); assert.equal(row.customized, undefined);
   await upgraded.dispose();
 });
+test('A new template that cannot apply keeps the previous snapshot and is reported as needing reapply', async () => {
+  const file = join(await mkdtemp(join(tmpdir(), 'studio-template-')), 'presets.json');
+  const a = await runtime(); const store = new PresetStore(a.ctx, file);
+  await store.ensureOptimized(['read']); const before = a.registrations.get(OPTIMIZED_PRESET_ID).plugins; await store.dispose();
+  // The next start offers a tool the base composition does not supply, so applying the new template fails.
+  const b = await runtime(); const next = new PresetStore(b.ctx, file);
+  const row = await next.ensureOptimized(['read', 'bash']);
+  assert.equal(row.status, 'modified'); assert.match(row.applyWarning, /Apply failed: .*bash/);
+  assert.deepEqual(row.request.tools, ['read', 'bash']);
+  assert.deepEqual(b.registrations.get(OPTIMIZED_PRESET_ID).plugins, before);
+  await next.dispose();
+});
+test('A first seed that cannot apply is retried at the next start; a user unapply is kept', async () => {
+  const file = join(await mkdtemp(join(tmpdir(), 'studio-template-')), 'presets.json');
+  const a = await runtime(); const store = new PresetStore(a.ctx, file);
+  const failed = await store.ensureOptimized(['read', 'bash']);
+  assert.equal(failed.status, 'draft'); assert.match(failed.applyWarning, /Apply failed:/); assert.equal(a.registrations.size, 0);
+  await store.dispose();
+  const b = await runtime(); const retried = new PresetStore(b.ctx, file);
+  const row = await retried.ensureOptimized(['read']);
+  assert.equal(row.status, 'applied'); assert.ok(b.registrations.has(OPTIMIZED_PRESET_ID));
+  await retried.unapply(OPTIMIZED_PRESET_ID); await retried.dispose();
+  const c = await runtime(); const kept = new PresetStore(c.ctx, file);
+  assert.equal((await kept.ensureOptimized(['read'])).status, 'draft'); assert.equal(c.registrations.size, 0);
+  await kept.dispose();
+});
 
 test('Optimized can be edited and restored; only Delete is disabled', async () => {
   const dom = new JSDOM('<div id="root"></div>');

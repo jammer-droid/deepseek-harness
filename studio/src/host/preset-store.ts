@@ -42,6 +42,8 @@ const templateKey = (value: { request: unknown; agents: unknown }) => JSON.strin
 const hashOf = (value: { request: unknown; agents: unknown }) => createHash('sha256').update(templateKey(value)).digest('hex');
 /** Rows from before Optimized was editable carry no hash; they were locked, so they are unedited. */
 const edited = (row: StoredPreset) => row.templateHash !== undefined && hashOf(row) !== row.templateHash;
+/** Prefix of the warning a failed startup apply leaves; such a row is retried at the next start. */
+const STARTUP_APPLY_FAILED = 'Apply failed:';
 const owned = (id: string) => id === OPTIMIZED_PRESET_ID || /^studio-user-[a-f0-9-]{36}$/.test(id);
 const retiredLegacyWarning = 'Work convenience settings are saved but not applied yet. Legacy role overrides are stored only; roles apply only their supported settings.';
 
@@ -209,13 +211,18 @@ export class PresetStore {
     if (edited(existing)) return this.public(existing);
     const aligned = templateKey(existing) === templateKey(template) && existing.templateHash === this.templateHash;
     const row = aligned ? existing : this.fromTemplate(existing, template);
-    if (!row.applied) { if (!aligned) await this.persist(this.rows.map(item => item.id === row.id ? row : item)); return this.public(row); }
-    // Also re-align an applied snapshot composed by an older build (e.g. one that dropped compaction).
-    // A base that cannot compose keeps the last applied snapshot, as before.
-    let current: string | undefined;
-    try { current = (await this.compose(row)).plugins; } catch { current = undefined; }
-    if (aligned && (current === undefined || current === existing.applied!.plugins)) return this.public(existing);
-    if (current === undefined) { await this.persist(this.rows.map(item => item.id === row.id ? row : item)); return this.public(row); }
+    // A user's unapply is kept; an Optimized whose own startup apply failed is retried instead.
+    const failedStartup = !existing.applied && existing.applyWarning?.includes(STARTUP_APPLY_FAILED) === true;
+    if (!row.applied && !failedStartup) { if (!aligned) await this.persist(this.rows.map(item => item.id === row.id ? row : item)); return this.public(row); }
+    // An unchanged template re-aligns only an applied snapshot composed by an older build (e.g. one
+    // that dropped compaction); a base that cannot compose then keeps the last snapshot, as before.
+    if (aligned && row.applied) {
+      let current: string | undefined;
+      try { current = (await this.compose(row)).plugins; } catch { current = undefined; }
+      if (current === undefined || current === existing.applied!.plugins) return this.public(existing);
+    }
+    // A new template is applied; if that fails the previous snapshot stays mounted and the row is
+    // stored as needing reapply with the cause, never as applied with values it is not running.
     return this.applyOrReport(row, template.applyWarning);
   }); }
   /**
@@ -227,7 +234,7 @@ export class PresetStore {
     catch (error) {
       const current = this.rows.find(item => item.id === row.id) ?? row;
       const failed: StoredPreset = { ...row, ...(current.applied ? { applied: current.applied, status: 'modified' as const } : { status: 'draft' as const }),
-        applyWarning: [notice, `Apply failed: ${String(error)}`].filter(Boolean).join('\n') };
+        applyWarning: [notice, `${STARTUP_APPLY_FAILED} ${String(error)}`].filter(Boolean).join('\n') };
       if (!current.applied) { delete failed.applied; delete failed.appliedAt; }
       await this.persist(this.rows.map(item => item.id === row.id ? failed : item));
       return this.public(failed);
