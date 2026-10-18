@@ -233,12 +233,13 @@ node studio/scripts/e2e/smoke.mjs --profile published
 
 `server.mjs`는 로컬 Studio 패키지를 항상 설치하므로 `--plugin`으로 Studio를 넘기지 않는다. 레지스트리의 tarball을 `--archive`로 준다.
 
-smoke 통과와 함께 프리셋 목록과 Optimized 도구 수(22)를 확인하고 `down`한다.
+smoke 통과와 함께 프리셋 목록과 Optimized 도구 수(0.6.2부터 27, 그 전은 22)를 확인하고 `down`한다.
 
 ## 목록
 
 | 위치 | 문서 | 대상 |
 | --- | --- | --- |
+| releases | [0.6.2.md](releases/0.6.2.md) | Studio 0.6.2 배포 후보(#32·#33·#34) 신규 설치·화면·0.6.1 업그레이드 |
 | issues | [34-optimized-worker-tuning.md](issues/34-optimized-worker-tuning.md) | #34 Optimized 튜닝 값, 기본 Worker 역할, 편집·기본값 복구, 스키마 없는 Config 잠금 |
 | checks | [dsh-role-compat.md](checks/dsh-role-compat.md) | DSH 업데이트 뒤 역할 persona·Tool Filter·자식 정책 복원 호환(rc.1 기준으로 작성) |
 | checks | [subagent-tool-filter.md](checks/subagent-tool-filter.md) | 서브에이전트 Tool Filter 동작 |
