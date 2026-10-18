@@ -41,6 +41,14 @@
 - 편집 → 실행 설정 → Config: `여러 파일 한 번에 읽기`는 켜진 채 비활성, `한 파일 여러 곳 고치기`는 꺼진 채 비활성, "프리셋을 기본값으로 복구할 때만 바뀝니다" 안내 표시(라이트·다크). pageerror 0.
 - 가이드 `preset-list.png`(ko·en)를 이 프로필에서 다시 찍었다.
 
+## 배포 E2E 이후 변경
+
+- `deploy.mjs github --dry-run`에서 두 가지가 걸려 고쳤다.
+  - 공개 스냅샷 금지어 검사: 개발용 E2E 하네스 테스트(`test/e2e-*.test.mjs`) 5개가 로컬 포트를 담고 있었다. 이 테스트는 스냅샷에 없는 `scripts/e2e/`에 의존하므로 `release/config.json`의 `exclude`에 넣었다.
+  - 공개 스냅샷 타입 검사(DSH `0.2.0-rc.2` 의존): `edit_batch`가 0.2.1에만 있는 `@deepseek-ai/dsh-working-directory`·`dsh-fs` 타입과 `workingDirectory` 서비스에 의존했다. 필요한 `fs` 멤버를 지역 타입으로 두고, `workingDirectory`가 없으면 세션 헤더의 `cwd`(0.2.0-rc.2 `tool-fs`와 같은 방식)를 쓰도록 바꿨다. 단위 테스트 추가.
+- 수정 뒤 dry-run 통과(공개 스냅샷 테스트 718 통과). 같은 커밋의 패키지(SHA256 `ee76735b7fbd0c855dd771354413dd7d813d79b11eae710e5c415c122e41270c`)를 DSH `0.2.1-rc.2` 격리 프로필에 설치해 smoke 12/12, `agent-optimized-worker` 16/16을 다시 확인했다.
+- DSH `0.2.0-rc.2`·`0.2.1-alpha.2`·`0.2.1-rc.1` 설치본에서 `edit_batch`를 실행해 보지는 않았다(로컬에 해당 런타임 없음).
+
 ## 미검증
 
 - 실제 모델로 Worker에 일을 맡기는 흐름, Desktop 앱, DSH `0.2.1-rc.2` 외 버전.
