@@ -6,6 +6,7 @@ packages/*/index.js
 packages/*/delegation-tool.js
 packages/*/policy.js
 packages/*/batch.js
+packages/*/edit-batch.js
 packages/*/judge.js
 packages/*/loop.js
 packages/*/tasks.js
