@@ -72,7 +72,7 @@ Not checked: external model calls in these checks, upgrading data from 0.5.0, an
 - **Presets** — a read-only *Studio Master* that follows DSH `standard` plus Studio's own plugins, a locked built-in *Optimized* preset (22 everyday tools) to copy from, and your own presets. Edit, copy, delete, apply to DSH, or unapply.
 - **Prompts & tools** — edit persona and additional instructions, pick tools (or whole built-in tool sets), and rewrite the descriptions the model sees for each tool and parameter.
 - **Prompt preview** — see the system prompt, tool schemas, runtime context and per-turn messages a preset produces, without starting an agent.
-- **Execution settings** — every plugin is included by default; leave plugins out of a preset, add installed packages, and override plugin configuration for one preset only.
+- **Execution settings** — every plugin is included by default; leave plugins out of a preset, add installed packages, and override plugin configuration for one preset only. Execution defaults show the wait times a preset fills in for `bash` and `job_output`, and turning one off lets DSH's shell setting apply again.
 - **Subagents** — DSH's generic subagent tools become a single `subagent_role` tool. Define roles with their own model, reasoning effort, fresh or fork start, and persona; with no roles, `subagent_role` starts a child that inherits the parent's settings.
 - **Per-session subagent roles** — a **Subagents** tab in each session changes a role's model, reasoning effort and instructions, or adds a role, for that session only.
 - **DSH in Korean** — choosing 한국어 in DSH's language setting also translates DSH's own screens.

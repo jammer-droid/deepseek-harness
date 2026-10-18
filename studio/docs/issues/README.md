@@ -26,7 +26,7 @@ description: "Studio 이슈별 구현 명세의 색인."
 
 ## 프리셋 구성 설계 기록
 
-- [#32 프리셋 단위 실행 설정 편집](32-preset-execution-settings.md): 편집 화면이 빠진 실행 기본값(`request.execution`) 복구와 상속값 표시, dsh-base 프로필 계층 행(`bash-sandbox` 등)의 프리셋 범위 편집 판정. `draft`. [GitHub #32](https://github.com/jammer-droid/deepseek-harness/issues/32).
+- [#32 프리셋 실행 기본값](32-preset-execution-settings.md): Studio가 덮어쓴 도구 대기 기본값(`request.execution`)과 `read_batch` 상한을 표시하고 재설정해 DSH 원래 동작(셸 설정 등)으로 되돌림. dsh-base 행은 프리셋 범위에 올리지 않음(S1 판정). `ready`. [GitHub #32](https://github.com/jammer-droid/deepseek-harness/issues/32).
 - [#24 minimal 기반 프리셋 구성과 선택적 덮어쓰기](24-preset-composition.md): 현재 셸 기반 신규 설계. 도구·프롬프트 제공자 선택, persona 편집, scoped override, 통합 미리보기 및 독립 배포. `draft`; 첫 단계 S1은 공개 API·구성 계약 확정.
 
 ## 이전 workflow 이력

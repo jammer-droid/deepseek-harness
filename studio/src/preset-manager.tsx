@@ -1,5 +1,6 @@
 import React from 'react';
 import { Badge, Button, DetailDialog, Notice, PageHead, SplitButton, type BadgeTone } from './ui.tsx';
+import { executionOverrideCount } from './execution-defaults.ts';
 import type { PreviewRequest } from './prompt-composition.ts';
 import { CatalogChangeNotice, type CatalogChangeActions } from './master-change-notice.tsx';
 import { featureLabel } from './feature-inclusion.tsx';
@@ -80,7 +81,7 @@ export function PresetList({ locale, api, revision, onEdit, onCopy, changes }: {
       {item.template ? <p className="studio-card-text">{t('코딩 에이전트를 위한 최소한의 도구만 모아놓은 프리셋입니다.', 'A preset with only the minimum tools a coding agent needs.', '仅包含编码代理所需最少工具的预设')}</p> : item.description && !item.readOnly && <p className="studio-card-text">{item.description}</p>}
       {item.missingFeatures && item.missingFeatures.length > 0 && <div className="studio-inline-actions"><Badge tone="warning">{t('기능 누락', 'Missing features', '缺少功能')}</Badge><span className="studio-card-meta">{item.missingFeatures.map(name => featureLabel(name, locale)).join(', ')}</span>
         <Button small disabled={busy || !api || !!item.readOnly} onClick={() => setRecovering(item)}>{t('복구', 'Restore', '恢复')}</Button></div>}
-      <p className="studio-card-meta">{t('도구', 'Tools', '工具')} {item.request.tools.length} · {t('서브에이전트 역할', 'Subagent roles', '子代理角色')} {Array.isArray(item.agents) ? item.agents.length : 0}</p>
+      <p className="studio-card-meta">{t('도구', 'Tools', '工具')} {item.request.tools.length} · {t('서브에이전트 역할', 'Subagent roles', '子代理角色')} {Array.isArray(item.agents) ? item.agents.length : 0}{!item.readOnly && executionOverrideCount(item.request.execution) > 0 && <> · {t(`실행 기본값 덮어씀 ${executionOverrideCount(item.request.execution)}`, `Execution defaults overridden: ${executionOverrideCount(item.request.execution)}`, `已覆盖执行默认值 ${executionOverrideCount(item.request.execution)}`)}</>}</p>
       {item.readOnly ? <p className="studio-card-meta studio-card-note">{t('DSH standard 프리셋에 Studio 플러그인과 직접 추가한 플러그인을 더한 기준 프리셋입니다. 편집하거나 삭제할 수 없습니다.', 'Reference preset: DSH standard plus Studio plugins and the ones you added. It cannot be edited or deleted.', '基准预设：DSH standard 加上 Studio 插件和您添加的插件，无法编辑或删除')}</p> : <div className="studio-card-footer">
         <Button small disabled={busy || item.readOnly || item.template || !onEdit} title={item.template ? t('기본 제공 프리셋은 편집할 수 없습니다. 복사해서 고쳐 쓰세요.', 'Built-in presets cannot be edited. Create a copy to customize it.', '内置预设无法编辑，请创建副本后修改') : undefined} onClick={() => onEdit?.(item)}>{t('편집', 'Edit', '编辑')}</Button>
         <Button small disabled={busy || !onCopy} onClick={() => onCopy?.(item)}>{t('복사', 'Create copy', '创建副本')}</Button>

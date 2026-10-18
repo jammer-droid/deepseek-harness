@@ -116,7 +116,9 @@ Content that appears only while running, such as notes after tool results (a sub
 
 ![Execution settings](images/en/execution-settings.png)
 
-Execution settings has two parts.
+Execution settings has three parts.
+
+**Execution defaults**: the wait times this preset fills in when the model leaves them out (`bash`, `job_output`) and the `read_batch` item limit. Only selected tools are listed, and they work like the Config list below: check an entry and change its value in **Edit**; unchecking removes the override. While a `bash` value is set, the DSH command timeout in **Settings → Shell** does not apply to this preset. Optimized sets `bash` to 600000 ms and `job_output` to 120000 ms, so its copies keep them. Preset cards show how many execution defaults a preset overrides.
 
 ![Included plugins with automatic compaction left out](images/en/plugin-exclusion.png)
 
@@ -304,6 +306,7 @@ Optimized is tuned for **coding-agent work**: reading and editing code, running 
 | Work with Office files or data using the app's bundled Python and Node | Turn on `load_workspace_dependencies` (desktop app profile only; see [Tools that depend on your profile](#tools-that-depend-on-your-profile)). |
 | Search X, or generate images and videos | Turn on `x_search`, `image_generate` or `video_generate` (only when a plugin in your profile provides them). |
 | Do research, writing or operations instead of coding | Rewrite **Additional Studio instructions** for that work, and drop tools it does not need. |
+| Let the DSH shell setting decide how long commands wait | Turn off **bash command wait** in **Execution settings → Execution defaults**. |
 | Change how much tool output stays inline | Adjust `spill-policy` in **Execution settings**. |
 | Tune any other plugin behavior | Turn on that plugin in **Execution settings → Config** and edit only the fields you need. |
 | Leave a feature out entirely | Uncheck it in **Execution settings → Included plugins**. |

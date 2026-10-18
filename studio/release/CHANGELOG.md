@@ -2,6 +2,40 @@
 
 Release notes for `@matamt-dbg/dsh-studio`. Each version lists English notes first, then Korean.
 
+## 0.6.2 — 2026-10-18
+
+Requires DSH `0.2.0-rc.2`, `0.2.1-alpha.2`, `0.2.1-rc.1` or `0.2.1-rc.2`.
+
+### Highlights
+
+- **Execution defaults are visible and resettable.** A preset can fill in a wait time when the model leaves it out (`bash` `timeoutMs`, `job_output` `timeout_ms`) and lower the `read_batch` limit. These values were saved and copied with a preset but had no screen. **Execution settings → Execution defaults** now lists them the same way as Config overrides: overridden entries show **Modified**, **Edit** changes the value, and turning an entry off removes the override. While a value is set, the DSH command timeout in **Settings → Shell** does not apply to that preset's `bash`; turning it off lets it apply again.
+- **Preset cards show overridden execution defaults.** A card shows how many execution defaults the preset overrides, so copies of Optimized that still wait 600 seconds for `bash` are easy to spot.
+
+### Upgrade notes
+
+- Copies of Optimized keep `bash` 600000 ms and `job_output` 120000 ms. To follow the DSH shell timeout instead, open the copy, turn off **bash command wait** under **Execution defaults**, then save and apply. The built-in Optimized preset is unchanged.
+
+### Verification
+
+- A build of this change (packaged before the version number was raised to 0.6.2) was installed into an isolated profile of unmodified DSH `0.2.1-rc.2` and checked with a local test model. With the shell timeout set to 1500 ms, an Optimized copy still waited for `sleep 3`; after its `bash` default was turned off, the command moved to a background job after 1500 ms. The editor was checked in light, dark and 480 px views. Other DSH versions were not tested for this change.
+
+### 한국어
+
+DSH `0.2.0-rc.2`, `0.2.1-alpha.2`, `0.2.1-rc.1` 또는 `0.2.1-rc.2`가 필요합니다.
+
+#### 주요 변경
+
+- **실행 기본값을 확인하고 되돌릴 수 있습니다.** 프리셋은 모델이 대기 시간을 생략할 때 넣을 값(`bash`의 `timeoutMs`, `job_output`의 `timeout_ms`)과 `read_batch` 최대 개수를 정할 수 있습니다. 이 값은 프리셋과 함께 저장되고 복사되었지만 볼 수 있는 화면이 없었습니다. 이제 **실행 설정 → 실행 기본값**에서 Config 덮어쓰기와 같은 방식으로 표시됩니다. 덮어쓴 항목에는 **변경됨**이 붙고, **설정**에서 값을 바꾸며, 항목을 끄면 덮어쓰기가 지워집니다. 값이 있는 동안에는 DSH **설정 → 셸**의 명령 타임아웃이 그 프리셋의 `bash`에 적용되지 않습니다. 항목을 끄면 다시 적용됩니다.
+- **프리셋 카드에 덮어쓴 실행 기본값 수가 표시됩니다.** `bash` 명령을 600초까지 기다리는 Optimized 복사본을 쉽게 찾을 수 있습니다.
+
+#### 업그레이드 참고
+
+- Optimized 복사본에는 `bash` 600000ms, `job_output` 120000ms가 그대로 남아 있습니다. DSH 셸 타임아웃을 따르도록 하려면 복사본을 열고 **실행 기본값**에서 **bash 명령 대기 시간**을 끈 뒤 저장하고 반영하세요. 기본 제공 Optimized 프리셋은 바뀌지 않았습니다.
+
+#### 검증
+
+- 이번 변경을 담은 빌드(버전 번호를 0.6.2로 올리기 전에 패키징)를 수정하지 않은 DSH `0.2.1-rc.2`의 격리 프로필에 설치하고 로컬 테스트 모델로 확인했습니다. 셸 타임아웃을 1500ms로 둔 상태에서 Optimized 복사본은 `sleep 3`이 끝날 때까지 기다렸고, `bash` 기본값을 끈 뒤에는 1500ms가 지나자 백그라운드 작업으로 넘어갔습니다. 편집 화면은 라이트·다크 모드와 480px 너비에서 확인했습니다. 이번 변경 사항은 다른 DSH 버전에서 확인하지 않았습니다.
+
 ## 0.6.1 — 2026-10-17
 
 Requires DSH `0.2.0-rc.2`, `0.2.1-alpha.2`, `0.2.1-rc.1` or `0.2.1-rc.2`.
