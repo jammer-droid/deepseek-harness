@@ -184,7 +184,7 @@ S5 사전 점검(구현 세션이 직접 실행, 검증자 판정 아님):
 - 런타임: 수정하지 않은 DSH `0.2.1-rc.2`, 격리 home `studio/dist/e2e/home`, 프로필 `e2e`, 각본 모델(`--mock-llm`).
 - 패키지: `matamt-dbg-dsh-studio-0.6.2.tgz`(이 브랜치 빌드), SHA256 `6a40bf02185cd110259af41fdab596aeee43221a03b79bc112e3f7b4c8ad629d`.
 - `smoke.mjs` 12/12, `agent-optimized-worker.mjs` 16/16, `check-optimized-runtime.mjs` 통과.
-- 지침서 2단계(이전 버전 행 갱신)와 3단계(화면)는 실행하지 않았다. 새 세션 검증자가 [지침서](../../scripts/agents/issues/34-optimized-worker-tuning.md)로 실행한다.
+- 지침서 2단계(이전 버전 행 갱신)와 3단계(화면)는 실행하지 않았다. 새 세션 검증자가 [지침서](../../scripts/agents/archive/issues/34-optimized-worker-tuning.md)로 실행한다.
 - 실모델 실행과 회귀 벤치는 하지 않았다.
 
 코드 리뷰(배포 2단계, Reviewer 역할, 범위 `e632762ebf..HEAD`의 `studio/`): 차단 0건.
@@ -227,3 +227,7 @@ S5 사전 점검(구현 세션이 직접 실행, 검증자 판정 아님):
 - `edit_batch` 샌드박스 권한 확장 인자. `FsSandboxController`가 공개되지 않아 공개 sandbox API로 구현할 수 있는지 먼저 확인해야 한다.
 - Worker에만 다른 지침·실행 기본값을 주는 역할별 정책. 지금 역할은 persona와 Tool Filter만 다르다.
 - DSH 본체 변경. 예를 들어 spill-policy의 도구 제외 설정, 도구 이름 기반 처리(agent-instructions, skill-filesystem).
+
+## 배포
+
+- 2026-10-18: Studio 0.6.2(GitHub Release v0.6.2)에 포함되어 GitHub #34을 종료했다. npm 공개는 사용자 2단계 인증 뒤 진행한다. 후속: #35(edit_batch diff 카드·권한 인자), #36(read_batch Config 스키마·역할별 정책), #37(회귀 벤치).

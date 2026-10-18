@@ -1,6 +1,6 @@
 # Studio 0.6.2 배포 E2E
 
-검증일: 2026-10-18. 지침서: [releases/0.6.2.md](../../../scripts/agents/releases/0.6.2.md). 검증자 원본 보고: [verifier-report.md](verifier-report.md).
+검증일: 2026-10-18. 지침서: [releases/0.6.2.md](../../../scripts/agents/archive/releases/0.6.2.md). 검증자 원본 보고: [verifier-report.md](verifier-report.md).
 
 ## 대상
 

@@ -1,10 +1,10 @@
 # #34 Optimized 메인-worker 최적화 E2E 검증
 
-이 문서를 받은 에이전트(**검증자**)는 아래 단계를 실행하고 보고 양식으로 결과를 낸다. 제품을 고치지 않는다. 판정 단계·올림 규칙·기다리기는 [에이전트 E2E 검증 지침](../README.md#판정-단계)을 따른다.
+이 문서를 받은 에이전트(**검증자**)는 아래 단계를 실행하고 보고 양식으로 결과를 낸다. 제품을 고치지 않는다. 판정 단계·올림 규칙·기다리기는 [에이전트 E2E 검증 지침](../../README.md#판정-단계)을 따른다.
 
 ## 범위
 
-- 대상: [#34 명세](../../../docs/issues/34-optimized-worker-tuning.md)의 "검증" 절, 대상 커밋은 0단계에서 기록한 `HEAD`, 런타임 `dsh 0.2.1-rc.2`(수정하지 않은 설치본).
+- 대상: [#34 명세](../../../../docs/issues/34-optimized-worker-tuning.md)의 "검증" 절, 대상 커밋은 0단계에서 기록한 `HEAD`, 런타임 `dsh 0.2.1-rc.2`(수정하지 않은 설치본).
 - 쓰는 위치: `studio/dist/e2e/34/`와 하네스 기본 경로(`studio/dist/e2e/home`, `studio/dist/e2e/shots/`). tracked 파일·사용자 프로필은 바꾸지 않고 커밋하지 않는다.
 - 외부 전송: 없음. 에이전트 제어는 각본 모델(`--mock-llm`, 토큰 0)로 한다. 화면 확인(3단계)의 L1을 쓰면 화면 문구가 Pixie 제공자·결정 엔진으로 전송된다.
 - 비밀값: 없음.
@@ -13,14 +13,14 @@
 
 1. `git status --short`, `git branch --show-current`, `git log --oneline -3`을 기록한다.
 2. `dsh --version`이 `0.2.1-rc.2`인지 확인한다. 다르면 1~3단계는 `대기`다.
-3. 도구 확인: PATH의 `zstd`(에이전트 제어), Playwright 모듈·Chrome(화면 확인). 없으면 해당 단계는 `환경 차단`이며 자동 설치하지 않는다([사전 조건](../README.md#브라우저-검사-l0)).
+3. 도구 확인: PATH의 `zstd`(에이전트 제어), Playwright 모듈·Chrome(화면 확인). 없으면 해당 단계는 `환경 차단`이며 자동 설치하지 않는다([사전 조건](../../README.md#브라우저-검사-l0)).
 4. 서버를 띄운다.
 
    ```sh
    node studio/scripts/e2e/server.mjs up --mock-llm
    ```
 
-   `ok: false`면 [step별 대처](../README.md#격리-서버)를 따른다.
+   `ok: false`면 [step별 대처](../../README.md#격리-서버)를 따른다.
 
 ## 1. L0 검사
 
@@ -46,7 +46,7 @@
 
 ## 3. 화면 확인 (L0, 선택)
 
-브라우저 하네스로 프리셋 목록과 Config 화면을 확인한다. 셀렉터는 [browser.mjs](../../e2e/browser.mjs)의 `app.step()`을 쓴다.
+브라우저 하네스로 프리셋 목록과 Config 화면을 확인한다. 셀렉터는 [browser.mjs](../../../e2e/browser.mjs)의 `app.step()`을 쓴다.
 
 - Optimized 카드: `편집`이 활성, `삭제`가 비활성, `기본값으로 복구` 버튼이 있다.
 - 편집 → 실행 설정 → Config: `여러 파일 한 번에 읽기`(studio-batch)는 켜진 채 잠겨 있고 "Studio가 넣은 값이며, 프리셋을 기본값으로 복구할 때만 바뀝니다"가 보인다. `한 파일 여러 곳 고치기`(studio-edit-batch)는 꺼진 채 "스키마를 읽을 수 없어 편집할 수 없습니다."가 보인다.
