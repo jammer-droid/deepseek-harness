@@ -175,9 +175,9 @@ Optimized는 지금 `agents: []`이다. 기본 Worker 역할을 하나 넣는다
 |---|---|---|---|
 | S1 | 완료 | `4c70d2dbc4`, `ef0c0eef69` | `optimized-preset.test.mjs` 값별 단언. S5 사전 점검에서 `tool:goal` 빈 덮어쓰기 추가 |
 | S3 | 완료 | `1173171038` | 편집 유지·새 기본값·복구·이전 행 갱신 단위 테스트 |
-| S6 | 코드 완료 | `3dd33d19ee` | jsdom 테스트(편집·복구 버튼, Config 잠금). 라이트·다크·좁은 폭 화면 확인은 미실행 |
+| S6 | 완료 | `3dd33d19ee` | jsdom 테스트. 배포 패키지로 라이트·다크·480px 화면 확인([기록](../verification/release-0.6.2/README.md)) |
 | S4 | 완료 | `b7ed27d395` | `optimized-tools.md`, `CHANGELOG`, Master 목록 |
-| S5 | 사전 점검 통과, 검증자 실행 대기 | `ef0c0eef69` | 아래 기록 |
+| S5 | 완료 | `ef0c0eef69` | 0.6.2 배포 E2E에서 검증자가 신규 설치 16/16, 0.6.1 업그레이드 통과([기록](../verification/release-0.6.2/README.md)) |
 
 S5 사전 점검(구현 세션이 직접 실행, 검증자 판정 아님):
 

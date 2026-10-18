@@ -1,0 +1,23 @@
+{
+  "phase": "before",
+  "optimized": {
+    "id": "studio-optimized",
+    "name": "Optimized",
+    "tools": 22,
+    "bash": 600000,
+    "agents": 0,
+    "status": "applied",
+    "customized": false
+  }
+}
+{
+  "copy": {
+    "id": "studio-user-24b15a2c-0831-4f99-b022-b5ab34dcd6ae",
+    "name": "__upgrade_copy__",
+    "tools": 22,
+    "bash": 600000,
+    "agents": 0,
+    "status": "applied",
+    "customized": false
+  }
+}

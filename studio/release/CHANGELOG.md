@@ -26,7 +26,8 @@ Requires DSH `0.2.0-rc.2`, `0.2.1-alpha.2`, `0.2.1-rc.1` or `0.2.1-rc.2`.
 
 ### Verification
 
-- Optimized tuning, the Worker role and Restore defaults: a packaged build was installed into an isolated profile of unmodified DSH `0.2.1-rc.2` and checked with a scripted test model. The main agent received the orchestration tools; the Worker did not, a `judge` call from it was rejected and `read` ran; both received the common instructions and the new `read` guidance; saving an edit marked Optimized as edited and Restore defaults brought the defaults back. Real models were not used for this check.
+- The release package was installed into isolated profiles of unmodified DSH `0.2.1-rc.2`, both fresh and as an upgrade from 0.6.1, and checked with a scripted test model. On upgrade, the built-in Optimized moved to the new defaults while an existing copy kept its tools and 600000 ms `bash` wait. The preset list and Config screens were checked in light, dark and 480 px views.
+- Optimized tuning, the Worker role and Restore defaults: checked in the same installation. The main agent received the orchestration tools; the Worker did not, a `judge` call from it was rejected and `read` ran; both received the common instructions and the new `read` guidance; saving an edit marked Optimized as edited and Restore defaults brought the defaults back. Real models were not used for this check.
 - Execution defaults: a build of this change (packaged before the version number was raised to 0.6.2) was installed into an isolated profile of unmodified DSH `0.2.1-rc.2` and checked with a local test model. With the shell timeout set to 1500 ms, an Optimized copy still waited for `sleep 3`; after its `bash` default was turned off, the command moved to a background job after 1500 ms. The editor was checked in light, dark and 480 px views. Other DSH versions were not tested for this change.
 
 ### 한국어
@@ -53,7 +54,8 @@ DSH `0.2.0-rc.2`, `0.2.1-alpha.2`, `0.2.1-rc.1` 또는 `0.2.1-rc.2`가 필요합
 
 #### 검증
 
-- Optimized 조정, Worker 역할, 기본값으로 복구: 패키징한 빌드를 수정하지 않은 DSH `0.2.1-rc.2`의 격리 프로필에 설치하고 각본 테스트 모델로 확인했습니다. 메인 에이전트는 오케스트레이션 도구를 받았고 Worker는 받지 않았으며, Worker의 `judge` 호출은 거부되고 `read`는 실행되었습니다. 두 에이전트 모두 공통 지침과 새 `read` 지침을 받았습니다. 편집을 저장하면 Optimized가 편집됨으로 표시되었고, 기본값으로 복구하면 기본값으로 돌아왔습니다. 이 확인에는 실제 모델을 쓰지 않았습니다.
+- 배포 패키지를 수정하지 않은 DSH `0.2.1-rc.2`의 격리 프로필에 새로 설치한 경우와 0.6.1에서 업그레이드한 경우 모두 각본 테스트 모델로 확인했습니다. 업그레이드하면 기본 제공 Optimized는 새 기본값으로 바뀌었고, 기존 복사본은 도구와 `bash` 600000ms 대기를 그대로 유지했습니다. 프리셋 목록과 Config 화면은 라이트·다크 모드와 480px 너비에서 확인했습니다.
+- Optimized 조정, Worker 역할, 기본값으로 복구: 같은 설치본에서 확인했습니다. 메인 에이전트는 오케스트레이션 도구를 받았고 Worker는 받지 않았으며, Worker의 `judge` 호출은 거부되고 `read`는 실행되었습니다. 두 에이전트 모두 공통 지침과 새 `read` 지침을 받았습니다. 편집을 저장하면 Optimized가 편집됨으로 표시되었고, 기본값으로 복구하면 기본값으로 돌아왔습니다. 이 확인에는 실제 모델을 쓰지 않았습니다.
 - 실행 기본값: 이번 변경을 담은 빌드(버전 번호를 0.6.2로 올리기 전에 패키징)를 수정하지 않은 DSH `0.2.1-rc.2`의 격리 프로필에 설치하고 로컬 테스트 모델로 확인했습니다. 셸 타임아웃을 1500ms로 둔 상태에서 Optimized 복사본은 `sleep 3`이 끝날 때까지 기다렸고, `bash` 기본값을 끈 뒤에는 1500ms가 지나자 백그라운드 작업으로 넘어갔습니다. 편집 화면은 라이트·다크 모드와 480px 너비에서 확인했습니다. 이번 변경 사항은 다른 DSH 버전에서 확인하지 않았습니다.
 
 ## 0.6.1 — 2026-10-17
