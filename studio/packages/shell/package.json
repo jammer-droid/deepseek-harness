@@ -24,6 +24,7 @@
     "./policy": "./policy.js",
     "./roles": "./roles.js",
     "./batch": "./batch.js",
+    "./edit-batch": "./edit-batch.js",
     "./judge": "./judge.js",
     "./loop": "./loop.js"
   },
@@ -33,6 +34,7 @@
     "policy.js",
     "roles.js",
     "batch.js",
+    "edit-batch.js",
     "judge.js",
     "loop.js",
     "skills",

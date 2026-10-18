@@ -5,6 +5,7 @@ export const LEGACY_PACKAGE_NAME = '@local/dsh-studio-shell';
 export const POLICY_PLUGIN = `${PACKAGE_NAME}/policy`;
 export const ROLE_PLUGIN = `${PACKAGE_NAME}/roles`;
 export const BATCH_PLUGIN = `${PACKAGE_NAME}/batch`;
+export const EDIT_BATCH_PLUGIN = `${PACKAGE_NAME}/edit-batch`;
 export const JUDGE_PLUGIN = `${PACKAGE_NAME}/judge`;
 export const LOOP_PLUGIN = `${PACKAGE_NAME}/loop`;
 
