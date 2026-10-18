@@ -157,18 +157,25 @@ test('Optimized rows from before it was editable are treated as unedited and ado
   await upgraded.dispose();
 });
 
-test('Optimized is locked: Edit and Delete are disabled, Create copy stays available', async () => {
+test('Optimized can be edited and restored; only Delete is disabled', async () => {
   const dom = new JSDOM('<div id="root"></div>');
   globalThis.window = dom.window; globalThis.document = dom.window.document; globalThis.IS_REACT_ACT_ENVIRONMENT = true;
   const root = createRoot(document.getElementById('root'));
-  const template = optimizedTemplate([]); let edited; let copied;
-  const api = { list: async () => [template], apply: async () => template, unapply: async () => {}, delete: async () => {} };
+  const template = { ...optimizedTemplate([]), customized: true, newDefaults: true }; let edited; let copied; let restored = 0;
+  const api = { list: async () => [template], apply: async () => template, unapply: async () => {}, delete: async () => {}, restoreOptimized: async () => { restored++; return template; } };
   try {
     await act(async () => root.render(React.createElement(PresetList, { locale: 'ko', revision: 0, api, onEdit: value => { edited = value; }, onCopy: value => { copied = value; } })));
-    const buttons = [...document.querySelectorAll('article button')].filter(button => !button.closest('.studio-split'));
-    assert.deepEqual(buttons.filter(button => button.disabled).map(button => button.textContent), ['편집', '삭제']);
+    const card = document.querySelector('article');
+    assert.match(card.textContent, /직접 편집함/); assert.match(card.textContent, /새 기본값/);
+    const buttons = [...card.querySelectorAll('button')].filter(button => !button.closest('.studio-split'));
+    assert.deepEqual(buttons.filter(button => button.disabled).map(button => button.textContent), ['삭제']);
     await act(async () => buttons.find(button => button.textContent === '편집').click());
     await act(async () => buttons.find(button => button.textContent === '복사').click());
-    assert.equal(edited, undefined); assert.equal(copied.id, template.id);
+    assert.equal(edited.id, template.id); assert.equal(copied.id, template.id);
+    await act(async () => buttons.find(button => button.textContent === '기본값으로 복구').click());
+    const confirm = [...document.querySelectorAll('button')].find(button => button.textContent === '복구하고 반영');
+    assert.ok(confirm); assert.equal(restored, 0);
+    await act(async () => confirm.click());
+    assert.equal(restored, 1);
   } finally { await act(async () => root.unmount()); dom.window.close(); }
 });
