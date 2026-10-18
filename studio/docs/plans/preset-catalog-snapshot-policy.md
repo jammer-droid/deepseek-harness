@@ -511,7 +511,7 @@ S2에 남은 것: `selectPromptProviders` 정리 여부, 실제 Loader 통합 �
 | 층 | 내용 | 표시 |
 | --- | --- | --- |
 | DSH standard | 실행 중인 DSH의 `standard` 선언을 캡처할 때마다 읽는다. 읽지 못하면 Studio에 들어 있는 사본을 쓰고 안내한다. 플랫폼 조건은 이 Host 기준으로 풀어 비활성 행은 뺀다. | 배지 `standard` |
-| Studio 추가 | `spill-policy`, `read_batch`(`studio-batch`), `tool-cordis`, `plugin-manager/tools`. standard가 이미 제공하는 패키지는 중복으로 넣지 않는다. | 배지 `Studio` |
+| Studio 추가 | `spill-policy`, `read_batch`(`studio-batch`), `edit_batch`(`studio-edit-batch`), `judge`(`studio-judge`), `pixie_loop`(`studio-loop`), `tool-cordis`, `plugin-manager/tools`. standard가 이미 제공하는 패키지는 중복으로 넣지 않는다. | 배지 `Studio` |
 | Studio 대체 | standard의 `subagent`·`subagent_fork` → `subagent_role`. 역할 플러그인은 standard의 delegation 그룹에 들어가 같은 워크플로 엔진을 쓴다. | 포함 목록에 나오지 않고 서브에이전트 탭이 안내 |
 | 사용자 추가 | `플러그인 추가`에서 패키지 이름으로만 추가(`studio-added/…`). 다른 DSH 프리셋에서 가져오는 후보 목록은 대체 구현과 충돌하므로 없앴다. | 배지 `추가함` |
 

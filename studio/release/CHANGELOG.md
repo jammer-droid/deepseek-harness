@@ -4,6 +4,12 @@ Release notes for `@matamt-dbg/dsh-studio`. Each version lists English notes fir
 
 ## Unreleased
 
+- **Optimized is tuned from benchmarks and gains a Worker role.** It adds `edit_batch`, lifts the `read_batch` line cap and keeps its results out of spilling, waits 120 seconds for `bash` instead of 600, rewrites the `bash`/`read` descriptions and the `read` guidance, and ships shorter common instructions. A default **Worker** subagent role inherits these settings but cannot delegate, ask questions, or use `judge`, `pixie_loop` or `cordis_inspect_*`; the main agent keeps them.
+- **Optimized can be edited and restored.** Edit it like any preset. **Restore defaults** brings back the current Studio defaults and applies them. An unedited Optimized follows new Studio defaults automatically; an edited one is kept and shows **New defaults** when they change. Optimized still cannot be deleted.
+- Config entries without a schema (`read_batch`, `edit_batch`) cannot be edited. An entry that carries a value stays on and locked, and only restoring the preset defaults changes it.
+- Optimized를 벤치 결과에 맞춰 조정하고 Worker 역할을 넣었습니다. `edit_batch`를 추가하고, `read_batch` 줄 상한을 없애 결과가 spill로 잘리지 않게 했습니다. `bash` 기본 대기를 600초에서 120초로 줄이고, `bash`·`read` 설명과 `read` 지침, 공통 지침을 짧게 바꿨습니다. 기본 **Worker** 서브에이전트 역할은 이 설정을 그대로 물려받되 위임·질문·`judge`·`pixie_loop`·`cordis_inspect_*`는 쓰지 않습니다. 메인 에이전트는 이 도구를 모두 씁니다.
+- Optimized를 편집하고 기본값으로 복구할 수 있습니다. **기본값으로 복구**는 현재 Studio 기본값으로 되돌린 뒤 반영합니다. 편집하지 않은 Optimized는 새 기본값을 자동으로 따르고, 편집한 Optimized는 그대로 두고 **새 기본값**을 표시합니다. 삭제는 계속 막습니다.
+- 스키마가 없는 Config 항목(`read_batch`, `edit_batch`)은 편집할 수 없습니다. 값이 들어 있는 항목은 켜진 채 잠기고, 프리셋을 기본값으로 복구할 때만 바뀝니다.
 - Session role dialogs allow Fresh/Fork selection. Changes affect new children only; existing child continuation keeps its settings.
 - 세션 역할 추가·편집 창에서 Fresh/Fork를 선택할 수 있습니다. 변경은 새 자식에만 적용되며 기존 자식을 이어서 실행할 때는 기존 설정을 유지합니다.
 
