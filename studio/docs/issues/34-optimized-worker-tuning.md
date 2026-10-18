@@ -169,6 +169,24 @@ Optimized는 지금 `agents: []`이다. 기본 Worker 역할을 하나 넣는다
 
 순서: S1 → S3 → S6 → S4 → S5. 첫 단계는 S1이다.
 
+## 진행
+
+| 단계 | 상태 | 커밋 | 확인 |
+|---|---|---|---|
+| S1 | 완료 | `4c70d2dbc4`, `ef0c0eef69` | `optimized-preset.test.mjs` 값별 단언. S5 사전 점검에서 `tool:goal` 빈 덮어쓰기 추가 |
+| S3 | 완료 | `1173171038` | 편집 유지·새 기본값·복구·이전 행 갱신 단위 테스트 |
+| S6 | 코드 완료 | `3dd33d19ee` | jsdom 테스트(편집·복구 버튼, Config 잠금). 라이트·다크·좁은 폭 화면 확인은 미실행 |
+| S4 | 완료 | `b7ed27d395` | `optimized-tools.md`, `CHANGELOG`, Master 목록 |
+| S5 | 사전 점검 통과, 검증자 실행 대기 | `ef0c0eef69` | 아래 기록 |
+
+S5 사전 점검(구현 세션이 직접 실행, 검증자 판정 아님):
+
+- 런타임: 수정하지 않은 DSH `0.2.1-rc.2`, 격리 home `studio/dist/e2e/home`, 프로필 `e2e`, 각본 모델(`--mock-llm`).
+- 패키지: `matamt-dbg-dsh-studio-0.6.2.tgz`(이 브랜치 빌드), SHA256 `6a40bf02185cd110259af41fdab596aeee43221a03b79bc112e3f7b4c8ad629d`.
+- `smoke.mjs` 12/12, `agent-optimized-worker.mjs` 16/16, `check-optimized-runtime.mjs` 통과.
+- 지침서 2단계(이전 버전 행 갱신)와 3단계(화면)는 실행하지 않았다. 새 세션 검증자가 [지침서](../../scripts/agents/issues/34-optimized-worker-tuning.md)로 실행한다.
+- 실모델 실행과 회귀 벤치는 하지 않았다.
+
 ## 검증
 
 - 단위: `npm test` 전체 통과
