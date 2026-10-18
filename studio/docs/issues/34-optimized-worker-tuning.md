@@ -97,7 +97,8 @@ TB4 짧은 과제 12개, 과제별 1회, GPT-6.1 Sol `high`, 500K 문맥, 단일
 | `tool:read` | Use read, not cat, for text files. One read returns up to 2000 lines; omit limit unless a file is larger. |
 
 - 기존 DSH 문구의 "Use offset and limit to continue reading large files."가 작은 파일도 나눠 읽게 했다.
-- `tool:goal`, `tool:workflow`는 덮어쓰지 않는다. 부모는 그 도구를 가지고, 자식은 Tool Filter로 숨기면 `childPolicy`가 자동으로 비운다(벤치에서는 worker에 도구가 없어 직접 비웠다).
+- `tool:workflow`는 덮어쓰지 않는다. 부모는 그 도구를 가지고, 자식은 Tool Filter로 숨기면 `childPolicy`가 자동으로 비운다(벤치에서는 worker에 도구가 없어 직접 비웠다).
+- `tool:goal`은 빈 문자열로 덮는다. Optimized는 goal 도구를 선택하지 않는데, DSH `tool-goal`은 도구가 없어도 지침을 넣는다(S5 사전 점검에서 메인·Worker 모두 확인). 선택되지 않은 도구라 `childPolicy`도 비우지 않는다. goal 도구가 선택된 템플릿에서는 덮지 않는다.
 
 ### C6 공통 지침 (`OPTIMIZED_PROMPT`)
 

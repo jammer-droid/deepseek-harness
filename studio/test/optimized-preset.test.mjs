@@ -30,7 +30,7 @@ test('Optimized template carries the #34 tuned values for every selected tool', 
   assert.equal(request.toolOverrides.bash.parameters.timeoutMs, 'Foreground wait in milliseconds; defaults to 120000ms, subject to the runtime cap. A command that runs longer keeps running as a background job; collect it with job_output instead of rerunning it.');
   assert.equal(request.toolOverrides.bash.parameters.run_in_background, 'Use for builds, tests, or scripts expected to take longer than a minute; continue other work and collect the result with job_output.');
   assert.deepEqual(request.toolOverrides.read.parameters, { limit: 'Maximum lines to return. Omit to read the whole file (up to 2000 lines).', offset: '1-based first line. Use only to continue a file longer than the read cap.' });
-  assert.deepEqual(request.sections, { 'tool:read': 'Use read, not cat, for text files. One read returns up to 2000 lines; omit limit unless a file is larger.' });
+  assert.deepEqual(request.sections, { 'tool:read': 'Use read, not cat, for text files. One read returns up to 2000 lines; omit limit unless a file is larger.', 'tool:goal': '' });
   assert.equal(request.prompt, OPTIMIZED_PROMPT);
   assert.equal(request.prompt.split('\n').length, 7);
   assert.deepEqual(full.agents, [{ name: 'Worker', role: 'worker', model: 'inherit', reasoning: 'inherit', spawn: 'fresh', persona: WORKER_PERSONA,
@@ -48,7 +48,7 @@ test('Optimized template drops sentences, Config and Worker filter entries for t
   assert.match(lean.applyWarning, /read_batch, edit_batch, judge, pixie_loop/);
   // Without the role tool there is nothing to start a Worker with.
   assert.deepEqual(optimizedTemplate(['read']).agents, []);
-  assert.equal(optimizedTemplate(['bash']).request.sections, undefined);
+  assert.deepEqual(optimizedTemplate(['bash']).request.sections, { 'tool:goal': '' });
 });
 test('Optimized seeds once, supports edit/apply/unapply, survives restart, and only deletion is prohibited', async () => {
   const template = optimizedTemplate([]);

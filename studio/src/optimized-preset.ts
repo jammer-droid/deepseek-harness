@@ -58,6 +58,7 @@ export function optimizedAgents(tools: readonly string[]): StudioRole[] {
     toolFilter: { mode: 'replace', deny: WORKER_HIDDEN_TOOLS.filter(name => tools.includes(name)) } }];
 }
 
+const GOAL_TOOLS = ['create_goal', 'get_goal', 'update_goal'];
 const BASH_TIMEOUT_MS = 120000;
 const JOB_OUTPUT_TIMEOUT_MS = 120000;
 
@@ -81,7 +82,11 @@ export function optimizedTemplate(tools: string[]) {
         timeout_ms: `Maximum wait in milliseconds when wait is true. Defaults to a ${JOB_OUTPUT_TIMEOUT_MS}ms request, subject to the runtime cap. Timeout leaves the job running.`,
       } } } : {}),
     },
-    ...(has('read') ? { sections: { 'tool:read': 'Use read, not cat, for text files. One read returns up to 2000 lines; omit limit unless a file is larger.' } } : {}),
+    sections: {
+      ...(has('read') ? { 'tool:read': 'Use read, not cat, for text files. One read returns up to 2000 lines; omit limit unless a file is larger.' } : {}),
+      // DSH renders goal guidance whether or not a goal tool is offered; Optimized offers none.
+      ...(GOAL_TOOLS.some(has) ? {} : { 'tool:goal': '' }),
+    },
     execution: { defaults: { ...(has('bash') ? { bash: { timeoutMs: BASH_TIMEOUT_MS } } : {}), ...(has('job_output') ? { job_output: { timeout_ms: JOB_OUTPUT_TIMEOUT_MS } } : {}) } },
   };
   const missing = OPTIONAL_TOOLS.filter(name => !has(name));

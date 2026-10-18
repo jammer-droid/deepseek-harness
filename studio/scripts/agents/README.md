@@ -239,6 +239,7 @@ smoke 통과와 함께 프리셋 목록과 Optimized 도구 수(22)를 확인하
 
 | 위치 | 문서 | 대상 |
 | --- | --- | --- |
+| issues | [34-optimized-worker-tuning.md](issues/34-optimized-worker-tuning.md) | #34 Optimized 튜닝 값, 기본 Worker 역할, 편집·기본값 복구, 스키마 없는 Config 잠금 |
 | checks | [dsh-role-compat.md](checks/dsh-role-compat.md) | DSH 업데이트 뒤 역할 persona·Tool Filter·자식 정책 복원 호환(rc.1 기준으로 작성) |
 | checks | [subagent-tool-filter.md](checks/subagent-tool-filter.md) | 서브에이전트 Tool Filter 동작 |
 | checks | [web-search-cost.md](checks/web-search-cost.md) | 웹 검색 provider(기존 Messages 검색 / Search·Fetch API) 비용·품질 비교 |
