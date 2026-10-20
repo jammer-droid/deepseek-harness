@@ -28,7 +28,7 @@ export function declaredEntries(name: string, manifest: { exports?: unknown }): 
  * Read the profile's installed plugins and classify them. Imports run module top-level code but
  * never a plugin's `apply`; only dependencies the profile manifest declares are imported.
  */
-export async function readInstalledPlugins(ctx: Context, masterNames: ReadonlySet<string>): Promise<{ plugins: InstalledPlugin[]; errors: Record<string, string> }> {
+export async function readInstalledPlugins(ctx: Context, masterNames: ReadonlySet<string>, addedNames: ReadonlySet<string> = new Set()): Promise<{ plugins: InstalledPlugin[]; errors: Record<string, string> }> {
   const profile = ctx.get('profileContext' as never) as unknown as { dir: string } | undefined;
   if (!profile) throw new Error('Installed plugin detection requires a profile');
   const manifest = JSON.parse(await readFile(join(profile.dir, 'package.json'), 'utf8')) as { dependencies?: Record<string, string> };
@@ -52,5 +52,5 @@ export async function readInstalledPlugins(ctx: Context, masterNames: ReadonlySe
   }
   const manager = ctx.get('pluginManager' as never) as unknown as PluginManagerApi | undefined;
   const profileRows = manager ? (await manager.listPlugins()).filter(row => !row.moduleName.startsWith('cordis:')) : [];
-  return { plugins: classifyInstalled({ installed, pluginEntries, masterNames, profileRows }), errors };
+  return { plugins: classifyInstalled({ installed, pluginEntries, masterNames, addedNames, profileRows }), errors };
 }

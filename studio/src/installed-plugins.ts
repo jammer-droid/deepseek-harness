@@ -64,13 +64,16 @@ function profileState(rows: readonly ProfileRow[]): PluginState {
  * Classify every entry the profile declares or runs.
  * @param installed - profile dependencies: package name → version.
  * @param pluginEntries - per installed package, the entry specifiers that export a plugin (empty to skip a library).
- * @param masterNames - module names the Studio Master composes.
+ * @param masterNames - module names DSH standard and the Studio layer compose (not user additions).
+ * @param addedNames - module names the user added to the Master; their scope still comes from evidence,
+ *   so a profile-scoped addition from an older build is reported for migration (D7).
  * @param profileRows - live profile rows (`pluginManager.listPlugins()`), Master rows excluded by the caller.
  */
 export function classifyInstalled(input: {
   installed: Readonly<Record<string, string>>;
   pluginEntries: Readonly<Record<string, readonly string[]>>;
   masterNames: ReadonlySet<string>;
+  addedNames?: ReadonlySet<string>;
   profileRows: readonly ProfileRow[];
 }): InstalledPlugin[] {
   const byModule = new Map<string, ProfileRow[]>();
@@ -90,7 +93,9 @@ export function classifyInstalled(input: {
       continue;
     }
     const known = COMPATIBILITY.find(item => item.pattern.test(entry));
-    result.push({ ...base, scope: known?.scope ?? 'unknown', evidence: known ? 'compatibility' : 'none', state: 'installed' });
+    const added = input.addedNames?.has(entry) === true;
+    // A user addition that probed and mounted is evidence it runs per preset unless the table says otherwise.
+    result.push({ ...base, scope: known?.scope ?? (added ? 'agent' : 'unknown'), evidence: known ? 'compatibility' : added ? 'master' : 'none', state: added ? 'in-master' : 'installed' });
   }
   return result;
 }

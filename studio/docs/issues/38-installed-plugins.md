@@ -209,7 +209,7 @@ DSH에서 비밀 값을 저장하는 경로는 세 가지다. 셋 다 평문이�
 |---|---|---|---|---|---|
 | S1 | 재현과 근거 수집 | — | 격리 rc.2 프로필에서 문제 1 표의 초기 상태 세 가지를 각각 재현하고, 상태 네 시점의 기록을 남긴다(아래). 빈 extensions의 원인을 확정하거나 미확정으로 남긴다. 호환성 표의 첫 판본(진입점 10개 이상)을 만든다 | 격리 home/profile 기록, 실패 재현 스크립트 [s38-repro.mjs](../../scripts/e2e/s38-repro.mjs) | 완료 |
 | S2 | 감지·분류 Host 서비스 | S1 | Remote 하나가 행 단위로 `{ package, entry, scope, evidence, state }`를 반환한다. scope는 `agent`·`profile`·`unknown`, state는 `in-master`·`profile-active`·`profile-inactive`·`profile-failed`·`profile-unaddressable`·`installed`다. 플러그인 export가 없는 패키지는 뺀다 | 단위 테스트(분류 근거 표), 실제 Loader 테스트 | 완료 |
-| S3 | 프로필 공용 차단과 이전 | S2 | 프로필 공용 행은 Master에 들어가지 않고 이유가 표시된다. D7 이전 후 다음을 확인한다: 설정이 보존됨, 공용 등록이 정확히 1회, 프로필 등록 뒤 `web_search`가 Exa로 감, 두 프리셋을 동시에 써도 충돌 없음, 재시작 후 복원에서 충돌 없음 | 재현 테스트가 통과로 바뀜, 이전 테스트, 격리 프로필 확인 | 진행 중(차단 완료, 이전 남음) |
+| S3 | 프로필 공용 차단과 이전 | S2 | 프로필 공용 행은 Master에 들어가지 않고 이유가 표시된다. D7 이전 후 다음을 확인한다: 설정이 보존됨, 공용 등록이 정확히 1회, 프로필 등록 뒤 `web_search`가 Exa로 감, 두 프리셋을 동시에 써도 충돌 없음, 재시작 후 복원에서 충돌 없음 | 재현 테스트가 통과로 바뀜, 이전 테스트, 격리 프로필 확인 | Host 완료, 화면은 S4·S5와 함께 |
 | S4 | 에이전트 기능 감지와 설정 후 포함 | S2, S3, D2 | 새 후보가 `새로 설치됨`으로 보인다. 초기 설정 → probe → 포함 흐름이 동작하고, 필수 설정이 있는 플러그인도 포함할 수 있다. 실패하면 이전 Master를 유지한다. `플러그인 추가` 대화상자를 없앤다 | DOM 테스트, Master 수명 테스트 | 대기 |
 | S5 | 프로필 공용 설정 | S2, D3, D6 | ACTIVE 프로필 행의 Config를 스키마 폼으로 보고 저장한다. 덮어씀·검증 실패·비활성·주소 지정 불가는 이유를 표시하고 파일을 그대로 둔다. 비밀 필드는 유지·교체·삭제 의미로 저장하고, 응답·오류에 비밀 값이 없다. "모든 세션에 적용"을 표시한다 | DOM 테스트, `configEditor` 실제 Loader 테스트 | 대기 |
 | S6 | 실행되지 않는 프로필 공용 안내 | S2, S5 | 번들이 아닌 프로필 공용 패키지에 스니펫(비밀 자리표시자)을 보여 준다. 사용자가 patch에 등록하고 다시 읽으면 S5 목록으로 옮겨지며, 실제로 활성화된다 | DOM 테스트, 격리 프로필 실제 Loader 확인 | 대기 |
@@ -217,7 +217,7 @@ DSH에서 비밀 값을 저장하는 경로는 세 가지다. 셋 다 평문이�
 
 S1의 상태 기록 시점은 네 가지다: `추가 직후`, `키 저장 후`, `반영 후`, `재시작 후`. 시점마다 `master-extensions.json`, `presets.json` 상태, Host Config 목록, 오류 원문을 남긴다.
 
-현재 단계는 S3(D7 이전)다. S1 결과로 바뀐 결정은 없다. D6은 스키마 역할을 먼저 쓰도록 보강했다.
+현재 단계는 S4·S5(플러그인 탭 화면과 프로필 공용 설정)다. S3의 이전 알림 화면은 같은 탭에서 만든다. S1 결과로 바뀐 결정은 없다. D6은 스키마 역할을 먼저 쓰도록 보강했다.
 
 ## 위험과 제한
 
@@ -252,4 +252,16 @@ S1의 상태 기록 시점은 네 가지다: `추가 직후`, `키 저장 후`, 
   - 검증: 단위 테스트 8개. `npm --prefix studio test` 778개 통과(타입 검사·빌드 포함). 격리 rc.2 `p38`(Studio tgz SHA256 `6c4c57a7…aa7`)에서 두 경우를 확인했다.
     - Exa가 설치만 된 경우: `profile compatibility installed`로 분류되고, 추가는 안내 문구와 함께 거부된다. S1과 달리 Optimized는 `applied`로 유지됐다.
     - patch에 등록한 경우: `profile profile-row profile-active web-search-exa`로 분류되고, 추가는 "already runs in the profile"로 거부된다.
-  - 남은 S3: D7 이전(기존 `studio-added` 공용 행의 보존·선택·적용본 처리), 화면 표시. `saveExtensions`(전체 목록 교체 RPC)는 아직 차단 검사를 하지 않는다.
+- 2026-10-20: S3 Host 부분 완료.
+  - 비밀 필드: [secret-fields.ts](../../src/secret-fields.ts). 스키마 `x-cordis.role`을 먼저 보고, 역할이 없으면 이름의 마지막 단어(`token`·`secret`·`password`·`apiKey`)로 판정한다. 판정된 값은 `{ secret, set }` 표식으로 가리고, 문자열에 나타나면 자리표시자로 바꾼다.
+  - 이전: [extension-migration.ts](../../src/extension-migration.ts) `migrationPlan`. Remote는 `extensionMigration`(가린 설정, 프리셋별 override, 그 진입점을 아직 마운트하는 적용 프리셋)과 `migrateExtension`이다. `migrateExtension`은 원본 값을 `studio-data/migrated-extensions.json`(0600)에 더해 보존한 뒤 Master에서 행을 뺀다. 사라진 override id는 기존 카탈로그 변경 알림이 정리한다.
+  - D7 4단계 조정: Master에서 빼는 것은 막지 않는다. 빼지 않으면 모든 반영이 계속 실패하기 때문이다. 대신 `appliedIn` 프리셋을 돌려주고, 화면은 프로필에 등록하기 전에 그 프리셋을 재적용하라고 안내한다.
+  - 분류 보강: 사용자가 추가한 행도 근거로 분류한다. 표에 있는 항목(Exa)은 `profile`이고, 그 밖의 추가 행은 `agent`/`in-master`다.
+  - `saveExtensions`는 새로 들어오는 프로필 공용 행을 거부한다. 이미 저장된 행은 이전할 때까지 유지한다.
+  - 검증: 단위 테스트 3개 추가. `npm --prefix studio test` 781개 통과. 격리 rc.2 `p38`에서 다음을 확인했다.
+    - 예전 빌드가 저장한 Exa 행(원본 apiKey 포함)을 재현했다. plan은 apiKey를 가린 채 돌려줬다.
+    - 이전 후 백업 파일은 권한 600이고 원본 값을 보존했다. extensions는 `[]`가 됐다.
+    - 실패 경고가 남아 있던 Optimized 반영이 성공했다.
+    - `saveExtensions`로 Exa를 넣으려 하면 거부된다.
+    - 기존 [check-master-runtime.mjs](../../scripts/check-master-runtime.mjs)(tool-subagent 확장 추가·원복 포함)가 통과했다.
+  - S3 수용 조건 중 "두 프리셋 동시 사용·재시작 복원"은 프로필 등록 경로(S6)와 S7에서 함께 확인한다. S1에서는 프로필 등록 상태의 Optimized 반영과 `web_search`까지 확인했다.
