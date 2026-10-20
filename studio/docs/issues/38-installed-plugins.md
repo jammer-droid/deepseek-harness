@@ -282,4 +282,7 @@ S1의 상태 기록 시점은 네 가지다: `추가 직후`, `키 저장 후`, 
     8. 재시작 뒤 Master와 Optimized가 `applied`였고, Optimized 재반영과 `web_search`가 성공했다.
   - 브라우저 [plugins-tab.mjs](../../scripts/e2e/plugins-tab.mjs): 라이트·다크·480px 27개 검사 통과, pageerror·플러그인 활성화 실패 0.
   - 격리 patch는 원본으로 되돌리고 서버와 가짜 Exa를 종료했다. 사용자 Desktop과 `~/.dsh`는 바꾸지 않았다.
-  - 미확인: 실제 `확인 필요`·`에이전트 기능` 후보 패키지를 설치해 설정하고 포함·반영하는 흐름. DOM 테스트와 기존 `check-master-runtime`(extensions 경로)만 확인했다. "두 프리셋 동시 사용"은 Optimized와 Master만으로 확인했다.
+  - 미확인: 실제 `확인 필요`·`에이전트 기능` 후보 패키지를 설치해 설정하고 포함·반영하는 흐름. DOM 테스트와 기존 `check-master-runtime`(extensions 경로)만 확인했다. "두 프리셋 동시 사용"은 Optimized와 Master만으로 확인했다.- 2026-10-20: Desktop 반영(사용자 요청).
+  - 교체 전 desktop 프로필의 `package.json`, `pnpm-lock.yaml`, `pnpm-workspace.yaml`, `cordis.patch.yml`, `studio-data/`, 설치된 Studio 디렉터리를 `studio/dist/desktop-38-20261020/desktop-before/`(Git 제외)에 백업했다.
+  - 격리 검증에 쓴 tgz(SHA256 `4656f48a…2415`)를 `dsh plugin --profile desktop add`로 설치했다. 설치된 패키지 전체를 tgz 내용과 `diff -rq`로 대조해 일치함을 확인했고, bundle 선택은 그대로다.
+  - 앱 재시작과 화면 확인은 하지 않았다. 작업 세션이 그 Desktop 앱 안에서 실행 중이기 때문이다. 상태는 "설치 완료, 실행 반영 미확인"이다.
