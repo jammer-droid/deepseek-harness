@@ -359,3 +359,12 @@ S1의 상태 기록 시점은 네 가지다: `추가 직후`, `키 저장 후`, 
 - 2026-10-20: 0.6.3 후보를 Desktop에 설치했다. tgz SHA256은 `5616f333…01ba2`다. 같은 패키지로 격리 rc.2에서 smoke 12/12와 플러그인 탭 33/33을 통과했고 pageerror는 0이었다. 백업 위치는 `studio/dist/desktop-063-20261020/desktop-before/`다. 설치본을 tgz와 `diff -rq`로 비교해 일치함을 확인했고, 설치된 버전은 `0.6.3`이다. 앱 재시작과 화면 확인은 하지 않았다.
 
 - 2026-10-20: 0.6.3 배포 E2E를 통과했다([기록](../verification/release-0.6.3/README.md), 패키지 SHA256 `8a8f8c93…5379`). 신규 설치 회귀, R1–R7, 0.6.2→0.6.3 업그레이드 이전, 플러그인 탭·실행 설정 화면을 확인했다. R3 `ok: false`는 검증 기준(`[]` 한 줄을 바꾸므로 +2줄)의 오류였고, 같은 패키지로 다시 확인했다.
+## 배포
+
+- 2026-10-20: Studio 0.6.3으로 배포했다.
+  - GitHub: 공개 레포 `matamt-dbg/dsh-studio` main `9febd6b`, [Release v0.6.3](https://github.com/matamt-dbg/dsh-studio/releases/tag/v0.6.3).
+  - npm: `@matamt-dbg/dsh-studio@0.6.3`. `dist.shasum` `cd70af78…a169e8`가 공개 커밋으로 빌드한 tarball과 같다.
+  - 공개 후 확인: 레지스트리 패키지를 새 격리 프로필 `published`(DSH `0.2.1-rc.2`)에 설치했다. smoke 12/12, Optimized 도구 27, 프로필 설정 16행을 확인했다.
+  - fork 태그는 `dsh-studio-v0.6.3`(`808722345f`)과 `dsh-studio-snapshot/9febd6bfcd`다.
+  - GitHub #38을 종료했고, 종료 코멘트에 남은 미검증 항목과 [후속 후보](../plans/plugins-followups.md)를 적었다.
+  - 배포 지침서는 `scripts/agents/archive/releases/0.6.3.md`로 옮겼다.

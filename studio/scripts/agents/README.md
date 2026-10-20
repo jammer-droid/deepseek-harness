@@ -239,7 +239,6 @@ smoke 통과와 함께 프리셋 목록과 Optimized 도구 수(0.6.2부터 27, 
 
 | 위치 | 문서 | 대상 |
 | --- | --- | --- |
-| releases | [0.6.3.md](releases/0.6.3.md) | Studio 0.6.3 배포 검증(#38) |
 | checks | [dsh-role-compat.md](checks/dsh-role-compat.md) | DSH 업데이트 뒤 역할 persona·Tool Filter·자식 정책 복원 호환(rc.1 기준으로 작성) |
 | checks | [subagent-tool-filter.md](checks/subagent-tool-filter.md) | 서브에이전트 Tool Filter 동작 |
 | checks | [web-search-cost.md](checks/web-search-cost.md) | 웹 검색 provider(기존 Messages 검색 / Search·Fetch API) 비용·품질 비교 |
@@ -247,5 +246,6 @@ smoke 통과와 함께 프리셋 목록과 Optimized 도구 수(0.6.2부터 27, 
 | tools | [subagent-report.mjs](tools/subagent-report.mjs) | 세션과 그 자식이 실제로 받은 프리셋·도구·지침 보고 |
 | archive | [releases/0.6.1.md](archive/releases/0.6.1.md), [0.6.1-continue.md](archive/releases/0.6.1-continue.md), [0.6.1-e3-e4-rerun.md](archive/releases/0.6.1-e3-e4-rerun.md) | Studio 0.6.1 배포 검증(새 배포 지침서의 예시로 참고) |
 | archive | [releases/0.6.2.md](archive/releases/0.6.2.md) | Studio 0.6.2 배포 검증(#32·#33·#34) |
+| archive | [releases/0.6.3.md](archive/releases/0.6.3.md) | Studio 0.6.3 배포 검증(#38) |
 | archive | [issues/34-optimized-worker-tuning.md](archive/issues/34-optimized-worker-tuning.md) | #34 Optimized 튜닝·Worker·편집과 복구 |
 | archive | [issues/27-jev-decision-engine.md](archive/issues/27-jev-decision-engine.md) | #27 Jev 결정 엔진 실사용(사용자 Desktop 프로필 전제, 재실행 불가) |

@@ -1,6 +1,6 @@
 # Studio 0.6.3 배포 E2E 결과
 
-지침서: [releases/0.6.3.md](../../../scripts/agents/releases/0.6.3.md). 새 세션의 검증자가 2026-10-20에 실행했고, 메인 세션이 산출물(`studio/dist/e2e/0.6.3/`)을 읽어 정리했다.
+지침서: [archive/releases/0.6.3.md](../../../scripts/agents/archive/releases/0.6.3.md). 새 세션의 검증자가 2026-10-20에 실행했고, 메인 세션이 산출물(`studio/dist/e2e/0.6.3/`)을 읽어 정리했다.
 
 - 대상 커밋: `f9bcb8e704`. 패키지 `matamt-dbg-dsh-studio-0.6.3.tgz`의 SHA256은 `8a8f8c93e2af573e09060b247e53e36abce1d7dbb90d391b8e3cad9178115379`이고, client 번들이 HEAD 빌드와 같다.
 - 런타임: 설치된 수정하지 않은 DSH `0.2.1-rc.2` CLI. 비밀값은 복사하지 않았다. 각본 모델과 로컬 가짜 Exa 엔드포인트를 썼다.
