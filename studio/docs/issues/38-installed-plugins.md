@@ -296,3 +296,4 @@ S1의 상태 기록 시점은 네 가지다: `추가 직후`, `키 저장 후`, 
     3. 키와 `searchProvider: exa`를 저장한 뒤 `web_search`가 가짜 Exa에 Bearer 키로 도달했다. Master와 Optimized는 `applied`였다.
   - 브라우저: [plugins-register.mjs](../../scripts/e2e/plugins-register.mjs) 8개 통과, [plugins-tab.mjs](../../scripts/e2e/plugins-tab.mjs) 라이트·다크·480px 27개 통과.
   - 미확인: 실제 런타임에서 등록이 활성화 실패로 이어지는 경우. 후보로 `dsh-web-fetch-http`를 설치했지만 이미 프로필에서 실행 중이라 등록 대상이 아니었다. 롤백은 단위 테스트로만 확인했다.
+- 2026-10-20: 직접 등록 버전을 Desktop에 다시 설치했다. 백업 위치는 `studio/dist/desktop-38b-20261020/desktop-before/`이고, tgz는 SHA256 `00ae8c3b…f529`이다. 설치본을 tgz와 `diff -rq`로 비교해 일치함을 확인했다. 앱 재시작과 화면 확인은 하지 않았다.
