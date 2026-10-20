@@ -18,6 +18,8 @@ import { SessionRoleService } from './session-role-service.ts';
 import { installRoleChildPolicies } from './role-child-policy.ts';
 import { installSkill } from './skill-install.ts';
 import { pixieHookSkill, pixieLoopSkill } from './pixie-hook-skill.ts';
+import { readInstalledPlugins } from './installed-plugins.ts';
+import { masterRefusal } from '../installed-plugins.ts';
 import { CatalogBaseline } from './catalog-baseline.ts';
 
 
@@ -104,6 +106,9 @@ export default class StudioCatalog extends TypertRemoteService {
     const name = payload.trim();
     const rows = await this.master.readExtensions();
     if (new Set([...this.master.masterNames(), ...flatNames(rows)]).has(name)) throw new Error(`Already in the Studio Master: ${name}`);
+    const found = (await this.installed()).plugins.find(plugin => plugin.entry === name);
+    const refusal = found && masterRefusal(found);
+    if (refusal) throw new Error(refusal);
     return this.master.replaceExtensions(validateExtensions([...rows, masterAddition(name, rows)]));
   }
   @Remote
@@ -112,6 +117,14 @@ export default class StudioCatalog extends TypertRemoteService {
     if (!rows.some(row => row.id === id)) throw new Error(`Not added by Studio: ${id}`);
     return this.master.replaceExtensions(rows.filter(row => row.id !== id));
   }
+  private async installed() {
+    await this.master.ready();
+    const rows = await this.master.readExtensions();
+    return readInstalledPlugins(this.ctx, new Set([...this.master.masterNames(), ...flatNames(rows)]));
+  }
+  /** Installed plugin entry points with their run scope and evidence (#38). Read-only. */
+  @Remote
+  async listInstalledPlugins() { return this.installed(); }
   @Remote
   async catalogChange() { return this.master.catalogChange(); }
   @Remote
