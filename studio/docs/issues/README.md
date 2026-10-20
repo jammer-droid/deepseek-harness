@@ -28,6 +28,7 @@ description: "Studio 이슈별 구현 명세의 색인."
 
 ## 프리셋 구성 설계 기록
 
+- [#38 설치한 플러그인 자동 감지와 범위별 설정](38-installed-plugins.md): 설치한 플러그인을 감지해 `에이전트 기능`(설정 후 Master 포함)과 `프로필 공용`(`configEditor`로 프로필 설정, Master·프리셋 진입 차단)으로 나누고, Studio `플러그인` 탭에서 바로 설정한다. 실행 설정의 `플러그인 추가`는 제거. Exa 공급자 반영 실패(공용 `ctx.web` 중복 등록 추정)가 발단. `ready`; 첫 단계 S1은 재현과 근거 수집. [GitHub #38](https://github.com/jammer-droid/deepseek-harness/issues/38).
 - [#34 Optimized 메인-worker 최적화](34-optimized-worker-tuning.md): TB4 벤치로 확정한 `edit_batch` 추가, `read_batch` Config(`noSpill`, `maxLines: null`), bash 기본 대기 120000, read·bash 설명, `tool:read` 섹션, 압축 공통 지침, 기본 Worker 역할·Tool Filter를 Optimized 템플릿에 반영하고, Optimized를 편집·기본값 복구 가능하게 바꿈. `ready`. [GitHub #34](https://github.com/jammer-droid/deepseek-harness/issues/34).
 - [#32 프리셋 실행 기본값](32-preset-execution-settings.md): Studio가 덮어쓴 도구 대기 기본값(`request.execution`)과 `read_batch` 상한을 표시하고 재설정해 DSH 원래 동작(셸 설정 등)으로 되돌림. dsh-base 행은 프리셋 범위에 올리지 않음(S1 판정). `ready`. [GitHub #32](https://github.com/jammer-droid/deepseek-harness/issues/32).
 - [#24 minimal 기반 프리셋 구성과 선택적 덮어쓰기](24-preset-composition.md): 현재 셸 기반 신규 설계. 도구·프롬프트 제공자 선택, persona 편집, scoped override, 통합 미리보기 및 독립 배포. `draft`; 첫 단계 S1은 공개 API·구성 계약 확정.
