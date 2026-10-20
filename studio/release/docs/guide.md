@@ -283,7 +283,7 @@ The same feature can be split by where it runs. For example, the `web_search` to
 **Installed plugins** lists the packages you installed in this profile and where they run.
 
 - **Agent feature** runs per preset. **Set up and include** takes initial settings and adds it to Studio Master; it then appears in the preset's tool and Config lists.
-- **Profile-wide** registers into a service every session shares and cannot go into a preset. **Register in profile › Register** adds it to the profile patch file and applies it at once. Then set its values under **Profile settings**.
+- **Profile-wide** registers into a service every session shares and cannot go into a preset. **Register in profile › Register** adds it to the profile patch file and applies it at once. Then set its values under **Profile settings**. If an earlier version added this plugin to Studio Master, first press **Move** under **Plugins to move out of the base composition**; its settings are backed up to `studio-data/migrated-extensions.json`. While an applied preset still runs the plugin, the row shows **Reapply presets first** and the preset names instead of Register; reapply or unapply those presets, then register.
 - **Needs check** means Studio could not confirm where it runs. Check that it works per preset before including it.
 
 Install packages from the DSH **Plugins** page (bundles) or with `dsh plugin --profile <profile> add <package>`.
