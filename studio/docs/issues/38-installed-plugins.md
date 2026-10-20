@@ -356,3 +356,4 @@ S1의 상태 기록 시점은 네 가지다: `추가 직후`, `키 저장 후`, 
   - 테스트 799개가 통과했다.
 - 2026-10-20: 후속 후보 F1–F3(Exa `/contents` 가져오기 공급자, 서비스 그룹 확장, 가져오기 키 분리)와 검증 후보 V1–V2는 사용자 결정에 따라 GitHub 이슈로 등록하지 않는다. 내부 문서 [plugins-followups.md](../plans/plugins-followups.md)에만 남긴다. 지금 기능만으로도 워크플로우 설정을 할 수 있기 때문이다. #38을 종료할 때는 이 문서를 링크한다.
 - 2026-10-20: Desktop 확인 피드백을 반영했다. 바꿀 설정이 없는 행(스키마 속성이 없거나 비밀 필드만 있고 비밀 컨트롤이 없는 행)은 `설정` 버튼 대신 `설정 항목 없음`으로 표시한다(`hasEditableFields`). 격리 rc.2에서 `llm-retry`, `token-meter`, `timeout-policy`, `session-checkpoint-policy`, `goal-round-driver`, `image-offload`, `mcp-resources`가 해당했다. 배포 버전은 사용자 결정에 따라 `0.7.0`에서 `0.6.3`으로 바꿨다(배포 지침서 `releases/0.6.3.md`). 테스트 800개가 통과했다.
+- 2026-10-20: 0.6.3 후보를 Desktop에 설치했다. tgz SHA256은 `5616f333…01ba2`다. 같은 패키지로 격리 rc.2에서 smoke 12/12와 플러그인 탭 33/33을 통과했고 pageerror는 0이었다. 백업 위치는 `studio/dist/desktop-063-20261020/desktop-before/`다. 설치본을 tgz와 `diff -rq`로 비교해 일치함을 확인했고, 설치된 버전은 `0.6.3`이다. 앱 재시작과 화면 확인은 하지 않았다.
