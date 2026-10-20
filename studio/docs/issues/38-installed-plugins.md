@@ -311,3 +311,4 @@ S1의 상태 기록 시점은 네 가지다: `추가 직후`, `키 저장 후`, 
     - 내장 `web-deepseek-api`, `web-fetch-http`, `web-search-deepseek`가 `web` 그룹에 나왔다. `DEEPSEEK_API_KEY`는 `configured: true`였다.
     - 선택값 저장은 patch에 `searchProvider: exa`, `fetchProvider: deepseek-fetch-api`로 기록됐다.
     - 브라우저 [plugins-tab.mjs](../../scripts/e2e/plugins-tab.mjs)는 라이트·다크·480px 33개 통과, pageerror 0이었다.
+- 2026-10-20: S8·S9 버전을 Desktop에 설치했다. 백업 위치는 `studio/dist/desktop-38c-20261020/desktop-before/`이고, tgz는 SHA256 `6da4b76b…84a2`다. 설치본을 tgz와 `diff -rq`로 비교해 일치함을 확인했다. 앱 재시작과 화면 확인은 하지 않았다.
