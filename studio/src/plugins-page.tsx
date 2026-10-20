@@ -9,12 +9,15 @@ import type { InstalledPlugin } from './installed-plugins.ts';
 import type { MigrationItem } from './extension-migration.ts';
 import { profileSnippet, snippetId, type SecretAction } from './profile-config.ts';
 import { withoutSecrets } from './secret-fields.ts';
+import { groupTitle, matchesQuery, selectorOptions, type ProviderKind } from './service-groups.ts';
 
 export interface ProfileConfigView {
   patchId: string; name: string; role: 'plugin' | 'service';
   schema?: Record<string, unknown>; schemaError?: string;
   effective: Record<string, unknown>; inherited: Record<string, unknown>; diff: Record<string, unknown>;
   secrets: Array<{ key: string; set: boolean }>;
+  service?: string; provides?: Array<{ id: string; kind: ProviderKind }>; selectors?: Array<{ field: string; kind: ProviderKind }>; active?: boolean;
+  credentials?: Array<{ field: string; ref: string; configured: boolean; source?: string }>;
 }
 export interface PluginsActions {
   installed(): Promise<{ plugins: InstalledPlugin[]; errors: Record<string, string> }>;
@@ -85,6 +88,8 @@ function InstalledPage({ locale, actions, onOpenProfile }: { locale: string; act
   const [notice, setNotice] = React.useState('');
   const [including, setIncluding] = React.useState<InstalledPlugin>();
   const [registering, setRegistering] = React.useState<InstalledPlugin>();
+  const [query, setQuery] = React.useState('');
+  const shown = plugins?.filter(plugin => matchesQuery(query, plugin.entry, plugin.version, pluginTitle(plugin.entry, locale), pluginPurpose(plugin.entry, locale), t(`scope_${plugin.scope}` as PluginsKey)));
   const load = React.useCallback(async () => {
     setError('');
     try { const [list, moves] = await Promise.all([actions.installed(), actions.migration()]); setPlugins(list.plugins); setMigration(moves); }
@@ -116,8 +121,10 @@ function InstalledPage({ locale, actions, onOpenProfile }: { locale: string; act
     </section>}
     {plugins === undefined && !error && <p className="studio-muted" role="status">{t('loading')}</p>}
     {plugins?.length === 0 && <p className="studio-muted" role="status">{t('empty')}</p>}
-    {plugins && plugins.length > 0 && <section className="studio-settings-card" aria-label={t('pageInstalled')}>
-      {plugins.map(plugin => <SettingsRow key={plugin.entry}
+    {plugins && plugins.length > 0 && <input type="search" className="studio-search" aria-label={t('search')} placeholder={t('searchInstalled')} value={query} onChange={event => setQuery(event.target.value)} />}
+    {plugins && plugins.length > 0 && shown?.length === 0 && <p className="studio-muted" role="status">{t('noResults')}</p>}
+    {shown && shown.length > 0 && <section className="studio-settings-card" aria-label={t('pageInstalled')}>
+      {shown.map(plugin => <SettingsRow key={plugin.entry}
         title={<>{pluginTitle(plugin.entry, locale)} <Badge tone={plugin.scope === 'agent' ? 'info' : plugin.scope === 'profile' ? 'outline' : 'warning'}>{t(`scope_${plugin.scope}` as PluginsKey)}</Badge>{plugin.state === 'installed' && <Badge tone="neutral">{t('state_installed')}</Badge>}</>}
         description={[plugin.entry + (plugin.version ? `@${plugin.version}` : ''), plugin.state === 'installed' ? t(evidenceKey(plugin.evidence)) : t(stateKey(plugin.state)), pluginPurpose(plugin.entry, locale)].filter(Boolean).join(' · ')}
         control={action(plugin)} />)}
@@ -168,18 +175,51 @@ function ProfilePage({ locale, actions, active }: { locale: string; actions: Plu
   const load = React.useCallback(async () => { setError(''); try { setViews(await actions.profiles()); } catch (cause) { setError(message(cause)); } }, [actions]);
   // Pages stay mounted; reload whenever this one is shown so a registration made elsewhere appears.
   React.useEffect(() => { if (active) void load(); }, [load, active]);
+  const [query, setQuery] = React.useState('');
+  const [busy, setBusy] = React.useState('');
   const current = views?.find(view => view.patchId === open);
+  const shown = views?.filter(view => matchesQuery(query, view.patchId, view.name, pluginTitle(view.name, locale), groupTitle(view.service, locale), ...(view.provides ?? []).map(p => p.id)));
+  // One card per grouped service (owner first), then ungrouped rows.
+  const groups = new Map<string, ProfileConfigView[]>();
+  for (const view of shown ?? []) { const key = view.service && groupTitle(view.service, locale) ? view.service : ''; groups.set(key, [...groups.get(key) ?? [], view]); }
+  const running = (views ?? []).filter(view => view.active !== false).flatMap(view => view.provides ?? []);
+  const pick = async (owner: ProfileConfigView, field: string, id: string) => {
+    setBusy(`${owner.patchId}.${field}`); setError('');
+    try { setViews(await actions.saveProfile({ patchId: owner.patchId, diff: { ...owner.diff, [field]: id }, secrets: {} })); }
+    catch (cause) { setError(message(cause)); } finally { setBusy(''); }
+  };
+  const row = (view: ProfileConfigView) => {
+    const kinds = [...new Set((view.provides ?? []).map(p => p.kind))].map(kind => t(kind === 'search' ? 'kindSearch' : 'kindFetch'));
+    const inUse = (view.provides ?? []).filter(p => views?.some(owner => owner.selectors?.some(sel => sel.kind === p.kind && (owner.effective[sel.field] ?? owner.inherited[sel.field]) === p.id)));
+    return <SettingsRow key={view.patchId}
+      title={<>{pluginTitle(view.name, locale)} {view.role === 'service' && <Badge tone="outline">{t('service')}</Badge>}{kinds.length > 0 && <Badge tone="neutral">{kinds.join(' · ')}</Badge>}{inUse.length > 0 && <Badge tone="success">{t('inUse')}</Badge>}{view.active === false && <Badge tone="warning">{t('inactive')}</Badge>}<Badge tone={Object.keys(view.diff).length ? 'info' : 'outline'}>{Object.keys(view.diff).length ? t('changed') : t('defaults')}</Badge></>}
+      description={[view.patchId, ...(view.provides ?? []).map(p => `${t('providerId')}: ${p.id}`), ...Object.entries(view.diff).map(([key, value]) => `${key}: ${typeof value === 'string' ? value : JSON.stringify(value)}`), ...(view.credentials ?? []).map(c => `${c.ref}: ${c.configured ? t('secretSet') : t('secretUnset')} (${t('credentialStore')})`), ...view.secrets.filter(s => s.set || !view.credentials?.some(c => c.configured)).map(s => `${s.key}: ${s.set ? t('secretSet') : t('secretUnset')}`)].join(' · ')}
+      control={<Button small disabled={view.active === false} onClick={() => setOpen(view.patchId)}>{t('edit')}</Button>}>
+      {view.selectors?.map(sel => {
+        const value = view.effective[sel.field] ?? view.inherited[sel.field];
+        const options = selectorOptions(sel.kind, running, value);
+        const label = t(sel.kind === 'search' ? 'pickSearch' : 'pickFetch');
+        return <div key={sel.field} className="studio-inline-actions">
+          <span className="studio-muted">{label}</span>
+          <select aria-label={label} value={typeof value === 'string' ? value : ''} disabled={!!busy || view.active === false} onChange={event => void pick(view, sel.field, event.target.value)}>
+            {typeof value !== 'string' && <option value="" disabled>{t('unset')}</option>}
+            {options.map(option => <option key={option.id} value={option.id}>{option.known ? option.id : `${option.id} (${t('notRunning')})`}</option>)}
+          </select>
+        </div>;
+      })}
+    </SettingsRow>;
+  };
   return <div className="studio-page-stack">
     <PageHead title={t('pageProfile')} description={t('pageProfileDescription')} actions={<Button onClick={() => void load()}>{t('refresh')}</Button>} />
     {error && <Notice action={<Button small onClick={() => setError('')}>{t('dismiss')}</Button>}>{t('loadFailed')} {error}</Notice>}
     {views === undefined && !error && <p className="studio-muted" role="status">{t('loading')}</p>}
     {views?.length === 0 && <p className="studio-muted" role="status">{t('noProfile')}</p>}
-    {views && views.length > 0 && <section className="studio-settings-card" aria-label={t('pageProfile')}>
-      {views.map(view => <SettingsRow key={view.patchId}
-        title={<>{pluginTitle(view.name, locale)} {view.role === 'service' && <Badge tone="outline">{t('service')}</Badge>}<Badge tone={Object.keys(view.diff).length ? 'info' : 'outline'}>{Object.keys(view.diff).length ? t('changed') : t('defaults')}</Badge></>}
-        description={[view.patchId, ...Object.entries(view.diff).map(([key, value]) => `${key}: ${typeof value === 'string' ? value : JSON.stringify(value)}`), ...view.secrets.map(s => `${s.key}: ${s.set ? t('secretSet') : t('secretUnset')}`)].join(' · ')}
-        control={<Button small onClick={() => setOpen(view.patchId)}>{t('edit')}</Button>} />)}
-    </section>}
+    {views && views.length > 0 && <input type="search" className="studio-search" aria-label={t('search')} placeholder={t('searchProfile')} value={query} onChange={event => setQuery(event.target.value)} />}
+    {views && views.length > 0 && shown?.length === 0 && <p className="studio-muted" role="status">{t('noResults')}</p>}
+    {[...groups].map(([service, list]) => <section key={service || 'other'} className="studio-settings-card" aria-label={service ? groupTitle(service, locale) : t('otherSettings')}>
+      <SectionHead title={service ? groupTitle(service, locale)! : t('otherSettings')} {...(service ? { description: t('groupHint') } : {})} />
+      {list.map(row)}
+    </section>)}
     {current && <ProfileDialog key={current.patchId} locale={locale} view={current} actions={actions} onClose={() => setOpen(undefined)} onSaved={setViews} />}
   </div>;
 }

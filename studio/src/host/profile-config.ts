@@ -3,6 +3,7 @@ import { createConfigProjector, isNativeConfigSchema, LOADER_EXPRESSION_SCHEMA }
 import { composeProfileConfig, configDiff, secretKeys, type SecretAction } from '../profile-config.ts';
 import { fieldRoles, isSecretField, maskConfig, redactSecrets, schemaProperties } from '../secret-fields.ts';
 import type { InstalledPlugin } from '../installed-plugins.ts';
+import { KNOWN_PROVIDERS, SERVICE_GROUPS, serviceOf, type ProviderKind } from '../service-groups.ts';
 
 interface Entry { options: { id: string; name: string; config?: unknown } }
 interface ConfigEditorApi {
@@ -12,8 +13,6 @@ interface ConfigEditorApi {
 }
 interface LoaderApi { import(name: string): Promise<unknown>; unwrapExports(value: unknown): Record<string, unknown> | undefined }
 
-/** Host services whose provider choice lives on one profile row (shown beside their providers). */
-export const SERVICE_OWNERS: Readonly<Record<string, string>> = Object.freeze({ web: '@deepseek-ai/dsh-web' });
 
 export interface ProfileConfigView {
   patchId: string; name: string;
@@ -23,11 +22,33 @@ export interface ProfileConfigView {
   /** Effective non-secret values, the inherited layer, and the fields that differ from it. */
   effective: Record<string, unknown>; inherited: Record<string, unknown>; diff: Record<string, unknown>;
   secrets: Array<{ key: string; set: boolean }>;
+  /** Grouped service this row belongs to (e.g. `web`), when known. */
+  service?: string;
+  /** Provider ids this row registers (provider rows), from the Studio table. */
+  provides?: Array<{ id: string; kind: ProviderKind }>;
+  /** Owner rows: selector fields and the active provider ids each can pick. */
+  selectors?: Array<{ field: string; kind: ProviderKind }>;
+  /** Whether the row is running; inactive rows are listed but not editable. */
+  active: boolean;
+  /** `credential-ref` fields: the key name used and whether the credential store has a value (never the value). */
+  credentials?: Array<{ field: string; ref: string; configured: boolean; source?: string }>;
 }
 
 /** Schema roles plus name-rule secrets (Exa `apiKey` carries no role), so an unset secret is still listed. */
 function secretRoles(schema: unknown): Record<string, string> {
   return { ...Object.fromEntries(schemaProperties(schema).filter(key => isSecretField(key)).map(key => [key, 'secret'])), ...fieldRoles(schema) };
+}
+
+/** Schema default of a top-level property (`anyOf` branches included). */
+function propertyDefault(schema: unknown, field: string): unknown {
+  const visit = (node: unknown): unknown => {
+    if (!node || typeof node !== 'object') return undefined;
+    const value = node as { properties?: Record<string, { default?: unknown }>; anyOf?: unknown[] };
+    if (value.properties?.[field] && 'default' in value.properties[field]!) return value.properties[field]!.default;
+    for (const branch of value.anyOf ?? []) { const found = visit(branch); if (found !== undefined) return found; }
+    return undefined;
+  };
+  return visit(schema);
 }
 
 function editorOf(ctx: Context): ConfigEditorApi {
@@ -49,23 +70,40 @@ export async function schemaOf(ctx: Context, name: string): Promise<{ schema?: R
   } catch (error) { return { schemaError: String(error), inject: [] }; }
 }
 
-/** Editable profile rows for the installed profile-scoped plugins and the services they register into. */
+interface PluginRow { moduleName: string; enabled: boolean; fiberPhase: string | null; patchId?: string }
+
+/**
+ * Editable profile rows: installed profile-scoped plugins, and every row of a grouped service (its
+ * owner and all its providers, built-in ones included) so related settings show together.
+ */
 export async function readProfileConfigs(ctx: Context, installed: readonly InstalledPlugin[]): Promise<ProfileConfigView[]> {
   const editor = editorOf(ctx);
   const rows = new Map(editor.configuration().map(row => [row.entry.options.id, row]));
+  const manager = ctx.get('pluginManager' as never) as unknown as { listPlugins(): Promise<PluginRow[]> } | undefined;
+  const live = new Map((await manager?.listPlugins() ?? []).filter(row => row.patchId).map(row => [row.patchId!, row]));
+  const isActive = (patchId: string) => { const row = live.get(patchId); return row ? row.enabled && row.fiberPhase === 'active' : true; };
   const wanted = new Map<string, 'plugin' | 'service'>();
   for (const plugin of installed) if (plugin.scope === 'profile' && plugin.state === 'profile-active' && plugin.patchId && rows.has(plugin.patchId)) wanted.set(plugin.patchId, 'plugin');
-  const views: ProfileConfigView[] = [];
-  const services = new Set<string>();
-  for (const [patchId] of wanted) for (const service of (await schemaOf(ctx, rows.get(patchId)!.entry.options.name)).inject) services.add(service);
-  for (const service of services) {
-    const owner = SERVICE_OWNERS[service];
-    const row = owner && [...rows.values()].find(item => item.entry.options.name === owner);
-    if (row && !wanted.has(row.entry.options.id)) wanted.set(row.entry.options.id, 'service');
+  for (const [patchId, row] of rows) {
+    const name = row.entry.options.name;
+    if (SERVICE_GROUPS.some(group => group.owner === name)) wanted.set(patchId, 'service');
+    else if (KNOWN_PROVIDERS[name] && !wanted.has(patchId)) wanted.set(patchId, 'plugin');
   }
+  const views: ProfileConfigView[] = [];
   for (const [patchId, role] of wanted) {
     const row = rows.get(patchId)!;
-    const { schema, schemaError } = await schemaOf(ctx, row.entry.options.name);
+    const { schema, schemaError, inject } = await schemaOf(ctx, row.entry.options.name);
+    const service = serviceOf(row.entry.options.name, inject);
+    const refs = Object.entries(fieldRoles(schema)).filter(([, role]) => role === 'credential-ref').map(([field]) => field);
+    const credentials: NonNullable<ProfileConfigView['credentials']> = [];
+    const store = ctx.get('credentials' as never) as unknown as { describe(ref: string): Promise<{ configured: boolean; source?: string }> } | undefined;
+    for (const field of refs) {
+      const ref = (row.entry.options.config as Record<string, unknown> | undefined)?.[field] ?? propertyDefault(schema, field);
+      if (typeof ref !== 'string' || !ref) continue;
+      try { const info = store ? await store.describe(ref) : { configured: false }; credentials.push({ field, ref, configured: info.configured, ...(info.source ? { source: info.source } : {}) }); }
+      catch { credentials.push({ field, ref, configured: false }); }
+    }
+    const group = SERVICE_GROUPS.find(item => item.owner === row.entry.options.name);
     const roles = secretRoles(schema);
     const effective = (row.entry.options.config ?? {}) as Record<string, unknown>;
     const masked = maskConfig(effective, roles);
@@ -73,15 +111,19 @@ export async function readProfileConfigs(ctx: Context, installed: readonly Insta
       effective: Object.fromEntries(Object.entries(masked).filter(([key]) => !secretKeys(roles, effective).includes(key))),
       inherited: Object.fromEntries(Object.entries(maskConfig(row.inherited, roles)).filter(([key]) => !secretKeys(roles, row.inherited).includes(key))),
       diff: configDiff(row.inherited, effective, roles),
-      secrets: secretKeys(roles, effective, row.inherited).map(key => ({ key, set: typeof effective[key] === 'string' ? effective[key] !== '' : effective[key] !== undefined && effective[key] !== null })) });
+      secrets: secretKeys(roles, effective, row.inherited).map(key => ({ key, set: typeof effective[key] === 'string' ? effective[key] !== '' : effective[key] !== undefined && effective[key] !== null })),
+      ...(service ? { service } : {}), ...(KNOWN_PROVIDERS[row.entry.options.name] ? { provides: [...KNOWN_PROVIDERS[row.entry.options.name]!.providers] } : {}),
+      ...(group ? { selectors: [...group.selectors] } : {}), active: isActive(patchId), ...(credentials.length ? { credentials } : {}) });
   }
-  return views.sort((a, b) => Number(a.role === 'service') - Number(b.role === 'service') || a.patchId.localeCompare(b.patchId));
+  // Owner first within a service, then providers; ungrouped rows last.
+  return views.sort((a, b) => (a.service ?? '\uffff').localeCompare(b.service ?? '\uffff') || Number(a.role !== 'service') - Number(b.role !== 'service') || a.patchId.localeCompare(b.patchId));
 }
 
 /** Save one profile row through `configEditor.edit()`; only listed rows may be written. */
 export async function saveProfileConfig(ctx: Context, installed: readonly InstalledPlugin[], payload: { patchId: string; diff: Record<string, unknown>; secrets?: Record<string, SecretAction> }): Promise<void> {
-  const allowed = new Set((await readProfileConfigs(ctx, installed)).map(view => view.patchId));
-  if (!allowed.has(payload.patchId)) throw new Error(`Not an editable profile setting: ${payload.patchId}`);
+  const view = (await readProfileConfigs(ctx, installed)).find(item => item.patchId === payload.patchId);
+  if (!view) throw new Error(`Not an editable profile setting: ${payload.patchId}`);
+  if (!view.active) throw new Error(`${payload.patchId} is not running in this profile, so its settings cannot be saved here`);
   const editor = editorOf(ctx);
   const entry = editor.entries().find(item => item.options.id === payload.patchId);
   if (!entry) throw new Error(`Profile entry is no longer available: ${payload.patchId}`);

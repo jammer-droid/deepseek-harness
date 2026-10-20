@@ -208,3 +208,84 @@ test('register writes the patch inside an HMR transaction and restores it when a
   await assert.rejects(registerProfilePlugin(ctx, [{ ...installed[0], state: 'profile-active' }], { entry: EXA }), /not a profile-wide plugin waiting/);
   await assert.rejects(registerProfilePlugin({ get: name => name === 'profileContext' ? { patchPath } : undefined }, installed, { entry: EXA }), /without hot reload/);
 });
+
+test('service groups: membership, selector options keep an unknown current value, query matching', async () => {
+  const { serviceOf, selectorOptions, matchesQuery, groupTitle } = await import('../src/service-groups.ts');
+  assert.equal(serviceOf('@deepseek-ai/dsh-web'), 'web');
+  assert.equal(serviceOf(EXA), 'web');
+  assert.equal(serviceOf('third-party', ['web']), 'web', 'an unknown plugin joins by its injected service');
+  assert.equal(serviceOf('third-party', ['tools']), undefined);
+  assert.equal(groupTitle('web', 'ko'), '웹 검색·가져오기');
+  const running = [{ id: 'exa', kind: 'search' }, { id: 'http', kind: 'fetch' }, { id: 'deepseek-fetch-api', kind: 'fetch' }];
+  assert.deepEqual(selectorOptions('fetch', running, 'http'), [{ id: 'deepseek-fetch-api', known: true }, { id: 'http', known: true }]);
+  assert.deepEqual(selectorOptions('search', running, 'gone'), [{ id: 'exa', known: true }, { id: 'gone', known: false }]);
+  assert.equal(matchesQuery('', 'x'), true);
+  assert.equal(matchesQuery('web exa', 'Web search', '@deepseek-ai/dsh-web-search-exa'), true);
+  assert.equal(matchesQuery('perplexity', 'exa'), false);
+});
+
+test('profile page groups a service with its providers, picks providers from running ones, and searches', async t => {
+  const { PluginsPage } = await import('../src/plugins-page.tsx');
+  const calls = [];
+  let views = [
+    { patchId: 'web', name: '@deepseek-ai/dsh-web', role: 'service', service: 'web', active: true, selectors: [{ field: 'searchProvider', kind: 'search' }, { field: 'fetchProvider', kind: 'fetch' }],
+      schema: { type: 'object', properties: {} }, effective: { searchProvider: 'exa', fetchProvider: 'http' }, inherited: { searchProvider: 'deepseek-official', fetchProvider: 'http' }, diff: { searchProvider: 'exa' }, secrets: [] },
+    { patchId: 'web-search-exa', name: EXA, role: 'plugin', service: 'web', active: true, provides: [{ id: 'exa', kind: 'search' }], effective: {}, inherited: {}, diff: {}, secrets: [{ key: 'apiKey', set: true }] },
+    { patchId: 'web-deepseek-api', name: '@deepseek-ai/dsh-web-deepseek-api', role: 'plugin', service: 'web', active: true, provides: [{ id: 'deepseek-search-api', kind: 'search' }, { id: 'deepseek-fetch-api', kind: 'fetch' }], effective: {}, inherited: {}, diff: {}, secrets: [] },
+    { patchId: 'web-fetch-http', name: '@deepseek-ai/dsh-web-fetch-http', role: 'plugin', service: 'web', active: true, provides: [{ id: 'http', kind: 'fetch' }], effective: {}, inherited: {}, diff: {}, secrets: [] },
+    { patchId: 'web-search-perplexity', name: '@deepseek-ai/dsh-web-search-perplexity', role: 'plugin', service: 'web', active: false, provides: [{ id: 'perplexity', kind: 'search' }], effective: {}, inherited: {}, diff: {}, secrets: [] },
+    { patchId: 'other', name: 'other-plugin', role: 'plugin', active: true, effective: {}, inherited: {}, diff: {}, secrets: [] },
+  ];
+  const { actions } = fixture();
+  actions.profiles = async () => views;
+  actions.saveProfile = async payload => { calls.push(payload); views = views.map(v => v.patchId === payload.patchId ? { ...v, diff: payload.diff, effective: { ...v.effective, ...payload.diff } } : v); return views; };
+  const host = await render(t, React.createElement(PluginsPage, { locale: 'en', actions }));
+  await act(async () => [...host.querySelectorAll('.studio-nav-item')].find(b => b.textContent === 'Profile settings').click());
+  await act(async () => {});
+  const cards = [...host.querySelectorAll('section.studio-settings-card')].filter(card => card.closest('[hidden]') === null);
+  const web = cards.find(card => card.getAttribute('aria-label') === 'Web search and fetch');
+  assert.ok(web, 'web group card');
+  assert.match(web.textContent, /dsh-web.*Service/);
+  assert.match(web.textContent, /web-search-exa.*Search.*In use/);
+  assert.match(web.textContent, /Provider ID: deepseek-search-api · Provider ID: deepseek-fetch-api/);
+  assert.match(web.textContent, /web-search-perplexity.*Off/);
+  assert.ok(cards.some(card => card.getAttribute('aria-label') === 'Other profile settings' && /other-plugin/.test(card.textContent)));
+  const search = web.querySelector('select[aria-label="Search provider"]');
+  assert.deepEqual([...search.options].map(o => o.value), ['deepseek-search-api', 'exa'], 'the inactive provider is not offered');
+  const fetch = web.querySelector('select[aria-label="Fetch provider"]');
+  assert.deepEqual([...fetch.options].map(o => o.value), ['deepseek-fetch-api', 'http']);
+  const { Simulate } = await import('react-dom/test-utils');
+  await act(async () => Simulate.change(fetch, { target: { value: 'deepseek-fetch-api' } }));
+  assert.deepEqual(calls.at(-1), { patchId: 'web', diff: { searchProvider: 'exa', fetchProvider: 'deepseek-fetch-api' }, secrets: {} });
+  const input = [...host.querySelectorAll('input[type=search]')].find(el => el.placeholder.startsWith('Search plugins, services'));
+  await act(async () => Simulate.change(input, { target: { value: 'perplexity' } }));
+  const visible = [...host.querySelectorAll('section.studio-settings-card')].filter(card => card.closest('[hidden]') === null).map(card => card.textContent).join('\n');
+  assert.match(visible, /web-search-perplexity/);
+  assert.doesNotMatch(visible, /web-fetch-http|other-plugin/);
+});
+
+test('installed page search filters rows', async t => {
+  const { PluginsPage } = await import('../src/plugins-page.tsx');
+  const { actions } = fixture();
+  const host = await render(t, React.createElement(PluginsPage, { locale: 'en', actions }));
+  const input = [...host.querySelectorAll('input[type=search]')].find(el => el.placeholder.startsWith('Search plugin names'));
+  const { Simulate } = await import('react-dom/test-utils');
+  await act(async () => Simulate.change(input, { target: { value: 'my-tools' } }));
+  const rows = [...host.querySelectorAll('.studio-settings-row')].filter(row => row.closest('[hidden]') === null).map(row => row.textContent);
+  assert.equal(rows.length, 1); assert.match(rows[0], /my-tools/);
+  await act(async () => Simulate.change(input, { target: { value: 'zzz' } }));
+  assert.match(host.textContent, /No matching results\./);
+});
+
+test('a configured credential reference replaces the misleading literal "not set" line', async t => {
+  const { PluginsPage } = await import('../src/plugins-page.tsx');
+  const { actions } = fixture();
+  actions.profiles = async () => [{ patchId: 'web-deepseek-api', name: '@deepseek-ai/dsh-web-deepseek-api', role: 'plugin', service: 'web', active: true, provides: [{ id: 'deepseek-fetch-api', kind: 'fetch' }],
+    effective: {}, inherited: {}, diff: {}, secrets: [{ key: 'apiKey', set: false }], credentials: [{ field: 'apiKeyEnv', ref: 'DEEPSEEK_API_KEY', configured: true, source: 'store' }] }];
+  const host = await render(t, React.createElement(PluginsPage, { locale: 'en', actions }));
+  await act(async () => [...host.querySelectorAll('.studio-nav-item')].find(b => b.textContent === 'Profile settings').click());
+  await act(async () => {});
+  const text = [...host.querySelectorAll('section.studio-settings-card')].filter(c => c.closest('[hidden]') === null).map(c => c.textContent).join('');
+  assert.match(text, /DEEPSEEK_API_KEY: Set \(credential store\)/);
+  assert.doesNotMatch(text, /apiKey: Not set/);
+});

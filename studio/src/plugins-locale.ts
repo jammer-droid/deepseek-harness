@@ -1,5 +1,6 @@
 /** Studio → Plugins service text (#38). */
 const ko = {
+  credentialStore: '자격 증명 저장소', search: '검색', searchInstalled: '플러그인 이름, 패키지, 범위로 검색', searchProfile: '플러그인, 서비스, 공급자 ID로 검색', noResults: '검색 결과가 없습니다.', otherSettings: '기타 프로필 설정', groupHint: '서비스 설정에서 사용할 공급자를 고르고, 각 공급자의 키와 값은 아래 행에서 설정합니다.', kindSearch: '검색', kindFetch: '가져오기', inUse: '사용 중', inactive: '꺼짐', providerId: '공급자 ID', pickSearch: '검색 공급자', pickFetch: '가져오기 공급자', unset: '미설정', notRunning: '실행 중 아님',
   registerButton: '등록', registering: '등록 중…', registerFailed: '등록하지 못했습니다. 프로필 설정 파일은 이전 상태로 되돌렸습니다.', registerManual: '직접 등록하기', registerDirectHint: '프로필 설정 파일에 이 플러그인을 추가하고 바로 적용합니다. 모든 세션에 영향을 줍니다. 등록한 뒤 프로필 설정에서 키와 값을 넣으세요.', registered: '프로필에 등록했습니다. 프로필 설정에서 값을 넣으세요.', registeredRestart: '프로필에 등록했습니다. 일부 변경은 DSH를 다시 시작해야 적용됩니다.',
   serviceLabel: '플러그인', navigation: '플러그인 메뉴', group: '플러그인',
   pageInstalled: '설치한 플러그인', pageInstalledDescription: '이 프로필에 설치한 플러그인과 실행 범위입니다. 에이전트 기능은 Studio 기준 구성에 포함해 프리셋에서 설정하고, 프로필 공용 플러그인은 프로필 설정에서 모든 세션에 한 번 설정합니다.',
@@ -22,6 +23,7 @@ const ko = {
 };
 type Key = keyof typeof ko;
 const en: Record<Key, string> = {
+  credentialStore: 'credential store', search: 'Search', searchInstalled: 'Search plugin names, packages or scope', searchProfile: 'Search plugins, services or provider IDs', noResults: 'No matching results.', otherSettings: 'Other profile settings', groupHint: 'Pick the providers the service uses here; set each provider\'s keys and values in its row below.', kindSearch: 'Search', kindFetch: 'Fetch', inUse: 'In use', inactive: 'Off', providerId: 'Provider ID', pickSearch: 'Search provider', pickFetch: 'Fetch provider', unset: 'Not set', notRunning: 'not running',
   registerButton: 'Register', registering: 'Registering…', registerFailed: 'Could not register. The profile patch file was restored.', registerManual: 'Register manually', registerDirectHint: 'Adds this plugin to the profile patch file and applies it now. It affects every session. After registering, enter keys and values under Profile settings.', registered: 'Registered in the profile. Enter its values under Profile settings.', registeredRestart: 'Registered in the profile. Some changes apply after restarting DSH.',
   serviceLabel: 'Plugins', navigation: 'Plugin menu', group: 'Plugins',
   pageInstalled: 'Installed plugins', pageInstalledDescription: 'Plugins installed in this profile and where they run. Agent features join the Studio base composition and are set per preset; profile-wide plugins are set once for every session under Profile settings.',
@@ -43,6 +45,7 @@ const en: Record<Key, string> = {
   noSchema: 'The settings schema could not be read, so editing is disabled.', noProfile: 'No profile settings to edit. Profile-wide plugins appear here once registered in the profile.', edit: 'Settings', changed: 'Modified', defaults: 'Defaults',
 };
 const zh: Record<Key, string> = {
+  credentialStore: '凭据存储', search: '搜索', searchInstalled: '按插件名称、软件包或范围搜索', searchProfile: '按插件、服务或提供方 ID 搜索', noResults: '没有匹配结果', otherSettings: '其他配置设置', groupHint: '在此选择服务使用的提供方；各提供方的密钥和值在下方对应行中设置', kindSearch: '搜索', kindFetch: '获取', inUse: '使用中', inactive: '已关闭', providerId: '提供方 ID', pickSearch: '搜索提供方', pickFetch: '获取提供方', unset: '未设置', notRunning: '未运行',
   registerButton: '注册', registering: '注册中…', registerFailed: '无法注册。配置补丁文件已恢复', registerManual: '手动注册', registerDirectHint: '将此插件添加到配置补丁文件并立即应用。会影响所有会话。注册后请在配置设置中填写密钥和值', registered: '已注册到配置。请在配置设置中填写值', registeredRestart: '已注册到配置。部分更改需重启 DSH 后生效',
   serviceLabel: '插件', navigation: '插件菜单', group: '插件',
   pageInstalled: '已安装的插件', pageInstalledDescription: '此配置中安装的插件及其运行范围。代理功能加入 Studio 基础组成并按预设设置；配置级插件在配置设置中为所有会话统一设置',

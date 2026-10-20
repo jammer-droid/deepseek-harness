@@ -214,6 +214,8 @@ DSH에서 비밀 값을 저장하는 경로는 세 가지다. 셋 다 평문이�
 | S5 | 프로필 공용 설정 | S2, D3, D6 | ACTIVE 프로필 행의 Config를 스키마 폼으로 보고 저장한다. 덮어씀·검증 실패·비활성·주소 지정 불가는 이유를 표시하고 파일을 그대로 둔다. 비밀 필드는 유지·교체·삭제 의미로 저장하고, 응답·오류에 비밀 값이 없다. "모든 세션에 적용"을 표시한다 | DOM 테스트, `configEditor` 실제 Loader 테스트 | 완료 |
 | S6 | 실행되지 않는 프로필 공용 안내 | S2, S5 | 번들이 아닌 프로필 공용 패키지에 스니펫(비밀 자리표시자)을 보여 준다. 사용자가 patch에 등록하고 다시 읽으면 S5 목록으로 옮겨지며, 실제로 활성화된다 | DOM 테스트, 격리 프로필 실제 Loader 확인 | 완료 |
 | S7 | 독립 설치 검증 | S3–S6 | 수정하지 않은 DSH 0.2.1-rc.2에 패키징한 Studio만 설치한다. 확인 흐름: Exa `dsh plugin add` → 프로필 공용 표시 → 스니펫 등록 → 공용 설정에서 `searchProvider: exa`와 키 저장 → `web_search`가 Exa로 감. 에이전트 기능 플러그인 하나를 설정·포함·반영한다. 라이트·다크·좁은 폭 | 격리 home/profile 기록 | 부분 완료(격리 설치·브라우저 확인, 에이전트 기능 실제 포함 흐름 미확인) |
+| S8 | 서비스 그룹과 공급자 선택 | S5 | 프로필 설정이 서비스(예: 웹 검색·가져오기)별 카드로 묶인다. 서비스 소유 행(`dsh-web`)과 내장 공급자를 포함한 모든 공급자 행을 함께 보여 준다. 공급자 행에는 종류(검색/가져오기), 공급자 ID, 사용 중 여부를 표시한다. 소유 행에서 실행 중인 공급자 중 하나를 골라 저장한다. 자격 증명 참조(`apiKeyEnv`)는 저장소의 설정 여부로 표시한다 | DOM 테스트, 격리 rc.2 RPC·브라우저 | 완료 |
+| S9 | 목록 검색 | S4, S5 | 설치한 플러그인·프로필 설정 두 페이지에서 이름·패키지·범위·서비스·공급자 ID로 좁혀 본다 | DOM 테스트, 브라우저 | 완료 |
 
 S1의 상태 기록 시점은 네 가지다: `추가 직후`, `키 저장 후`, `반영 후`, `재시작 후`. 시점마다 `master-extensions.json`, `presets.json` 상태, Host Config 목록, 오류 원문을 남긴다.
 
@@ -297,3 +299,15 @@ S1의 상태 기록 시점은 네 가지다: `추가 직후`, `키 저장 후`, 
   - 브라우저: [plugins-register.mjs](../../scripts/e2e/plugins-register.mjs) 8개 통과, [plugins-tab.mjs](../../scripts/e2e/plugins-tab.mjs) 라이트·다크·480px 27개 통과.
   - 미확인: 실제 런타임에서 등록이 활성화 실패로 이어지는 경우. 후보로 `dsh-web-fetch-http`를 설치했지만 이미 프로필에서 실행 중이라 등록 대상이 아니었다. 롤백은 단위 테스트로만 확인했다.
 - 2026-10-20: 직접 등록 버전을 Desktop에 다시 설치했다. 백업 위치는 `studio/dist/desktop-38b-20261020/desktop-before/`이고, tgz는 SHA256 `00ae8c3b…f529`이다. 설치본을 tgz와 `diff -rq`로 비교해 일치함을 확인했다. 앱 재시작과 화면 확인은 하지 않았다.
+
+- 2026-10-20: S8·S9 추가와 구현(사용자 요청: 연관 관계를 볼 수 있게 묶기, 목록 검색).
+  - [service-groups.ts](../../src/service-groups.ts): 서비스 그룹 정의(`web` → 소유 `dsh-web`, 선택 필드 `searchProvider`·`fetchProvider`)와 공급자 ID 표(`exa`, `deepseek-official`, `perplexity`, `deepseek-search-api`, `deepseek-fetch-api`, `http`)다. 공개 API에 등록된 공급자 목록 조회가 없어서 0.2.1-rc.2 패키지 소스에서 읽은 값을 표로 둔다. 표에 없는 플러그인은 `inject`한 서비스로 그룹에 들어간다.
+  - Host [profile-config.ts](../../src/host/profile-config.ts)에서 바꾼 것:
+    - 그룹 서비스의 소유 행과 공급자 행을 설치 여부와 상관없이 나열한다.
+    - `pluginManager.listPlugins()`로 실행 여부를 붙이고, 꺼진 행의 저장을 거부한다.
+    - `credential-ref` 필드는 `ctx.credentials.describe`로 설정 여부만 붙인다.
+  - UI: 그룹 카드, 소유 행의 공급자 선택(실행 중인 공급자만, 현재 값이 목록에 없으면 `실행 중 아님`으로 유지), 두 페이지의 검색 칸.
+  - 검증: `npm --prefix studio test` 795개 통과. 격리 rc.2 `p38`(tgz SHA256 `6da4b76b…84a2`)에서 확인했다.
+    - 내장 `web-deepseek-api`, `web-fetch-http`, `web-search-deepseek`가 `web` 그룹에 나왔다. `DEEPSEEK_API_KEY`는 `configured: true`였다.
+    - 선택값 저장은 patch에 `searchProvider: exa`, `fetchProvider: deepseek-fetch-api`로 기록됐다.
+    - 브라우저 [plugins-tab.mjs](../../scripts/e2e/plugins-tab.mjs)는 라이트·다크·480px 33개 통과, pageerror 0이었다.

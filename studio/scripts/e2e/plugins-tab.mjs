@@ -35,6 +35,21 @@ await run({ name: 'plugins-tab', profile: value('--profile'), views }, async app
     app.assert(/apiKey: (설정됨|설정 안 됨|Set|Not set)/.test(text), `secret presence not shown: ${text.slice(0, 200)}`);
     app.assert(!/fake-s38-key/.test(await page.content()), 'secret value leaked into the page');
   });
+  await app.check('Web group card with provider pickers', async () => {
+    const card = page.locator('section.studio-settings-card:visible').filter({ hasText: /(웹 검색·가져오기|Web search and fetch)/ }).first();
+    await card.waitFor({ timeout: 30000 });
+    app.assert(await card.locator('select').count() === 2, 'search and fetch provider pickers');
+    const text = await app.text(card);
+    for (const id of ['web-search-exa', 'web-deepseek-api', 'web-fetch-http']) app.assert(text.includes(id), `missing ${id}`);
+  });
+  await app.check('Search narrows profile rows', async () => {
+    const input = page.locator('input[type=search]:visible').first();
+    await input.fill('fetch-http');
+    const text = await app.text(page.locator('section.studio-settings-card:visible').first());
+    app.assert(text.includes('web-fetch-http') && !text.includes('web-search-exa'), text.slice(0, 200));
+    await input.fill('');
+  });
+  await app.shot('profile-groups');
   await app.step('Open Exa settings', '.studio-settings-card:visible:has-text("web-search-exa") button:text-matches("^(설정|Settings)$") >> nth=0', { action: 'click', goal: 'The Settings button on the web-search-exa row of the visible profile settings card' });
   await app.check('Dialog says it applies to every session and hides the key', async () => {
     const dialog = page.locator('dialog[open]');
