@@ -91,6 +91,12 @@ export function restoreMasked(next: unknown, current: unknown, depth = 0): unkno
   return result;
 }
 
+/** Whether a row offers anything to edit: a secret control or a non-secret schema property. */
+export function hasEditableFields(schema: unknown, secretCount: number): boolean {
+  if (secretCount > 0) return true;
+  return schemaProperties(withoutSecrets(schema)).length > 0;
+}
+
 /** Copy of a projected schema without top-level secret properties; those get their own keep/replace/delete control. */
 export function withoutSecrets<T>(schema: T, roles: Readonly<Record<string, string>> = fieldRoles(schema)): T {
   const visit = (node: unknown): unknown => {

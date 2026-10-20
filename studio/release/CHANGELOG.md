@@ -2,7 +2,7 @@
 
 Release notes for `@matamt-dbg/dsh-studio`. Each version lists English notes first, then Korean.
 
-## 0.7.0 — 2026-10-20
+## 0.6.3 — 2026-10-20
 
 Requires DSH `0.2.0-rc.2`, `0.2.1-alpha.2`, `0.2.1-rc.1` or `0.2.1-rc.2`.
 
@@ -19,6 +19,7 @@ Requires DSH `0.2.0-rc.2`, `0.2.1-alpha.2`, `0.2.1-rc.1` or `0.2.1-rc.2`.
 - Profile-wide plugins can no longer be added to Studio Master. Adding one used to make applying presets fail with "a web provider with id … is already registered".
 - Secrets such as API keys are never shown or returned, at any depth of a plugin's settings. Choose **Keep**, **Replace**, or **Delete**. Plugins that use the DSH credential store show only the key name and whether it is set.
 - Both Plugins pages have a search box.
+- Rows with nothing to edit, such as `token-meter` and `llm-retry`, show **No settings** instead of opening an empty dialog.
 
 ### Upgrade notes
 
@@ -48,6 +49,7 @@ DSH `0.2.0-rc.2`, `0.2.1-alpha.2`, `0.2.1-rc.1` 또는 `0.2.1-rc.2`가 필요합
 - 프로필 공용 플러그인은 Studio Master에 추가할 수 없습니다. 이전에는 이러한 플러그인을 추가한 뒤 프리셋을 반영하면 "a web provider with id … is already registered" 오류가 발생해 실패했습니다.
 - API 키 같은 비밀 값은 플러그인 설정 어디에 있든 화면과 응답에 나타나지 않습니다. **유지**, **교체**, **삭제** 중에서 고릅니다. DSH 자격 증명 저장소를 사용하는 플러그인은 키 이름과 설정 여부만 표시합니다.
 - 플러그인 탭의 두 페이지에 검색 칸을 추가했습니다.
+- `token-meter`, `llm-retry`처럼 바꿀 설정이 없는 행은 빈 설정 창을 여는 대신 **설정 항목 없음**으로 표시합니다.
 
 #### 업그레이드 참고
 

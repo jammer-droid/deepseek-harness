@@ -293,7 +293,7 @@ Install packages from the DSH **Plugins** page (bundles) or with `dsh plugin --p
 - Web search and fetch picks a **Search provider** and a **Fetch provider** from the providers that are running. **Use default** removes the override and follows the DSH default (or auto-selection).
 - For a provider that is not listed, choose **Enter manually** and type its ID; saving an empty value uses the default. Only providers that follow DSH plugin naming conventions (a `providerName`/`serverName` setting, or a `*_PROVIDER_ID` string export) are listed and labeled automatically.
 - Secrets such as API keys are never shown; choose **Keep**, **Replace**, or **Delete**. They are stored in plain text in the profile patch file. Plugins that use the DSH credential store (such as the DeepSeek web API with `apiKeyEnv`) show only the key name and status, for example **DEEPSEEK_API_KEY: Set (credential store)**; change that key on the DSH **Plugins › Web search** page.
-- Rows that run inside presets (tools, compaction) and infrastructure with little to configure are not listed here.
+- Rows that run inside presets (tools, compaction) and infrastructure with little to configure are not listed here. Listed rows with nothing to edit show **No settings**.
 
 ## Show DSH in Korean
 

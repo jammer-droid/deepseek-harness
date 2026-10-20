@@ -239,7 +239,7 @@ smoke 통과와 함께 프리셋 목록과 Optimized 도구 수(0.6.2부터 27, 
 
 | 위치 | 문서 | 대상 |
 | --- | --- | --- |
-| releases | [0.7.0.md](releases/0.7.0.md) | Studio 0.7.0 배포 검증(#38) |
+| releases | [0.6.3.md](releases/0.6.3.md) | Studio 0.6.3 배포 검증(#38) |
 | checks | [dsh-role-compat.md](checks/dsh-role-compat.md) | DSH 업데이트 뒤 역할 persona·Tool Filter·자식 정책 복원 호환(rc.1 기준으로 작성) |
 | checks | [subagent-tool-filter.md](checks/subagent-tool-filter.md) | 서브에이전트 Tool Filter 동작 |
 | checks | [web-search-cost.md](checks/web-search-cost.md) | 웹 검색 provider(기존 Messages 검색 / Search·Fetch API) 비용·품질 비교 |

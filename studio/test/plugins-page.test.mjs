@@ -382,3 +382,27 @@ test('review #5: registration waits while applied presets still mount the plugin
   assert.match(host.textContent, /Reapply these presets before registering it in the profile: Alpha/);
   assert.equal([...host.querySelectorAll('button')].some(b => b.textContent === 'Register in profile'), false);
 });
+
+test('rows with nothing to edit show "No settings" instead of an empty dialog', async t => {
+  const { hasEditableFields } = await import('../src/secret-fields.ts');
+  assert.equal(hasEditableFields(undefined, 0), false);
+  assert.equal(hasEditableFields({ anyOf: [{ type: ['object', 'null'], properties: {} }, { $ref: '#/$defs/loaderExpression' }] }, 0), false, 'token-meter: schema without properties');
+  assert.equal(hasEditableFields({ type: 'object', properties: { apiKey: {} } }, 0), false, 'only a secret property, with no secret control listed');
+  assert.equal(hasEditableFields({ type: 'object', properties: { apiKey: {} } }, 1), true);
+  assert.equal(hasEditableFields({ type: 'object', properties: { thresholds: {} } }, 0), true);
+  const { PluginsPage } = await import('../src/plugins-page.tsx');
+  const { actions } = fixture();
+  actions.profiles = async () => [
+    { patchId: 'token-meter', name: '@deepseek-ai/dsh-token-meter', role: 'plugin', service: 'llm', active: true, schema: { type: 'object', properties: {} }, effective: {}, inherited: {}, diff: {}, secrets: [] },
+    { patchId: 'llm-retry', name: '@deepseek-ai/dsh-llm-retry', role: 'plugin', service: 'llm', active: true, schema: { type: 'object', properties: { maxAttempts: { type: 'integer' } } }, effective: {}, inherited: {}, diff: {}, secrets: [] },
+  ];
+  const host = await render(t, React.createElement(PluginsPage, { locale: 'en', actions }));
+  await act(async () => [...host.querySelectorAll('.studio-nav-item')].find(b => b.textContent === 'Profile settings').click());
+  await act(async () => {});
+  const rows = [...host.querySelectorAll('.studio-settings-row')].filter(r => r.closest('[hidden]') === null && /token-meter|llm-retry/.test(r.textContent));
+  const tokenMeter = rows.find(r => r.textContent.includes('token-meter'));
+  const retry = rows.find(r => r.textContent.includes('llm-retry'));
+  assert.match(tokenMeter.textContent, /No settings/);
+  assert.equal([...tokenMeter.querySelectorAll('button')].some(b => b.textContent === 'Settings'), false);
+  assert.ok([...retry.querySelectorAll('button')].some(b => b.textContent === 'Settings'));
+});

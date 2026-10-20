@@ -8,7 +8,7 @@ import { pluginsText, type PluginsKey } from './plugins-locale.ts';
 import type { InstalledPlugin } from './installed-plugins.ts';
 import type { MigrationItem } from './extension-migration.ts';
 import { profileSnippet, snippetId, type SecretAction } from './profile-config.ts';
-import { withoutSecrets } from './secret-fields.ts';
+import { hasEditableFields, withoutSecrets } from './secret-fields.ts';
 import { groupOfService, groupTitle, matchesQuery, selectorOptions, type ProviderKind } from './service-groups.ts';
 
 export interface ProfileConfigView {
@@ -202,7 +202,7 @@ function ProfilePage({ locale, actions, active }: { locale: string; actions: Plu
     return <SettingsRow key={view.patchId}
       title={<>{pluginTitle(view.name, locale)} {view.role === 'service' && <Badge tone="outline">{t('service')}</Badge>}{kinds.length > 0 && <Badge tone="neutral">{kinds.join(' · ')}</Badge>}{inUse.length > 0 && <Badge tone="success">{t('inUse')}</Badge>}{view.active === false && <Badge tone="warning">{t('inactive')}</Badge>}<Badge tone={Object.keys(view.diff).length ? 'info' : 'outline'}>{Object.keys(view.diff).length ? t('changed') : t('defaults')}</Badge></>}
       description={[view.patchId, ...(view.provides ?? []).map(p => `${t('providerId')}: ${p.id}`), ...Object.entries(view.diff).map(([key, value]) => `${key}: ${typeof value === 'string' ? value : JSON.stringify(value)}`), ...(view.credentials ?? []).map(c => `${c.ref}: ${c.configured ? t('secretSet') : t('secretUnset')} (${t('credentialStore')})`), ...view.secrets.filter(s => s.set || !view.credentials?.some(c => c.configured)).map(s => `${s.key}: ${s.set ? t('secretSet') : t('secretUnset')}`)].join(' · ')}
-      control={view.schema || view.secrets.length ? <Button small disabled={view.active === false} onClick={() => setOpen(view.patchId)}>{t('edit')}</Button> : <span className="studio-muted studio-hint">{t('noSettings')}</span>}>
+      control={hasEditableFields(view.schema, view.secrets.length) ? <Button small disabled={view.active === false} onClick={() => setOpen(view.patchId)}>{t('edit')}</Button> : <span className="studio-muted studio-hint">{t('noSettings')}</span>}>
       {view.selectors?.map(sel => {
         const overridden = Object.hasOwn(view.diff, sel.field);
         const value = view.effective[sel.field] ?? view.inherited[sel.field];
