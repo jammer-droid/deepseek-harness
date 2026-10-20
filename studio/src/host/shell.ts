@@ -24,7 +24,8 @@ import { migrationPlan, type MigrationBackup } from '../extension-migration.ts';
 import { fieldRoles } from '../secret-fields.ts';
 import { readProfileConfigs, saveProfileConfig, schemaOf } from './profile-config.ts';
 import { registerProfilePlugin } from './profile-register.ts';
-import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, rename, unlink, writeFile } from 'node:fs/promises';
+import { randomUUID } from 'node:crypto';
 import { CatalogBaseline } from './catalog-baseline.ts';
 
 
@@ -100,17 +101,34 @@ export default class StudioCatalog extends TypertRemoteService {
   async read() { return structuredClone(await this.master.ready()); }
   @Remote
   async readExtensions() { await this.master.ready(); return this.master.readExtensions(); }
+  /**
+   * Master-extension mutations run one at a time, each reading the latest state, so a migration's
+   * read → backup → replace cannot interleave with another add, save, remove or migration.
+   */
+  private extensionTail: Promise<unknown> = Promise.resolve();
+  private extensionChange<T>(operation: () => Promise<T>): Promise<T> {
+    const result = this.extensionTail.then(operation);
+    this.extensionTail = result.catch(() => {});
+    return result;
+  }
   @Remote
   async saveExtensions(payload: string) {
     const rows = validateExtensions(JSON.parse(payload));
-    // New profile-scoped rows are refused; ones already saved stay until migrated (D7).
-    const current = new Set(flatNames(await this.master.readExtensions()));
-    const added = flatNames(rows).filter(name => !current.has(name));
-    if (added.length) {
+    return this.extensionChange(async () => {
+      // A profile-scoped row is kept only as the exact row already saved (awaiting migration, D7);
+      // any new, renamed, duplicated or edited row of such a package is refused.
+      const saved = new Set((await this.master.readExtensions()).map(row => JSON.stringify(row)));
       const { plugins } = await this.installed();
-      for (const name of added) { const found = plugins.find(plugin => plugin.entry === name); const refusal = found && masterRefusal(found); if (refusal) throw new Error(refusal); }
-    }
-    return this.master.replaceExtensions(rows);
+      const check = (list: typeof rows) => { for (const row of list) {
+        if (row.group && Array.isArray(row.config)) { check(row.config as typeof rows); continue; }
+        if (saved.has(JSON.stringify(row))) continue;
+        const found = plugins.find(plugin => plugin.entry === row.name);
+        const refusal = found && masterRefusal(found);
+        if (refusal) throw new Error(refusal);
+      } };
+      check(rows);
+      return this.master.replaceExtensions(rows);
+    });
   }
   /**
    * Add one installed package to the Studio Master by name, without config (edit it as an override).
@@ -121,6 +139,7 @@ export default class StudioCatalog extends TypertRemoteService {
     // A package name, or `{ name, config }` JSON with the initial config probed together (#38 S4).
     const parsed = payload.trim().startsWith('{') ? JSON.parse(payload) as { name?: unknown; config?: unknown } : { name: payload };
     const name = typeof parsed.name === 'string' ? parsed.name.trim() : '';
+    return this.extensionChange(async () => {
     const rows = await this.master.readExtensions();
     if (new Set([...this.master.masterNames(), ...flatNames(rows)]).has(name)) throw new Error(`Already in the Studio Master: ${name}`);
     const found = (await this.installed()).plugins.find(plugin => plugin.entry === name);
@@ -128,17 +147,27 @@ export default class StudioCatalog extends TypertRemoteService {
     if (refusal) throw new Error(refusal);
     const config = parsed.config && typeof parsed.config === 'object' && Object.keys(parsed.config).length ? { config: parsed.config } : {};
     return this.master.replaceExtensions(validateExtensions([...rows, { ...masterAddition(name, rows), ...config }]));
+    });
   }
   @Remote
   async removeMasterPlugin(id: string) {
-    const rows = await this.master.readExtensions();
-    if (!rows.some(row => row.id === id)) throw new Error(`Not added by Studio: ${id}`);
-    return this.master.replaceExtensions(rows.filter(row => row.id !== id));
+    return this.extensionChange(async () => {
+      const rows = await this.master.readExtensions();
+      if (!rows.some(row => row.id === id)) throw new Error(`Not added by Studio: ${id}`);
+      return this.master.replaceExtensions(rows.filter(row => row.id !== id));
+    });
   }
   private async installed() {
     await this.master.ready();
     const rows = await this.master.readExtensions();
-    return readInstalledPlugins(this.ctx, this.master.masterNames(), new Set(flatNames(rows)));
+    const result = await readInstalledPlugins(this.ctx, this.master.masterNames(), new Set(flatNames(rows)));
+    const presets = await this.store.migrationSources();
+    for (const plugin of result.plugins) {
+      if (plugin.scope !== 'profile' || plugin.state !== 'installed') continue;
+      const pending = presets.filter(preset => preset.appliedNames.includes(plugin.entry)).map(preset => ({ id: preset.id, name: preset.name }));
+      if (pending.length) plugin.pendingPresets = pending;
+    }
+    return result;
   }
   /** Installed plugin entry points with their run scope and evidence (#38). Read-only. */
   @Remote
@@ -158,7 +187,8 @@ export default class StudioCatalog extends TypertRemoteService {
    * overrides of the removed id are then cleared through the catalog change notice.
    */
   @Remote
-  async migrateExtension(id: string) {
+  async migrateExtension(id: string) { return this.extensionChange(() => this.migrateNow(id)); }
+  private async migrateNow(id: string) {
     const { plan, extensions, presets } = await this.migration();
     const item = plan.find(entry => entry.id === id);
     if (!item) throw new Error(`Not a profile-scoped Studio addition: ${id}`);
@@ -170,9 +200,12 @@ export default class StudioCatalog extends TypertRemoteService {
     let previous: MigrationBackup[] = [];
     try { previous = JSON.parse(await readFile(file, 'utf8')).moved ?? []; } catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error; }
     await mkdir(dirname(file), { recursive: true, mode: 0o700 });
-    // Fixed sibling of the profile-local Studio store.
-    await writeFile(`${file}.tmp`, JSON.stringify({ version: 1, moved: [...previous, backup] }, null, 2), { mode: 0o600 });
-    await rename(`${file}.tmp`, file);
+    // A new, exclusively created sibling of the profile-local Studio store, so its mode is always 0600.
+    const temp = join(dirname(file), `.migrated-extensions.${randomUUID()}.tmp`);
+    try {
+      await writeFile(temp, JSON.stringify({ version: 1, moved: [...previous, backup] }, null, 2), { mode: 0o600, flag: 'wx' });
+      await rename(temp, file);
+    } catch (error) { await unlink(temp).catch(() => undefined); throw error; }
     const catalog = await this.master.replaceExtensions(extensions.filter(entry => entry.id !== id));
     return { catalog, appliedIn: item.appliedIn };
   }

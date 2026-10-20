@@ -7,31 +7,31 @@ import type { PluginCatalogEntry } from './plugin-catalog.ts';
 import { Badge, Button, DetailDialog, Notice, SectionHead } from './ui.tsx';
 
 /** Host actions that change which plugins the Studio Master offers. Adding lives in the Plugins service (#38). */
-export interface MasterPluginActions { add?(name: string): Promise<void>; remove(id: string): Promise<void> }
+export interface MasterPluginActions { remove(id: string): Promise<void> }
 
 type Locale = 'ko' | 'en' | 'zh';
 type Copy = Record<'title' | 'hint' | 'included' | 'excluded' | 'overridden' | 'defaults' | 'follows' | 'requires' | 'addedTag' | 'autoOff' | 'autoOn' | 'declared'
   | 'search' | 'searchHint' | 'filter' | 'all' | 'empty' | 'noResults' | 'clear' | 'settings' | 'done' | 'modified' | 'modifiedTag'
-  | 'add' | 'addTitle' | 'addHint' | 'candidates' | 'noCandidates' | 'byName' | 'namePlaceholder' | 'addButton' | 'addedList' | 'remove' | 'adding' | 'fallback', string> & Record<string, string>;
+  | 'add' | 'addTitle' | 'addHint' | 'addedList' | 'remove' | 'fallback', string> & Record<string, string>;
 const copy: Record<Locale, Copy> = {
   ko: { title: '포함할 플러그인', hint: '기준은 DSH standard 프리셋이고, Studio가 더한 플러그인과 직접 추가한 플러그인을 함께 보여 줍니다. 모두 기본으로 포함되며, 끄면 이 프리셋에서 빠집니다. 값만 바꾸려면 아래 Config에서 덮어쓰세요. 선택한 도구를 제공하는 플러그인을 끄면 반영할 때 막힙니다.',
     included: '포함', excluded: '제외', overridden: '덮어쓰기', defaults: '기본값', follows: '함께 제외', requires: '필요: ', addedTag: '추가함', fallback: '실행 중인 DSH의 standard 프리셋을 읽지 못해 Studio에 들어 있는 standard 사본을 기준으로 씁니다.', origin_standard: 'standard', origin_studio: 'Studio', origin_added: '추가함',
     autoOff: '자동 압축 꺼짐 (auto: false)', autoOn: '자동 압축 켜짐', declared: '선언 기준이며 실행 중 세션의 상태는 아닙니다.',
     search: '플러그인 검색', searchHint: '플러그인 이름이나 ID로 검색', filter: '보기', all: '전체', empty: '플러그인이 없습니다.', noResults: '검색 결과가 없습니다.', clear: '전체 보기', settings: '설정', done: '완료', modified: '변경됨', modifiedTag: '변경됨',
     add: 'Studio가 추가한 플러그인', addTitle: 'Studio가 추가한 플러그인', addHint: '새 플러그인은 Studio → 플러그인에서 설치한 플러그인을 포함해 추가합니다. 여기서는 이미 추가한 플러그인을 뜁니다.',
-    candidates: 'DSH 프리셋에 있는 플러그인', noCandidates: '추가할 수 있는 플러그인이 없습니다.', byName: '패키지 이름으로 추가', namePlaceholder: '@scope/package 또는 package', addButton: '추가', addedList: 'Studio가 추가한 플러그인', remove: '제거', from: '선언: ', together: '함께 추가: ',  adding: '추가 중…' },
+    addedList: 'Studio가 추가한 플러그인', remove: '제거' },
   en: { title: 'Included plugins', hint: 'The base is the DSH standard preset, shown with the plugins Studio adds and the ones you added. All are included by default; turning one off leaves it out of this preset. To change values only, override them in Config below. Applying is blocked if a selected tool loses its plugin.',
     included: 'Included', excluded: 'Excluded', overridden: 'Override', defaults: 'Defaults', follows: 'Excluded with dependency', requires: 'Requires: ', addedTag: 'Added', fallback: 'Could not read the running DSH standard preset, so the copy bundled with Studio is used as the base.', origin_standard: 'standard', origin_studio: 'Studio', origin_added: 'Added',
     autoOff: 'Automatic compaction off (auto: false)', autoOn: 'Automatic compaction on', declared: 'Shows the declaration, not the state of a running session.',
     search: 'Search plugins', searchHint: 'Search plugin names or IDs', filter: 'Show', all: 'All', empty: 'No plugins.', noResults: 'No matching results.', clear: 'Show all', settings: 'Settings', done: 'Done', modified: 'Modified', modifiedTag: 'Modified',
     add: 'Plugins added by Studio', addTitle: 'Plugins added by Studio', addHint: 'Add new plugins by including installed ones in Studio → Plugins. This lists the ones already added so you can remove them.',
-    candidates: 'Plugins in DSH presets', noCandidates: 'No plugins to add.', byName: 'Add by package name', namePlaceholder: '@scope/package or package', addButton: 'Add', addedList: 'Plugins added by Studio', remove: 'Remove', from: 'Declared in: ', together: 'Added together: ',  adding: 'Adding…' },
+    addedList: 'Plugins added by Studio', remove: 'Remove' },
   zh: { title: '包含的插件', hint: '基础为 DSH standard 预设，并显示 Studio 添加的插件和您添加的插件。默认全部包含，关闭后将从此预设中移除；如只需修改值，请在下方 Config 中覆盖。若已选工具失去其插件，将无法应用',
     included: '包含', excluded: '排除', overridden: '覆盖', defaults: '默认值', follows: '随依赖排除', requires: '需要：', addedTag: '已添加', fallback: '无法读取正在运行的 DSH standard 预设，因此使用 Studio 内置的 standard 副本作为基础', origin_standard: 'standard', origin_studio: 'Studio', origin_added: '已添加',
     autoOff: '自动压缩已关闭 (auto: false)', autoOn: '自动压缩已开启', declared: '显示的是声明，而非运行中会话的状态',
     search: '搜索插件', searchHint: '按插件名称或 ID 搜索', filter: '显示', all: '全部', empty: '没有插件', noResults: '没有匹配结果', clear: '显示全部', settings: '设置', done: '完成', modified: '已修改', modifiedTag: '已修改',
     add: 'Studio 添加的插件', addTitle: 'Studio 添加的插件', addHint: '新插件请在 Studio → 插件中加入已安装的插件。此处列出已添加的插件以便移除',
-    candidates: 'DSH 预设中的插件', noCandidates: '没有可添加的插件', byName: '按软件包名添加', namePlaceholder: '@scope/package 或 package', addButton: '添加', addedList: 'Studio 添加的插件', remove: '移除', from: '声明于：', together: '一并添加：',  adding: '添加中…' },
+    addedList: 'Studio 添加的插件', remove: '移除' },
 };
 export const localeOf = (locale: string): Locale => locale.startsWith('ko') ? 'ko' : locale.startsWith('zh') ? 'zh' : 'en';
 export const featureLabel = (name: string, locale: string) => pluginTitle(name, locale);

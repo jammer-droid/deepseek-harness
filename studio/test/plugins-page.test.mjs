@@ -111,7 +111,7 @@ test('register applies directly, keeps the manual snippet as a fallback, and rep
   assert.match(dialog.querySelector('pre').textContent, /- id: web-search-exa\n {6}name: '@deepseek-ai\/dsh-web-search-exa'/);
   await click(dialog, 'Copy');
   await click(dialog, 'Register');
-  assert.match(dialog.textContent, /Could not register\. The profile patch file was restored\. row failed to activate/);
+  assert.match(dialog.textContent, /Could not register\. row failed to activate/);
   fail = false;
   await click(dialog, 'Register');
   assert.deepEqual(calls.map(c => c[0]), ['copy', 'register', 'register']);
@@ -326,4 +326,59 @@ test('provider detection order: config name or default, then *_PROVIDER_ID expor
   assert.deepEqual(detectProviders({ name: 'x', service: 'web', exports: { X_SEARCH_PROVIDER_ID: 'xs', X_FETCH_PROVIDER_ID: 'xf' } }).map(p => [p.id, p.kind]), [['xs', 'search'], ['xf', 'fetch']]);
   assert.deepEqual(detectProviders({ name: 'x', service: 'web', exports: { X_PROVIDER_ID: 'x' } }), [], 'no kind, no entry: left to manual input');
   assert.deepEqual(detectProviders({ name: '@deepseek-ai/dsh-web-fetch-http', service: 'web' }), [{ id: 'http', kind: 'fetch', source: 'table' }]);
+});
+
+test('review #2/#6: register errors are redacted and a failed restore is reported', async t => {
+  const { registerProfilePlugin } = await import('../src/host/profile-register.ts');
+  const { mkdtemp, writeFile, readFile, rm } = await import('node:fs/promises');
+  const { tmpdir } = await import('node:os');
+  const { join } = await import('node:path');
+  const dir = await mkdtemp(join(tmpdir(), 's38r-')); t.after(() => rm(dir, { recursive: true, force: true }));
+  const patchPath = join(dir, 'cordis.patch.yml');
+  const original = '- id: other\n  config:\n    apiKey: existing-secret-value\n';
+  await writeFile(patchPath, original);
+  let restoreFails = false;
+  let lastConfig;
+  const hmr = {
+    runExclusive: op => op(),
+    reconcileProfile: async ids => {
+      if (ids?.length) throw new Error(`activation failed: bad key ${lastConfig ?? 'none'} and existing-secret-value`);
+      if (restoreFails) throw new Error('reload failed near existing-secret-value');
+      return { warnings: ['row other: apiKey existing-secret-value'], pending: [] };
+    },
+  };
+  const ctx = { get: name => ({ profileContext: { patchPath }, hmr })[name] };
+  const installed = [{ package: EXA, entry: EXA, scope: 'profile', evidence: 'compatibility', state: 'installed' }];
+  lastConfig = 'new-secret-value';
+  const error = await registerProfilePlugin(ctx, installed, { entry: EXA, config: { apiKey: 'new-secret-value' } }).catch(e => e);
+  assert.match(error.message, /Registration failed: activation failed: bad key <secret> and <secret>\. The profile patch file was restored\./);
+  assert.equal(await readFile(patchPath, 'utf8'), original);
+  restoreFails = true;
+  lastConfig = undefined;
+  const error2 = await registerProfilePlugin(ctx, installed, { entry: EXA }).catch(e => e);
+  assert.match(error2.message, /reloading it also failed \(reload failed near <secret>\); restart DSH/);
+  assert.ok(!/secret-value/.test(error.message + error2.message));
+  await writeFile(patchPath, '- id: [unclosed\n  apiKey: leaked-in-parse');
+  const error3 = await registerProfilePlugin(ctx, installed, { entry: EXA }).catch(e => e);
+  assert.match(error3.message, /could not be parsed/);
+  assert.ok(!error3.message.includes('leaked-in-parse'));
+  await writeFile(patchPath, original);
+  restoreFails = false;
+  hmr.reconcileProfile = async () => ({ warnings: ['row other: apiKey existing-secret-value'], pending: [] });
+  const ok = await registerProfilePlugin(ctx, installed, { entry: EXA });
+  assert.equal(ok.warnings, 1, 'warnings are counted, never quoted');
+});
+
+test('review #5: registration waits while applied presets still mount the plugin', async t => {
+  const { registerProfilePlugin } = await import('../src/host/profile-register.ts');
+  const ctx = { get: name => ({ profileContext: { patchPath: '/nonexistent' }, hmr: { runExclusive: op => op(), reconcileProfile: async () => ({ warnings: [], pending: [] }) } })[name] };
+  const installed = [{ package: EXA, entry: EXA, scope: 'profile', evidence: 'compatibility', state: 'installed', pendingPresets: [{ id: 'a', name: 'Alpha' }] }];
+  await assert.rejects(registerProfilePlugin(ctx, installed, { entry: EXA }), /Reapply or unapply these presets first.*Alpha/);
+  const { PluginsPage } = await import('../src/plugins-page.tsx');
+  const { actions } = fixture();
+  actions.installed = async () => ({ plugins: installed, errors: {} });
+  const host = await render(t, React.createElement(PluginsPage, { locale: 'en', actions }));
+  assert.match(host.textContent, /Reapply presets first/);
+  assert.match(host.textContent, /Reapply these presets before registering it in the profile: Alpha/);
+  assert.equal([...host.querySelectorAll('button')].some(b => b.textContent === 'Register in profile'), false);
 });

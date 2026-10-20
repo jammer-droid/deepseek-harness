@@ -19,6 +19,11 @@ export interface InstalledPlugin {
   state: PluginState;
   /** Profile patch id when the profile runs this entry. */
   patchId?: string;
+  /**
+   * Applied Studio presets whose snapshot still mounts this profile-scoped entry. Registering it in the
+   * profile before they are reapplied or unapplied would register it twice, so registration waits (D7).
+   */
+  pendingPresets?: Array<{ id: string; name: string }>;
 }
 
 /** One live profile row as `pluginManager.listPlugins()` reports it. */

@@ -131,7 +131,7 @@ export async function apply(ctx: StudioContext) {
             };
             const update = async (method: string, arg: string) => { setCatalog(await call(method, arg) as import('./preset-catalog.ts').PresetCatalog); };
             return { read: () => call('readExtensions'), save: (payload: string) => update('saveExtensions', payload),
-                add: (name: string) => update('addMasterPlugin', name), remove: (id: string) => update('removeMasterPlugin', id) };
+                remove: (id: string) => update('removeMasterPlugin', id) };
         }, []);
         const catalogChanges = React.useMemo(() => {
             const call = async (method: string) => {

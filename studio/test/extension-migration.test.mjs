@@ -15,7 +15,7 @@ test('secret fields: schema role first, name rule only without a role, credentia
   assert.equal(isSecretField('githubToken', {}), true);
   assert.equal(isSecretField('tokenLimit', {}), false);
   assert.deepEqual(maskConfig({ apiKey: 'sk-real', searchType: 'auto', password: '' }), { apiKey: { secret: true, set: true }, searchType: 'auto', password: { secret: true, set: false } });
-  assert.equal(redactSecrets('bad key sk-real-value here', { apiKey: 'sk-real-value' }), 'bad key <apiKey> here');
+  assert.equal(redactSecrets('bad key sk-real-value here', { value: { apiKey: 'sk-real-value' } }), 'bad key <secret> here');
 });
 
 test('migration plan lists profile-scoped additions with masked config, overrides and applied presets', () => {
@@ -41,4 +41,27 @@ test('an unknown user addition stays in the Master and is not migrated', () => {
   const installed = classifyInstalled({ installed: { mine: '1' }, pluginEntries: { mine: ['mine'] }, masterNames: new Set(), addedNames: new Set(['mine']), profileRows: [] });
   assert.deepEqual({ scope: installed[0].scope, state: installed[0].state }, { scope: 'agent', state: 'in-master' });
   assert.deepEqual(migrationPlan({ extensions: [{ id: 'mine', name: 'mine' }], installed, presets: [] }), []);
+});
+
+test('review #1: nested and short secrets never leave the Host', async () => {
+  const { maskConfig, redactSecrets, restoreMasked, WITHHELD, fieldRoles } = await import('../src/secret-fields.ts');
+  const { configDiff, composeProfileConfig } = await import('../src/profile-config.ts');
+  const config = { auth: { apiKey: 'sk-nested-1', user: 'me' }, servers: [{ token: 'tok-in-array' }], password: 'abc' };
+  const masked = JSON.stringify(maskConfig(config));
+  for (const secret of ['sk-nested-1', 'tok-in-array', 'abc']) assert.ok(!masked.includes(secret), secret);
+  assert.match(masked, /"user":"me"/);
+  const diff = configDiff({}, config);
+  assert.ok(!JSON.stringify(diff).includes('sk-nested-1') && !JSON.stringify(diff).includes('tok-in-array'));
+  // Saving the masked diff back keeps the real values instead of writing markers.
+  const next = composeProfileConfig({ inherited: {}, current: config, diff, secrets: {} });
+  assert.equal(next.auth.apiKey, 'sk-nested-1');
+  assert.equal(next.servers[0].token, 'tok-in-array');
+  assert.equal(next.password, 'abc', 'top-level secret kept');
+  assert.deepEqual(restoreMasked({ apiKey: { secret: true, set: true } }, {}), {}, 'a marker with no current value is dropped');
+  assert.equal(redactSecrets('bad sk-nested-1 here', { value: config }), 'bad <secret> here');
+  assert.equal(redactSecrets('password abc rejected', { value: config }), WITHHELD, 'a short secret withholds the text');
+  assert.equal(redactSecrets('unrelated', { value: config }), 'unrelated');
+  const roles = fieldRoles({ anyOf: [{ type: 'object', properties: { auth: { type: 'object', properties: { key: { 'x-cordis': { role: 'secret' } } } } } }] });
+  assert.equal(roles.key, 'secret', 'nested schema roles are found');
+  assert.ok(!JSON.stringify(maskConfig({ auth: { key: 'deep-role' } }, roles)).includes('deep-role'));
 });

@@ -5,7 +5,7 @@
  * delete so a masked value never round-trips.
  */
 import { mergeConfig } from './config-overrides.ts';
-import { isSecretField } from './secret-fields.ts';
+import { isSecretField, maskValue, restoreMasked } from './secret-fields.ts';
 
 type Config = Record<string, unknown>;
 const obj = (v: unknown): v is Config => !!v && typeof v === 'object' && !Array.isArray(v);
@@ -13,11 +13,14 @@ const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b)
 
 export type SecretAction = { action: 'keep' } | { action: 'delete' } | { action: 'replace'; value: string };
 
-/** Top-level fields of `effective` that differ from `inherited`, secrets excluded. */
+/**
+ * Top-level fields of `effective` that differ from `inherited`, top-level secrets excluded and nested
+ * secrets replaced by presence markers. A save restores those markers from the current config.
+ */
 export function configDiff(inherited: unknown, effective: unknown, roles: Readonly<Record<string, string>> = {}): Config {
   const base = obj(inherited) ? inherited : {};
   const next = obj(effective) ? effective : {};
-  return Object.fromEntries(Object.entries(next).filter(([key, value]) => !isSecretField(key, roles) && !same(base[key], value)).map(([key, value]) => [key, structuredClone(value)]));
+  return Object.fromEntries(Object.entries(next).filter(([key, value]) => !isSecretField(key, roles) && !same(base[key], value)).map(([key, value]) => [key, maskValue(value, roles)]));
 }
 
 /** Secret field names present in either layer or declared by the schema roles. */
@@ -39,8 +42,8 @@ export function composeProfileConfig(input: { inherited: unknown; current: unkno
   for (const key of Object.keys(input.diff)) if (isSecretField(key, roles)) throw new Error(`Secret field ${key} must be sent as a secret action`);
   const plain = Object.fromEntries(Object.entries(inherited).filter(([key]) => !isSecretField(key, roles)));
   const next = mergeConfig(plain, input.diff);
-  // Shallow replace, not merge: a diff value is the whole field.
-  for (const [key, value] of Object.entries(input.diff)) next[key] = structuredClone(value);
+  // Shallow replace, not merge: a diff value is the whole field. Nested secret markers take the current value.
+  for (const [key, value] of Object.entries(input.diff)) next[key] = restoreMasked(value, current[key] ?? inherited[key]);
   for (const key of secretKeys(roles, inherited, current, input.secrets)) {
     const action = input.secrets[key] ?? { action: 'keep' };
     if (action.action === 'replace') {

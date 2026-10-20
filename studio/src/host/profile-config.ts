@@ -134,14 +134,15 @@ export async function saveProfileConfig(ctx: Context, installed: readonly Instal
   const entry = editor.entries().find(item => item.options.id === payload.patchId);
   if (!entry) throw new Error(`Profile entry is no longer available: ${payload.patchId}`);
   const roles = secretRoles((await schemaOf(ctx, entry.options.name)).schema);
-  let secretsSeen: Record<string, unknown> = {};
+  // Every secret this save touches: the entry's current and inherited values, and replacements.
+  const seen: Array<{ value: unknown; roles: Record<string, string> }> = [{ value: entry.options.config, roles }];
   try {
     await editor.edit(entry, (current, inherited) => {
-      secretsSeen = current;
+      seen.push({ value: current, roles }, { value: inherited, roles });
       return composeProfileConfig({ inherited, current, diff: payload.diff, secrets: payload.secrets ?? {}, roles });
     });
   } catch (error) {
     const replaced = Object.fromEntries(Object.entries(payload.secrets ?? {}).flatMap(([key, action]) => action.action === 'replace' ? [[key, action.value]] : []));
-    throw new Error(redactSecrets(redactSecrets(error instanceof Error ? error.message : String(error), secretsSeen, roles), replaced, Object.fromEntries(Object.keys(replaced).map(key => [key, 'secret']))));
+    throw new Error(redactSecrets(error instanceof Error ? error.message : String(error), ...seen, { value: replaced, roles: Object.fromEntries(Object.keys(replaced).map(key => [key, 'secret'])) }));
   }
 }

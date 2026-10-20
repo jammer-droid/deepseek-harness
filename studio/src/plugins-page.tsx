@@ -29,7 +29,7 @@ export interface PluginsActions {
   profiles(): Promise<ProfileConfigView[]>;
   saveProfile(payload: { patchId: string; diff: Record<string, unknown>; secrets: Record<string, SecretAction> }): Promise<ProfileConfigView[]>;
   /** Register a profile-wide plugin in the profile patch and apply it; absent where the Host cannot. */
-  register?(entry: string): Promise<{ id: string; warnings: string[]; restartReason?: string; profiles: ProfileConfigView[] }>;
+  register?(entry: string): Promise<{ id: string; warnings: number; restartReason?: string; profiles: ProfileConfigView[] }>;
   copy?(text: string): Promise<void>;
 }
 
@@ -106,9 +106,11 @@ function InstalledPage({ locale, actions, onOpenProfile }: { locale: string; act
   };
   const action = (plugin: InstalledPlugin): React.ReactNode => {
     if (plugin.state === 'in-master' || plugin.state === 'profile-unaddressable') return null;
-    if (plugin.scope === 'profile') return plugin.state === 'installed'
-      ? <Button small onClick={() => setRegistering(plugin)}>{t('register')}</Button>
-      : <Button small onClick={onOpenProfile}>{t('profileSettings')}</Button>;
+    if (plugin.scope === 'profile') return plugin.state !== 'installed'
+      ? <Button small onClick={onOpenProfile}>{t('profileSettings')}</Button>
+      : plugin.pendingPresets?.length
+        ? <span className="studio-muted studio-hint">{t('reapplyFirst')}</span>
+        : <Button small onClick={() => setRegistering(plugin)}>{t('register')}</Button>;
     if (plugin.state !== 'installed') return null;
     return <Button small primary={plugin.scope === 'agent'} onClick={() => setIncluding(plugin)}>{plugin.scope === 'agent' ? t('include') : t('includeAgent')}</Button>;
   };
@@ -129,7 +131,7 @@ function InstalledPage({ locale, actions, onOpenProfile }: { locale: string; act
     {shown && shown.length > 0 && <section className="studio-settings-card" aria-label={t('pageInstalled')}>
       {shown.map(plugin => <SettingsRow key={plugin.entry}
         title={<>{pluginTitle(plugin.entry, locale)} <Badge tone={plugin.scope === 'agent' ? 'info' : plugin.scope === 'profile' ? 'outline' : 'warning'}>{t(`scope_${plugin.scope}` as PluginsKey)}</Badge>{plugin.state === 'installed' && <Badge tone="neutral">{t('state_installed')}</Badge>}</>}
-        description={[plugin.entry + (plugin.version ? `@${plugin.version}` : ''), plugin.state === 'installed' ? t(evidenceKey(plugin.evidence)) : t(stateKey(plugin.state)), pluginPurpose(plugin.entry, locale)].filter(Boolean).join(' · ')}
+        description={[plugin.entry + (plugin.version ? `@${plugin.version}` : ''), plugin.state === 'installed' ? t(evidenceKey(plugin.evidence)) : t(stateKey(plugin.state)), pluginPurpose(plugin.entry, locale), ...(plugin.pendingPresets?.length ? [`${t('migratedApplied')}${plugin.pendingPresets.map(p => p.name).join(', ')}`] : [])].filter(Boolean).join(' · ')}
         control={action(plugin)} />)}
     </section>}
     <p className="studio-muted studio-hint">{t('installHint')}</p>
