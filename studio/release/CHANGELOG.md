@@ -30,6 +30,7 @@ Requires DSH `0.2.0-rc.2`, `0.2.1-alpha.2`, `0.2.1-rc.1` or `0.2.1-rc.2`.
 
 - Built and installed into isolated profiles of unmodified DSH `0.2.1-rc.2` with a scripted test model and a local fake Exa endpoint. The original failure was reproduced first, then checked fixed: adding Exa to Studio Master is refused, and Optimized stays applied. Registering Exa from Studio, saving its key and `searchProvider: exa`, and running `web_search` reached the fake endpoint with the saved key, also after a restart. Manual provider entry and returning to the default were checked in the patch file.
 - Concurrent moves of the same plugin, a stale temporary file, and nested or short secrets in errors were checked after the release review.
+- The release package was installed fresh and as an upgrade from 0.6.2 into isolated profiles of unmodified DSH `0.2.1-rc.2`. On upgrade, the Exa row added under 0.6.2 was listed for moving with its key masked; moving it kept the key in a 0600 backup, and Optimized applied again.
 - The Plugins tab was checked in light, dark and 480 px views. Not checked: including a real third-party agent-feature package end to end, and an actual registration that fails to activate (covered by unit tests). Other DSH versions were not tested for these changes.
 
 ### 한국어
@@ -60,6 +61,7 @@ DSH `0.2.0-rc.2`, `0.2.1-alpha.2`, `0.2.1-rc.1` 또는 `0.2.1-rc.2`가 필요합
 
 - 수정하지 않은 DSH `0.2.1-rc.2`의 격리 프로필에 빌드를 설치하고, 각본 테스트 모델과 로컬 가짜 Exa 엔드포인트로 확인했습니다. 먼저 원래 실패를 재현한 뒤 고쳐진 것을 확인했습니다. Exa를 Studio Master에 추가하는 것은 거부되고 Optimized는 반영 상태를 유지했습니다. Studio에서 Exa를 등록하고 키와 `searchProvider: exa`를 저장한 뒤 `web_search`를 실행하자, 재시작한 뒤에도 저장한 키로 가짜 엔드포인트에 도달했습니다. 공급자 직접 입력과 기본값으로 되돌리기는 patch 파일에서 확인했습니다.
 - 배포 전 리뷰를 반영한 뒤, 같은 플러그인을 동시에 옮기는 경우와 남아 있던 임시 파일, 오류 메시지에 포함된 중첩·짧은 비밀 값의 처리를 확인했습니다.
+- 배포 패키지를 수정하지 않은 DSH `0.2.1-rc.2`의 격리 프로필에 새로 설치한 경우와 0.6.2에서 업그레이드한 경우를 확인했습니다. 업그레이드하면 0.6.2에서 추가한 Exa 행이 키가 가려진 채 옮길 대상으로 표시되었습니다. 옮기면 키는 권한 0600 백업에 보존되었고, Optimized는 다시 반영되었습니다.
 - 플러그인 탭은 라이트·다크 모드와 480px 너비에서 확인했습니다. 실제 제3자 에이전트 기능 패키지까지 포함하는 전체 흐름과, 실제로 활성화에 실패하는 등록(단위 테스트로 확인)은 확인하지 않았습니다. 이번 변경은 다른 DSH 버전에서는 시험하지 않았습니다.
 
 ## 0.6.2 — 2026-10-18
