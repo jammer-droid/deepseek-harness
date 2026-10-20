@@ -47,6 +47,8 @@
 
 - [UI·UX 개선 백로그](plans/ui-ux-backlog.md): 상태 구분, 오류 복구, 모델 선택, 실효 도구 표시, 편집·접근성 개선. 각 항목에 근거·우선순위·수용 조건을 기록한다.
 
+- [플러그인 탭 후속 후보](plans/plugins-followups.md): #38 이후 보류한 Exa 가져오기 공급자, 서비스 그룹 확장, 가져오기 키 분리와 남은 검증. 이슈로 등록하지 않은 내부 메모.
+
 ## 검증 이력
 
 - [카탈로그 런타임 검증](verification/catalog-runtime-verification.md)
