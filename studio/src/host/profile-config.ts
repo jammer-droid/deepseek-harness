@@ -3,7 +3,7 @@ import { createConfigProjector, isNativeConfigSchema, LOADER_EXPRESSION_SCHEMA }
 import { composeProfileConfig, configDiff, secretKeys, type SecretAction } from '../profile-config.ts';
 import { fieldRoles, isSecretField, maskConfig, redactSecrets, schemaProperties } from '../secret-fields.ts';
 import type { InstalledPlugin } from '../installed-plugins.ts';
-import { KNOWN_PROVIDERS, SERVICE_GROUPS, serviceOf, type ProviderKind } from '../service-groups.ts';
+import { detectProviders, SERVICE_GROUPS, serviceOf, type ProviderKind } from '../service-groups.ts';
 
 interface Entry { options: { id: string; name: string; config?: unknown } }
 interface ConfigEditorApi {
@@ -57,24 +57,27 @@ function editorOf(ctx: Context): ConfigEditorApi {
   return editor;
 }
 
-export async function schemaOf(ctx: Context, name: string): Promise<{ schema?: Record<string, unknown>; schemaError?: string; inject: string[] }> {
+export async function schemaOf(ctx: Context, name: string): Promise<{ schema?: Record<string, unknown>; schemaError?: string; inject: string[]; exports: Record<string, unknown> }> {
   try {
     const loader = ctx.get('loader' as never) as unknown as LoaderApi;
     const module = loader.unwrapExports(await loader.import(name)) ?? {};
     const raw = module.inject;
     const inject = Array.isArray(raw) ? raw.filter((item): item is string => typeof item === 'string') : raw && typeof raw === 'object' ? Object.keys(raw) : [];
-    if (!module.Config) return { inject };
-    if (!isNativeConfigSchema(module.Config)) return { schemaError: 'Unsupported Config schema', inject };
+    // Only plain string exports are kept: enough for `*_PROVIDER_ID` recognition (S11).
+    const exports = Object.fromEntries(Object.entries(module).filter(([, value]) => typeof value === 'string'));
+    if (!module.Config) return { inject, exports };
+    if (!isNativeConfigSchema(module.Config)) return { schemaError: 'Unsupported Config schema', inject, exports };
     const result = (await createConfigProjector())(module.Config, 'config');
-    return { schema: JSON.parse(JSON.stringify({ $schema: 'https://json-schema.org/draft/2020-12/schema', ...result.schema, $defs: { ...result.definitions, loaderExpression: LOADER_EXPRESSION_SCHEMA } })), inject };
-  } catch (error) { return { schemaError: String(error), inject: [] }; }
+    return { schema: JSON.parse(JSON.stringify({ $schema: 'https://json-schema.org/draft/2020-12/schema', ...result.schema, $defs: { ...result.definitions, loaderExpression: LOADER_EXPRESSION_SCHEMA } })), inject, exports };
+  } catch (error) { return { schemaError: String(error), inject: [], exports: {} }; }
 }
 
 interface PluginRow { moduleName: string; enabled: boolean; fiberPhase: string | null; patchId?: string }
 
 /**
- * Editable profile rows: installed profile-scoped plugins, and every row of a grouped service (its
- * owner and all its providers, built-in ones included) so related settings show together.
+ * Editable profile rows: installed profile-scoped plugins, and every profile row in a workflow
+ * category (S10), built-in ones included, so related settings show together. Rows that run inside
+ * presets never reach `configEditor.entries()`, so they cannot appear here.
  */
 export async function readProfileConfigs(ctx: Context, installed: readonly InstalledPlugin[]): Promise<ProfileConfigView[]> {
   const editor = editorOf(ctx);
@@ -87,12 +90,12 @@ export async function readProfileConfigs(ctx: Context, installed: readonly Insta
   for (const [patchId, row] of rows) {
     const name = row.entry.options.name;
     if (SERVICE_GROUPS.some(group => group.owner === name)) wanted.set(patchId, 'service');
-    else if (KNOWN_PROVIDERS[name] && !wanted.has(patchId)) wanted.set(patchId, 'plugin');
+    else if (serviceOf(name) && !wanted.has(patchId)) wanted.set(patchId, 'plugin');
   }
   const views: ProfileConfigView[] = [];
   for (const [patchId, role] of wanted) {
     const row = rows.get(patchId)!;
-    const { schema, schemaError, inject } = await schemaOf(ctx, row.entry.options.name);
+    const { schema, schemaError, inject, exports } = await schemaOf(ctx, row.entry.options.name);
     const service = serviceOf(row.entry.options.name, inject);
     const refs = Object.entries(fieldRoles(schema)).filter(([, role]) => role === 'credential-ref').map(([field]) => field);
     const credentials: NonNullable<ProfileConfigView['credentials']> = [];
@@ -104,6 +107,8 @@ export async function readProfileConfigs(ctx: Context, installed: readonly Insta
       catch { credentials.push({ field, ref, configured: false }); }
     }
     const group = SERVICE_GROUPS.find(item => item.owner === row.entry.options.name);
+    const defaults = Object.fromEntries(['providerName', 'serverName'].map(field => [field, propertyDefault(schema, field)]).filter(([, value]) => value !== undefined));
+    const provides = detectProviders({ name: row.entry.options.name, ...(service ? { service } : {}), config: (row.entry.options.config ?? {}) as Record<string, unknown>, defaults, exports }).map(({ id, kind }) => ({ id, kind }));
     const roles = secretRoles(schema);
     const effective = (row.entry.options.config ?? {}) as Record<string, unknown>;
     const masked = maskConfig(effective, roles);
@@ -112,11 +117,12 @@ export async function readProfileConfigs(ctx: Context, installed: readonly Insta
       inherited: Object.fromEntries(Object.entries(maskConfig(row.inherited, roles)).filter(([key]) => !secretKeys(roles, row.inherited).includes(key))),
       diff: configDiff(row.inherited, effective, roles),
       secrets: secretKeys(roles, effective, row.inherited).map(key => ({ key, set: typeof effective[key] === 'string' ? effective[key] !== '' : effective[key] !== undefined && effective[key] !== null })),
-      ...(service ? { service } : {}), ...(KNOWN_PROVIDERS[row.entry.options.name] ? { provides: [...KNOWN_PROVIDERS[row.entry.options.name]!.providers] } : {}),
-      ...(group ? { selectors: [...group.selectors] } : {}), active: isActive(patchId), ...(credentials.length ? { credentials } : {}) });
+      ...(service ? { service } : {}), ...(provides.length ? { provides } : {}),
+      ...(group?.selectors ? { selectors: [...group.selectors] } : {}), active: isActive(patchId), ...(credentials.length ? { credentials } : {}) });
   }
   // Owner first within a service, then providers; ungrouped rows last.
-  return views.sort((a, b) => (a.service ?? '\uffff').localeCompare(b.service ?? '\uffff') || Number(a.role !== 'service') - Number(b.role !== 'service') || a.patchId.localeCompare(b.patchId));
+  const order = (service?: string) => { const index = SERVICE_GROUPS.findIndex(group => group.service === service); return index < 0 ? SERVICE_GROUPS.length : index; };
+  return views.sort((a, b) => order(a.service) - order(b.service) || Number(a.role !== 'service') - Number(b.role !== 'service') || a.patchId.localeCompare(b.patchId));
 }
 
 /** Save one profile row through `configEditor.edit()`; only listed rows may be written. */

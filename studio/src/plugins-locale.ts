@@ -1,5 +1,6 @@
 /** Studio → Plugins service text (#38). */
 const ko = {
+  noSettings: '설정 항목 없음', useDefault: '기본값 사용', autoSelect: '자동 선택', manualEntry: '직접 입력', manualPlaceholder: '공급자 ID', manualHint: 'DSH 제공 플러그인의 명명 규칙을 따르는 공급자만 목록에 자동으로 나옵니다. 그 밖의 공급자는 ID를 직접 입력하세요. 비워 두고 저장하면 기본값을 사용합니다.', cancel: '취소', kindSubagent: '위임', kindMcp: 'MCP',
   credentialStore: '자격 증명 저장소', search: '검색', searchInstalled: '플러그인 이름, 패키지, 범위로 검색', searchProfile: '플러그인, 서비스, 공급자 ID로 검색', noResults: '검색 결과가 없습니다.', otherSettings: '기타 프로필 설정', groupHint: '서비스 설정에서 사용할 공급자를 고르고, 각 공급자의 키와 값은 아래 행에서 설정합니다.', kindSearch: '검색', kindFetch: '가져오기', inUse: '사용 중', inactive: '꺼짐', providerId: '공급자 ID', pickSearch: '검색 공급자', pickFetch: '가져오기 공급자', unset: '미설정', notRunning: '실행 중 아님',
   registerButton: '등록', registering: '등록 중…', registerFailed: '등록하지 못했습니다. 프로필 설정 파일은 이전 상태로 되돌렸습니다.', registerManual: '직접 등록하기', registerDirectHint: '프로필 설정 파일에 이 플러그인을 추가하고 바로 적용합니다. 모든 세션에 영향을 줍니다. 등록한 뒤 프로필 설정에서 키와 값을 넣으세요.', registered: '프로필에 등록했습니다. 프로필 설정에서 값을 넣으세요.', registeredRestart: '프로필에 등록했습니다. 일부 변경은 DSH를 다시 시작해야 적용됩니다.',
   serviceLabel: '플러그인', navigation: '플러그인 메뉴', group: '플러그인',
@@ -23,6 +24,7 @@ const ko = {
 };
 type Key = keyof typeof ko;
 const en: Record<Key, string> = {
+  noSettings: 'No settings', useDefault: 'Use default', autoSelect: 'auto-select', manualEntry: 'Enter manually', manualPlaceholder: 'Provider ID', manualHint: 'Only providers that follow DSH plugin naming conventions appear in the list automatically. Enter the ID of any other provider. Saving an empty value uses the default.', cancel: 'Cancel', kindSubagent: 'Delegation', kindMcp: 'MCP',
   credentialStore: 'credential store', search: 'Search', searchInstalled: 'Search plugin names, packages or scope', searchProfile: 'Search plugins, services or provider IDs', noResults: 'No matching results.', otherSettings: 'Other profile settings', groupHint: 'Pick the providers the service uses here; set each provider\'s keys and values in its row below.', kindSearch: 'Search', kindFetch: 'Fetch', inUse: 'In use', inactive: 'Off', providerId: 'Provider ID', pickSearch: 'Search provider', pickFetch: 'Fetch provider', unset: 'Not set', notRunning: 'not running',
   registerButton: 'Register', registering: 'Registering…', registerFailed: 'Could not register. The profile patch file was restored.', registerManual: 'Register manually', registerDirectHint: 'Adds this plugin to the profile patch file and applies it now. It affects every session. After registering, enter keys and values under Profile settings.', registered: 'Registered in the profile. Enter its values under Profile settings.', registeredRestart: 'Registered in the profile. Some changes apply after restarting DSH.',
   serviceLabel: 'Plugins', navigation: 'Plugin menu', group: 'Plugins',
@@ -45,6 +47,7 @@ const en: Record<Key, string> = {
   noSchema: 'The settings schema could not be read, so editing is disabled.', noProfile: 'No profile settings to edit. Profile-wide plugins appear here once registered in the profile.', edit: 'Settings', changed: 'Modified', defaults: 'Defaults',
 };
 const zh: Record<Key, string> = {
+  noSettings: '无设置项', useDefault: '使用默认值', autoSelect: '自动选择', manualEntry: '手动输入', manualPlaceholder: '提供方 ID', manualHint: '只有遵循 DSH 插件命名规则的提供方会自动出现在列表中。其他提供方请手动输入 ID。留空保存则使用默认值', cancel: '取消', kindSubagent: '委派', kindMcp: 'MCP',
   credentialStore: '凭据存储', search: '搜索', searchInstalled: '按插件名称、软件包或范围搜索', searchProfile: '按插件、服务或提供方 ID 搜索', noResults: '没有匹配结果', otherSettings: '其他配置设置', groupHint: '在此选择服务使用的提供方；各提供方的密钥和值在下方对应行中设置', kindSearch: '搜索', kindFetch: '获取', inUse: '使用中', inactive: '已关闭', providerId: '提供方 ID', pickSearch: '搜索提供方', pickFetch: '获取提供方', unset: '未设置', notRunning: '未运行',
   registerButton: '注册', registering: '注册中…', registerFailed: '无法注册。配置补丁文件已恢复', registerManual: '手动注册', registerDirectHint: '将此插件添加到配置补丁文件并立即应用。会影响所有会话。注册后请在配置设置中填写密钥和值', registered: '已注册到配置。请在配置设置中填写值', registeredRestart: '已注册到配置。部分更改需重启 DSH 后生效',
   serviceLabel: '插件', navigation: '插件菜单', group: '插件',

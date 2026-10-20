@@ -9,7 +9,7 @@ import type { InstalledPlugin } from './installed-plugins.ts';
 import type { MigrationItem } from './extension-migration.ts';
 import { profileSnippet, snippetId, type SecretAction } from './profile-config.ts';
 import { withoutSecrets } from './secret-fields.ts';
-import { groupTitle, matchesQuery, selectorOptions, type ProviderKind } from './service-groups.ts';
+import { groupOfService, groupTitle, matchesQuery, selectorOptions, type ProviderKind } from './service-groups.ts';
 
 export interface ProfileConfigView {
   patchId: string; name: string; role: 'plugin' | 'service';
@@ -34,6 +34,9 @@ export interface PluginsActions {
 }
 
 type PageId = 'installed' | 'profile';
+const DEFAULT = '__studio_default__';
+const MANUAL = '__studio_manual__';
+const KIND_LABEL: Record<ProviderKind, PluginsKey> = { search: 'kindSearch', fetch: 'kindFetch', subagent: 'kindSubagent', mcp: 'kindMcp' };
 const message = (error: unknown) => error instanceof Error ? error.message : String(error);
 const stateKey = (state: InstalledPlugin['state']) => `state_${state.replace(/-([a-z])/g, (_, c: string) => c.toUpperCase())}` as PluginsKey;
 const evidenceKey = (evidence: InstalledPlugin['evidence']) => `evidence_${evidence === 'profile-row' ? 'profileRow' : evidence}` as PluginsKey;
@@ -183,28 +186,48 @@ function ProfilePage({ locale, actions, active }: { locale: string; actions: Plu
   const groups = new Map<string, ProfileConfigView[]>();
   for (const view of shown ?? []) { const key = view.service && groupTitle(view.service, locale) ? view.service : ''; groups.set(key, [...groups.get(key) ?? [], view]); }
   const running = (views ?? []).filter(view => view.active !== false).flatMap(view => view.provides ?? []);
+  // Empty id removes the override, so the service falls back to its default (auto-selection).
   const pick = async (owner: ProfileConfigView, field: string, id: string) => {
     setBusy(`${owner.patchId}.${field}`); setError('');
-    try { setViews(await actions.saveProfile({ patchId: owner.patchId, diff: { ...owner.diff, [field]: id }, secrets: {} })); }
+    const { [field]: _old, ...rest } = owner.diff;
+    try { setViews(await actions.saveProfile({ patchId: owner.patchId, diff: id ? { ...rest, [field]: id } : rest, secrets: {} })); setTyping(undefined); }
     catch (cause) { setError(message(cause)); } finally { setBusy(''); }
   };
+  const [typing, setTyping] = React.useState<{ key: string; value: string }>();
   const row = (view: ProfileConfigView) => {
-    const kinds = [...new Set((view.provides ?? []).map(p => p.kind))].map(kind => t(kind === 'search' ? 'kindSearch' : 'kindFetch'));
+    const kinds = [...new Set((view.provides ?? []).map(p => p.kind))].map(kind => t(KIND_LABEL[kind]));
     const inUse = (view.provides ?? []).filter(p => views?.some(owner => owner.selectors?.some(sel => sel.kind === p.kind && (owner.effective[sel.field] ?? owner.inherited[sel.field]) === p.id)));
     return <SettingsRow key={view.patchId}
       title={<>{pluginTitle(view.name, locale)} {view.role === 'service' && <Badge tone="outline">{t('service')}</Badge>}{kinds.length > 0 && <Badge tone="neutral">{kinds.join(' · ')}</Badge>}{inUse.length > 0 && <Badge tone="success">{t('inUse')}</Badge>}{view.active === false && <Badge tone="warning">{t('inactive')}</Badge>}<Badge tone={Object.keys(view.diff).length ? 'info' : 'outline'}>{Object.keys(view.diff).length ? t('changed') : t('defaults')}</Badge></>}
       description={[view.patchId, ...(view.provides ?? []).map(p => `${t('providerId')}: ${p.id}`), ...Object.entries(view.diff).map(([key, value]) => `${key}: ${typeof value === 'string' ? value : JSON.stringify(value)}`), ...(view.credentials ?? []).map(c => `${c.ref}: ${c.configured ? t('secretSet') : t('secretUnset')} (${t('credentialStore')})`), ...view.secrets.filter(s => s.set || !view.credentials?.some(c => c.configured)).map(s => `${s.key}: ${s.set ? t('secretSet') : t('secretUnset')}`)].join(' · ')}
-      control={<Button small disabled={view.active === false} onClick={() => setOpen(view.patchId)}>{t('edit')}</Button>}>
+      control={view.schema || view.secrets.length ? <Button small disabled={view.active === false} onClick={() => setOpen(view.patchId)}>{t('edit')}</Button> : <span className="studio-muted studio-hint">{t('noSettings')}</span>}>
       {view.selectors?.map(sel => {
+        const overridden = Object.hasOwn(view.diff, sel.field);
         const value = view.effective[sel.field] ?? view.inherited[sel.field];
         const options = selectorOptions(sel.kind, running, value);
         const label = t(sel.kind === 'search' ? 'pickSearch' : 'pickFetch');
-        return <div key={sel.field} className="studio-inline-actions">
+        const key = `${view.patchId}.${sel.field}`;
+        const manual = typing?.key === key;
+        const disabled = !!busy || view.active === false;
+        return <div key={sel.field} className="studio-field">
           <span className="studio-muted">{label}</span>
-          <select aria-label={label} value={typeof value === 'string' ? value : ''} disabled={!!busy || view.active === false} onChange={event => void pick(view, sel.field, event.target.value)}>
-            {typeof value !== 'string' && <option value="" disabled>{t('unset')}</option>}
-            {options.map(option => <option key={option.id} value={option.id}>{option.known ? option.id : `${option.id} (${t('notRunning')})`}</option>)}
-          </select>
+          <div className="studio-inline-actions">
+            <select aria-label={label} value={manual ? MANUAL : overridden && typeof value === 'string' ? value : DEFAULT} disabled={disabled} onChange={event => {
+              const next = event.target.value;
+              if (next === MANUAL) setTyping({ key, value: overridden && typeof value === 'string' ? value : '' });
+              else void pick(view, sel.field, next === DEFAULT ? '' : next);
+            }}>
+              <option value={DEFAULT}>{typeof view.inherited[sel.field] === 'string' ? `${t('useDefault')} (${view.inherited[sel.field] as string})` : `${t('useDefault')} (${t('autoSelect')})`}</option>
+              {options.map(option => <option key={option.id} value={option.id}>{option.known ? option.id : `${option.id} (${t('notRunning')})`}</option>)}
+              <option value={MANUAL}>{t('manualEntry')}</option>
+            </select>
+            {manual && <>
+              <input aria-label={`${label}: ${t('manualEntry')}`} placeholder={t('manualPlaceholder')} value={typing.value} disabled={disabled} onChange={event => setTyping({ key, value: event.target.value })} />
+              <Button small primary disabled={disabled} onClick={() => void pick(view, sel.field, typing.value.trim())}>{t('save')}</Button>
+              <Button small disabled={disabled} onClick={() => setTyping(undefined)}>{t('cancel')}</Button>
+            </>}
+          </div>
+          {manual && <span className="studio-muted studio-hint">{t('manualHint')}</span>}
         </div>;
       })}
     </SettingsRow>;
@@ -217,7 +240,7 @@ function ProfilePage({ locale, actions, active }: { locale: string; actions: Plu
     {views && views.length > 0 && <input type="search" className="studio-search" aria-label={t('search')} placeholder={t('searchProfile')} value={query} onChange={event => setQuery(event.target.value)} />}
     {views && views.length > 0 && shown?.length === 0 && <p className="studio-muted" role="status">{t('noResults')}</p>}
     {[...groups].map(([service, list]) => <section key={service || 'other'} className="studio-settings-card" aria-label={service ? groupTitle(service, locale) : t('otherSettings')}>
-      <SectionHead title={service ? groupTitle(service, locale)! : t('otherSettings')} {...(service ? { description: t('groupHint') } : {})} />
+      <SectionHead title={service ? groupTitle(service, locale)! : t('otherSettings')} {...(groupOfService(service)?.selectors ? { description: t('groupHint') } : {})} />
       {list.map(row)}
     </section>)}
     {current && <ProfileDialog key={current.patchId} locale={locale} view={current} actions={actions} onClose={() => setOpen(undefined)} onSaved={setViews} />}

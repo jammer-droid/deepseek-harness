@@ -215,6 +215,10 @@ test('service groups: membership, selector options keep an unknown current value
   assert.equal(serviceOf(EXA), 'web');
   assert.equal(serviceOf('third-party', ['web']), 'web', 'an unknown plugin joins by its injected service');
   assert.equal(serviceOf('third-party', ['tools']), undefined);
+  assert.equal(serviceOf('@deepseek-ai/dsh-subagent-codex'), 'subagents');
+  assert.equal(serviceOf('@deepseek-ai/dsh-repeat-tool-reminder'), 'guard');
+  assert.equal(serviceOf('@deepseek-ai/dsh-tool-subagent'), undefined, 'preset-scoped tools are not profile categories');
+  assert.equal(serviceOf('@deepseek-ai/dsh-jobs-local'), undefined, 'single-implementation infrastructure is left out');
   assert.equal(groupTitle('web', 'ko'), '웹 검색·가져오기');
   const running = [{ id: 'exa', kind: 'search' }, { id: 'http', kind: 'fetch' }, { id: 'deepseek-fetch-api', kind: 'fetch' }];
   assert.deepEqual(selectorOptions('fetch', running, 'http'), [{ id: 'deepseek-fetch-api', known: true }, { id: 'http', known: true }]);
@@ -251,12 +255,34 @@ test('profile page groups a service with its providers, picks providers from run
   assert.match(web.textContent, /web-search-perplexity.*Off/);
   assert.ok(cards.some(card => card.getAttribute('aria-label') === 'Other profile settings' && /other-plugin/.test(card.textContent)));
   const search = web.querySelector('select[aria-label="Search provider"]');
-  assert.deepEqual([...search.options].map(o => o.value), ['deepseek-search-api', 'exa'], 'the inactive provider is not offered');
+  const values = select => [...select.options].map(o => o.value);
+  assert.deepEqual(values(search), ['__studio_default__', 'deepseek-search-api', 'exa', '__studio_manual__'], 'the inactive provider is not offered');
+  assert.equal(search.value, 'exa');
+  assert.match(search.options[0].textContent, /Use default \(deepseek-official\)/);
   const fetch = web.querySelector('select[aria-label="Fetch provider"]');
-  assert.deepEqual([...fetch.options].map(o => o.value), ['deepseek-fetch-api', 'http']);
+  assert.equal(fetch.value, '__studio_default__', 'fetch is not overridden');
   const { Simulate } = await import('react-dom/test-utils');
   await act(async () => Simulate.change(fetch, { target: { value: 'deepseek-fetch-api' } }));
   assert.deepEqual(calls.at(-1), { patchId: 'web', diff: { searchProvider: 'exa', fetchProvider: 'deepseek-fetch-api' }, secrets: {} });
+  // Manual entry: a provider the list does not know, then empty = back to the default.
+  const searchNow = () => [...host.querySelectorAll('select[aria-label="Search provider"]')].find(el => el.closest('[hidden]') === null);
+  await act(async () => Simulate.change(searchNow(), { target: { value: '__studio_manual__' } }));
+  const manual = [...host.querySelectorAll('input[aria-label="Search provider: Enter manually"]')].find(el => el.closest('[hidden]') === null);
+  assert.equal(manual.value, 'exa');
+  assert.match(host.textContent, /Only providers that follow DSH plugin naming conventions/);
+  await act(async () => Simulate.change(manual, { target: { value: 'my-search' } }));
+  const saveButton = () => [...manual.parentElement.querySelectorAll('button')].find(b => b.textContent === 'Save');
+  await act(async () => saveButton().click());
+  assert.deepEqual(calls.at(-1).diff, { searchProvider: 'my-search', fetchProvider: 'deepseek-fetch-api' });
+  assert.match(searchNow().selectedOptions[0].textContent, /my-search \(not running\)/);
+  await act(async () => Simulate.change(searchNow(), { target: { value: '__studio_manual__' } }));
+  const manual2 = [...host.querySelectorAll('input[aria-label="Search provider: Enter manually"]')].find(el => el.closest('[hidden]') === null);
+  await act(async () => Simulate.change(manual2, { target: { value: '  ' } }));
+  await act(async () => [...manual2.parentElement.querySelectorAll('button')].find(b => b.textContent === 'Save').click());
+  assert.deepEqual(calls.at(-1).diff, { fetchProvider: 'deepseek-fetch-api' }, 'empty manual entry removes the override');
+  await act(async () => Simulate.change(searchNow(), { target: { value: '__studio_default__' } }));
+  await act(async () => Simulate.change([...host.querySelectorAll('select[aria-label="Fetch provider"]')].find(el => el.closest('[hidden]') === null), { target: { value: '__studio_default__' } }));
+  assert.deepEqual(calls.at(-1).diff, {}, 'choosing the default removes the override');
   const input = [...host.querySelectorAll('input[type=search]')].find(el => el.placeholder.startsWith('Search plugins, services'));
   await act(async () => Simulate.change(input, { target: { value: 'perplexity' } }));
   const visible = [...host.querySelectorAll('section.studio-settings-card')].filter(card => card.closest('[hidden]') === null).map(card => card.textContent).join('\n');
@@ -288,4 +314,16 @@ test('a configured credential reference replaces the misleading literal "not set
   const text = [...host.querySelectorAll('section.studio-settings-card')].filter(c => c.closest('[hidden]') === null).map(c => c.textContent).join('');
   assert.match(text, /DEEPSEEK_API_KEY: Set \(credential store\)/);
   assert.doesNotMatch(text, /apiKey: Not set/);
+});
+
+
+test('provider detection order: config name or default, then *_PROVIDER_ID exports, then the table', async () => {
+  const { detectProviders } = await import('../src/service-groups.ts');
+  assert.deepEqual(detectProviders({ name: '@deepseek-ai/dsh-subagent-codex', service: 'subagents', defaults: { providerName: 'codex' } }), [{ id: 'codex', kind: 'subagent', source: 'config' }]);
+  assert.deepEqual(detectProviders({ name: '@deepseek-ai/dsh-subagent-codex', service: 'subagents', config: { providerName: 'codex-fast' }, defaults: { providerName: 'codex' } })[0].id, 'codex-fast');
+  assert.deepEqual(detectProviders({ name: '@deepseek-ai/dsh-mcp-client', service: 'mcp', config: { serverName: 'memorix' } }), [{ id: 'memorix', kind: 'mcp', source: 'config' }]);
+  assert.deepEqual(detectProviders({ name: 'acme-web-search-foo', service: 'web', exports: { FOO_PROVIDER_ID: 'foo', VERSION: '1' } }), [{ id: 'foo', kind: 'search', source: 'export' }], 'kind from the package name');
+  assert.deepEqual(detectProviders({ name: 'x', service: 'web', exports: { X_SEARCH_PROVIDER_ID: 'xs', X_FETCH_PROVIDER_ID: 'xf' } }).map(p => [p.id, p.kind]), [['xs', 'search'], ['xf', 'fetch']]);
+  assert.deepEqual(detectProviders({ name: 'x', service: 'web', exports: { X_PROVIDER_ID: 'x' } }), [], 'no kind, no entry: left to manual input');
+  assert.deepEqual(detectProviders({ name: '@deepseek-ai/dsh-web-fetch-http', service: 'web' }), [{ id: 'http', kind: 'fetch', source: 'table' }]);
 });
