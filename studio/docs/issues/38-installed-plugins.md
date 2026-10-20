@@ -132,7 +132,7 @@ status: ready
 | D1a | 분류는 휴리스틱이 아니라 **근거**로 한다. 근거가 없으면 `확인 필요`로 둔다. probe 성공은 활성화 확인일 뿐 범위 판정 근거가 아니다. 자세한 기준은 아래 분류 근거 | 확정(리뷰 반영) |
 | D2 | 새로 설치된 에이전트 기능 후보는 **감지는 자동, 포함은 사용자가 한 번 확인**한다. 포함하면 코드가 실행되고, 초기 설정이 필요할 수 있기 때문이다 | 확정(사용자, 2026-10-20) |
 | D3 | Studio에 `플러그인` 탭을 새로 만들고, 감지 목록과 프로필 공용 설정을 이 탭에 둔다. 프리셋 실행 설정에는 Config 목록만 남기고, 기존 `플러그인 추가` 버튼과 대화상자는 제거한다. "모든 세션에 적용" 링크로 플러그인 탭을 가리킨다 | 확정(사용자, 2026-10-20) |
-| D4 | 실행되지 않는 프로필 공용 패키지 등록. `configEditor`는 기존 행의 config override만 만들고, `pluginManager`는 행 켜기·끄기와 번들 선택만 한다. 둘 다 임의 모듈 행을 넣지 못한다. 결정: **복사할 수 있는 스니펫과 안내만** 한다. 직접 쓰기는 공개 API 조건에 맞지 않아 채택하지 않는다 | 확정 |
+| D4 | 실행되지 않는 프로필 공용 패키지 등록. **개정(2026-10-20, 사용자 요청)**: Studio가 직접 등록한다. 프로필 patch 끝에 insert를 텍스트로 덧붙여 기존 주석과 `!!js`를 보존하고, 원자적으로 교체한다(0600). 이 작업을 공개 `hmr.runExclusive()` 안에서 하고, 공개 `hmr.reconcileProfile([id])`로 적용한다. 새 행이 활성화되지 않으면 이전 파일로 되돌리고 다시 적용한다. HMR이 없는 런타임에서는 거부하고 스니펫 안내로 대신한다. 스니펫은 `직접 등록하기`로 계속 제공한다 | 확정(개정) |
 | D5 | 프로필 공용 설정은 `configEditor.edit()`로 저장한다. 이 API는 ACTIVE 상태이고 profile root Include에 속하며 id가 고유한 행만 편집한다. home patch나 명령줄 overlay가 덮어쓴 값은 거부한다. 이런 제한에 걸리면 오류 원문을 보여 주고 파일은 그대로 둔다 | 확정 |
 | D6 | 비밀 값 처리. 아래 규칙을 따른다 | 확정(사용자, 2026-10-20) |
 | D7 | 기존 `studio-added` 행 중 프로필 공용으로 판정된 것의 이전 방식. 아래 이전 계약 | 확정(리뷰 반영, 세부는 S3에서 검증) |
@@ -286,3 +286,13 @@ S1의 상태 기록 시점은 네 가지다: `추가 직후`, `키 저장 후`, 
   - 교체 전 desktop 프로필의 `package.json`, `pnpm-lock.yaml`, `pnpm-workspace.yaml`, `cordis.patch.yml`, `studio-data/`, 설치된 Studio 디렉터리를 `studio/dist/desktop-38-20261020/desktop-before/`(Git 제외)에 백업했다.
   - 격리 검증에 쓴 tgz(SHA256 `4656f48a…2415`)를 `dsh plugin --profile desktop add`로 설치했다. 설치된 패키지 전체를 tgz 내용과 `diff -rq`로 대조해 일치함을 확인했고, bundle 선택은 그대로다.
   - 앱 재시작과 화면 확인은 하지 않았다. 작업 세션이 그 Desktop 앱 안에서 실행 중이기 때문이다. 상태는 "설치 완료, 실행 반영 미확인"이다.
+
+- 2026-10-20: D4 개정, 프로필 직접 등록(사용자 요청).
+  - 구현: [host/profile-register.ts](../../src/host/profile-register.ts)(`registerProfilePlugin`, `appendInsert`, `uniqueRowId`). Remote는 `registerProfilePlugin`이다. 등록 대화상자는 주 동작 `등록`과 접힌 `직접 등록하기` 스니펫을 함께 둔다. 프로필 설정 페이지는 보일 때마다 다시 읽는다.
+  - 검증: `npm --prefix studio test` 791개 통과. 단위 테스트는 주석·식을 보존하며 덧붙이는지, `[]` 처리, id 충돌 회피, HMR 트랜잭션 순서, 실패 시 파일 복원, 0600을 확인한다.
+  - 격리 rc.2 `p38`(tgz SHA256 `00ae8c3b…f529`)에서 확인한 내용:
+    1. Studio에서 Exa를 등록하자 재시작 없이 `profile-active`가 됐다. patch에는 insert 한 줄만 추가됐다.
+    2. 같은 항목은 다시 등록할 수 없다.
+    3. 키와 `searchProvider: exa`를 저장한 뒤 `web_search`가 가짜 Exa에 Bearer 키로 도달했다. Master와 Optimized는 `applied`였다.
+  - 브라우저: [plugins-register.mjs](../../scripts/e2e/plugins-register.mjs) 8개 통과, [plugins-tab.mjs](../../scripts/e2e/plugins-tab.mjs) 라이트·다크·480px 27개 통과.
+  - 미확인: 실제 런타임에서 등록이 활성화 실패로 이어지는 경우. 후보로 `dsh-web-fetch-http`를 설치했지만 이미 프로필에서 실행 중이라 등록 대상이 아니었다. 롤백은 단위 테스트로만 확인했다.

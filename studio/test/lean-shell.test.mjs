@@ -75,8 +75,8 @@ test('built client mounts read-only catalog and registers Studio optimization', 
   assert.equal(registrations[3].id, 'optimization-prototype');
   assert.equal(registrations[4].id, 'plugins');
   assert.equal(registrations[5].id, 'local-dsh-studio');
-  const plugins = mounts[0].descriptors.filter(item => ['listInstalledPlugins', 'extensionMigration', 'migrateExtension', 'listProfileConfigs', 'saveProfileConfig', 'installedPluginSchema'].includes(item.method));
-  assert.equal(plugins.length, 6);
+  const plugins = mounts[0].descriptors.filter(item => ['listInstalledPlugins', 'extensionMigration', 'migrateExtension', 'listProfileConfigs', 'saveProfileConfig', 'installedPluginSchema', 'registerProfilePlugin'].includes(item.method));
+  assert.equal(plugins.length, 7);
   const pixie = mounts[0].descriptors.filter(item => item.service === 'studioPixie');
   assert.ok(pixie.length > 0);
   assert.ok(pixie.every(item => item.parameters.every(parameter => parameter.codec.mode === 'strict')));

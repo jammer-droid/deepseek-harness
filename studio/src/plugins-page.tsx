@@ -3,7 +3,7 @@ import React from 'react';
 import { DetailLayout } from './detail-layout.tsx';
 import { ConfigForm } from './config-editor.tsx';
 import { pluginPurpose, pluginTitle } from './plugin-labels.ts';
-import { Badge, Button, DetailDialog, Notice, PageHead, SectionHead, SettingsRow } from './ui.tsx';
+import { Badge, Button, DetailDialog, Disclosure, Notice, PageHead, SectionHead, SettingsRow } from './ui.tsx';
 import { pluginsText, type PluginsKey } from './plugins-locale.ts';
 import type { InstalledPlugin } from './installed-plugins.ts';
 import type { MigrationItem } from './extension-migration.ts';
@@ -25,6 +25,8 @@ export interface PluginsActions {
   schema?(name: string): Promise<Record<string, unknown> | undefined>;
   profiles(): Promise<ProfileConfigView[]>;
   saveProfile(payload: { patchId: string; diff: Record<string, unknown>; secrets: Record<string, SecretAction> }): Promise<ProfileConfigView[]>;
+  /** Register a profile-wide plugin in the profile patch and apply it; absent where the Host cannot. */
+  register?(entry: string): Promise<{ id: string; warnings: string[]; restartReason?: string; profiles: ProfileConfigView[] }>;
   copy?(text: string): Promise<void>;
 }
 
@@ -53,14 +55,24 @@ function IncludeDialog({ locale, plugin, actions, onClose, onDone }: { locale: s
   </DetailDialog>;
 }
 
-function RegisterDialog({ locale, plugin, actions, onClose }: { locale: string; plugin: InstalledPlugin; actions: PluginsActions; onClose(): void }) {
+function RegisterDialog({ locale, plugin, actions, onClose, onDone }: { locale: string; plugin: InstalledPlugin; actions: PluginsActions; onClose(): void; onDone(restart?: string): void }) {
   const t = (key: PluginsKey) => pluginsText(locale, key);
   const snippet = profileSnippet(plugin.entry, snippetId(plugin.entry));
   const [copied, setCopied] = React.useState(false);
-  return <DetailDialog open title={t('registerTitle')} subtitle={plugin.entry} onClose={onClose} closeLabel={t('done')}>
-    <p className="studio-muted">{t('registerHint')}</p>
-    <SectionHead title={t('patchFile')} actions={actions.copy && <Button small onClick={() => void actions.copy!(snippet).then(() => setCopied(true), () => setCopied(false))}>{copied ? t('copied') : t('copy')}</Button>} />
-    <pre className="studio-turn-text" aria-label={t('patchFile')}>{snippet}</pre>
+  const [busy, setBusy] = React.useState(false);
+  const [error, setError] = React.useState('');
+  const register = async () => {
+    setBusy(true); setError('');
+    try { const result = await actions.register!(plugin.entry); onDone(result.restartReason); } catch (cause) { setError(message(cause)); } finally { setBusy(false); }
+  };
+  return <DetailDialog open title={t('registerTitle')} subtitle={plugin.entry} onClose={onClose} closeLabel={t('done')}
+    footer={actions.register && <Button primary disabled={busy} onClick={() => void register()}>{busy ? t('registering') : t('registerButton')}</Button>}>
+    <p className="studio-muted">{actions.register ? t('registerDirectHint') : t('registerHint')}</p>
+    {error && <Notice>{t('registerFailed')} {error}</Notice>}
+    <Disclosure title={t('registerManual')}>
+      <SectionHead title={t('patchFile')} actions={actions.copy && <Button small onClick={() => void actions.copy!(snippet).then(() => setCopied(true), () => setCopied(false))}>{copied ? t('copied') : t('copy')}</Button>} />
+      <pre className="studio-turn-text" aria-label={t('patchFile')}>{snippet}</pre>
+    </Disclosure>
   </DetailDialog>;
 }
 
@@ -112,7 +124,7 @@ function InstalledPage({ locale, actions, onOpenProfile }: { locale: string; act
     </section>}
     <p className="studio-muted studio-hint">{t('installHint')}</p>
     {including && <IncludeDialog locale={locale} plugin={including} actions={actions} onClose={() => setIncluding(undefined)} onDone={() => { setIncluding(undefined); void load(); }} />}
-    {registering && <RegisterDialog locale={locale} plugin={registering} actions={actions} onClose={() => setRegistering(undefined)} />}
+    {registering && <RegisterDialog locale={locale} plugin={registering} actions={actions} onClose={() => setRegistering(undefined)} onDone={restart => { setRegistering(undefined); setNotice(restart ? `${t('registeredRestart')} (${restart})` : t('registered')); void load(); }} />}
   </div>;
 }
 
@@ -148,13 +160,14 @@ function ProfileDialog({ locale, view, actions, onClose, onSaved }: { locale: st
   </DetailDialog>;
 }
 
-function ProfilePage({ locale, actions }: { locale: string; actions: PluginsActions }) {
+function ProfilePage({ locale, actions, active }: { locale: string; actions: PluginsActions; active: boolean }) {
   const t = (key: PluginsKey) => pluginsText(locale, key);
   const [views, setViews] = React.useState<ProfileConfigView[]>();
   const [error, setError] = React.useState('');
   const [open, setOpen] = React.useState<string>();
   const load = React.useCallback(async () => { setError(''); try { setViews(await actions.profiles()); } catch (cause) { setError(message(cause)); } }, [actions]);
-  React.useEffect(() => { void load(); }, [load]);
+  // Pages stay mounted; reload whenever this one is shown so a registration made elsewhere appears.
+  React.useEffect(() => { if (active) void load(); }, [load, active]);
   const current = views?.find(view => view.patchId === open);
   return <div className="studio-page-stack">
     <PageHead title={t('pageProfile')} description={t('pageProfileDescription')} actions={<Button onClick={() => void load()}>{t('refresh')}</Button>} />
@@ -176,6 +189,6 @@ export function PluginsPage({ locale, actions, navFooter }: { locale: string; ac
   const [page, setPage] = React.useState<PageId>('installed');
   return <DetailLayout footer={navFooter} navigation={t('navigation')} selected={page} onSelect={next => setPage(next as PageId)} pages={[
     { id: 'installed', label: t('pageInstalled'), group: t('group'), content: <InstalledPage locale={locale} actions={actions} onOpenProfile={() => setPage('profile')} /> },
-    { id: 'profile', label: t('pageProfile'), group: t('group'), content: <ProfilePage locale={locale} actions={actions} /> },
+    { id: 'profile', label: t('pageProfile'), group: t('group'), content: <ProfilePage locale={locale} actions={actions} active={page === 'profile'} /> },
   ]} />;
 }

@@ -23,6 +23,7 @@ import { masterRefusal } from '../installed-plugins.ts';
 import { migrationPlan, type MigrationBackup } from '../extension-migration.ts';
 import { fieldRoles } from '../secret-fields.ts';
 import { readProfileConfigs, saveProfileConfig, schemaOf } from './profile-config.ts';
+import { registerProfilePlugin } from './profile-register.ts';
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
 import { CatalogBaseline } from './catalog-baseline.ts';
 
@@ -181,6 +182,12 @@ export default class StudioCatalog extends TypertRemoteService {
     if (!(await this.installed()).plugins.some(plugin => plugin.entry === id)) throw new Error(`Not an installed plugin entry: ${id}`);
     const { schema, schemaError } = await schemaOf(this.ctx, id);
     return { ...(schema ? { schema } : {}), ...(schemaError ? { error: schemaError } : {}) };
+  }
+  /** Register an installed profile-wide plugin in the profile patch and apply it (`{ entry, config? }` JSON). */
+  @Remote
+  async registerProfilePlugin(payload: string) {
+    const result = await registerProfilePlugin(this.ctx, (await this.installed()).plugins, JSON.parse(payload));
+    return { ...result, profiles: await readProfileConfigs(this.ctx, (await this.installed()).plugins) };
   }
   /** Profile rows (installed profile plugins and their services) with masked secrets (#38 S5). */
   @Remote

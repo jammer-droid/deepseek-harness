@@ -99,15 +99,35 @@ test('include opens the initial settings, warns for unknown scope, and sends con
   assert.deepEqual(calls, [['include', 'my-tools', { limit: 3 }]]);
 });
 
-test('register shows the patch snippet and copies it', async t => {
+test('register applies directly, keeps the manual snippet as a fallback, and reports failures', async t => {
   const { PluginsPage } = await import('../src/plugins-page.tsx');
   const { actions, calls } = fixture();
+  let fail = true;
+  actions.register = async entry => { calls.push(['register', entry]); if (fail) throw new Error('row failed to activate'); return { id: 'web-search-exa', warnings: [], profiles: [] }; };
   const host = await render(t, React.createElement(PluginsPage, { locale: 'en', actions }));
   await click(host, 'Register in profile');
   const dialog = document.querySelector('dialog[open]');
+  assert.match(dialog.textContent, /applies it now/);
   assert.match(dialog.querySelector('pre').textContent, /- id: web-search-exa\n {6}name: '@deepseek-ai\/dsh-web-search-exa'/);
   await click(dialog, 'Copy');
-  assert.equal(calls[0][0], 'copy');
+  await click(dialog, 'Register');
+  assert.match(dialog.textContent, /Could not register\. The profile patch file was restored\. row failed to activate/);
+  fail = false;
+  await click(dialog, 'Register');
+  assert.deepEqual(calls.map(c => c[0]), ['copy', 'register', 'register']);
+  assert.equal(document.querySelector('dialog[open]'), null);
+  assert.match(host.textContent, /Registered in the profile/);
+});
+
+test('register patch text: appends an insert, replaces an empty flow list, keeps comments and expressions, unique ids', async () => {
+  const { appendInsert, uniqueRowId } = await import('../src/host/profile-register.ts');
+  const empty = '# header\n# more\n[]\n';
+  assert.equal(appendInsert(empty, { id: 'web-search-exa', name: EXA }), "# header\n# more\n- insert:\n    - id: web-search-exa\n      name: '@deepseek-ai/dsh-web-search-exa'\n");
+  const existing = "# keep me\n- id: web\n  config:\n    key: !!js process.env.X\n";
+  const next = appendInsert(existing, { id: 'x', name: 'x-plugin', config: { a: 1 } });
+  assert.ok(next.startsWith(existing.trimEnd()), 'existing text is untouched');
+  assert.match(next, /- insert:\n    - id: x\n      name: x-plugin\n      config:\n        a: 1\n$/);
+  assert.equal(uniqueRowId(EXA, new Set(['web-search-exa', 'web-search-exa-2'])), 'web-search-exa-3');
 });
 
 test('migration card moves a row and reports presets to reapply', async t => {
@@ -158,4 +178,33 @@ test('profile save failure keeps edits and shows the error', async t => {
   await act(async () => [...dialog.querySelectorAll('button')].find(b => b.textContent === 'Save').click());
   assert.match(dialog.textContent, /Could not save\. Your edits are kept\. overridden by a home patch/);
   assert.equal(dialog.querySelector('input[type=text]').value, 'exa');
+});
+
+test('register writes the patch inside an HMR transaction and restores it when activation fails', async t => {
+  const { registerProfilePlugin } = await import('../src/host/profile-register.ts');
+  const { mkdtemp, writeFile, readFile, rm, stat } = await import('node:fs/promises');
+  const { tmpdir } = await import('node:os');
+  const { join } = await import('node:path');
+  const dir = await mkdtemp(join(tmpdir(), 's38-')); t.after(() => rm(dir, { recursive: true, force: true }));
+  const patchPath = join(dir, 'cordis.patch.yml');
+  const original = '# comment\n- id: web\n  config:\n    searchProvider: deepseek\n';
+  await writeFile(patchPath, original);
+  const events = [];
+  let fail = true;
+  const hmr = {
+    runExclusive: async op => { events.push('begin'); try { return await op(); } finally { events.push('end'); } },
+    reconcileProfile: async ids => { events.push(['reconcile', ids ?? []]); if (fail && ids?.length) throw new Error('row failed'); return { warnings: [], pending: [] }; },
+  };
+  const ctx = { get: name => ({ profileContext: { patchPath }, hmr, pluginManager: { listPlugins: async () => [{ patchId: 'web' }] } })[name] };
+  const installed = [{ package: EXA, entry: EXA, scope: 'profile', evidence: 'compatibility', state: 'installed' }];
+  await assert.rejects(registerProfilePlugin(ctx, installed, { entry: EXA }), /row failed/);
+  assert.equal(await readFile(patchPath, 'utf8'), original, 'restored');
+  assert.deepEqual(events, ['begin', ['reconcile', ['web-search-exa']], ['reconcile', []], 'end']);
+  fail = false;
+  const result = await registerProfilePlugin(ctx, installed, { entry: EXA });
+  assert.equal(result.id, 'web-search-exa');
+  assert.match(await readFile(patchPath, 'utf8'), /^# comment\n- id: web\n[\s\S]*- insert:\n    - id: web-search-exa\n/);
+  assert.equal((await stat(patchPath)).mode & 0o777, 0o600);
+  await assert.rejects(registerProfilePlugin(ctx, [{ ...installed[0], state: 'profile-active' }], { entry: EXA }), /not a profile-wide plugin waiting/);
+  await assert.rejects(registerProfilePlugin({ get: name => name === 'profileContext' ? { patchPath } : undefined }, installed, { entry: EXA }), /without hot reload/);
 });

@@ -33,9 +33,9 @@ export async function apply(ctx: StudioContext) {
     }, ...['updateStatus', 'updateStudio'].map(method => ({
         id: `${PACKAGE_NAME}#studioCatalog/${method}`, service: 'studioCatalog', namespace: 'studioCatalog', method,
         invocation: { kind: 'direct' }, parameters: [{ name: method === 'updateStatus' ? 'force' : 'version', wire: method === 'updateStatus' ? 'force' : 'version', source: 'json', codec: { mode: 'strict', typeSymbol: 'string', create: () => ({ parse: (value: unknown) => { if (typeof value !== 'string') throw new TypeError('Expected a string'); return value; } }) } }], result: { mode: 'src-json' },
-    })), ...['listPresets', 'savePreset', 'applyPreset', 'unapplyPreset', 'restoreOptimized', 'roleModels', 'deletePreset', 'readExtensions', 'saveExtensions', 'catalogChange', 'confirmCatalogChange', 'addMasterPlugin', 'removeMasterPlugin', 'listInstalledPlugins', 'extensionMigration', 'migrateExtension', 'listProfileConfigs', 'saveProfileConfig', 'installedPluginSchema'].map(method => ({
+    })), ...['listPresets', 'savePreset', 'applyPreset', 'unapplyPreset', 'restoreOptimized', 'roleModels', 'deletePreset', 'readExtensions', 'saveExtensions', 'catalogChange', 'confirmCatalogChange', 'addMasterPlugin', 'removeMasterPlugin', 'listInstalledPlugins', 'extensionMigration', 'migrateExtension', 'listProfileConfigs', 'saveProfileConfig', 'installedPluginSchema', 'registerProfilePlugin'].map(method => ({
         id: `${PACKAGE_NAME}#studioCatalog/${method}`, service: 'studioCatalog', namespace: 'studioCatalog', method,
-        invocation: { kind: 'direct' }, parameters: ['listPresets', 'restoreOptimized', 'readExtensions', 'roleModels', 'catalogChange', 'confirmCatalogChange', 'listInstalledPlugins', 'extensionMigration', 'listProfileConfigs'].includes(method) ? [] : [{ name: ['savePreset', 'saveExtensions', 'addMasterPlugin', 'saveProfileConfig'].includes(method) ? 'payload' : 'id', wire: ['savePreset', 'saveExtensions', 'addMasterPlugin', 'saveProfileConfig'].includes(method) ? 'payload' : 'id', source: 'json', codec: { mode: 'strict', typeSymbol: 'string', create: () => ({ parse: (value: unknown) => { if (typeof value !== 'string') throw new TypeError('Expected a string'); return value; } }) } }], result: { mode: 'src-json' },
+        invocation: { kind: 'direct' }, parameters: ['listPresets', 'restoreOptimized', 'readExtensions', 'roleModels', 'catalogChange', 'confirmCatalogChange', 'listInstalledPlugins', 'extensionMigration', 'listProfileConfigs'].includes(method) ? [] : [{ name: ['savePreset', 'saveExtensions', 'addMasterPlugin', 'saveProfileConfig', 'registerProfilePlugin'].includes(method) ? 'payload' : 'id', wire: ['savePreset', 'saveExtensions', 'addMasterPlugin', 'saveProfileConfig', 'registerProfilePlugin'].includes(method) ? 'payload' : 'id', source: 'json', codec: { mode: 'strict', typeSymbol: 'string', create: () => ({ parse: (value: unknown) => { if (typeof value !== 'string') throw new TypeError('Expected a string'); return value; } }) } }], result: { mode: 'src-json' },
     })), ...pixieDescriptors(), ...sessionRoleDescriptors()] });
     mountSessionRoles(ctx);
     // `updates` is created below; the footer reads it only when the page renders.
@@ -173,6 +173,7 @@ export async function apply(ctx: StudioContext) {
                 schema: async name => ((await call('installedPluginSchema', name)) as { schema?: Record<string, unknown> }).schema,
                 profiles: () => call('listProfileConfigs') as ReturnType<PluginsActions['profiles']>,
                 saveProfile: payload => call('saveProfileConfig', JSON.stringify(payload)) as ReturnType<PluginsActions['saveProfile']>,
+                register: entry => call('registerProfilePlugin', JSON.stringify({ entry })) as ReturnType<NonNullable<PluginsActions['register']>>,
                 copy: text => navigator.clipboard.writeText(text),
             };
         }, []);

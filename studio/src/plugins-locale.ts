@@ -1,5 +1,6 @@
 /** Studio → Plugins service text (#38). */
 const ko = {
+  registerButton: '등록', registering: '등록 중…', registerFailed: '등록하지 못했습니다. 프로필 설정 파일은 이전 상태로 되돌렸습니다.', registerManual: '직접 등록하기', registerDirectHint: '프로필 설정 파일에 이 플러그인을 추가하고 바로 적용합니다. 모든 세션에 영향을 줍니다. 등록한 뒤 프로필 설정에서 키와 값을 넣으세요.', registered: '프로필에 등록했습니다. 프로필 설정에서 값을 넣으세요.', registeredRestart: '프로필에 등록했습니다. 일부 변경은 DSH를 다시 시작해야 적용됩니다.',
   serviceLabel: '플러그인', navigation: '플러그인 메뉴', group: '플러그인',
   pageInstalled: '설치한 플러그인', pageInstalledDescription: '이 프로필에 설치한 플러그인과 실행 범위입니다. 에이전트 기능은 Studio 기준 구성에 포함해 프리셋에서 설정하고, 프로필 공용 플러그인은 프로필 설정에서 모든 세션에 한 번 설정합니다.',
   pageProfile: '프로필 설정', pageProfileDescription: '모든 세션이 함께 쓰는 서비스와 그 공급자의 설정입니다. 저장하면 실행 중인 모든 세션에 바로 적용됩니다.',
@@ -21,6 +22,7 @@ const ko = {
 };
 type Key = keyof typeof ko;
 const en: Record<Key, string> = {
+  registerButton: 'Register', registering: 'Registering…', registerFailed: 'Could not register. The profile patch file was restored.', registerManual: 'Register manually', registerDirectHint: 'Adds this plugin to the profile patch file and applies it now. It affects every session. After registering, enter keys and values under Profile settings.', registered: 'Registered in the profile. Enter its values under Profile settings.', registeredRestart: 'Registered in the profile. Some changes apply after restarting DSH.',
   serviceLabel: 'Plugins', navigation: 'Plugin menu', group: 'Plugins',
   pageInstalled: 'Installed plugins', pageInstalledDescription: 'Plugins installed in this profile and where they run. Agent features join the Studio base composition and are set per preset; profile-wide plugins are set once for every session under Profile settings.',
   pageProfile: 'Profile settings', pageProfileDescription: 'Settings of services every session shares, and their providers. Saving applies to every running session immediately.',
@@ -41,6 +43,7 @@ const en: Record<Key, string> = {
   noSchema: 'The settings schema could not be read, so editing is disabled.', noProfile: 'No profile settings to edit. Profile-wide plugins appear here once registered in the profile.', edit: 'Settings', changed: 'Modified', defaults: 'Defaults',
 };
 const zh: Record<Key, string> = {
+  registerButton: '注册', registering: '注册中…', registerFailed: '无法注册。配置补丁文件已恢复', registerManual: '手动注册', registerDirectHint: '将此插件添加到配置补丁文件并立即应用。会影响所有会话。注册后请在配置设置中填写密钥和值', registered: '已注册到配置。请在配置设置中填写值', registeredRestart: '已注册到配置。部分更改需重启 DSH 后生效',
   serviceLabel: '插件', navigation: '插件菜单', group: '插件',
   pageInstalled: '已安装的插件', pageInstalledDescription: '此配置中安装的插件及其运行范围。代理功能加入 Studio 基础组成并按预设设置；配置级插件在配置设置中为所有会话统一设置',
   pageProfile: '配置设置', pageProfileDescription: '所有会话共享的服务及其提供方的设置。保存后立即应用于所有运行中的会话',

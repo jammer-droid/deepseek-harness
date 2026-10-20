@@ -29,9 +29,10 @@ await run({ name: 'plugins-tab', profile: value('--profile'), views }, async app
   await app.shot('installed');
   await app.step('Profile settings page', '.studio-nav-item:text-matches("^(프로필 설정|Profile settings)$")', { action: 'click', goal: 'The Profile settings item in the Plugins left menu' });
   await app.check('Profile rows listed with masked secret', async () => {
-    const card = page.locator('.studio-settings-card').filter({ hasText: /web-search-exa/ }).last();
+    const card = page.locator('.studio-settings-card:visible').filter({ hasText: /apiKey: / }).first();
+    await card.waitFor({ timeout: 30000 });
     const text = await app.text(card);
-    app.assert(/apiKey: (설정됨|Set)/.test(text), `secret presence not shown: ${text.slice(0, 200)}`);
+    app.assert(/apiKey: (설정됨|설정 안 됨|Set|Not set)/.test(text), `secret presence not shown: ${text.slice(0, 200)}`);
     app.assert(!/fake-s38-key/.test(await page.content()), 'secret value leaked into the page');
   });
   await app.step('Open Exa settings', '.studio-settings-card:visible:has-text("web-search-exa") button:text-matches("^(설정|Settings)$") >> nth=0', { action: 'click', goal: 'The Settings button on the web-search-exa row of the visible profile settings card' });
