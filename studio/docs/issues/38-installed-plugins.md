@@ -45,7 +45,7 @@ status: ready
 | 추가 | [shell.ts](../../src/host/shell.ts) `addMasterPlugin` → `replaceExtensions` | 빈 config 행으로 임시 probe 프리셋을 등록·resolve해 본다. probe를 해제하고 기존 Master를 내린 뒤 새 Master를 활성화한다 |
 | 반영 | [preset-store.ts](../../src/host/preset-store.ts) `applyRow` → `mount` | Master를 **유지한 채** 스냅샷을 별도 프리셋으로 마운트한다. 실패하면 이전 스냅샷만 복원하고 extensions는 바꾸지 않는다 |
 
-### 문제 1: 공급자가 같은 Host 서비스에 두 번 등록됨 (추정, S1에서 확정)
+### 문제 1: 공급자가 같은 Host 서비스에 두 번 등록됨 (S1에서 확정)
 
 `dsh-web-search-exa`의 동작은 다음과 같다.
 
@@ -57,13 +57,17 @@ status: ready
 
 | 초기 상태 | 추가 | 반영 |
 |---|---|---|
-| 프로필·Master 어디에도 Exa 없음 | 성공. probe가 첫 등록이고, 해제한 뒤 Master가 다시 등록한다 | **실패**. Master가 등록한 상태에서 스냅샷이 두 번째로 등록한다 |
-| Exa가 이미 Master에 있음 | 다른 플러그인을 추가해도 실패할 수 있다. probe가 두 번째 Exa를 만든다 | 실패 |
-| 프로필에서 Exa가 이미 실행 중 | 처음 추가부터 실패 | — |
+| 프로필·Master 어디에도 Exa 없음 | 성공. probe가 첫 등록이고, 해제한 뒤 Master가 다시 등록한다. **단, 같은 capture의 `ensureOptimized`가 Optimized를 다시 적용하다 실패해 Optimized가 `modified`와 `Apply failed` 경고로 남는다** | **실패**. Master가 등록한 상태에서 스냅샷이 두 번째로 등록한다 |
+| Exa가 이미 Master에 있음 | 다른 플러그인 추가도 **실패**한다. probe가 두 번째 Exa를 만든다 | 실패 |
+| 프로필에서 Exa가 이미 실행 중 | 처음 추가부터 **실패** | — (Exa 없는 프리셋 반영은 성공) |
+
+모든 실패의 오류 원문은 같다. `<id> (@deepseek-ai/dsh-web-search-exa): a web provider with id "exa" is already registered`. 표의 굵은 값은 S1에서 관찰한 결과다.
 
 공급자 선택(`web.searchProvider`)도 프로필 행 하나에만 있다. 그래서 프리셋 안에서 실행하더라도 실제로 쓰일지는 프로필이 정한다.
 
-**아직 설명하지 못한 관찰**: 반영 실패 뒤 extensions가 빈 목록이었다. 반영 실패를 롤백해도 extensions는 지우지 않는다. 사용자가 직접 제거했는지, Master capture 실패 복원 경로였는지, `ensureOptimized` 자동 적용과 관련 있는지를 S1에서 따로 확인한다.
+**빈 extensions 관찰 (S1 판정)**: 반영이나 추가가 실패해도 extensions는 그대로였다. Desktop에서는 extensions가 11:55:46에 빈 목록으로 저장됐고, 5초 뒤 Optimized가 경고 없이 적용됐다. 이 순서는 사용자가 Exa를 제거(`removeMasterPlugin`)하자 capture의 `ensureOptimized`가 Optimized를 다시 적용한 흐름과 일치한다. Studio가 스스로 목록을 비운 경로는 발견하지 못했다. 사용자 확인은 하지 않았다.
+
+**추가 발견**: 추가가 성공해 보여도 같은 작업에서 Optimized 자동 적용이 실패한다. 사용자는 프리셋 목록의 경고로만 알 수 있다.
 
 ### 문제 2: probe 성공이 범위 안전을 보장하지 않음
 
@@ -147,7 +151,10 @@ DSH에서 비밀 값을 저장하는 경로는 세 가지다. 셋 다 평문이�
 - 리터럴로 저장되는 필드는 필드 이름 규칙(`apiKey`, `token`, `secret`, `password`)과 알려진 표로 비밀 여부를 판정한다. 판정된 필드는 화면에서 가린다.
 - 저장 의미는 `유지`·`교체`·`삭제` 세 가지로 한다. 가린 값을 다시 보내지 않는다.
 - 오류 문구와 스니펫에는 값 대신 자리표시자를 쓴다.
-- `credential-ref` 역할이 Config 스키마 투영에 남는지, 그리고 `ctx.credentials`를 Studio Host에서 쓸 수 있는지는 S1에서 확인한다. 쓸 수 없으면 리터럴과 `.env` 안내만 제공한다.
+- S1 확인 결과
+  - 투영된 Config 스키마에 필드 역할이 `x-cordis.role`로 남는다. `secret`(예: `web-search-deepseek.apiKey`)과 `credential-ref`(예: `apiKeyEnv`) 두 가지다. 그래서 비밀 판정은 **스키마 역할을 먼저 보고**, 역할이 없는 필드(Exa `apiKey`)에만 이름 규칙을 적용한다.
+  - 자격 증명은 공개 `ctx.credentials`와 `credentials` Remote(`describe`·`set`·`unset`)로 쓸 수 있다. 격리 서버에서 `describe(['EXA_API_KEY','DEEPSEEK_API_KEY'])`는 값 없이 `configured`·`source`·`writable`을 돌려줬다.
+  - DSH `settings` 서비스는 비밀 역할을 가리고 폼 편집을 제공하지만, **volatile 필드만** 다룬다. Exa처럼 volatile 필드가 없는 플러그인은 네임스페이스가 없다. 그래서 프로필 공용 설정은 `configEditor`(D5)를 유지한다. 비밀 가림은 Studio가 `settings`와 같은 규칙(값 대신 있음 표시, 받지 않은 필드 보존)으로 구현한다.
 
 ### 분류 근거 (D1a)
 
@@ -155,11 +162,25 @@ DSH에서 비밀 값을 저장하는 경로는 세 가지다. 셋 다 평문이�
 
 1. **이미 Master에 있음**: standard나 Studio 계층에 있는 행이다. 지금처럼 프리셋 Config에 나온다.
 2. **프로필에서 실행 중**: `configEditor.entries()`에 있거나, `pluginManager.listPlugins()`에서 `patchId`가 있는 행이다. 관찰된 실행 위치로 보고 `프로필 공용`으로 판정한다. Master에도 넣으면 같은 Host 서비스에 두 번 등록되므로 막는다.
-3. **Studio 호환성 표**: 검증한 진입점의 범위를 기록한 Studio 내부 표다.
-   - S1 결과와 #32 S1 표로 시작한다.
-   - `web-search-*`, `web-fetch-*`, `llm-*`, `session-title-*`, `bash-sandbox`, `jobs`, `token-meter`는 `프로필 공용`이다.
-   - 도구 등록 플러그인 중 검증된 것은 `에이전트 기능`이다.
+3. **Studio 호환성 표**: 검증한 진입점의 범위를 기록한 Studio 내부 표다. 첫 판본은 아래 S1 표와 #32 S1 표다.
 4. 그 밖에는 `확인 필요`다.
+
+**S1 호환성 표** (격리 rc.2 프로필, 빈 config로 Master에 추가한 뒤 Optimized 요청으로 프리셋을 저장·반영):
+
+| 진입점 | 추가 | 반영 | 판정 | 근거 |
+|---|---|---|---|---|
+| `dsh-web-search-exa` | 성공 | 실패: `web provider "exa" already registered` | 프로필 공용 | 공용 `ctx.web` 공급자 |
+| `dsh-web-fetch-http` | 실패: `web provider "http" already registered` | — | 프로필 공용 | 프로필에서 실행 중 |
+| `dsh-session-title-first-prompt-llm` | 실패: `targetWords` 필수 설정 없음 | — | 프로필 공용 | 프로필에서 실행 중(#32). 빈 config probe가 필수 설정에서 먼저 막힘 |
+| `dsh-token-meter` | 실패: `service "tokenMeter" has been registered` | — | 프로필 공용 | Host singleton |
+| `dsh-jobs-local` | 실패: `service "jobs" has been registered` | — | 프로필 공용 | Host singleton |
+| `dsh-compaction-image-offload` | 실패: projection `image/offload` 중복 | — | 프로필 공용 | Host 등록 중복 |
+| `dsh-repeat-tool-reminder` | 성공 | 성공 | 프로필 공용 | 프로필에서 실행 중. probe는 통과하지만 프리셋에서 끄지 못함(#32) |
+| `dsh-llm-retry` | 성공 | 성공 | 프로필 공용 | 프로필에서 실행 중. probe 통과는 근거가 아님 |
+| `dsh-tool-subagent`(`toolName: studio_extra_agent`) | 성공 | 성공 | 에이전트 기능 | 도구 등록, 프리셋 범위 |
+| `dsh-tool-todo`(두 번째 행) | 실패: `tool "todo_write" is already registered in this scope` | — | 에이전트 기능(이미 Master) | Master에 있는 패키지 중복 |
+
+이 표에서 확인한 사실은 두 가지다. 프로필에서 실행 중인 행은 근거 2로 모두 맞게 판정된다. 또 probe가 통과한 `repeat-tool-reminder`·`llm-retry`도 실제로는 프로필 공용이다. 그래서 "probe 성공은 범위 근거가 아니다"(D1a)는 유지한다. 호환성 표에는 프로필 공용 `web-search-*`·`web-fetch-*`·`session-title-*`·`token-meter`·`jobs-*`·`compaction-image-offload`·`bash-sandbox`, 에이전트 기능 `tool-subagent`를 넣는다.
 
 기각한 규칙: "Host 서비스를 inject하고 자기 서비스는 제공하지 않으면 프로필 공용". 이 규칙은 `tool-web`(`tools`·`web`·`systemPrompt`를 inject하고 도구만 등록함)과 `plugin-manager/tools`도 공용으로 분류한다. 이 둘은 에이전트 기능이다. `inject`는 의존성을 나타낼 뿐, 등록이 범위를 지원하는지나 전역 부작용이 있는지는 나타내지 않는다.
 
@@ -186,7 +207,7 @@ DSH에서 비밀 값을 저장하는 경로는 세 가지다. 셋 다 평문이�
 
 | ID | 결과 | 선행 | 수용 조건 | 검증 | 상태 |
 |---|---|---|---|---|---|
-| S1 | 재현과 근거 수집 | — | 격리 rc.2 프로필에서 문제 1 표의 초기 상태 세 가지를 각각 재현하고, 상태 네 시점의 기록을 남긴다(아래). 빈 extensions의 원인을 확정하거나 미확정으로 남긴다. 호환성 표의 첫 판본(진입점 10개 이상)을 만든다 | 격리 home/profile 기록, 실패 재현 테스트 | 대기 |
+| S1 | 재현과 근거 수집 | — | 격리 rc.2 프로필에서 문제 1 표의 초기 상태 세 가지를 각각 재현하고, 상태 네 시점의 기록을 남긴다(아래). 빈 extensions의 원인을 확정하거나 미확정으로 남긴다. 호환성 표의 첫 판본(진입점 10개 이상)을 만든다 | 격리 home/profile 기록, 실패 재현 스크립트 [s38-repro.mjs](../../scripts/e2e/s38-repro.mjs) | 완료 |
 | S2 | 감지·분류 Host 서비스 | S1 | Remote 하나가 행 단위로 `{ package, entry, scope, evidence, state }`를 반환한다. scope는 `agent`·`profile`·`unknown`, state는 `in-master`·`profile-active`·`profile-inactive`·`profile-failed`·`profile-unaddressable`·`installed`다. 플러그인 export가 없는 패키지는 뺀다 | 단위 테스트(분류 근거 표), 실제 Loader 테스트 | 대기 |
 | S3 | 프로필 공용 차단과 이전 | S2 | 프로필 공용 행은 Master에 들어가지 않고 이유가 표시된다. D7 이전 후 다음을 확인한다: 설정이 보존됨, 공용 등록이 정확히 1회, 프로필 등록 뒤 `web_search`가 Exa로 감, 두 프리셋을 동시에 써도 충돌 없음, 재시작 후 복원에서 충돌 없음 | 재현 테스트가 통과로 바뀜, 이전 테스트, 격리 프로필 확인 | 대기 |
 | S4 | 에이전트 기능 감지와 설정 후 포함 | S2, S3, D2 | 새 후보가 `새로 설치됨`으로 보인다. 초기 설정 → probe → 포함 흐름이 동작하고, 필수 설정이 있는 플러그인도 포함할 수 있다. 실패하면 이전 Master를 유지한다. `플러그인 추가` 대화상자를 없앤다 | DOM 테스트, Master 수명 테스트 | 대기 |
@@ -196,7 +217,7 @@ DSH에서 비밀 값을 저장하는 경로는 세 가지다. 셋 다 평문이�
 
 S1의 상태 기록 시점은 네 가지다: `추가 직후`, `키 저장 후`, `반영 후`, `재시작 후`. 시점마다 `master-extensions.json`, `presets.json` 상태, Host Config 목록, 오류 원문을 남긴다.
 
-첫 단계는 S1이다. 남은 결정은 없다. S1 결과로 분류 근거나 D6 경로가 바뀌면 해당 결정을 다시 연다.
+다음 단계는 S2다. S1 결과로 바뀐 결정은 없다. D6은 스키마 역할을 먼저 쓰도록 보강했다.
 
 ## 위험과 제한
 
@@ -218,3 +239,10 @@ S1의 상태 기록 시점은 네 가지다: `추가 직후`, `키 저장 후`, 
   - S4 선행에 S3를 추가하고, S3·S5·S6의 수용 조건을 구체화했다.
 - 2026-10-20: 사용자 결정 반영. D2·D3 추천안 확정(실행 설정의 플러그인 추가 제거 포함), D6 확정. D6에 DSH 비밀 값 저장 경로(자격 증명 저장소·`.env`·Config 리터럴)를 정리하고, 자격 증명 저장소를 우선한다. `ready`로 바꾼다.
 - 2026-10-20: GitHub #38 발급.
+- 2026-10-20: S1 완료. 설치된 DSH `0.2.1-rc.2` CLI, 격리 home `studio/dist/e2e/home` 프로필 `p38`, 패키징한 Studio `0.6.2`(tgz SHA256 `ee76735b…270c`), `--mock-llm`, `--plugin @deepseek-ai/dsh-web-search-exa@0.2.1-rc.2`.
+  - 초기 상태 A(Exa 없음): 추가 성공, 같은 capture에서 Optimized 자동 적용 실패, 키 override 저장 성공, 반영 실패. extensions는 유지.
+  - 초기 상태 B(Exa가 Master에 있음): 다른 플러그인 추가 실패, Optimized 반영 실패.
+  - 재시작(Exa가 Master에 있는 채로): Master는 복원됐고(도구 39개), Optimized는 실패 경고를 단 `modified`로 남음.
+  - 초기 상태 C(프로필 patch에 Exa insert와 `web.searchProvider: exa`): Exa 행 ACTIVE, Optimized 반영 성공, Master 추가는 즉시 실패. 가짜 Exa 엔드포인트(`baseURL`)와 목 모델로 `web_search`를 호출하자 요청이 Exa `/search`에 도달했고 결과 표식이 세션에 남음. 프로필 공용 경로가 동작함을 확인했다.
+  - 호환성 표 10개 진입점(위 표). `x-cordis.role`(secret·credential-ref) 투영, `credentials` Remote, `settings`의 volatile 한정을 확인했다.
+  - 격리 patch는 원본으로 되돌리고 서버·가짜 Exa를 종료했다(`portFree: true`). 사용자 Desktop과 `~/.dsh`는 바꾸지 않았다.
