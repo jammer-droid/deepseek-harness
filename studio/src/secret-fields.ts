@@ -27,6 +27,18 @@ export function fieldRoles(schema: unknown): Record<string, string> {
   return roles;
 }
 
+/** Top-level property names of a projected Config schema. */
+export function schemaProperties(schema: unknown): string[] {
+  const keys = new Set<string>();
+  const visit = (node: unknown) => {
+    if (!obj(node)) return;
+    if (obj(node.properties)) for (const key of Object.keys(node.properties)) keys.add(key);
+    if (Array.isArray(node.anyOf)) node.anyOf.forEach(visit);
+  };
+  visit(schema);
+  return [...keys];
+}
+
 export function isSecretField(key: string, roles: Readonly<Record<string, string>> = {}): boolean {
   const role = roles[key];
   if (role !== undefined) return role === 'secret';
@@ -40,6 +52,18 @@ export function maskConfig(config: unknown, roles: Readonly<Record<string, strin
   if (!obj(config)) return {};
   return Object.fromEntries(Object.entries(config).map(([key, value]) => [key,
     isSecretField(key, roles) ? (value === undefined || value === null || value === '' ? { secret: true, set: false } : SECRET_MASK) : structuredClone(value)]));
+}
+
+/** Copy of a projected schema without secret properties; secrets get their own keep/replace/delete control. */
+export function withoutSecrets<T>(schema: T, roles: Readonly<Record<string, string>> = fieldRoles(schema)): T {
+  const visit = (node: unknown): unknown => {
+    if (!obj(node)) return node;
+    const next: Schema = { ...node };
+    if (obj(node.properties)) next.properties = Object.fromEntries(Object.entries(node.properties).filter(([key]) => !isSecretField(key, roles)));
+    if (Array.isArray(node.anyOf)) next.anyOf = node.anyOf.map(visit);
+    return next;
+  };
+  return visit(schema) as T;
 }
 
 /** Replace any occurrence of secret values in text (errors, snippets) with a placeholder. */

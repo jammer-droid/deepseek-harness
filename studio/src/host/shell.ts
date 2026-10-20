@@ -22,6 +22,7 @@ import { readInstalledPlugins } from './installed-plugins.ts';
 import { masterRefusal } from '../installed-plugins.ts';
 import { migrationPlan, type MigrationBackup } from '../extension-migration.ts';
 import { fieldRoles } from '../secret-fields.ts';
+import { readProfileConfigs, saveProfileConfig, schemaOf } from './profile-config.ts';
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
 import { CatalogBaseline } from './catalog-baseline.ts';
 
@@ -116,13 +117,16 @@ export default class StudioCatalog extends TypertRemoteService {
    */
   @Remote
   async addMasterPlugin(payload: string) {
-    const name = payload.trim();
+    // A package name, or `{ name, config }` JSON with the initial config probed together (#38 S4).
+    const parsed = payload.trim().startsWith('{') ? JSON.parse(payload) as { name?: unknown; config?: unknown } : { name: payload };
+    const name = typeof parsed.name === 'string' ? parsed.name.trim() : '';
     const rows = await this.master.readExtensions();
     if (new Set([...this.master.masterNames(), ...flatNames(rows)]).has(name)) throw new Error(`Already in the Studio Master: ${name}`);
     const found = (await this.installed()).plugins.find(plugin => plugin.entry === name);
     const refusal = found && masterRefusal(found);
     if (refusal) throw new Error(refusal);
-    return this.master.replaceExtensions(validateExtensions([...rows, masterAddition(name, rows)]));
+    const config = parsed.config && typeof parsed.config === 'object' && Object.keys(parsed.config).length ? { config: parsed.config } : {};
+    return this.master.replaceExtensions(validateExtensions([...rows, { ...masterAddition(name, rows), ...config }]));
   }
   @Remote
   async removeMasterPlugin(id: string) {
@@ -170,6 +174,22 @@ export default class StudioCatalog extends TypertRemoteService {
     await rename(`${file}.tmp`, file);
     const catalog = await this.master.replaceExtensions(extensions.filter(entry => entry.id !== id));
     return { catalog, appliedIn: item.appliedIn };
+  }
+  /** Projected Config schema of one installed entry, for the initial settings before inclusion (#38 S4). */
+  @Remote
+  async installedPluginSchema(id: string) {
+    if (!(await this.installed()).plugins.some(plugin => plugin.entry === id)) throw new Error(`Not an installed plugin entry: ${id}`);
+    const { schema, schemaError } = await schemaOf(this.ctx, id);
+    return { ...(schema ? { schema } : {}), ...(schemaError ? { error: schemaError } : {}) };
+  }
+  /** Profile rows (installed profile plugins and their services) with masked secrets (#38 S5). */
+  @Remote
+  async listProfileConfigs() { return readProfileConfigs(this.ctx, (await this.installed()).plugins); }
+  /** Save one profile row: `{ patchId, diff, secrets }` as JSON. Applies to every session. */
+  @Remote
+  async saveProfileConfig(payload: string) {
+    await saveProfileConfig(this.ctx, (await this.installed()).plugins, JSON.parse(payload));
+    return readProfileConfigs(this.ctx, (await this.installed()).plugins);
   }
   @Remote
   async catalogChange() { return this.master.catalogChange(); }

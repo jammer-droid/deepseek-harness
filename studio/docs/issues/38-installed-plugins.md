@@ -209,15 +209,15 @@ DSH에서 비밀 값을 저장하는 경로는 세 가지다. 셋 다 평문이�
 |---|---|---|---|---|---|
 | S1 | 재현과 근거 수집 | — | 격리 rc.2 프로필에서 문제 1 표의 초기 상태 세 가지를 각각 재현하고, 상태 네 시점의 기록을 남긴다(아래). 빈 extensions의 원인을 확정하거나 미확정으로 남긴다. 호환성 표의 첫 판본(진입점 10개 이상)을 만든다 | 격리 home/profile 기록, 실패 재현 스크립트 [s38-repro.mjs](../../scripts/e2e/s38-repro.mjs) | 완료 |
 | S2 | 감지·분류 Host 서비스 | S1 | Remote 하나가 행 단위로 `{ package, entry, scope, evidence, state }`를 반환한다. scope는 `agent`·`profile`·`unknown`, state는 `in-master`·`profile-active`·`profile-inactive`·`profile-failed`·`profile-unaddressable`·`installed`다. 플러그인 export가 없는 패키지는 뺀다 | 단위 테스트(분류 근거 표), 실제 Loader 테스트 | 완료 |
-| S3 | 프로필 공용 차단과 이전 | S2 | 프로필 공용 행은 Master에 들어가지 않고 이유가 표시된다. D7 이전 후 다음을 확인한다: 설정이 보존됨, 공용 등록이 정확히 1회, 프로필 등록 뒤 `web_search`가 Exa로 감, 두 프리셋을 동시에 써도 충돌 없음, 재시작 후 복원에서 충돌 없음 | 재현 테스트가 통과로 바뀜, 이전 테스트, 격리 프로필 확인 | Host 완료, 화면은 S4·S5와 함께 |
-| S4 | 에이전트 기능 감지와 설정 후 포함 | S2, S3, D2 | 새 후보가 `새로 설치됨`으로 보인다. 초기 설정 → probe → 포함 흐름이 동작하고, 필수 설정이 있는 플러그인도 포함할 수 있다. 실패하면 이전 Master를 유지한다. `플러그인 추가` 대화상자를 없앤다 | DOM 테스트, Master 수명 테스트 | 대기 |
-| S5 | 프로필 공용 설정 | S2, D3, D6 | ACTIVE 프로필 행의 Config를 스키마 폼으로 보고 저장한다. 덮어씀·검증 실패·비활성·주소 지정 불가는 이유를 표시하고 파일을 그대로 둔다. 비밀 필드는 유지·교체·삭제 의미로 저장하고, 응답·오류에 비밀 값이 없다. "모든 세션에 적용"을 표시한다 | DOM 테스트, `configEditor` 실제 Loader 테스트 | 대기 |
-| S6 | 실행되지 않는 프로필 공용 안내 | S2, S5 | 번들이 아닌 프로필 공용 패키지에 스니펫(비밀 자리표시자)을 보여 준다. 사용자가 patch에 등록하고 다시 읽으면 S5 목록으로 옮겨지며, 실제로 활성화된다 | DOM 테스트, 격리 프로필 실제 Loader 확인 | 대기 |
-| S7 | 독립 설치 검증 | S3–S6 | 수정하지 않은 DSH 0.2.1-rc.2에 패키징한 Studio만 설치한다. 확인 흐름: Exa `dsh plugin add` → 프로필 공용 표시 → 스니펫 등록 → 공용 설정에서 `searchProvider: exa`와 키 저장 → `web_search`가 Exa로 감. 에이전트 기능 플러그인 하나를 설정·포함·반영한다. 라이트·다크·좁은 폭 | 격리 home/profile 기록 | 대기 |
+| S3 | 프로필 공용 차단과 이전 | S2 | 프로필 공용 행은 Master에 들어가지 않고 이유가 표시된다. D7 이전 후 다음을 확인한다: 설정이 보존됨, 공용 등록이 정확히 1회, 프로필 등록 뒤 `web_search`가 Exa로 감, 두 프리셋을 동시에 써도 충돌 없음, 재시작 후 복원에서 충돌 없음 | 재현 테스트가 통과로 바뀜, 이전 테스트, 격리 프로필 확인 | 완료 |
+| S4 | 에이전트 기능 감지와 설정 후 포함 | S2, S3, D2 | 새 후보가 `새로 설치됨`으로 보인다. 초기 설정 → probe → 포함 흐름이 동작하고, 필수 설정이 있는 플러그인도 포함할 수 있다. 실패하면 이전 Master를 유지한다. `플러그인 추가` 대화상자를 없앤다 | DOM 테스트, Master 수명 테스트 | 완료 |
+| S5 | 프로필 공용 설정 | S2, D3, D6 | ACTIVE 프로필 행의 Config를 스키마 폼으로 보고 저장한다. 덮어씀·검증 실패·비활성·주소 지정 불가는 이유를 표시하고 파일을 그대로 둔다. 비밀 필드는 유지·교체·삭제 의미로 저장하고, 응답·오류에 비밀 값이 없다. "모든 세션에 적용"을 표시한다 | DOM 테스트, `configEditor` 실제 Loader 테스트 | 완료 |
+| S6 | 실행되지 않는 프로필 공용 안내 | S2, S5 | 번들이 아닌 프로필 공용 패키지에 스니펫(비밀 자리표시자)을 보여 준다. 사용자가 patch에 등록하고 다시 읽으면 S5 목록으로 옮겨지며, 실제로 활성화된다 | DOM 테스트, 격리 프로필 실제 Loader 확인 | 완료 |
+| S7 | 독립 설치 검증 | S3–S6 | 수정하지 않은 DSH 0.2.1-rc.2에 패키징한 Studio만 설치한다. 확인 흐름: Exa `dsh plugin add` → 프로필 공용 표시 → 스니펫 등록 → 공용 설정에서 `searchProvider: exa`와 키 저장 → `web_search`가 Exa로 감. 에이전트 기능 플러그인 하나를 설정·포함·반영한다. 라이트·다크·좁은 폭 | 격리 home/profile 기록 | 부분 완료(격리 설치·브라우저 확인, 에이전트 기능 실제 포함 흐름 미확인) |
 
 S1의 상태 기록 시점은 네 가지다: `추가 직후`, `키 저장 후`, `반영 후`, `재시작 후`. 시점마다 `master-extensions.json`, `presets.json` 상태, Host Config 목록, 오류 원문을 남긴다.
 
-현재 단계는 S4·S5(플러그인 탭 화면과 프로필 공용 설정)다. S3의 이전 알림 화면은 같은 탭에서 만든다. S1 결과로 바뀐 결정은 없다. D6은 스키마 역할을 먼저 쓰도록 보강했다.
+남은 일: S7의 에이전트 기능 플러그인 실제 설치·포함·반영 확인(설치본에 해당 후보가 없어 미확인). 사용자 Desktop 반영은 별도 승인.
 
 ## 위험과 제한
 
@@ -265,3 +265,21 @@ S1의 상태 기록 시점은 네 가지다: `추가 직후`, `키 저장 후`, 
     - `saveExtensions`로 Exa를 넣으려 하면 거부된다.
     - 기존 [check-master-runtime.mjs](../../scripts/check-master-runtime.mjs)(tool-subagent 확장 추가·원복 포함)가 통과했다.
   - S3 수용 조건 중 "두 프리셋 동시 사용·재시작 복원"은 프로필 등록 경로(S6)와 S7에서 함께 확인한다. S1에서는 프로필 등록 상태의 Optimized 반영과 `web_search`까지 확인했다.
+
+- 2026-10-20: S4–S6 구현, S7 일부 확인.
+  - 플러그인 서비스 [plugins-page.tsx](../../src/plugins-page.tsx)(문구 [plugins-locale.ts](../../src/plugins-locale.ts))를 상단 서비스 탭 `플러그인`(order 5)으로 등록했다. `설치한 플러그인` 페이지는 범위 배지와 범위별 동작(설정하고 포함·에이전트 기능으로 포함·프로필에 등록하기·프로필 설정 열기)과 이전 카드를 보여 준다. `프로필 설정` 페이지는 서비스 행(예: `dsh-web`)을 함께 보여 주고, 비밀 값은 유지·교체·삭제로 다룬다.
+  - Host 쪽: [host/profile-config.ts](../../src/host/profile-config.ts)가 `configEditor.configuration()`·`edit()`로 프로필 행을 읽고 쓴다. 대상은 프로필 공용으로 판정되고 실행 중인 행, 그리고 그 행이 inject하는 서비스의 소유 행(`SERVICE_OWNERS`)뿐이다. 순수 로직 [profile-config.ts](../../src/profile-config.ts)는 diff, 비밀 처리, 스니펫을 맡는다. Remote는 `listProfileConfigs`, `saveProfileConfig`, `installedPluginSchema`다. `addMasterPlugin`은 `{ name, config }`를 받아 초기 설정과 함께 probe한다.
+  - 비밀 판정을 보강했다. 스키마 역할이 없는 이름 규칙 필드(Exa `apiKey`)도 스키마 속성에서 찾아, 값이 없어도 `설정 안 됨`으로 표시한다.
+  - D3: 실행 설정의 `플러그인 추가` 입력을 없앴다. 이미 추가한 플러그인이 있을 때만 그 목록과 `제거`를 남겼다.
+  - 검증: `npm --prefix studio test` 789개 통과(타입 검사·빌드·디자인 규칙 포함). 격리 rc.2 `p38`(Studio tgz SHA256 `4656f48a…2415`)에서 다음을 확인했다.
+    1. 스니펫 그대로 patch에 등록하자 Exa가 `profile-active`가 됐다.
+    2. 프로필 설정에서 apiKey 교체와 baseURL을 저장하고, `dsh-web.searchProvider: exa`도 저장했다. patch에는 configEditor 형식으로 기록됐고, 응답에 키는 0회 나왔다.
+    3. 목 모델 `web_search`가 가짜 Exa에 `Bearer <저장한 키>`로 도달했다.
+    4. 유지 저장 후에도 키가 남았다.
+    5. `numResults: -1`은 검증 오류로 거부됐고 파일은 그대로였다.
+    6. 목록에 없는 `bash-sandbox`는 거부됐다.
+    7. 삭제 후 patch에서 키가 사라졌다.
+    8. 재시작 뒤 Master와 Optimized가 `applied`였고, Optimized 재반영과 `web_search`가 성공했다.
+  - 브라우저 [plugins-tab.mjs](../../scripts/e2e/plugins-tab.mjs): 라이트·다크·480px 27개 검사 통과, pageerror·플러그인 활성화 실패 0.
+  - 격리 patch는 원본으로 되돌리고 서버와 가짜 Exa를 종료했다. 사용자 Desktop과 `~/.dsh`는 바꾸지 않았다.
+  - 미확인: 실제 `확인 필요`·`에이전트 기능` 후보 패키지를 설치해 설정하고 포함·반영하는 흐름. DOM 테스트와 기존 `check-master-runtime`(extensions 경로)만 확인했다. "두 프리셋 동시 사용"은 Optimized와 Master만으로 확인했다.

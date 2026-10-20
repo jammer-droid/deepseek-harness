@@ -1,0 +1,66 @@
+/** Studio → Plugins service text (#38). */
+const ko = {
+  serviceLabel: '플러그인', navigation: '플러그인 메뉴', group: '플러그인',
+  pageInstalled: '설치한 플러그인', pageInstalledDescription: '이 프로필에 설치한 플러그인과 실행 범위입니다. 에이전트 기능은 Studio 기준 구성에 포함해 프리셋에서 설정하고, 프로필 공용 플러그인은 프로필 설정에서 모든 세션에 한 번 설정합니다.',
+  pageProfile: '프로필 설정', pageProfileDescription: '모든 세션이 함께 쓰는 서비스와 그 공급자의 설정입니다. 저장하면 실행 중인 모든 세션에 바로 적용됩니다.',
+  refresh: '새로고침', loading: '불러오는 중…', loadFailed: '불러오지 못했습니다.', dismiss: '닫기', empty: '이 프로필에 설치한 플러그인이 없습니다.', installHint: '패키지는 DSH 플러그인 페이지나 dsh plugin add로 설치합니다.',
+  scope_agent: '에이전트 기능', scope_profile: '프로필 공용', scope_unknown: '확인 필요',
+  state_inMaster: '기준 구성에 포함됨', state_profileActive: '프로필에서 실행 중', state_profileInactive: '프로필에서 꺼짐', state_profileFailed: '프로필에서 실행 실패', state_profileUnaddressable: '프로필 파일에서 직접 관리', state_installed: '새로 설치됨',
+  evidence_master: '기준 구성에 있음', evidence_profileRow: '프로필에서 실행 중', evidence_compatibility: 'Studio가 확인한 플러그인', evidence_none: '확인된 정보 없음',
+  include: '설정하고 포함', includeAgent: '에이전트 기능으로 포함', includeTitle: '기준 구성에 포함', includeHint: '초기 설정을 입력한 뒤 포함합니다. 포함하기 전에 활성화되는지 검사하고, 실패하면 이전 상태로 둡니다. 플러그인 코드가 실행되므로 신뢰하는 것만 포함하세요.',
+  unknownWarn: '이 플러그인이 프리셋마다 따로 동작하는지 확인되지 않았습니다. 모든 세션이 함께 쓰는 서비스에 등록하는 플러그인이면 반영할 때 실패할 수 있습니다.',
+  includeButton: '포함', including: '포함 중…', remove: '제거', profileSettings: '프로필 설정 열기', register: '프로필에 등록하기',
+  registerTitle: '프로필에 등록', registerHint: '이 플러그인은 모든 세션이 함께 쓰는 서비스에 등록합니다. 프로필 설정 파일 끝에 아래 내용을 넣고 DSH를 다시 시작하거나 새로고침하세요. 비밀 값은 자리표시자 대신 실제 값으로 바꾸거나 환경 변수를 쓰세요.',
+  copy: '복사', copied: '복사됨', patchFile: '프로필 설정 파일', done: '완료',
+  migrateTitle: '기준 구성에서 옮겨야 하는 플러그인', migrateHint: '이전 버전에서 기준 구성에 추가한 플러그인 중 모든 세션이 함께 쓰는 서비스에 등록하는 것이 있습니다. 이 상태에서는 프리셋 반영이 실패합니다. 옮기면 설정을 백업하고 기준 구성에서 뺍니다.',
+  migrate: '옮기기', migrating: '옮기는 중…', migratedApplied: '이 프리셋들을 다시 반영한 뒤 프로필에 등록하세요: ', migrateOverrides: '프리셋별 설정',
+  allSessions: '모든 세션에 적용', service: '서비스', save: '저장', saved: '저장됨', saving: '저장 중…', saveFailed: '저장하지 못했습니다. 편집 내용은 그대로 있습니다.',
+  secret: '비밀 값', secretSet: '설정됨', secretUnset: '설정 안 됨', secretKeep: '유지', secretReplace: '교체', secretDelete: '삭제', secretPlaceholder: '새 값',
+  secretHint: '비밀 값은 프로필 설정 파일에 평문으로 저장됩니다. 플러그인이 환경 변수를 읽으면 $DSH_HOME/.env에 두는 쪽을 권합니다.',
+  noSchema: '설정 형식을 읽을 수 없어 편집할 수 없습니다.', noProfile: '편집할 프로필 설정이 없습니다. 프로필 공용 플러그인을 프로필에 등록하면 여기에 나타납니다.', edit: '설정', changed: '변경됨', defaults: '기본값',
+};
+type Key = keyof typeof ko;
+const en: Record<Key, string> = {
+  serviceLabel: 'Plugins', navigation: 'Plugin menu', group: 'Plugins',
+  pageInstalled: 'Installed plugins', pageInstalledDescription: 'Plugins installed in this profile and where they run. Agent features join the Studio base composition and are set per preset; profile-wide plugins are set once for every session under Profile settings.',
+  pageProfile: 'Profile settings', pageProfileDescription: 'Settings of services every session shares, and their providers. Saving applies to every running session immediately.',
+  refresh: 'Refresh', loading: 'Loading…', loadFailed: 'Could not load.', dismiss: 'Dismiss', empty: 'No plugins are installed in this profile.', installHint: 'Install packages from the DSH Plugins page or with dsh plugin add.',
+  scope_agent: 'Agent feature', scope_profile: 'Profile-wide', scope_unknown: 'Needs check',
+  state_inMaster: 'In base composition', state_profileActive: 'Running in profile', state_profileInactive: 'Off in profile', state_profileFailed: 'Failed in profile', state_profileUnaddressable: 'Managed in the profile file', state_installed: 'Newly installed',
+  evidence_master: 'In base composition', evidence_profileRow: 'Runs in the profile', evidence_compatibility: 'Checked by Studio', evidence_none: 'No checked information',
+  include: 'Set up and include', includeAgent: 'Include as agent feature', includeTitle: 'Include in base composition', includeHint: 'Enter the initial settings, then include it. Activation is checked first and a failure keeps the previous state. Including runs its code, so include only plugins you trust.',
+  unknownWarn: 'It is not confirmed that this plugin runs per preset. If it registers into a service every session shares, applying presets can fail.',
+  includeButton: 'Include', including: 'Including…', remove: 'Remove', profileSettings: 'Open profile settings', register: 'Register in profile',
+  registerTitle: 'Register in profile', registerHint: 'This plugin registers into a service every session shares. Add the lines below to the end of the profile patch file, then restart or reload DSH. Replace secret placeholders with real values or use environment variables.',
+  copy: 'Copy', copied: 'Copied', patchFile: 'Profile patch file', done: 'Done',
+  migrateTitle: 'Plugins to move out of the base composition', migrateHint: 'An earlier version added plugins to the base composition that register into a service every session shares. Applying presets fails while they stay. Moving backs up their settings and removes them from the base composition.',
+  migrate: 'Move', migrating: 'Moving…', migratedApplied: 'Reapply these presets before registering it in the profile: ', migrateOverrides: 'Per-preset settings',
+  allSessions: 'Applies to every session', service: 'Service', save: 'Save', saved: 'Saved', saving: 'Saving…', saveFailed: 'Could not save. Your edits are kept.',
+  secret: 'Secret', secretSet: 'Set', secretUnset: 'Not set', secretKeep: 'Keep', secretReplace: 'Replace', secretDelete: 'Delete', secretPlaceholder: 'New value',
+  secretHint: 'Secrets are stored in plain text in the profile patch file. If the plugin reads an environment variable, prefer $DSH_HOME/.env.',
+  noSchema: 'The settings schema could not be read, so editing is disabled.', noProfile: 'No profile settings to edit. Profile-wide plugins appear here once registered in the profile.', edit: 'Settings', changed: 'Modified', defaults: 'Defaults',
+};
+const zh: Record<Key, string> = {
+  serviceLabel: '插件', navigation: '插件菜单', group: '插件',
+  pageInstalled: '已安装的插件', pageInstalledDescription: '此配置中安装的插件及其运行范围。代理功能加入 Studio 基础组成并按预设设置；配置级插件在配置设置中为所有会话统一设置',
+  pageProfile: '配置设置', pageProfileDescription: '所有会话共享的服务及其提供方的设置。保存后立即应用于所有运行中的会话',
+  refresh: '刷新', loading: '加载中…', loadFailed: '无法加载', dismiss: '关闭', empty: '此配置中没有安装插件', installHint: '可在 DSH 插件页面或使用 dsh plugin add 安装软件包',
+  scope_agent: '代理功能', scope_profile: '配置级', scope_unknown: '需要确认',
+  state_inMaster: '已在基础组成中', state_profileActive: '在配置中运行', state_profileInactive: '在配置中已关闭', state_profileFailed: '在配置中运行失败', state_profileUnaddressable: '在配置文件中管理', state_installed: '新安装',
+  evidence_master: '在基础组成中', evidence_profileRow: '在配置中运行', evidence_compatibility: '已由 Studio 确认', evidence_none: '无确认信息',
+  include: '设置并加入', includeAgent: '作为代理功能加入', includeTitle: '加入基础组成', includeHint: '输入初始设置后加入。加入前会检查激活，失败时保持原状态。加入会执行插件代码，请仅加入可信插件',
+  unknownWarn: '尚未确认此插件是否按预设运行。若它注册到所有会话共享的服务，应用预设时可能失败',
+  includeButton: '加入', including: '加入中…', remove: '移除', profileSettings: '打开配置设置', register: '注册到配置',
+  registerTitle: '注册到配置', registerHint: '此插件注册到所有会话共享的服务。请将以下内容添加到配置补丁文件末尾，然后重启或重新加载 DSH。请将密钥占位符替换为实际值或使用环境变量',
+  copy: '复制', copied: '已复制', patchFile: '配置补丁文件', done: '完成',
+  migrateTitle: '需要移出基础组成的插件', migrateHint: '早期版本向基础组成添加了注册到共享服务的插件。保留它们时应用预设会失败。移出会备份设置并从基础组成中移除',
+  migrate: '移出', migrating: '移出中…', migratedApplied: '注册到配置前请重新应用这些预设：', migrateOverrides: '各预设设置',
+  allSessions: '应用于所有会话', service: '服务', save: '保存', saved: '已保存', saving: '保存中…', saveFailed: '无法保存。编辑内容已保留',
+  secret: '密钥', secretSet: '已设置', secretUnset: '未设置', secretKeep: '保留', secretReplace: '替换', secretDelete: '删除', secretPlaceholder: '新值',
+  secretHint: '密钥以明文保存在配置补丁文件中。若插件读取环境变量，建议放在 $DSH_HOME/.env',
+  noSchema: '无法读取设置架构，无法编辑', noProfile: '没有可编辑的配置设置。配置级插件注册到配置后会显示在这里', edit: '设置', changed: '已修改', defaults: '默认值',
+};
+export type PluginsKey = Key;
+export function pluginsText(locale: string, key: Key): string {
+  return (locale.startsWith('ko') ? ko : locale.startsWith('zh') ? zh : en)[key];
+}

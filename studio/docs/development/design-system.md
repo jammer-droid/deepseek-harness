@@ -88,7 +88,9 @@ primitives는 CSS 모듈을 함께 불러오므로 Node 단위 테스트에서 �
 | `DetailDialog` | 한 항목의 설정을 여는 모달. `wide`는 프롬프트 미리보기처럼 본문과 오른쪽 목록을 함께 보여줄 때 쓴다. 머리(제목·보조 문구·닫기), 스크롤되는 본문, 선택적 하단 동작으로 구성한다. 닫으면 연 버튼으로 포커스를 돌려준다. 페이지 안에서 카드를 펼쳐 편집하지 않고 이 모달을 쓴다 |
 | `SplitButton` | 주 동작과 관련 보조 동작을 한 컨트롤로 묶는다. 예: `DSH에 다시 반영` + 메뉴의 `반영 해제` |
 | `Disclosure` | 고급 설정처럼 평소 접어 두는 블록. 컴포넌트 카드와 같은 테두리·제목 행을 쓴다 |
-| `FeatureInclusion` ([feature-inclusion.tsx](../../src/feature-inclusion.tsx)) | 프리셋에 포함할 플러그인. Config 편집과 같은 `ItemPicker`(검색·스크롤, 필터는 전체/포함)로 보여 주고, 행마다 출처(`standard`/`Studio`/`추가함`)와 기본값/덮어쓰기/제외 `Badge`를 단다. 의존 플러그인은 "함께 제외"로 잠근다. `플러그인 추가` 대화상자에서 패키지 이름으로 Studio 기준 구성에 추가·제거한다 |
+| `FeatureInclusion` ([feature-inclusion.tsx](../../src/feature-inclusion.tsx)) | 프리셋에 포함할 플러그인. Config 편집과 같은 `ItemPicker`(검색·스크롤, 필터는 전체/포함)로 보여 주고, 행마다 출처(`standard`/`Studio`/`추가함`)와 기본값/덮어쓰기/제외 `Badge`를 단다. 의존 플러그인은 "함께 제외"로 잠근다. 새 플러그인 추가는 플러그인 서비스가 맡고, 여기서는 Studio가 추가한 플러그인을 보고 제거만 한다 |
+| `PluginsPage` ([plugins-page.tsx](../../src/plugins-page.tsx)) | Studio → 플러그인 서비스(#38). `DetailLayout` 두 페이지다. `설치한 플러그인`은 `studio-settings-card` + `SettingsRow`로 행마다 범위 `Badge`(에이전트 기능 `info`, 프로필 공용 `outline`, 확인 필요 `warning`)와 범위별 동작을 둔다. 동작은 `설정하고 포함`(초기 설정 `DetailDialog`), `프로필에 등록하기`(복사할 수 있는 patch 스니펫), `프로필 설정 열기`다. 이전할 항목이 있으면 위에 이전 카드를 둔다. `프로필 설정`은 행마다 `변경됨`/`기본값`과 서비스 `Badge`를 달고, `DetailDialog`에서 비밀 값(유지·교체·삭제)과 `ConfigForm`(비밀 필드를 뺀 스키마)을 편집한다. 저장 버튼은 서비스 간 일관성 3번 규칙을 따른다 |
+| `ConfigForm` ([config-editor.tsx](../../src/config-editor.tsx)) | 항목 하나의 스키마 폼. `ConfigEditor`와 같은 필드 렌더러를 쓴다. 프로필 설정과 초기 설정에서 사용한다 |
 | `CatalogChangeNotice` ([master-change-notice.tsx](../../src/master-change-notice.tsx)) | 재시작 후 도구·Config 변경 안내. `Notice`와 `DetailDialog`에 `+`/`-`/`~`와 정리될 프리셋 설정을 보여 주고, 확인해야 정리한다 |
 | `SessionRolesTab` ([session-roles-tab.tsx](../../src/session-roles-tab.tsx)) | 세션 화면 `conversation.view`의 Subagents 탭. 서브에이전트 역할 카드(`studio-card-pair`)에 출처 `Badge`(프리셋 `outline`, 세션 `info`)를 달고, 편집은 `DetailDialog`에서 모델·추론·지침만 바꾼다. 세션 복사본은 `프리셋 값 사용`, 임시 역할은 `제거`. 자식 세션과 역할 도구가 없는 세션은 `Note`로 사유를 보이고 동작을 숨긴다. 탭 폭 560px 이하에서 한 열 |
 | `TurnInjectionPanel` ([turn-injection-panel.tsx](../../src/turn-injection-panel.tsx)) | 프롬프트 미리보기 안의 턴 시작 주입 예시(`pre.studio-turn-text`)와 그 내용을 만드는 Config 필드. 실행 설정과 같은 덮어쓰기 값을 쓰고 `원래대로`로 키를 지운다. 본문은 편집 불가 사유를 표시한다 |
@@ -113,7 +115,7 @@ primitives는 CSS 모듈을 함께 불러오므로 Node 단위 테스트에서 �
 - 숨긴 섹션은 마운트 상태를 유지해 편집 중인 값을 잃지 않는다.
 - 반응형 기준은 화면 너비가 아니라 Studio 영역과 본문 열의 너비다. Studio 영역이 760px 이하면 메뉴가 상단 가로줄로 바뀌고, 본문이 640px 이하면 목록·상세가 위아래로 쌓인다.
 - 탭 내용은 최소 높이를 가져, 짧은 탭으로 바꿔도 고정된 탭 줄이 튀지 않는다. 본문 스크롤 영역은 `scrollbar-gutter: stable`로 스크롤바 유무와 관계없이 좌우 위치를 고정한다.
-- 좌측 메뉴는 `DetailLayout`의 페이지별 `group`으로만 구성한다. 서비스 이름은 상단 서비스 탭이 이미 보여 주므로 메뉴에 서비스 제목·부제를 두지 않는다. 현재 구성은 프리셋 서비스 › 프리셋(목록·만들기) · 도구(도구 제공자), Pixie 서비스 › 설정(모델·스레드·시스템 프롬프트·판정) · 게이트(게이트 구성·적용 범위)이다. 게이트 구성은 카드 목록이고, 한 게이트의 흐름은 `DetailDialog wide` 모달에서 노드(입력→출력 요약) 목록과 선택 노드 설정으로 편집한다.
+- 좌측 메뉴는 `DetailLayout`의 페이지별 `group`으로만 구성한다. 서비스 이름은 상단 서비스 탭이 이미 보여 주므로 메뉴에 서비스 제목·부제를 두지 않는다. 현재 구성은 프리셋 서비스 › 프리셋(목록·만들기) · 도구(도구 제공자), 플러그인 서비스 › 설치한 플러그인 · 프로필 설정, Pixie 서비스 › 설정(모델·스레드·시스템 프롬프트·판정) · 게이트(게이트 구성·적용 범위)이다. 게이트 구성은 카드 목록이고, 한 게이트의 흐름은 `DetailDialog wide` 모달에서 노드(입력→출력 요약) 목록과 선택 노드 설정으로 편집한다.
 - 편집 화면의 섹션은 `studio-form-section`(12px 간격), 탭 본문은 `studio-tab-body`(24px 간격)로 쌓고 단락·필드의 기본 여백에 기대지 않는다. 필드 제목 행에 `원본 사용`·`덮어쓰기 초기화` 같은 보조 동작을 둘 때는 `studio-field-head`를 쓴다.
 - 프리셋 목록과 서브에이전트 역할은 두 열 카드(`studio-card-pair`)이며 본문이 560px 이하이면 한 열이 된다. 프리셋 카드 하단 왼쪽에는 편집·복사·삭제, 오른쪽에는 반영 `SplitButton`을 둔다. 반영되지 않았거나 다시 반영해야 하는 프리셋만 반영 버튼을 `primary`로 강조한다. 읽기 전용 프리셋은 동작 대신 이유를 한 줄로 쓴다.
 
