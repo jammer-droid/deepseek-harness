@@ -1,0 +1,69 @@
+---
+kind: implementation-spec
+status: ready
+---
+
+# #39 Exa `/contents` 가져오기 공급자 플러그인 (`exa-contents`)
+
+## 요약
+
+Exa API `POST /contents`로 `web_fetch`를 처리하는 가져오기 공급자를 Studio와 별도인 플러그인 패키지로 추가한다. 프로필에 등록하면 Studio → 플러그인 → 프로필 설정의 웹 카드에서 `fetchProvider: exa-contents`를 고를 수 있다.
+
+- GitHub 이슈: [#39](https://github.com/jammer-droid/deepseek-harness/issues/39)
+- 출처: [플러그인 탭 후속 후보 F1](../plans/plugins-followups.md)
+- 기준 브랜치·시작 커밋: `studio/feat/workflow` @ `16329d72ed`, 작업 브랜치 `studio/feat/39-exa-contents`
+- 대상 DSH: `0.2.0-rc.2`, `0.2.1-rc.2`. 두 태그 모두 `ctx.web.registerFetchProvider()`와 `WebFetchProvider` 계약이 같다. 본체는 수정하지 않는다.
+
+## 결정
+
+| ID | 결정 | 이유 |
+| --- | --- | --- |
+| D1 | 패키지는 `studio/packages/web-fetch-exa`이고 shell과 분리한다 | 따로 설치하고 켜고 끌 수 있다. Studio 본체가 `web`에 의존하지 않는다. 0.6.3 프로필 등록·설정 흐름을 그대로 쓴다 |
+| D2 | 공급자 id는 `exa-contents`이고 `EXA_CONTENTS_PROVIDER_ID`로 export한다 | 검색 공급자 `exa`와 화면에서 구분한다. export 규칙으로 Studio가 자동 감지한다 |
+| D3 | npm 이름은 `@matamt-dbg/dsh-web-fetch-exa`이고 Studio와 같은 게시자를 쓴다 | 이름에 `fetch`가 있어야 Studio가 가져오기 공급자로 분류한다 |
+| D4 | 의존성은 `dsh-web`·`dsh-launch-environment`·`cordis`를 peer로, `schemastery`를 dependency로 둔다. 이는 `dsh-web-search-exa`와 같은 구조다. 루트 `pnpm-lock.yaml` 갱신은 사용자가 승인했다(2026-10-21) | Config가 schemastery여야 프로필 설정 화면에서 `apiKey`·한도를 편집할 수 있다 |
+| D5 | 요청은 `{ urls: [url], text: { maxCharacters }, maxAgeHours?, livecrawlTimeout? }`이고 응답 `results[0].text`를 `body.kind: 'text'`로 매핑한다 | Exa가 본문을 추출해 주므로 HTML 변환이 필요 없다 |
+| D6 | 크롤링 실패(`statuses[].status = 'error'`)는 `error.httpStatusCode`가 있으면 빈 본문의 결과로 돌려준다. 없으면 `WebError('WEB_PROVIDER_ERROR')`로 처리한다 | seam 계약에서 대상 페이지의 non-2xx는 오류가 아니라 결과다. 상태 코드가 없는 실패(타임아웃·지원하지 않는 URL)는 가져오기 자체의 실패다 |
+| D7 | 키를 담은 요청은 `redirect: 'error'`로 보낸다. 대상 URL은 `http(s)`만 받고 그 밖은 `WEB_INVALID_URL`이다 | DSH web 패키지 규칙(리다이렉트 거부)과 같다. 대상 페이지는 Exa가 가져오므로 로컬 사설 IP 검사는 해당하지 않는다 |
+| D8 | 키는 Config `apiKey`가 먼저이고 없으면 `EXA_API_KEY`(launch environment)를 쓴다. 키가 없으면 `available() = false`다 | 기존 Exa 검색과 같은 키를 그대로 쓴다 |
+| D9 | 한도 기본값: `maxCharacters` 100,000(요청과 결과 모두 적용, 넘으면 `truncated`), `timeoutMs` 30,000(`WEB_FETCH_TIMEOUT`). `maxAgeHours`·`livecrawlTimeoutMs`는 없으면 보내지 않는다 | `web-fetch-http`의 `maxBodyChars`·`timeoutMs` 기본값과 맞춘다 |
+| D10 | Studio 쪽 `COMPATIBILITY`와 `KNOWN_PROVIDERS`에 새 패키지를 추가한다 | 프로필 등록 전 "설치됨" 상태에서도 프로필용으로 판정되게 한다 |
+
+제외: DSH 코어, `dsh-tool-web` 렌더링, Exa summary·highlights·subpages, `statuses`의 `source`(cached/live) 노출.
+
+비용 참고: Exa Contents는 페이지 1,000개당 약 $1다(내용 종류별, [요금](https://exa.ai/pricing)). `deepseek-fetch-api`는 성공 1,000건당 $0.75다.
+
+## 단계
+
+| ID | 결과 | 선행 | 수용 조건 | 검증 |
+| --- | --- | --- | --- | --- |
+| S1 | 공급자와 플러그인 패키지 | — | D2·D5–D9 동작. `name`·`inject`·`Config`·`apply`를 export하고 default export는 없다. 등록 해제 시 공급자가 제거된다 | 단위 테스트: 요청 형태, 매핑, 잘림, 크롤 실패 2종, HTTP 오류, 리다이렉트 대상 미접촉, 취소·타임아웃, 키 없음, 등록·해제 |
+| S2 | 빌드·패키징 | S1 | `build.mjs`가 `packages/web-fetch-exa/index.js`를 만들고, 별도 pack 스크립트가 tarball을 만든다 | Studio 타입 검사·빌드, tarball 내용 확인 |
+| S3 | Studio 연동 | S1 | D10. 등록 전 범위가 `profile`이고, 웹 그룹 소속·`exa-contents` 감지·`apiKey` 마스킹이 된다 | 기존 `installed-plugins`·`service-groups` 테스트에 사례 추가 |
+| S4 | 문서 | S1–S3 | 패키지 README, 사용 가이드 항목, F1 링크 갱신 | 문서 링크 확인 |
+| S5 | 독립 설치 검증 | S2–S4 | 수정하지 않은 DSH(격리 home/profile)에 Studio와 이 패키지만 설치한다. 프로필 등록 → `exa-contents` 선택 → 실제 `web_fetch` 성공 | 런타임 버전·명령·결과 기록. 실제 Exa 키가 필요하다 |
+
+현재 단계: S5. 실제 Exa 키가 있어야 진행할 수 있다.
+
+## 진행 기록
+
+### S1–S4 완료 (2026-10-21)
+
+- 소스: [web-fetch-exa-provider.ts](../../src/host/web-fetch-exa-provider.ts)(공급자), [web-fetch-exa.ts](../../src/host/web-fetch-exa.ts)(플러그인 진입점), 패키지 [packages/web-fetch-exa](../../packages/web-fetch-exa/README.md)
+- 빌드: `build.mjs`가 `packages/web-fetch-exa/index.js`를 만든다. `node pack.mjs web-fetch-exa`가 tarball을 만들며 내용은 `index.js`, `README.md`, `LICENSE`, `package.json`이다. 외부 import는 `dsh-web`·`dsh-launch-environment`·`schemastery`뿐이다.
+- Studio 연동: `COMPATIBILITY`, 웹 그룹 `members`, `KNOWN_PROVIDERS`에 추가했다.
+- 의존성: `studio/package.json` devDependencies에 `dsh-web`·`dsh-launch-environment`·`schemastery`를 추가했다. 루트 `pnpm-lock.yaml`이 갱신됐다(사용자 승인). `pnpm install`이 lockfile에서 이미 존재하지 않는 `studio/packages/bundle` importer를 지우고, shell peer 범위(`0.2.1-rc.2` 추가)와 일부 외부 항목도 함께 정리했다.
+- 검사:
+  - `node --import tsx --test test/web-fetch-exa.test.mjs`: 12개 통과. 요청 형태, 잘림(정확히 상한인 경우 포함), 크롤 실패 2종, HTTP 오류(JSON·비JSON, 키 미노출), 잘못된 URL, 실제 로컬 서버로 리다이렉트 대상 미접촉, 취소·타임아웃, 가용성, export 형태, 실제 `WebRuntime` 등록·해제와 `EXA_API_KEY` 대체, 키 없음, Studio 범위·그룹·감지, 실제 projector 스키마의 `apiKey` secret 역할을 확인했다.
+  - Studio 전체 단위 테스트 812개 통과. `npm run build`(타입 검사 포함) 통과. 기존 `node pack.mjs`(Studio 0.6.3 tarball) 내용 변화 없음.
+
+### S5 일부 (2026-10-21)
+
+- 런타임: 수정하지 않은 `dsh 0.2.1-rc.2`(`/usr/local/bin/dsh`). 격리 home은 `studio/dist/e2e/home`, 프로필은 `e39`이다.
+- 설치: `server.mjs up --profile e39 --skip-build --plugin <dsh-web-fetch-exa-0.1.0.tgz>`. Studio 0.6.3 tarball의 sha256은 `ba49df34…`이다. peer는 런타임 패키지로 해석됐다(설치된 `dsh-web-search-exa`와 같은 방식).
+- 브라우저 L0 [plugins-exa-contents.mjs](../../scripts/e2e/plugins-exa-contents.mjs): 10단계 통과, 페이지 오류·플러그인 실패 0건. 확인한 흐름은 다음과 같다.
+  1. 설치한 플러그인 목록에 `프로필 공용`으로 나온다.
+  2. **프로필에 등록하기 › 등록**을 누르면 `프로필에서 실행 중`이 된다.
+  3. 프로필 설정에 `공급자 ID: exa-contents · apiKey: 설정 안 됨`이 나온다.
+  4. 가져오기 공급자에서 `exa-contents`를 고를 수 있고 저장된다. patch에는 `insert web-fetch-exa`와 `web.config.fetchProvider: exa-contents`가 기록됐다.
+- 미검증: 실제 Exa 키로 `web_fetch` 성공. 이 세션 환경에는 `EXA_API_KEY`가 없다. 0.2.0-rc.2 런타임 설치도 하지 않았다.

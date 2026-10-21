@@ -13,7 +13,7 @@ description: "#38 플러그인 탭 이후 보류한 개선 후보. 이슈로 등
 
 | ID | 후보 | 내용 | 미룬 이유 | 착수 조건 |
 | --- | --- | --- | --- | --- |
-| F1 | Exa `/contents` 가져오기 공급자 | Exa API `POST /contents`로 `web_fetch`를 처리하는 공급자 플러그인을 만들어 `fetchProvider: exa`를 쓸 수 있게 한다. `ctx.web.registerFetchProvider()`만 쓴다. 확인할 것: 응답 형식, 크기 제한, 리다이렉트 거부(DSH web 패키지 규칙), 비용 | DSH에 패키지가 없고 Studio 밖의 별도 기능이다. 지금은 `http`나 `deepseek-fetch-api`로 가져오기를 할 수 있다 | 기존 가져오기 공급자로 처리하지 못하는 페이지가 실제로 문제가 될 때. 패키지 위치를 먼저 정한다 |
+| F1 | Exa `/contents` 가져오기 공급자 → [#39](../issues/39-exa-contents-fetch.md)에서 진행 | Exa API `POST /contents`로 `web_fetch`를 처리하는 공급자 플러그인을 만들어 `fetchProvider: exa`를 쓸 수 있게 한다. `ctx.web.registerFetchProvider()`만 쓴다. 확인할 것: 응답 형식, 크기 제한, 리다이렉트 거부(DSH web 패키지 규칙), 비용 | DSH에 패키지가 없고 Studio 밖의 별도 기능이다. 지금은 `http`나 `deepseek-fetch-api`로 가져오기를 할 수 있다 | 기존 가져오기 공급자로 처리하지 못하는 페이지가 실제로 문제가 될 때. 패키지 위치를 먼저 정한다 |
 | F2 | 서비스 그룹 확장 | `speechToText`·`terminals`는 웹처럼 선택 드롭다운, `sessionTitle`은 하나만 켜는 화면, `llm`은 묶어서 보여 주기만 한다. [service-groups.ts](../../src/service-groups.ts)에 정의를 더한다 | 이번 범위는 워크플로우 카테고리 7개로 합의했다 | 해당 서비스의 공급자를 실제로 바꿔 쓰게 될 때 |
 | F3 | 가져오기 공급자 키 따로 저장 | `web-deepseek-api`의 `apiKeyEnv`를 다른 이름으로 바꾸면 그 키를 저장할 화면이 없다(DSH 웹 검색 페이지는 `web-search-deepseek`의 키 이름만 다룬다). 프로필 설정의 `credential-ref` 행에서 `ctx.credentials.set`으로 저장하게 한다 | D6에서 자격 증명 저장소를 1순위로 정했지만 이번에는 상태 표시까지만 했다. 지금은 검색·가져오기가 같은 `DEEPSEEK_API_KEY`를 쓴다 | 검색과 가져오기에 다른 DeepSeek 키가 필요할 때 |
 
