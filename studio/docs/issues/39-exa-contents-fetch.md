@@ -26,7 +26,7 @@ Exa API `POST /contents`로 `web_fetch`를 처리하는 가져오기 공급자�
 | D6 | 크롤링 실패(`statuses[].status = 'error'`)는 `error.httpStatusCode`가 있으면 빈 본문의 결과로 돌려준다. 없으면 `WebError('WEB_PROVIDER_ERROR')`로 처리한다 | seam 계약에서 대상 페이지의 non-2xx는 오류가 아니라 결과다. 상태 코드가 없는 실패(타임아웃·지원하지 않는 URL)는 가져오기 자체의 실패다 |
 | D7 | 키를 담은 요청은 `redirect: 'error'`로 보낸다. 대상 URL은 `http(s)`만 받고 그 밖은 `WEB_INVALID_URL`이다 | DSH web 패키지 규칙(리다이렉트 거부)과 같다. 대상 페이지는 Exa가 가져오므로 로컬 사설 IP 검사는 해당하지 않는다 |
 | D8 | 키는 Config `apiKey`가 먼저이고 없으면 `EXA_API_KEY`(launch environment)를 쓴다. 키가 없으면 `available() = false`다 | 기존 Exa 검색과 같은 키를 그대로 쓴다 |
-| D9 | 한도 기본값: `maxCharacters` 100,000(요청과 결과 모두 적용, 넘으면 `truncated`), `timeoutMs` 30,000(`WEB_FETCH_TIMEOUT`). `maxAgeHours`·`livecrawlTimeoutMs`는 없으면 보내지 않는다 | `web-fetch-http`의 `maxBodyChars`·`timeoutMs` 기본값과 맞춘다 |
+| D9 | 한도 기본값: `maxCharacters` 100,000. Exa에는 1자 더 요청하고 결과를 상한에서 자르며, 넘으면 `truncated`다(Exa는 상한에서 잘라도 알려 주지 않는다), `timeoutMs` 30,000(`WEB_FETCH_TIMEOUT`). `maxAgeHours`·`livecrawlTimeoutMs`는 없으면 보내지 않는다 | `web-fetch-http`의 `maxBodyChars`·`timeoutMs` 기본값과 맞춘다 |
 | D10 | Studio 쪽 `COMPATIBILITY`와 `KNOWN_PROVIDERS`에 새 패키지를 추가한다 | 프로필 등록 전 "설치됨" 상태에서도 프로필용으로 판정되게 한다 |
 
 제외: DSH 코어, `dsh-tool-web` 렌더링, Exa summary·highlights·subpages, `statuses`의 `source`(cached/live) 노출.
@@ -43,7 +43,7 @@ Exa API `POST /contents`로 `web_fetch`를 처리하는 가져오기 공급자�
 | S4 | 문서 | S1–S3 | 패키지 README, 사용 가이드 항목, F1 링크 갱신 | 문서 링크 확인 |
 | S5 | 독립 설치 검증 | S2–S4 | 수정하지 않은 DSH(격리 home/profile)에 Studio와 이 패키지만 설치한다. 프로필 등록 → `exa-contents` 선택 → 실제 `web_fetch` 성공 | 런타임 버전·명령·결과 기록. 실제 Exa 키가 필요하다 |
 
-현재 단계: S5. 실제 Exa 키가 있어야 진행할 수 있다.
+현재 단계: 없음. S1–S5 완료. 0.2.0-rc.2 설치와 npm 게시는 남았다.
 
 ## 진행 기록
 
@@ -57,7 +57,7 @@ Exa API `POST /contents`로 `web_fetch`를 처리하는 가져오기 공급자�
   - `node --import tsx --test test/web-fetch-exa.test.mjs`: 12개 통과. 요청 형태, 잘림(정확히 상한인 경우 포함), 크롤 실패 2종, HTTP 오류(JSON·비JSON, 키 미노출), 잘못된 URL, 실제 로컬 서버로 리다이렉트 대상 미접촉, 취소·타임아웃, 가용성, export 형태, 실제 `WebRuntime` 등록·해제와 `EXA_API_KEY` 대체, 키 없음, Studio 범위·그룹·감지, 실제 projector 스키마의 `apiKey` secret 역할을 확인했다.
   - Studio 전체 단위 테스트 812개 통과. `npm run build`(타입 검사 포함) 통과. 기존 `node pack.mjs`(Studio 0.6.3 tarball) 내용 변화 없음.
 
-### S5 일부 (2026-10-21)
+### S5 완료 (2026-10-21)
 
 - 런타임: 수정하지 않은 `dsh 0.2.1-rc.2`(`/usr/local/bin/dsh`). 격리 home은 `studio/dist/e2e/home`, 프로필은 `e39`이다.
 - 설치: `server.mjs up --profile e39 --skip-build --plugin <dsh-web-fetch-exa-0.1.0.tgz>`. Studio 0.6.3 tarball의 sha256은 `ba49df34…`이다. peer는 런타임 패키지로 해석됐다(설치된 `dsh-web-search-exa`와 같은 방식).
@@ -66,4 +66,8 @@ Exa API `POST /contents`로 `web_fetch`를 처리하는 가져오기 공급자�
   2. **프로필에 등록하기 › 등록**을 누르면 `프로필에서 실행 중`이 된다.
   3. 프로필 설정에 `공급자 ID: exa-contents · apiKey: 설정 안 됨`이 나온다.
   4. 가져오기 공급자에서 `exa-contents`를 고를 수 있고 저장된다. patch에는 `insert web-fetch-exa`와 `web.config.fetchProvider: exa-contents`가 기록됐다.
-- 미검증: 실제 Exa 키로 `web_fetch` 성공. 이 세션 환경에는 `EXA_API_KEY`가 없다. 0.2.0-rc.2 런타임 설치도 하지 않았다.
+- 실제 `web_fetch`: 사용자 지시에 따라 `desktop` 프로필 `web-search-exa` 행의 Exa 키를 격리 프로필의 `web-fetch-exa.config.apiKey`에 값 출력 없이 복사했다. 서버를 `--mock-llm --reuse-profile`로 다시 띄운 뒤 [agent-exa-contents.mjs](../../scripts/e2e/agent-exa-contents.mjs)를 실행했다. 모델은 mock이고 도구 호출만 스크립트이며, 가져오기는 실제 Exa API로 갔다. 2/2 통과: `Fetched https://example.com/ (HTTP 200)`과 본문 `Example Domain …`. 검증 후 격리 프로필에서 키를 지웠고 `dist/e2e`에 키 문자열이 남지 않은 것을 확인했다. 데스크톱 프로필은 읽기만 했다.
+- 실제 응답 확인(공급자 직접 호출)과 그에 따른 수정:
+  - 없는 페이지는 `statuses` 오류 404로 오고, 결과도 404와 빈 본문이다(D6 확인).
+  - `maxCharacters: 300`이면 Exa는 정확히 300자로 자르면서 잘렸다는 표시를 주지 않았다. 그래서 요청을 `maxCharacters + 1`로 바꿨다(D9). 수정 후 긴 페이지는 `truncated: true`(300자), 짧은 페이지는 `false`였다. 수정한 tarball(sha256 `315e2c40…`)로 등록 흐름 10/10과 실제 가져오기 2/2를 다시 통과했다.
+- 미검증: 0.2.0-rc.2 런타임 설치. npm 게시는 하지 않았다.

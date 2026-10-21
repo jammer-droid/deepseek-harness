@@ -20,7 +20,7 @@ export interface ExaContentsOptions {
   apiKey: string;
   /** Endpoint base; `/contents` is appended. */
   baseURL: string;
-  /** Character cap sent as `text.maxCharacters` and enforced on the result. */
+  /** Result character cap. One more character is requested so a cut at the cap is visible as `truncated`. */
   maxCharacters: number;
   /** Whole-request deadline in milliseconds (`WEB_FETCH_TIMEOUT`). */
   timeoutMs: number;
@@ -108,7 +108,8 @@ export class ExaContentsFetchProvider implements WebFetchProvider {
         headers: { 'x-api-key': apiKey, 'content-type': 'application/json', accept: 'application/json', 'user-agent': USER_AGENT },
         body: JSON.stringify({
           urls: [url],
-          text: { maxCharacters },
+          // Exa cuts at exactly maxCharacters without saying so; the extra character reveals truncation.
+          text: { maxCharacters: maxCharacters + 1 },
           ...maxAgeHours !== undefined ? { maxAgeHours } : {},
           ...livecrawlTimeoutMs !== undefined ? { livecrawlTimeout: livecrawlTimeoutMs } : {},
         }),

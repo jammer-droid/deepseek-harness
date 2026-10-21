@@ -24,13 +24,13 @@ test('sends one URL to /contents with the key header, text cap and no redirects'
   assert.equal(calls[0].url, 'https://api.exa.ai/contents');
   assert.equal(calls[0].init.redirect, 'error');
   assert.equal(calls[0].init.headers['x-api-key'], 'exa-key');
-  assert.deepEqual(JSON.parse(calls[0].init.body), { urls: ['https://example.com/'], text: { maxCharacters: 50 }, maxAgeHours: 0, livecrawlTimeout: 8000 });
+  assert.deepEqual(JSON.parse(calls[0].init.body), { urls: ['https://example.com/'], text: { maxCharacters: 51 }, maxAgeHours: 0, livecrawlTimeout: 8000 });
 });
 
 test('omits optional crawl controls and caps the returned text', async () => {
   const calls = stub(() => json({ results: [{ url: 'https://example.com/', text: 'x'.repeat(60) }] }));
   const result = await new ExaContentsFetchProvider(options).fetch({ url: 'https://example.com/' });
-  assert.deepEqual(JSON.parse(calls[0].init.body), { urls: ['https://example.com/'], text: { maxCharacters: 50 } });
+  assert.deepEqual(JSON.parse(calls[0].init.body), { urls: ['https://example.com/'], text: { maxCharacters: 51 } }, 'one extra character reveals a cut at the cap');
   assert.equal(result.body.content.length, 50);
   assert.equal(result.truncated, true);
   assert.equal(mapContentsResponse({ results: [{ text: 'y'.repeat(50) }] }, 'https://a.test/', 50).truncated, false, 'exactly at the cap is not truncated');
@@ -109,7 +109,7 @@ test('registers exa-contents into ctx.web, falls back to $EXA_API_KEY, and unreg
     const fiber = await ctx.plugin(plugin, {});
     assert.equal((await ctx.web.fetch({ url: 'https://example.com/' })).body.content, 'body');
     assert.equal(calls[0].init.headers['x-api-key'], 'env-key');
-    assert.deepEqual(JSON.parse(calls[0].init.body).text, { maxCharacters: 100000 });
+    assert.deepEqual(JSON.parse(calls[0].init.body).text, { maxCharacters: 100001 });
     await fiber.dispose();
     await assert.rejects(ctx.web.fetch({ url: 'https://example.com/' }), code('WEB_PROVIDER_CONFIGURED_MISSING'));
   } finally { if (previous === undefined) delete process.env.EXA_API_KEY; else process.env.EXA_API_KEY = previous; }
