@@ -36,6 +36,12 @@ interface ExaContentsResponse { results?: ExaContentsResult[]; statuses?: ExaCon
 interface ExaErrorBody { error?: string; message?: string; tag?: string }
 
 const isPositiveInteger = (value: number) => Number.isInteger(value) && value > 0;
+const isObject = (value: unknown): value is Record<string, unknown> => !!value && typeof value === 'object' && !Array.isArray(value);
+/** Upstream text may echo the request; never let the key reach a surfaced message. Long details are cut. */
+function redact(text: string, apiKey: string): string {
+  const safe = apiKey ? text.split(apiKey).join('[redacted]') : text;
+  return safe.length > 300 ? `${safe.slice(0, 300)}…` : safe;
+}
 const isAbortError = (error: unknown) => error instanceof DOMException && (error.name === 'AbortError' || error.name === 'TimeoutError');
 
 /** Accept only absolute http(s) URLs; Exa reports other schemes as `UNSUPPORTED_URL` after billing a request. */
@@ -53,17 +59,23 @@ function targetUrl(input: string): string {
  * @param requested - the URL sent to Exa (fallback when Exa omits the final URL).
  * @param maxCharacters - result-side character cap.
  */
-export function mapContentsResponse(response: ExaContentsResponse, requested: string, maxCharacters: number): WebFetchResult {
-  const status = response.statuses?.[0];
+export function mapContentsResponse(response: unknown, requested: string, maxCharacters: number): WebFetchResult {
+  if (!isObject(response) || (response.results !== undefined && !Array.isArray(response.results)) || (response.statuses !== undefined && !Array.isArray(response.statuses))) {
+    throw new WebError('Exa returned an unexpected response shape', 'WEB_PROVIDER_ERROR');
+  }
+  const envelope = response as ExaContentsResponse;
+  const rawStatus: unknown = envelope.statuses?.[0];
+  const status = isObject(rawStatus) ? rawStatus as ExaContentsStatus : undefined;
   if (status?.status === 'error') {
     const code = status.error?.httpStatusCode;
-    const tag = status.error?.tag ?? 'unknown';
+    const tag = typeof status.error?.tag === 'string' && /^[A-Z0-9_]{1,64}$/.test(status.error.tag) ? status.error.tag : 'unknown';
     if (typeof code === 'number' && Number.isInteger(code) && code >= 100 && code <= 599) {
       return { url: requested, statusCode: code, body: { kind: 'text', content: '' }, truncated: false };
     }
     throw new WebError(`Exa could not fetch the page (${tag})`, 'WEB_PROVIDER_ERROR');
   }
-  const result = response.results?.[0];
+  const rawResult: unknown = envelope.results?.[0];
+  const result = isObject(rawResult) ? rawResult as ExaContentsResult : undefined;
   if (!result) throw new WebError('Exa returned no content for the page', 'WEB_PROVIDER_ERROR');
   const text = typeof result.text === 'string' ? result.text : '';
   const truncated = text.length > maxCharacters;
@@ -97,7 +109,7 @@ export class ExaContentsFetchProvider implements WebFetchProvider {
       if (signal?.aborted) return new WebError('web fetch aborted', 'WEB_ABORTED', { cause: error });
       if (timeout.aborted) return new WebError('web fetch timed out', 'WEB_FETCH_TIMEOUT', { cause: error });
       if (isAbortError(error)) return new WebError('web fetch aborted', 'WEB_ABORTED', { cause: error });
-      return new WebError(`${what}: ${String(error)}`, 'WEB_PROVIDER_ERROR', { cause: error });
+      return new WebError(`${what}: ${redact(String(error), apiKey)}`, 'WEB_PROVIDER_ERROR');
     };
 
     let response: Response;
@@ -120,9 +132,10 @@ export class ExaContentsFetchProvider implements WebFetchProvider {
     if (!response.ok) {
       let message = `Exa API error (HTTP ${response.status})`;
       try {
-        const body = await response.json() as ExaErrorBody;
-        const detail = body.error ?? body.message;
-        if (detail) message = `Exa API error (HTTP ${response.status}${body.tag ? `, ${body.tag}` : ''}): ${detail}`;
+        const body = await response.json() as ExaErrorBody | null;
+        const tag = typeof body?.tag === 'string' ? body.tag : undefined;
+        const detail = typeof body?.error === 'string' ? body.error : typeof body?.message === 'string' ? body.message : undefined;
+        if (detail || tag) message = redact(`Exa API error (HTTP ${response.status}${tag ? `, ${tag}` : ''})${detail ? `: ${detail}` : ''}`, apiKey);
       } catch (error) {
         if (combined.aborted) throw failure(error, 'Exa contents request failed');
         // A non-JSON error body (gateway 5xx/429) only costs the detail; the status is kept.
@@ -130,8 +143,8 @@ export class ExaContentsFetchProvider implements WebFetchProvider {
       throw new WebError(message, 'WEB_PROVIDER_ERROR');
     }
 
-    let payload: ExaContentsResponse;
-    try { payload = await response.json() as ExaContentsResponse; } catch (error) { throw failure(error, 'Exa returned an unprocessable response body'); }
+    let payload: unknown;
+    try { payload = await response.json(); } catch (error) { throw failure(error, 'Exa returned an unprocessable response body'); }
     return mapContentsResponse(payload, url, maxCharacters);
   }
 }

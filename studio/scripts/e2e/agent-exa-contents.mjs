@@ -30,6 +30,14 @@ function toolResults(t, sessionId) {
 }
 
 await runAgent({ name: 'agent-exa-contents', profile: value('--profile') }, async t => {
+  // Provider identity: only exa-contents may serve the fetch, so a pass cannot come from the local HTTP provider.
+  await t.check('web fetchProvider is exa-contents and the provider row runs', async () => {
+    const views = await t.rpc('studioCatalog/listProfileConfigs');
+    const web = views.find(view => view.patchId === 'web');
+    if (web?.effective?.fetchProvider !== 'exa-contents') throw new Error(`fetchProvider ${web?.effective?.fetchProvider}`);
+    const row = views.find(view => view.name === '@matamt-dbg/dsh-web-fetch-exa');
+    if (!row?.active) throw new Error('dsh-web-fetch-exa row is not active');
+  });
   const preset = await t.preset({ tools: ['web_fetch'] });
   const session = await t.session(preset);
   const after = await t.prompt(session, mockScript([['web_fetch', { url: URL_OK }], mockSay('fetched')]));

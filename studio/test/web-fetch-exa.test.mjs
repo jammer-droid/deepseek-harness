@@ -52,6 +52,26 @@ test('an Exa HTTP error becomes WEB_PROVIDER_ERROR with its tag and message, JSO
   await assert.rejects(new ExaContentsFetchProvider(options).fetch({ url: 'https://example.com/' }), error => code('WEB_PROVIDER_ERROR')(error) && /HTTP 502/.test(error.message));
 });
 
+test('upstream errors that echo the key never surface it', async () => {
+  stub(() => json({ error: 'Invalid key exa-key for this team', tag: 'INVALID_API_KEY' }, 401));
+  await assert.rejects(new ExaContentsFetchProvider(options).fetch({ url: 'https://example.com/' }),
+    error => code('WEB_PROVIDER_ERROR')(error) && !error.message.includes('exa-key') && /\[redacted\]/.test(error.message));
+  stub(() => { throw new TypeError('connect failed for key exa-key'); });
+  await assert.rejects(new ExaContentsFetchProvider(options).fetch({ url: 'https://example.com/' }),
+    error => code('WEB_PROVIDER_ERROR')(error) && !error.message.includes('exa-key') && error.cause === undefined);
+  assert.throws(() => mapContentsResponse({ statuses: [{ status: 'error', error: { tag: 'leak exa-key' } }] }, 'https://a.test/', 50),
+    error => code('WEB_PROVIDER_ERROR')(error) && /\(unknown\)/.test(error.message));
+});
+
+test('a 200 body with an unexpected shape is WEB_PROVIDER_ERROR, not a TypeError', async () => {
+  for (const body of [null, [], 'text', { results: 'x' }, { statuses: {} }, { results: [null] }]) {
+    stub(() => json(body));
+    await assert.rejects(new ExaContentsFetchProvider(options).fetch({ url: 'https://example.com/' }), code('WEB_PROVIDER_ERROR'), JSON.stringify(body));
+  }
+  stub(() => json(null, 500));
+  await assert.rejects(new ExaContentsFetchProvider(options).fetch({ url: 'https://example.com/' }), error => code('WEB_PROVIDER_ERROR')(error) && /HTTP 500/.test(error.message));
+});
+
 test('rejects non-http(s) and credentialed target URLs before calling Exa', async () => {
   const calls = stub(() => json({}));
   for (const url of ['file:///etc/passwd', 'ftp://example.com/', 'not a url', 'https://user:pw@example.com/']) {

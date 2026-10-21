@@ -4,6 +4,8 @@
     "test",
     "packages/shell/package.json",
     "packages/shell/cordis.patch.yml",
+    "packages/web-fetch-exa/README.md",
+    "packages/web-fetch-exa/package.json",
     "build.mjs",
     "pack.mjs",
     "package.json",
@@ -37,7 +39,8 @@
     "@deepseek-ai/*": "0.2.0-rc.2",
     "@deepseek-ai/cordis": "~4.0.4",
     "@deepseek-ai/cordis-plugin-include": "~1.0.9",
-    "@deepseek-ai/dsh": "0.2.0-rc.2"
+    "@deepseek-ai/dsh": "0.2.0-rc.2",
+    "@deepseek-ai/schemastery": "~3.18.4"
   },
   "packageManager": "pnpm@11.7.0",
   "scripts": {},
