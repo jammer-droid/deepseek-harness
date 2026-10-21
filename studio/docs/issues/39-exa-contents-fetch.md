@@ -96,3 +96,19 @@ Exa API `POST /contents`로 `web_fetch`를 처리하는 가져오기 공급자�
 - Studio 빌드 체계 원복: `build.mjs`의 플러그인 빌드 줄과 `pack.mjs`의 인자 처리를 0.6.3 상태로 되돌렸다. 배포는 [plugins/release.mjs](../../plugins/release.mjs)가 맡는다.
 - 공개 레포: `plugins/README.md`와 `plugins/web-fetch-exa/`를 내보낸다. sync는 플러그인 tsconfig의 base 경로를 바꾼다. `release.mjs`는 fork에만 둔다.
 - 0.6.4 노트 정정: 0.6.4 CHANGELOG의 "Exa로 웹 페이지를 가져올 수 있습니다"는 별도 플러그인 설치가 필요하다는 점이 약했다. 다음 Studio 배포 노트에서 바로잡는다.
+
+### 0.1.0 설치 문제와 0.1.1 (2026-10-21)
+
+- 사용자 보고 1: npm 페이지의 설치 안내(`npm i @matamt-dbg/dsh-web-fetch-exa`)를 저장소 루트에서 실행하자 npm이 `Cannot read properties of null (reading 'name')`로 실패했다(pnpm workspace의 링크 구조를 npm arborist가 읽지 못함). 어느 위치에서든 `npm i`는 DSH 프로필에 설치하는 방법이 아니다.
+- 사용자 보고 2: DSH **플러그인 → 플러그인 추가**가 0.1.0을 "declares no dsh.bundle"로 거부했다. GUI는 bundle만 받는다. CLI `dsh plugin add`는 경고 후 일반 의존성으로 설치하므로, CLI로만 한 S5 검증이 이 차이를 놓쳤다.
+- 0.1.1 변경:
+  - `cordis.patch.yml`(`web-fetch-exa` 행 insert만)과 `dsh.bundle.patch`를 추가했다. 설치는 공급자 선택을 바꾸지 않는다.
+  - README 설치 절 맨 위에 "`npm i`를 쓰지 말 것"을 적고, GUI·CLI 설치, 키, 공급자 선택, 제거 순서를 적었다.
+  - CHANGELOG에 업그레이드 안내를 넣었다. `release.mjs`는 `files` 누락과 `dsh.bundle.patch` 누락을 막는다.
+  - 테스트: bundle 선언·패치 내용·README 문구 검사를 추가해 14개가 통과했다. Studio 801개도 통과했다.
+- 검증(수정하지 않은 dsh 0.2.1-rc.2, 격리 프로필):
+  - [plugins-exa-contents-gui-install.mjs](../../scripts/e2e/plugins-exa-contents-gui-install.mjs): 플러그인 페이지에서 tarball 설치 → 지금 활성화 → bundles 목록에 추가되고 `fetchProvider`는 바뀌지 않았다 → Studio에서 "프로필에서 실행 중", 등록 버튼 없음 → 공급자 목록에 `exa-contents`. 14/14 통과.
+  - 키와 `fetchProvider: exa-contents`를 넣고 실제 Exa로 `web_fetch` 3/3 통과. 이후 키를 지웠다.
+  - 업그레이드: 0.1.0(npm)을 설치하고 Studio로 등록한 뒤 제거하고 0.1.1을 설치했다. 사용자 행과 bundle 행이 같은 id라 활성 행 하나로 합쳐졌고, 중복 등록 오류는 없었다.
+- Studio 가이드(ko·en) 해당 줄을 GUI 설치·`npm i` 경고·0.1.1 동작으로 고쳤다. ko 문장은 `pixie_loop`로 교정해 1/1 통과했다.
+- [별도 플러그인 배포 가이드](../plugin-release.md)에 "설치 가능한 형태와 설치 안내" 절을 추가했다.

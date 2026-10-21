@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.1 — 2026-10-21
+
+Requires DSH `0.2.0-rc.2`, `0.2.1-alpha.2`, `0.2.1-rc.1` or `0.2.1-rc.2`.
+
+- **Install from the Plugins page.** The package is now a DSH bundle, so **Plugins → Add plugin** accepts it (0.1.0 was refused with "declares no dsh.bundle"). Installing adds the provider row by itself; there is no separate registration step. `web_fetch` keeps its current provider until you choose `exa-contents`.
+- The README explains that `npm i` does not install a DSH plugin and lists the app, `dsh plugin add`, key and provider steps.
+
+Upgrade from 0.1.0: uninstall 0.1.0, then install 0.1.1. A `web-fetch-exa` row you added for 0.1.0 (for example with DSH Studio's **Register in profile**) uses the same id as the row 0.1.1 adds, so it stays as one row and keeps its settings.
+
 ## 0.1.0 — 2026-10-21
 
 Requires DSH `0.2.0-rc.2`, `0.2.1-alpha.2`, `0.2.1-rc.1` or `0.2.1-rc.2`.

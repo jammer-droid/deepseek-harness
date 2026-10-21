@@ -146,3 +146,16 @@ test('without any key the configured provider is unavailable', async () => {
     await fiber.dispose();
   } finally { if (previous !== undefined) process.env.EXA_API_KEY = previous; }
 });
+
+test('package is a DSH bundle that inserts only its own row (Plugins page install)', async () => {
+  const { readFileSync } = await import('node:fs');
+  const { default: yaml } = await import('js-yaml');
+  const manifest = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
+  assert.equal(manifest.dsh?.bundle?.patch, './cordis.patch.yml');
+  assert.ok(manifest.files.includes('cordis.patch.yml'));
+  const patch = yaml.load(readFileSync(new URL('../cordis.patch.yml', import.meta.url), 'utf8'));
+  assert.deepEqual(patch, [{ insert: [{ id: 'web-fetch-exa', name: manifest.name }] }], 'no provider selection or config is changed by installing');
+  const readme = readFileSync(new URL('../README.md', import.meta.url), 'utf8');
+  assert.match(readme, /Do not use `npm i`/);
+  assert.match(readme, /dsh plugin --profile \w+ add @matamt-dbg\/dsh-web-fetch-exa/);
+});

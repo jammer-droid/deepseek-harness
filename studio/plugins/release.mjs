@@ -49,7 +49,14 @@ async function packPlugin() {
   const staging = path.join(dist, 'package');
   await mkdir(staging, { recursive: true });
   await cp(path.join(dist, 'index.js'), path.join(staging, 'index.js'));
-  for (const file of ['README.md', 'CHANGELOG.md']) if (existsSync(path.join(dir, file))) await cp(path.join(dir, file), path.join(staging, file));
+  // Every listed file except the bundle output comes from the plugin folder (cordis.patch.yml, README, CHANGELOG).
+  for (const file of manifest.files ?? []) {
+    if (file === 'index.js') continue;
+    if (!existsSync(path.join(dir, file))) throw new Error(`package.json files lists ${file}, which does not exist`);
+    await cp(path.join(dir, file), path.join(staging, file), { recursive: true });
+  }
+  const patch = manifest.dsh?.bundle?.patch;
+  if (patch && !existsSync(path.join(staging, patch))) throw new Error(`dsh.bundle.patch ${patch} is not in the package files`);
   await cp(path.join(studio, 'LICENSE'), path.join(staging, 'LICENSE'));
   await writeFile(path.join(staging, 'package.json'), JSON.stringify(manifest, null, 2) + '\n');
   const output = run('npm', ['pack', '--ignore-scripts', '--json', '--pack-destination', dist], staging, true);
