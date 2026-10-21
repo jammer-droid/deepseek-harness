@@ -4,7 +4,7 @@
  * tool call is scripted); the fetch itself goes to the real Exa API, so the profile needs an Exa key on the
  * `web-fetch-exa` row and `web.fetchProvider: exa-contents` (see plugins-exa-contents.mjs).
  *
- *   node studio/scripts/e2e/server.mjs up --profile e39 --mock-llm --plugin <dsh-web-fetch-exa tgz>
+ *   node studio/scripts/e2e/server.mjs up --profile e39 --mock-llm --plugin <tgz from: node studio/plugins/release.mjs web-fetch-exa pack>
  *   node studio/scripts/e2e/agent-exa-contents.mjs [--profile e39]
  */
 import { existsSync } from 'node:fs';
