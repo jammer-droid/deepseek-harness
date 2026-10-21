@@ -13,3 +13,4 @@ packages/*/tasks.js
 packages/*/roles.js
 packages/shell/skills/
 work/
+plugins/*/dist/

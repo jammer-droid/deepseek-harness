@@ -18,7 +18,7 @@ Exa API `POST /contents`로 `web_fetch`를 처리하는 가져오기 공급자�
 
 | ID | 결정 | 이유 |
 | --- | --- | --- |
-| D1 | 패키지는 `studio/packages/web-fetch-exa`이고 shell과 분리한다 | 따로 설치하고 켜고 끌 수 있다. Studio 본체가 `web`에 의존하지 않는다. 0.6.3 프로필 등록·설정 흐름을 그대로 쓴다 |
+| D1 | 패키지는 shell과 분리한다. 2026-10-21 배포 뒤 `studio/packages/web-fetch-exa`에서 `studio/plugins/web-fetch-exa`로 옮겼다(별도 버전·배포, [플러그인 배포 가이드](../plugin-release.md)) | 따로 설치하고 켜고 끌 수 있다. Studio 본체가 `web`에 의존하지 않는다. 0.6.3 프로필 등록·설정 흐름을 그대로 쓴다 |
 | D2 | 공급자 id는 `exa-contents`이고 `EXA_CONTENTS_PROVIDER_ID`로 export한다 | 검색 공급자 `exa`와 화면에서 구분한다. export 규칙으로 Studio가 자동 감지한다 |
 | D3 | npm 이름은 `@matamt-dbg/dsh-web-fetch-exa`이고 Studio와 같은 게시자를 쓴다 | 이름에 `fetch`가 있어야 Studio가 가져오기 공급자로 분류한다 |
 | D4 | 의존성은 `dsh-web`·`dsh-launch-environment`·`cordis`를 peer로, `schemastery`를 dependency로 둔다. 이는 `dsh-web-search-exa`와 같은 구조다. 루트 `pnpm-lock.yaml` 갱신은 사용자가 승인했다(2026-10-21) | Config가 schemastery여야 프로필 설정 화면에서 `apiKey`·한도를 편집할 수 있다 |
@@ -88,3 +88,11 @@ Exa API `POST /contents`로 `web_fetch`를 처리하는 가져오기 공급자�
 - 배포 E2E는 사용자 결정에 따라 생략했다. 이슈 단계의 독립 설치 검증(등록 14/14, 실제 가져오기 3/3)으로 대신한다.
 - GitHub: fork `d5bf0097d8`를 공개 레포 `main` `055dfd9734`(`release: 0.6.4`)로 push했고 Release `v0.6.4`를 만들었다. 공개 스냅샷은 공개 DSH 0.2.0-rc.2 패키지로 테스트 762개 통과(1개 건너뜀)했다.
 - npm: 사용자가 직접 게시한다(이 세션 npm 미로그인). Studio는 `node studio/release/deploy.mjs npm`. 플러그인은 공개 커밋으로 빌드한 tarball을 쓴다: `dsh-web-fetch-exa-0.1.0.tgz`, sha1 `32a4df99…`. 게시 후 `npm view`로 확인하는 작업이 남았다.
+
+### 플러그인 구조 분리 (2026-10-21)
+
+- 사용자 결정: 플러그인은 Studio와 따로 버전을 관리하고 따로 배포한다(`0.1.0`). 관리 경로는 `studio/plugins/`다.
+- 옮긴 것: 소스는 `plugins/web-fetch-exa/src/{index,provider}.ts`, 테스트는 `plugins/web-fetch-exa/test/`다. Studio 연동 검사는 `test/web-fetch-exa-integration.test.mjs`로 나눴다. 플러그인 전용 `tsconfig.json`과 `CHANGELOG.md`를 추가했다.
+- Studio 빌드 체계 원복: `build.mjs`의 플러그인 빌드 줄과 `pack.mjs`의 인자 처리를 0.6.3 상태로 되돌렸다. 배포는 [plugins/release.mjs](../../plugins/release.mjs)가 맡는다.
+- 공개 레포: `plugins/README.md`와 `plugins/web-fetch-exa/`를 내보낸다. sync는 플러그인 tsconfig의 base 경로를 바꾼다. `release.mjs`는 fork에만 둔다.
+- 0.6.4 노트 정정: 0.6.4 CHANGELOG의 "Exa로 웹 페이지를 가져올 수 있습니다"는 별도 플러그인 설치가 필요하다는 점이 약했다. 다음 Studio 배포 노트에서 바로잡는다.

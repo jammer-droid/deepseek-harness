@@ -91,6 +91,10 @@ await transform('packages/shell/package.json', text => {
 });
 // Studio builds with esbuild only; DSH runtime natives pulled in as type sources never need their scripts here.
 await writeFile(path.join(work, 'pnpm-workspace.yaml'), `packages:\n  - packages/*\nallowBuilds:\n${Object.entries(config.allowBuilds).map(([name, allow]) => `  '${name}': ${allow}`).join('\n')}\n`);
+// Plugin tsconfigs sit two levels deeper and extend the same base.
+for (const file of exported.filter(file => /^plugins\/[^/]+\/tsconfig\.json$/.test(file))) {
+  await transform(file, text => text.replace('"../../../tsconfig.base.json"', '"../../tsconfig.base.json"'));
+}
 for (const file of ['tsconfig.host.json', 'tsconfig.client.json']) {
   await transform(file, text => text.replace('"../tsconfig.base.client.json"', '"./tsconfig.base.client.json"').replace('"../tsconfig.base.json"', '"./tsconfig.base.json"'));
 }

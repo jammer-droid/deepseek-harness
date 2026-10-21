@@ -4,15 +4,15 @@
     "test",
     "packages/shell/package.json",
     "packages/shell/cordis.patch.yml",
-    "packages/web-fetch-exa/README.md",
-    "packages/web-fetch-exa/package.json",
     "build.mjs",
     "pack.mjs",
     "package.json",
     "tsconfig.json",
     "tsconfig.host.json",
     "tsconfig.client.json",
-    "LICENSE"
+    "LICENSE",
+    "plugins/README.md",
+    "plugins/web-fetch-exa"
   ],
   "exclude": [
     "test/staged-scope.test.mjs",

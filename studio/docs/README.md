@@ -39,6 +39,7 @@
 - [결정(Decision) 기능 브레인스토밍 자료](research/decision-engine-brainstorm.md): Pixie Gate에서 분리한 판정 기능의 배경, 사용자 시나리오, 남은 Studio 자산, 맞닿는 DSH 공개 표면, 형태 후보와 열린 질문. 결정 전 초안.
 - [개발 안내](../development.ko.md)
 - [배포 가이드](release.md): fork → 공개 레포 스냅샷 → npm 공개 절차
+- [별도 플러그인 배포 가이드](plugin-release.md): `studio/plugins/` 플러그인의 구조와 따로 하는 빌드·npm 게시
 - [이슈 명세 색인](issues/README.md)
 
 ## 개선 계획

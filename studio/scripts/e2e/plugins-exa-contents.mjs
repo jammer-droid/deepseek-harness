@@ -2,7 +2,7 @@
 /**
  * #39 L0: register `@matamt-dbg/dsh-web-fetch-exa` from Studio → Plugins, then pick `exa-contents` as the
  * fetch provider under Profile settings. Needs a fresh isolated profile with the package installed but not
- * registered (`server.mjs up --plugin <tgz>`). Mutates that profile.
+ * registered (`server.mjs up --plugin <tgz>`, tgz from `node studio/plugins/release.mjs web-fetch-exa pack`). Mutates that profile.
  *
  *   node studio/scripts/e2e/plugins-exa-contents.mjs [--profile e39]
  */
