@@ -35,6 +35,32 @@ RPC와 역할 검사는 `STUDIO_E2E_HOME`·`STUDIO_E2E_PROFILE=rc3-candidate`를
 - Subscriptions의 일반 의존성은 바꾸지 않았다. npm audit 집계 low 2/high 4는 이번 호환성 변경과 분리하며 자동 수정하지 않았다.
 - 원시 로그와 tgz는 Git 제외 경로 `studio/dist/rc3-compat/`에 있다. 인증 URL·키는 보고서에 기록하지 않는다.
 
+## 공개 배포 후보의 추가 검증
+
+공개 레포 `635b7ffe8f`를 새로 받아 공개 npm 의존성으로 타입 검사·빌드·테스트했다. 751개 통과, 1개 skipped이며 내부 전용 검사는 export에서 제외된다. 이 결과로 만든 Studio tarball은 workspace 빌드와 구분한다.
+
+독립 검증자가 같은 공개 후보를 별도 `public-home`의 `rc3-public` 프로필에 Exa·Subscriptions와 설치했다. RPC 4개, Fresh/Fork 역할 5개, Optimized·Worker 16개 검사가 통과했다. tgz와 설치 파일을 전체 대조했다(Studio 16개, Exa 6개, Subscriptions 139개). 주 세션은 이 공개 후보의 Studio 화면과 Client 오류 없음도 확인했다. 결과는 `studio/dist/rc3-compat/public-check/`에 있다.
+
+- Studio 공개 후보 SHA1: `bd7212365cb0ab83b59e0845f33028d6cf3aec93`
+- Studio 공개 후보 SHA256: `038b1902db7bf9d5baf874e55204bf66ab7300567ea7f1ba04331b0b1f887d7e`
+- Exa 공개 패키지 SHA1: `7cfe33deed051e8cd75aeea4591f2deb4fcffd95`
+- Subscriptions 로컬 tgz SHA256: `774a83f47dc1cf8cec1877ca3eb6c4a5ca3865dc6fe8a962cc435ccee6a212e8`
+
 ## 배포
 
-공개 패키지·Desktop 반영 결과는 배포 완료 후 추가한다.
+공개 레포와 GitHub Release `v0.6.6`를 게시했다. npm은 Exa `0.1.2` 게시·레지스트리 해시 대조를 완료했다. Studio 첫 npm 인증 요청은 만료(404)되어 재게시 전에 버전 부재를 확인했고, 같은 tarball로 새 요청을 보내 접수됐다. Studio `0.6.6`도 npm 레지스트리에서 확인했고 게시한 SHA1과 일치했다. 레지스트리에서 두 tgz를 다시 받아 해시를 대조했다. 새 `rc3-registry` 격리 프로필에 설치·기동하고 RPC 4개가 통과했다.
+
+
+
+## Desktop 반영 완료
+
+- 정상 종료한 Desktop에 npm의 Studio `0.6.6`, Exa fetch `0.1.2`와 로컬 Subscriptions `0.9.9-local.rc3.1`을 공식 `dsh plugin --profile desktop add`로 설치했다.
+- 설치 후 검사에서 기존 공식 `@deepseek-ai/dsh-web-search-exa@0.2.1-rc.2`의 별도 호환성 차단도 발견했다. 공개 `0.2.1-rc.3`의 peer를 확인하고 격리 설치 후 Desktop도 갱신했다. 해당 provider 소스는 rc.2→rc.3에서 동일하며 로컬 수정이나 재배포를 하지 않았다.
+- 설치 파일 전체가 각 tgz와 일치했다. rc.3 검사 함수로 desktop의 직접 의존성 5개 전부 통과를 확인했다.
+- Desktop 재시작 후 세 플러그인의 Problem 표시가 없고 활성화 상태다. Studio `0.6.6`과 기존 프리셋 표시, Subscriptions의 기존 Codex·Claude 계정 및 사용량 표시를 확인했다. 실제 새 모델 요청은 보내지 않았다.
+- 교체 전 백업: `~/.dsh/local-backups/rc3-20261024/`. 교체·재시작 후 `cordis.patch.yml`과 Studio 데이터 489개 경로의 해시가 모두 같고 활성 bundle 목록도 같다. 기존 계정은 로그인·로그아웃하거나 인증 저장소를 직접 수정하지 않았다.
+- 로컬 Subscriptions 배포물은 `~/.dsh/local-packages/dsh-plugin-subscriptions-0.9.9-local.rc3.1.tgz`에 보존했다. npm 공개 대상이 아니다.
+- 후보·공개 후보·레지스트리 검증 서버를 종료했고 해당 포트가 비었음을 확인했다. 사용자 Desktop은 실행 상태로 남겼다.
+- 설치 도구의 peer dependency 경고는 남지만 최종 DSH 버전 호환성 차단은 없다.
+
+공개 결과: [Studio 0.6.6 Release](https://github.com/matamt-dbg/dsh-studio/releases/tag/v0.6.6), [Studio npm](https://www.npmjs.com/package/@matamt-dbg/dsh-studio/v/0.6.6), [Exa fetch npm](https://www.npmjs.com/package/@matamt-dbg/dsh-web-fetch-exa/v/0.1.2).
