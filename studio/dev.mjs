@@ -29,7 +29,7 @@ const value = name => {
   return args.find(arg => arg.startsWith(`${name}=`))?.slice(name.length + 1);
 };
 
-const supported = ['0.2.0-rc.2', '0.2.1-alpha.2', '0.2.1-rc.1', '0.2.1-rc.2'];
+const supported = ['0.2.0-rc.2', '0.2.1-alpha.2', '0.2.1-rc.1', '0.2.1-rc.2', '0.2.1-rc.3'];
 const port = value('--port') ?? process.env.STUDIO_WEB_PORT;
 const skipTest = has('--skip-test');
 const buildOnly = has('--build-only');

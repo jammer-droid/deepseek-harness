@@ -7,7 +7,7 @@ const root = fileURLToPath(new URL('.', import.meta.url));
 const runtime = process.env.STUDIO_DSH_BIN || 'dsh';
 const version = spawnSync(runtime, ['--version'], { encoding: 'utf8' });
 if (version.error || version.status !== 0) throw version.error || new Error(version.stderr);
-if (!['0.2.0-rc.2', '0.2.1-alpha.2', '0.2.1-rc.1', '0.2.1-rc.2'].includes(version.stdout.trim())) {
+if (!['0.2.0-rc.2', '0.2.1-alpha.2', '0.2.1-rc.1', '0.2.1-rc.2', '0.2.1-rc.3'].includes(version.stdout.trim())) {
   throw new Error(`Unsupported preview runtime: ${version.stdout.trim()}`);
 }
 // Install the packed bundle so DSH resolves runtime peers from its own installation.
